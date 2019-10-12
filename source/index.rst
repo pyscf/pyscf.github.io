@@ -62,7 +62,12 @@ Contents
    hci.rst
    sgx.rst
    semiempirical.rst   
-
+   mp.rst
+   semiempirical.rst
+   solven.rst
+   soscf.rst
+   x2c.rst
+   icmpspt.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.4.pdf>`_ of this manual.
