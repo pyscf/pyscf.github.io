@@ -66,7 +66,7 @@ function is patched to the numerical integration class :attr:`mf._numint`
 dynamically.
 
 More examples of customizing DFT XC functional can be found in
-:file:`examples/dft/24-custom_xc_functional.py` and 
+:file:`examples/dft/24-custom_xc_functional.py` and
 :file:`examples/dft/24-define_xc_functional.py`.
 
 
@@ -79,11 +79,44 @@ Program reference
 .. automodule:: pyscf.dft.uks
    :members:
 
+.. automodule:: pyscf.dft.gks
+   :members:
+
+.. automodule:: pyscf.dft.gks_symm
+   :members:
+
+.. automodule:: pyscf.dft.rks_symm
+   :members:
+
+.. automodule:: pyscf.dft.uks_symm
+   :members:
+
+.. automodule:: pyscf.dft.gen_lib_xc_param
+   :members:
+
+.. automodule:: pyscf.dft.gen_xcfun_param
+   :members:
+
+.. automodule:: pyscf.dft.libxc
+   :members:
+
+.. automodule:: pyscf.dft.dks
+   :members:
+
+.. automodule:: pyscf.dft.radi
+   :members:
+
 .. automodule:: pyscf.dft.gen_grid
    :members:
 
 .. automodule:: pyscf.dft.numint
    :members:
 
-.. automodule:: pyscf.dft.libxc
+.. automodule:: pyscf.dft.vxc
+   :members:
+
+.. automodule:: pyscf.dft.xcfun
+   :members:
+
+.. automodule:: pyscf.dft.xc
    :members:
