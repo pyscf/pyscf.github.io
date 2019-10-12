@@ -5,7 +5,12 @@ fci --- Full configuration interaction
  
 The :mod:`fci` module implements Full Configuration Interaction. Specialized
 implementations are available for different Hamiltonian and spin symmetries.
-for various Hamiltonian and spin symmetries.
+
+Examples
+========
+
+For a complete list of FCI examples, see
+``pyscf/examples/fci``.
 
 direct CI
 =========
