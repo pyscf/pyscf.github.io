@@ -1,6 +1,22 @@
-ssc ---
+ssc --- Spin-spin coulping
 *******
 
+To compute the nuclear spin-spin coupling constants, one could follow the following example::
+
+    from pyscf import gto, scf, dft
+    from pyscf.prop import ssc
+    mol = gto.M(atom='''
+                O 0 0      0
+                H 0 -0.757 0.587
+                H 0  0.757 0.587''',
+                basis='ccpvdz')
+    
+    mf = scf.UHF(mol).run()
+    ssc.UHF(mf).kernel()
+    
+    mf = dft.UKS(mol).set(xc='b3lyp').run()
+    ssc.UKS(mf).kernel()
+    
 Examples
 ========
 
