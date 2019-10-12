@@ -2,6 +2,9 @@ fci --- Full configuration interaction
 **************************************
 
 .. automodule:: pyscf.fci
+ 
+The :mod:`fci` module implements Full Configuration Interaction. Specialized
+implementations are available for different Hamiltonian and spin symmetries.
 
 Examples
 ========
