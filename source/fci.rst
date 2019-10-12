@@ -2,7 +2,13 @@ fci --- Full configuration interaction
 **************************************
 
 .. automodule:: pyscf.fci
- 
+
+Examples
+========
+
+For a complete list of FCI examples, see
+``pyscf/examples/fci``.
+
 
 direct CI
 =========
