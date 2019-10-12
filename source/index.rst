@@ -75,6 +75,7 @@ Contents
    ccn.rst
    nao.rst
    lib.rst
+   prop.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.

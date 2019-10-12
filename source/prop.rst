@@ -3,21 +3,21 @@
 *******************************************
 prop --- Molecular properties
 *******************************************
-The :mod:`pbc` module provides electric and magnetic properties for molecules.
+The :mod:`prop` module provides electric and magnetic properties for molecules.
 
 The list of modules described in this chapter is:
 
 .. toctree::
 
-  efg.rst
-  gtensor.rst
-  magnetizability.rst
-  nsr.rst
-  rotational_gtensor.rst
-  zfs.rst
-  freq.rst
-  hfc.rst
-  nmr.rst
-  polarizability.rst
-  ssc.rst
+  prop/efg.rst
+  prop/gtensor.rst
+  prop/magnetizability.rst
+  prop/nsr.rst
+  prop/rotational_gtensor.rst
+  prop/zfs.rst
+  prop/freq.rst
+  prop/hfc.rst
+  prop/nmr.rst
+  prop/polarizability.rst
+  prop/ssc.rst
 
