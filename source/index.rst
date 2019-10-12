@@ -68,6 +68,13 @@ Contents
    soscf.rst
    x2c.rst
    icmpspt.rst
+   ccn.rst
+   cornell_shci.rst
+   dftd3.rst
+   dmrgscf.rst
+   doci.rst
+   geomopt.rst
+   solvent.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.4.pdf>`_ of this manual.
