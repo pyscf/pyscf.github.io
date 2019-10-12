@@ -2,7 +2,7 @@ ci --- Configuration interaction
 ********************************
 
 .. module:: ci
-   :synopsis: Computing CI energy and properties
+   :synopsis: CI energy and properties
 
 The :mod:`ci` module implements the truncated CI model.
 
