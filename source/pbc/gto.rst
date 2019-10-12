@@ -80,11 +80,11 @@ kpts
     abs_kpts = cell.get_abs_kpts(scaled_kpts)
 
 Gv
-  The (N x 3) array of plane waves associated to :attr:`gs`.  :attr:`gs` defines
+  The (N x 3) array of plane waves associated to :attr:`mesh`.  :attr:`mesh` defines
   the number of FFT grids in each direction.  :meth:`Cell.Gv` or :meth:`get_Gv`
   convert the FFT-mesh to the plane waves.  ``Gv`` are the the plane wave bases
-  of 3D-FFT transformation.  Given ``gs = [nx,ny,nz]``, the number of vectors in
-  ``Gv`` is ``(2*nx+1)*(2*ny+1)*(2*nz+1)``.
+  of 3D-FFT transformation.  Given ``mesh = [nx,ny,nz]``, the number of vectors in
+  ``Gv`` is ``nx*ny*nz``.
 
 vol
   :attr:`Cell.vol` gives the volume of the unit cell (in atomic unit).
