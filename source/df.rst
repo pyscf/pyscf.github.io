@@ -295,6 +295,19 @@ CASSCF object::
   object.  The resultant SCF object is a DFHF object.  See more examples in
   ``examples/scf/23-decorate_scf.py``
 
+Examples
+========
+
+Relevant examples
+:file:`examples/df/00-with_df.py`
+:file:`examples/df/01-auxbasis.py`
+:file:`examples/df/10-access_df_integrals.py`
+:file:`examples/df/11-get_j_io_free.py`
+:file:`examples/df/40-precompute_df_integrals.py`
+:file:`examples/df/40-custom_df_hamiltonian.py`
+:file:`examples/df/41-df_integrals_gradients.py`
+:file:`examples/df/42-overwrite_get_jk.py`
+
 
 Program reference
 =================
@@ -321,6 +334,73 @@ df.addons
 ---------
 
 .. automodule:: pyscf.df.addons
+   :members:
+
+df.df
+---------
+
+.. automodule:: pyscf.df.df
+   :members:
+
+
+df.df_jk
+---------
+
+.. automodule:: pyscf.df.df_jk
+   :members:
+
+df.r_incore
+---------
+
+.. automodule:: pyscf.df.r_incore
+   :members:
+
+df.grad.rhf
+---------
+
+.. automodule:: pyscf.df.grad.rhf
+   :members:
+
+df.grad.uhf
+---------
+
+.. automodule:: pyscf.df.grad.uhf
+   :members:
+
+df.grad.rks
+---------
+
+.. automodule:: pyscf.df.grad.rks
+   :members:
+
+df.grad.uks
+---------
+
+.. automodule:: pyscf.df.grad.uks
+   :members:
+
+df.hessian.rhf
+---------
+
+.. automodule:: pyscf.df.hessian.rhf
+   :members:
+
+df.hessian.uhf
+---------
+
+.. automodule:: pyscf.df.hessian.uhf
+   :members:
+
+df.hessian.rks
+---------
+
+.. automodule:: pyscf.df.hessian.rks
+   :members:
+
+df.hessian.uks
+---------
+
+.. automodule:: pyscf.df.hessian.uks
    :members:
 
 
