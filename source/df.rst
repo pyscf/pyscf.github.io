@@ -323,4 +323,71 @@ df.addons
 .. automodule:: pyscf.df.addons
    :members:
 
+df.df
+---------
+
+.. automodule:: pyscf.df.df
+   :members:
+
+
+df.df_jk
+---------
+
+.. automodule:: pyscf.df.df_jk
+   :members:
+
+df.r_incore
+---------
+
+.. automodule:: pyscf.df.r_incore
+   :members:
+
+df.grad.rhf
+---------
+
+.. automodule:: pyscf.df.grad.rhf
+   :members:
+
+df.grad.uhf
+---------
+
+.. automodule:: pyscf.df.grad.uhf
+   :members:
+
+df.grad.rks
+---------
+
+.. automodule:: pyscf.df.grad.rks
+   :members:
+
+df.grad.uks
+---------
+
+.. automodule:: pyscf.df.grad.uks
+   :members:
+
+df.hessian.rhf
+---------
+
+.. automodule:: pyscf.df.hessian.rhf
+   :members:
+
+df.hessian.uhf
+---------
+
+.. automodule:: pyscf.df.hessian.uhf
+   :members:
+
+df.hessian.rks
+---------
+
+.. automodule:: pyscf.df.hessian.rks
+   :members:
+
+df.hessian.uks
+---------
+
+.. automodule:: pyscf.df.hessian.uks
+   :members:
+
 
