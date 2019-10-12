@@ -3,6 +3,7 @@ dftd3 --- DFT plus Dispersion Correction
 An interface to libdftd3:
 https://github.com/cuanto/libdftd3
 A minimal example for this::
+
     from pyscf import gto,scf,dftd3
     mol = gto.Mole()
     mol.atom = ''' O    0.00000000    0.00000000   -0.11081188
