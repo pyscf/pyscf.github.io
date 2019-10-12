@@ -34,10 +34,16 @@ The list of modules described in this chapter is:
 .. toctree::
 
    pbc/gto.rst
+   pbc/ao2mo.rst
    pbc/scf.rst
    pbc/dft.rst
    pbc/df.rst
+   pbc/tdscf.rst
+   pbc/mp.rst
+   pbc/ci.rst
    pbc/cc.rst
+   pbc/mpicc.rst
    pbc/tools.rst
    pbc/mix_mol.rst
    pbc/prop.rst
+   pbc/gw.rst
