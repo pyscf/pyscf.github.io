@@ -42,3 +42,4 @@ uks
 ----
 
 .. automodule:: pyscf.prop.nmr.uks
+   :members:    

@@ -65,6 +65,12 @@ VASP CHGCAR
 .. automodule:: pyscf.tools.chgcar
    :members:
 
+Molpro to PySCF
+===============
+
+.. automodule:: pyscf.tools.Molpro2Pyscf
+   :members:
+
 chkfile
 ==========
 

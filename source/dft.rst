@@ -4,6 +4,25 @@ dft --- Density functional theory
 .. module:: dft
 The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`.
 
+
+Examples
+========
+
+Relevant Examples:
+:file:`examples/pbc/00-simple_dft.py`
+:file:`examples/pbc/02-gks.py`
+:file:`examples/pbc/11-grid_scheme.py`
+:file:`examples/pbc/12-camb3lyp.py`
+:file:`examples/pbc/13-rsh_dft.py`
+:file:`examples/pbc/21-x2c.py`
+:file:`examples/pbc/23-decorate_scf.py`
+:file:`examples/pbc/24-custom_xc_functional.py`
+:file:`examples/pbc/24-define_xc_functional.py`
+:file:`examples/pbc/32-broken_symmetry_dft.py`
+:file:`examples/pbc/32-xcfun_as_default.py`
+:file:`examples/pbc/33-nlc_functionals.py`
+
+
 Customizing XC functional
 =========================
 

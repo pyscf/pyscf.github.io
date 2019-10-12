@@ -1,6 +1,13 @@
 scf --- Mean-field methods
 **************************
 
+
+Examples
+========
+
+Relevant examples
+:file:`examples/scf/`
+
 .. module:: scf
    :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
 
