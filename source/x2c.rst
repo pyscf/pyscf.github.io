@@ -1,6 +1,26 @@
 x2c --- exact-two-component approach
 ************************************
 
+An example to apply scalar relativistic effects by decorating the scf object with module :mod:`x2c` is shown as following::
+
+    from pyscf import gto
+    from pyscf import scf
+    mol = gto.M(
+        verbose = 0,
+        atom = '''8  0  0.     0
+                  1  0  -0.757 0.587
+                  1  0  0.757  0.587''',
+        basis = 'ccpvdz',
+    )
+    mf = scf.RHF(mol).x2c().run()
+    mol.spin = 1
+    mol.charge = 1
+    mol.build(0, 0)
+    mf = scf.UKS(mol).x2c1e()
+    energy = mf.kernel()
+
+More examples can be find here:
+
 Examples
 ========
 
