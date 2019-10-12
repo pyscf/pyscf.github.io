@@ -1,5 +1,8 @@
-lo --- Orbital localization
-***************************
+lo --- Orbital localization and analysis tools 
+**********************************************
+
+The :mod:`lo` module implements various orbital localizations, such
+as intrinsic atomic orbitals and natural atomic orbitals.
 
 Examples
 ========

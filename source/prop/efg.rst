@@ -15,7 +15,7 @@ Program reference
 dhf
 ------
 
-.. automodule:: pyscf.prop.efg.dgf
+.. automodule:: pyscf.prop.efg.dhf
       :members:
 
 rhf

@@ -1,6 +1,9 @@
 magnetizability  ---
 *******
 
+The :mod:`magnetizability` module implements magetizabilities
+for mean-field wavefunctions.
+
 Examples
 ========
 

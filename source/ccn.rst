@@ -1,6 +1,13 @@
 ccn --- Auto-Generated Coupled-Cluster Equations of Arbitrary Order
 **********************************
 
+.. module:: ccn
+   :synopsis: Arbitrary order coupled-cluster methods
+	      
+The :mod:`ccn` module implements arbitrary order coupled-cluster equations.
+See :mod:`cc` for standard coupled-cluster implementations
+up to perturbative triples.
+
 Examples
 ========
 

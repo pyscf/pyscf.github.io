@@ -1,6 +1,9 @@
 gtensor ---
 **************
 
+The :mod:`gtensor` module computes electronic g tensors for
+mean-field wavefunctions.
+
 Examples
 ========
 

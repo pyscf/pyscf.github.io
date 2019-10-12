@@ -1,6 +1,9 @@
 doci --- Doubly occupied configuration interaction
 **********************************
 
+.. module:: doci
+The :mod:`doci` implements doubly-occupied configuration interaction.
+
 Examples
 ========
 

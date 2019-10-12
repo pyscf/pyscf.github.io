@@ -1,9 +1,55 @@
 scf --- Mean-field methods
 **************************
 
+
+Examples
+========
+
+Relevant examples
+:file:`examples/scf/00-simple_hf.py`
+:file:`examples/scf/01-h2o.py`
+:file:`examples/scf/02-ghf.py`
+:file:`examples/scf/02-rohf_uhf.py`
+:file:`examples/scf/03-level_shift.py`
+:file:`examples/scf/04-dirac_hf.py`
+:file:`examples/scf/05-breit_gaunt.py`
+:file:`examples/scf/10-glycine.py`
+:file:`examples/scf/11-linear_dep.py`
+:file:`examples/scf/12-fast_hf.py`
+:file:`examples/scf/13-symmetry.py`
+:file:`examples/scf/15-initial_guess.py`
+:file:`examples/scf/16-h2_scan.py`
+:file:`examples/scf/17-stability.py`
+:file:`examples/scf/20-density_fitting.py`
+:file:`examples/scf/21-x2c.py`
+:file:`examples/scf/22-newton.py`
+:file:`examples/scf/23-decorate_scf.py`
+:file:`examples/scf/24-callback.py`
+:file:`examples/scf/24-tune_diis.py`
+:file:`examples/scf/30-scan_pes.py`
+:file:`examples/scf/31-cr_atom_rohf_tune_init_guess.py`
+:file:`examples/scf/31-v_atom_rohf.py`
+:file:`examples/scf/32-break_spin_symm.py`
+:file:`examples/scf/40-apply_electric_field.py`
+:file:`examples/scf/40-customizing_hamiltonian.py`
+:file:`examples/scf/41-hf_with_given_densityfit_ints.py`
+:file:`examples/scf/42-remove_linear_dep.py`
+:file:`examples/scf/43-custom_get_jk.py`
+:file:`examples/scf/50-mom-deltaSCF.py`
+:file:`examples/scf/51-elecoup_mom.py`
+:file:`examples/scf/52-dynamically_control_level_shift.py`
+:file:`examples/scf/53-dynamic_sz.py`
+:file:`examples/scf/54-fractional_occupancy.py`
+:file:`examples/scf/55-overload_convergence_criteria.py`
+:file:`examples/scf/56-h2_symm_breaking.py`
+:file:`examples/scf/14-restart.py`
+:file:`examples/scf/70-background_and_hot_tuning.py`
+:file:`examples/scf/71-patch_scf_kernel.py`
+
 .. module:: scf
    :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
 
+The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
 
 Stability analysis
 ==================
@@ -241,12 +287,65 @@ Non-relativistic Hartree-Fock
 .. automodule:: pyscf.scf.uhf_symm
    :members:
 
+----------
+
+.. automodule:: pyscf.scf.atom_hf
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf.cphf
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf.ghf
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf.ghf_symm
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf.rohf
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf.ucphf
+   :members:
+
+----------
+
+.. automodule:: pyscf.scf._vhf
+   :members:
+
+
+
+
+
+
+
+
+
+
+
+
 
 Relativistic Hartree-Fock
 -------------------------
 
 .. automodule:: pyscf.scf.dhf
    :members:
+
+.. automodule:: pyscf.scf.x2c
+   :members:
+
+
+
+
 
 
 addons
@@ -264,4 +363,38 @@ addons
 
 .. automodule:: pyscf.scf.diis
    :members:
+
+jk
+----------
+
+.. automodule:: pyscf.scf.jk
+   :members:
+
+newton_ah
+----------
+
+.. automodule:: pyscf.scf.newton_ah
+   :members:
+
+stability
+----------
+
+.. automodule:: pyscf.scf.stability
+   :members:
+
+stability_slow
+----------
+
+.. automodule:: pyscf.scf.stability_slow
+   :members:
+
+
+
+
+
+
+
+
+
+
 

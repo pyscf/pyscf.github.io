@@ -1,6 +1,28 @@
 dft --- Density functional theory
 *********************************
 
+.. module:: dft
+The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`.
+
+
+Examples
+========
+
+Relevant Examples:
+:file:`examples/pbc/00-simple_dft.py`
+:file:`examples/pbc/02-gks.py`
+:file:`examples/pbc/11-grid_scheme.py`
+:file:`examples/pbc/12-camb3lyp.py`
+:file:`examples/pbc/13-rsh_dft.py`
+:file:`examples/pbc/21-x2c.py`
+:file:`examples/pbc/23-decorate_scf.py`
+:file:`examples/pbc/24-custom_xc_functional.py`
+:file:`examples/pbc/24-define_xc_functional.py`
+:file:`examples/pbc/32-broken_symmetry_dft.py`
+:file:`examples/pbc/32-xcfun_as_default.py`
+:file:`examples/pbc/33-nlc_functionals.py`
+
+
 Customizing XC functional
 =========================
 
@@ -66,7 +88,7 @@ function is patched to the numerical integration class :attr:`mf._numint`
 dynamically.
 
 More examples of customizing DFT XC functional can be found in
-:file:`examples/dft/24-custom_xc_functional.py` and 
+:file:`examples/dft/24-custom_xc_functional.py` and
 :file:`examples/dft/24-define_xc_functional.py`.
 
 
@@ -79,11 +101,44 @@ Program reference
 .. automodule:: pyscf.dft.uks
    :members:
 
+.. automodule:: pyscf.dft.gks
+   :members:
+
+.. automodule:: pyscf.dft.gks_symm
+   :members:
+
+.. automodule:: pyscf.dft.rks_symm
+   :members:
+
+.. automodule:: pyscf.dft.uks_symm
+   :members:
+
+.. automodule:: pyscf.dft.gen_lib_xc_param
+   :members:
+
+.. automodule:: pyscf.dft.gen_xcfun_param
+   :members:
+
+.. automodule:: pyscf.dft.libxc
+   :members:
+
+.. automodule:: pyscf.dft.dks
+   :members:
+
+.. automodule:: pyscf.dft.radi
+   :members:
+
 .. automodule:: pyscf.dft.gen_grid
    :members:
 
 .. automodule:: pyscf.dft.numint
    :members:
 
-.. automodule:: pyscf.dft.libxc
+.. automodule:: pyscf.dft.vxc
+   :members:
+
+.. automodule:: pyscf.dft.xcfun
+   :members:
+
+.. automodule:: pyscf.dft.xc
    :members:

@@ -1,6 +1,9 @@
 freq ---
 *******
 
+The :mod:`freq` module handles vibrational frequencies for
+mean-field wavefunctions.
+
 Examples
 ========
 
