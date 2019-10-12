@@ -1,5 +1,5 @@
-shciscf --- heat bath selected ci solver for SCF
-************************************************
+shciscf --- Semistochastic Heat Bath Configuration Interaction for SCF
+**********************************************************************
 
 
 Examples
