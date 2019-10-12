@@ -16,7 +16,7 @@ Program reference
 
 kccsd_rhf
 ---------
-
+.. .. autoclass:: pyscf.pbc.mpicc.kccsd_rhf.RCCSD
 .. .. automodule:: pyscf.pbc.mpicc.kccsd_rhf
       :members:
 

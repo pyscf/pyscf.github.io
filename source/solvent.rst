@@ -6,6 +6,7 @@ Examples
 
 Relevant examples
 :file:`examples/solvent/00-scf_with_ddcosmo.py`
+:file:`examples/solvent/01-casscf_with_ddcosmo.py`
 :file:`examples/solvent/02-casci_with_ddcosmo.py`
 :file:`examples/solvent/03-ccsd_with_ddcosmo.py`
 :file:`examples/solvent/20-state_specific_casci.py`

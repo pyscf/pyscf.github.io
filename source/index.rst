@@ -20,6 +20,11 @@ with the following principles:
 
 * 90/10 functional/OOP (unless performance critical, functions are pure).
 
+In addition to the core libraries, PySCF supports a rich
+ecosystem of plugins and external modules that, for example, provide
+MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits etc. See :ref:'.._installing_plugin:'.
+
+  
 Contents
 --------
 

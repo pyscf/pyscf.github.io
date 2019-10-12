@@ -23,13 +23,16 @@ Program reference
 
 ccsd
 ----
+.. .. autoclass:: pyscf.pbc.cc.rccsd.RCCSD
+.. .. autoclass:: pyscf.pbc.cc.rccsd.UCCSD
+.. .. autoclass:: pyscf.pbc.cc.rccsd.GCCSD
 
 .. .. automodule:: pyscf.pbc.cc.ccsd
       :members:
 
 kccsd
 -----
-
+.. .. autoclass:: pyscf.pbc.cc.kccsd.GCCSD
 .. .. automodule:: pyscf.pbc.cc.kccsd
       :members:
 
@@ -37,12 +40,14 @@ kccsd
 kccsd_rhf
 ---------
 
+.. .. autoclass:: pyscf.pbc.cc.kccsd.RCCSD
 .. .. automodule:: pyscf.pbc.cc.kccsd_rhf
       :members:
 
 kccsd_uhf
 ---------
 
+.. .. autoclass:: pyscf.pbc.cc.kccsd.KUCCSD
 .. .. automodule:: pyscf.pbc.cc.kccsd_uhf
       :members:
 
@@ -85,12 +90,20 @@ kintermediates_uhf
 eom_kccsd_ghf
 -------------
 
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMIP
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMEA
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMIP_Ta
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMEA_Ta
 .. .. automodule:: pyscf.pbc.cc.eom_kccsd_ghf
       :members:
 
 eom_kccsd_rhf
 -------------
 
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMIP
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMEA
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMIP_Ta
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMEA_Ta
 .. .. automodule:: pyscf.pbc.cc.eom_kccsd_rhf
       :members:
 
@@ -107,7 +120,9 @@ eom_kccsd_rhf_ea
       :members:
 
 eom_kccsd_uhf
--------------
 
+-------------
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMIP
+.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMEA
 .. .. automodule:: pyscf.pbc.cc.eom_kccsd_uhf
       :members:
