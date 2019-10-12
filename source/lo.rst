@@ -2,7 +2,26 @@ lo --- Orbital localization and analysis tools
 **********************************************
 
 The :mod:`lo` module implements various orbital localizations, such
-as intrinsic atomic orbitals and natural atomic orbitals.
+as intrinsic atomic orbitals and natural atomic orbitals. 
+
+For example, to obtain the natural atomic orbital coefficients (in terms
+of the original atomic orbitals)::
+
+    import numpy
+    from pyscf import gto, scf, lo
+    
+    x = .63
+    mol = gto.M(atom=[['C', (0, 0, 0)],
+                      ['H', (x ,  x,  x)],
+                      ['H', (-x, -x,  x)],
+                      ['H', (-x,  x, -x)],
+                      ['H', ( x, -x, -x)]],
+                basis='ccpvtz')
+    mf = scf.RHF(mol).run()
+    
+    # C matrix stores the AO to localized orbital coefficients
+    C = lo.orth_ao(mf, 'nao')
+        
 
 Examples
 ========
