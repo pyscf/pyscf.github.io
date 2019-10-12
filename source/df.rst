@@ -295,6 +295,19 @@ CASSCF object::
   object.  The resultant SCF object is a DFHF object.  See more examples in
   ``examples/scf/23-decorate_scf.py``
 
+Examples
+========
+
+Relevant examples
+:file:`examples/df/00-with_df.py`
+:file:`examples/df/01-auxbasis.py`
+:file:`examples/df/10-access_df_integrals.py`
+:file:`examples/df/11-get_j_io_free.py`
+:file:`examples/df/40-precompute_df_integrals.py`
+:file:`examples/df/40-custom_df_hamiltonian.py`
+:file:`examples/df/41-df_integrals_gradients.py`
+:file:`examples/df/42-overwrite_get_jk.py`
+
 
 Program reference
 =================
