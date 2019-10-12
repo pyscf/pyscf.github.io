@@ -4,9 +4,20 @@ grad --- Analytical nuclear gradients
 .. module:: grad
 	    
 The :mod:`grad` module provides gradients for mean-field and correlated methods.
-For example, the HF gradient can be computed by
+For example, the RHF gradient can be computed by::
 
-.. literalinclude:: ../../examples/grad/01-scf_grad.py 
+    from pyscf import gto, scf
+    mol = gto.M(
+        atom = [
+            ['O' , 0. , 0.     , 0],
+            ['H' , 0. , -0.757 , 0.587],
+            ['H' , 0. ,  0.757 , 0.587]],
+            basis = '631g')
+    mf = scf.RHF(mol)
+    mf.kernel()
+    g = mf.nuc_grad_method()
+    g.kernel()
+
  
 Examples
 ========
