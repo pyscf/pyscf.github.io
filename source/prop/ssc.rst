@@ -13,7 +13,6 @@ To compute the nuclear spin-spin coupling constants, one could follow the follow
     
     mf = scf.UHF(mol).run()
     ssc.UHF(mf).kernel()
-    
     mf = dft.UKS(mol).set(xc='b3lyp').run()
     ssc.UKS(mf).kernel()
     
