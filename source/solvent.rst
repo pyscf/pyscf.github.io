@@ -6,6 +6,22 @@ solvent --- Solvent methods
 The :mod:`solvent` implements the domain-decomposition COSMO solvent model
 for mean-field and correlated methods.
 
+To run a mean-field calculation with the implicit solvent model, one can try the
+following example::
+
+    from pyscf import gto, scf, dft
+    from pyscf import solvent
+    mol = gto.M(atom='''
+    C        0.000000    0.000000             -0.542500
+    O        0.000000    0.000000              0.677500
+    H        0.000000    0.9353074360871938   -1.082500
+    H        0.000000   -0.9353074360871938   -1.082500
+                ''',
+                verbose = 4)
+    mf = scf.RHF(mol)
+    solvent.ddCOSMO(mf).run()
+
+
 Examples
 ========
 
