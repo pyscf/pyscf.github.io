@@ -5,7 +5,8 @@ fci --- Full configuration interaction
 
 The :mod:`fci` module implements Full Configuration Interaction. Different
 implementations are available for different Hamiltonian and spin symmetries.
-One example for FCI calculation on HF::
+One example for FCI calculation on HF molecule::
+
     from pyscf import gto, scf, fci
     mol = gto.Mole(atom = 'H 0 0 0; F 0 0 1.1', basis= '6-31g', symmetry=True)
     myhf = scf.RHF(mol)

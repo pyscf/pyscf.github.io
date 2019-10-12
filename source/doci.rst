@@ -3,6 +3,7 @@ doci --- Doubly occupied configuration interaction
 
 .. module:: doci
 The :mod:`doci` implements doubly-occupied configuration interaction. A minimal example on N2 calculation::
+
     from pyscf import gto, doci
     mol = gto.M(atom='N 0 0 0; N 0 0 2.', basis='6-31g')
     mf = mol.RHF().run()
