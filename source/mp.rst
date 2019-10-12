@@ -1,6 +1,9 @@
 mp --- MP2
 **********
 
+The :mod:`mp` module implements 2nd order Moller-Plesset
+perturbation theory from various mean-field references.
+
 Program reference
 =================
 

@@ -2,7 +2,10 @@ solvent --- Solvent methods
 ***************************
 .. module:: solvent
    :synopsis: Solvation via domain-decomposition COSMO for mean-field and correlated methods
-      
+
+The :mod:`solvent` implements the domain-decomposition COSMO solvent model
+for mean-field and correlated methods.
+
 Examples
 ========
 

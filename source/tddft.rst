@@ -1,6 +1,8 @@
 tddft --- Time dependent density functional theory
 **************************************************
 
+The :mod:`tddft` module implements TDSCF methods.
+
 Examples
 ========
 

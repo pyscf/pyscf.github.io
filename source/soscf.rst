@@ -1,6 +1,10 @@
 soscf --- Second order Hartree-Fock solver
 ******************************************
 
+.. module:: soscf
+
+The :mod:`soscf` module implements second-order SCF optimization.
+
 Program reference
 =================
 

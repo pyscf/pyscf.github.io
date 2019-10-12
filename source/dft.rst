@@ -2,7 +2,7 @@ dft --- Density functional theory
 *********************************
 
 .. module:: dft
-The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :ref:`.. module:: scf`.
+The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`.
 
 Customizing XC functional
 =========================

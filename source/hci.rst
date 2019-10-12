@@ -3,7 +3,7 @@ hci --- Interface to Heat-Bath selective CI
 
 The :mod:`HCI` module is a native implementation
 of the Heat-bath selected CI algorithm, where selection is done based
-on strings rather than determinants. See also :ref:`.. cornell_shci`.
+on strings rather than determinants. See also :mod:`cornell_shci`.
 
 Examples
 ========

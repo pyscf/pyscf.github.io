@@ -1,6 +1,10 @@
 semiempirical --- Semiempirical methods
 ***************************************
 
+.. module:: semiempirical
+
+The :mod:`semiempirical` module implements several semi-empirical Hamiltoniasn, including MINDO and AM1.
+
 Program reference
 =================
 
