@@ -5,6 +5,10 @@ An interface to DMRG and DMRG-SCF/CASSCF. The DMRG calculation
  must be carried out with an external solver, such as
  Block (https://sanshar.github.io/Block) or StackBlock (https://github.com/sanshar/StackBlock) or CheMPS2 (https://github.com/SebWouters/CheMPS2).
  See also :mod:`mcscf`.
+
+To perform a DMRG CASSCF calculation, first modify the pyscf/dmrgscf/settings.py
+and set the correct path for DMRG solver, and then run e.g.
+`examples/dmrg/01-dmrg_casscf_with_block.py`
   
 Examples
 ========
