@@ -1,6 +1,13 @@
 sgx --- Pseudo-spectral methods (COSX, PS, SN-K)
 ************************************************
 
+Examples
+========
+
+Relevant examples
+:file:`examples/sgx/00-simple_sgx.py`
+
+
 Program reference
 =================
 
