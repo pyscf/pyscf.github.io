@@ -3,7 +3,7 @@
 gto --- Molecular structure and GTO basis
 *****************************************
 
-This module provides the functions to parse the command line options,
+The :mod:`gto` module provides the functions to parse the command line options,
 the molecular geometry and format the basic functions for `libcint`
 integral library.  In :file:`mole`, a basic class :class:`Mole` is
 defined to hold the global parameters, which will be used throughout the
