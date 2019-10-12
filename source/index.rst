@@ -58,6 +58,11 @@ Contents
    code-rule.rst
    version.rst
 
+   gw.rst
+   hci.rst
+   sgx.rst
+   semiempirical.rst   
+
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.4.pdf>`_ of this manual.
