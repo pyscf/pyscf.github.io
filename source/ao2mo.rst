@@ -1,6 +1,12 @@
 ao2mo --- Integral transformations
 **********************************
 
+.. module:: ao2mo
+   :synopsis: transformations from AO to MO integrals for
+      various permutational and spin symmetries.
+
+The :mod:`ao2mo` module implements transformations from AO to MO integrals for various permutational and spin symmetries.
+
 Examples
 ========
 

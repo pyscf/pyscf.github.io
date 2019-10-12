@@ -1,6 +1,10 @@
 grad --- Analytical nuclear gradients
 *************************************
 
+.. module:: grad
+	    
+The :mod:`grad` module provides gradients for mean-field and correlated methods.
+	    
 Examples
 ========
 
