@@ -1,6 +1,9 @@
 geomopt --- Geometry optimization
 **********************************
 
+The :mod:`geomopt` module implements geometry optimization via
+interfaces to geomeTRIC (https://github.com/leeping/geomeTRIC) and PyBerny (https://github.com/azag0/pyberny).
+
 Examples
 ========
 

@@ -1,6 +1,11 @@
 gw --- Molecular G0W0
 *********************
 
+..module:: gw
+
+The :mod:`gw` module provides an exact :math:`N^6` scaling GW
+implementation for eigenvalues.
+
 Program reference
 =================
 

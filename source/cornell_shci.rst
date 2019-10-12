@@ -1,8 +1,9 @@
 cornell_shci --- Interface to Fast Semistochastic Heat Bath Configuration Interaction (SHCI)
 **********************************
 
-An interface to cornell Arrow Program: Fast Semistochastic Heat Bath Configuration Interaction (SHCI):
-https://github.com/QMC-Cornell/shci
+.. module:: cornell_shci
+	    
+An interface to the Cornell Arrow Program: Fast Semistochastic Heat Bath Configuration Interaction (SHCI): https://github.com/QMC-Cornell/shci
 
 Examples
 ========

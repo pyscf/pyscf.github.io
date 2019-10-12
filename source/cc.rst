@@ -4,7 +4,7 @@ cc --- Coupled cluster
 **********************
 
 .. module:: cc
-   :synopsis: Computing coupled cluster energies and properties
+   :synopsis: Coupled cluster energies and properties
 .. sectionauthor:: Qiming Sun <osirpt.sun@gmail.com>.
 
 The :mod:`cc` module implements the coupled cluster (CC) model to compute
