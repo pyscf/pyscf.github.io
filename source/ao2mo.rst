@@ -24,6 +24,14 @@ incore
 .. automodule:: pyscf.ao2mo.incore
    :members:
 
+
+semi_incore
+------
+
+.. automodule:: pyscf.ao2mo.semi_incore
+   :members:
+
+
 outcore
 -------
 

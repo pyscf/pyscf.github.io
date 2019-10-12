@@ -164,6 +164,16 @@ Enabling symmetry in other module
   Point group symmetry are not supported in CCSD, MP2.
 
 
+Examples
+========
+
+Relevant examples
+:file:`examples/symm/30-guess_symmetry.py`
+:file:`examples/symm/31-symmetrize_space.py`
+:file:`examples/symm/32-symmetrize_natural_orbital.py`
+:file:`examples/symm/33-lz_adaption.py`
+
+
 Program reference
 =================
 
@@ -174,7 +184,7 @@ geom
 .. automodule:: pyscf.symm.geom
    :members:
 
-basis
+Symmtry adapted basis
 -----
 
 .. automodule:: pyscf.symm.basis
@@ -194,4 +204,21 @@ Clebsch Gordon coefficients
 .. automodule:: pyscf.symm.cg
    :members:
 
+Parameters
+------
 
+.. automodule:: pyscf.symm.param
+   :members:
+
+Spherical harmonics
+------
+
+.. automodule:: pyscf.symm.sph
+   :members:
+ 
+Wigner rotation Dmatrix
+------
+
+.. automodule:: pyscf.symm.Dmatrix
+   :members:
+ 

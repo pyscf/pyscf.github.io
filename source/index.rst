@@ -33,56 +33,51 @@ Contents
    :numbered:
 
    overview.rst
-   tutorial.rst
+   version.rst
    install.rst
+   code-rule.rst
+   benchmark.rst
+   tutorial.rst
    gto.rst
-   lib.rst
-   scf.rst
    ao2mo.rst
-   mcscf.rst
-   fci.rst
-   symm.rst
    df.rst
+   symm.rst
+   scf.rst
    dft.rst
-   tddft.rst
-   cc.rst
-   ci.rst
-   dmrgscf.rst
-   fciqmcscf.rst
-   tools.rst
+   dftd3.rst
    grad.rst
    hessian.rst
-   pbc.rst
-   nao.rst
-   lo.rst
-   advanced.rst
-   qmmm.rst
-   mrpt.rst
-
-   benchmark.rst
-   code-rule.rst
-   version.rst
-
-   gw.rst
-   hci.rst
-   sgx.rst
-   semiempirical.rst   
-   mp.rst
-   semiempirical.rst
-   solven.rst
    soscf.rst
-   x2c.rst
-   icmpspt.rst
-   ccn.rst
-   cornell_shci.rst
-   dftd3.rst
-   dmrgscf.rst
+   sgx.rst
+   tddft.rst
+   mp.rst
+   ci.rst
    doci.rst
-   geomopt.rst
+   cc.rst
+   gw.rst
+   fci.rst
+   hci.rst
+   cornell_shci.rst
+   mcscf.rst
+   dmrgscf.rst
+   fciqmcscf.rst
+   mrpt.rst
+   icmpspt.rst
+   x2c.rst
+   pbc.rst
+   qmmm.rst
    solvent.rst
+   semiempirical.rst   
+   geomopt.rst
+   lo.rst
+   tools.rst
+   advanced.rst
+   ccn.rst
+   nao.rst
+   lib.rst
 
 You can also download the `PDF version
-<http://www.sunqm.net/pyscf/files/pdf/PySCF-1.4.pdf>`_ of this manual.
+<http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
 
 
 .. Indices and tables
