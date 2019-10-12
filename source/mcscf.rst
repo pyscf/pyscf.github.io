@@ -3,6 +3,13 @@ mcscf --- Multi-configurational self-consistent field
 
 .. automodule:: pyscf.mcscf
 
+The :mod:`mcscf` implements orbital optimization for
+MCSCF and CASSCF. 1-step (combined orbital and wavefunction
+optimization) and 2-step algorithms (alternating orbital and wavefunction
+optimization) are available. Different kinds of active space solvers can
+be used with this module.
+
+
 CASSCF active space solver
 ==========================
 

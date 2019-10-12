@@ -1,6 +1,12 @@
 tools
 *****
 
+.. module:: tools
+
+The :mod:`tools` module contains useful tools to dump out integrals,
+orbital densities, cube files, and other things to interface with
+external utilities.
+
 Examples
 ========
 
