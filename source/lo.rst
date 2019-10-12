@@ -18,6 +18,8 @@ Foster-Boys, Edmiston-Ruedenberg, Pipek-Mezey localization
 
 Meta-Lowdin
 ===========
+.. automodule:: pyscf.lo.orth
+   :members:
 
 
 Natural atomic orbitals
@@ -30,4 +32,10 @@ Intrinsic Atomic Orbitals
 =========================
 
 .. automodule:: pyscf.lo.iao
+   :members:
+
+Intrinsic Bond Orbitals
+=========================
+
+.. automodule:: pyscf.lo.ibo
    :members:
