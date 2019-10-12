@@ -2,8 +2,12 @@ dft --- Density functional theory
 *********************************
 
 .. module:: dft
-The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`.
-
+The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`. A minimal example::
+     from pyscf import gto, dft
+     mol = gto.M(atom='H  0  0  0; F  0.9  0  0', basis='sto3g')
+     mf = dft.RKS(mol)
+     mf.xc = 'lda,vwn'
+     mf.kernel()
 
 Examples
 ========

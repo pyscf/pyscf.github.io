@@ -5,7 +5,12 @@ ao2mo --- Integral transformations
    :synopsis: transformations from AO to MO integrals for
       various permutational and spin symmetries.
 
-The :mod:`ao2mo` module implements transformations from AO to MO integrals for various permutational and spin symmetries.
+The :mod:`ao2mo` module implements transformations from AO to MO integrals for various permutational and spin symmetries. A simple example to perform integral transformation::
+    mol = gto.Mole(atom='H 0 0 0; F 0 0 1.1', basis = 'ccpvdz')
+    myhf = scf.RHF(mol)
+    myhf.kernel()
+    orb = myhf.mo_coeff
+    eri_4fold = ao2mo.kernel(mol, orb)
 
 Examples
 ========
