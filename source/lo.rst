@@ -13,7 +13,9 @@ Relevant examples
 :file:`examples/local_orb/05-ibo_periodic_diamond_cubegen.py`
 :file:`examples/local_orb/10-modify_valence_space_for_meta_lowdin.py`
 :file:`examples/local_orb/40-hubbard_model_PM_localization.py`
-
+:file:`examples/local_orb/nlocal.py`
+:file:`examples/local_orb/pmloc.py`
+:file:`examples/local_orb/ulocal.py`
 
 Program reference
 =================

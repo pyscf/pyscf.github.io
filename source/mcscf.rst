@@ -1,6 +1,55 @@
 mcscf --- Multi-configurational self-consistent field
 *****************************************************
 
+Examples
+========
+
+Relevant examples
+:file:`examples/mcscf/00-simple_casci.py`
+:file:`examples/mcscf/00-simple_casscf.py`
+:file:`examples/mcscf/01-for_expensive_fci.py`
+:file:`examples/mcscf/03-natural_orbital.py`
+:file:`examples/mcscf/04-density_matrix.py`
+:file:`examples/mcscf/10-define_cas_space.py`
+:file:`examples/mcscf/11-casscf_with_uhf_uks.py`
+:file:`examples/mcscf/12-c2_triplet_from_singlet_hf.py`
+:file:`examples/mcscf/13-load_chkfile.py`
+:file:`examples/mcscf/13-restart.py`
+:file:`examples/mcscf/14-project_init_guess.py`
+:file:`examples/mcscf/15-state_average.py`
+:file:`examples/mcscf/15-state_specific.py`
+:file:`examples/mcscf/15-transition_dm.py`
+:file:`examples/mcscf/16-density_fitting.py`
+:file:`examples/mcscf/17-approx_orbital_hessian.py`
+:file:`examples/mcscf/18-o2_spatial_spin_symmetry.py`
+:file:`examples/mcscf/18-spatial_spin_symmetry.py`
+:file:`examples/mcscf/19-frozen_core.py`
+:file:`examples/mcscf/20-change_symmetry.py`
+:file:`examples/mcscf/21-active_space_symmetry.py`
+:file:`examples/mcscf/21-nosymhf_then_symcasscf.py`
+:file:`examples/mcscf/22-x2c.py`
+:file:`examples/mcscf/23-local_spin.py`
+:file:`examples/mcscf/33-make_init_guess`
+:file:`examples/mcscf/34-init_guess_localization.py`
+:file:`examples/mcscf/40-customizing_hamiltonian.py`
+:file:`examples/mcscf/41-mcscf_custom_df_hamiltonian.py`
+:file:`examples/mcscf/41-state_average.py`
+:file:`examples/mcscf/42-compare_cas_space.py`
+:file:`examples/mcscf/43-avas.py`
+:file:`examples/mcscf/43-dmet_cas.py`
+:file:`examples/mcscf/44-mcscf_active_space_hamiltonian.py`
+:file:`examples/mcscf/50-casscf_then_dmrgscf.py`
+:file:`examples/mcscf/50-casscf_with_selected_ci.py`
+:file:`examples/mcscf/50-cornell_shci_casscf.py`
+:file:`examples/mcscf/50-dmrgscf_with_block.py`
+:file:`examples/mcscf/51-o2_triplet_by_various_fci.py`
+:file:`examples/mcscf/60-uhf_based_ucasscf.py`
+:file:`examples/mcscf/61-rcas_vs_ucas`
+:file:`examples/mcscf/70-casscf_hot_tuning.py`
+:file:`examples/mcscf/70-casscf_optimize_scheduler.py`
+
+
+
 .. automodule:: pyscf.mcscf
 
 CASSCF active space solver

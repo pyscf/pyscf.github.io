@@ -30,67 +30,67 @@ casci
 
 
 casscf
------
+------
 
 .. automodule:: pyscf.grad.casscf
    :members:
  
 ccsd
------
+----
 
 .. automodule:: pyscf.grad.ccsd
    :members:
 
 ccsd_slow
------
+---------
 
 .. automodule:: pyscf.grad.ccsd_slow
    :members:
 
 ccsd_t
------
+------
 
 .. automodule:: pyscf.grad.ccsd_t
    :members:
 
 cisd
------
+----
 
 .. automodule:: pyscf.grad.cisd
    :members:
 
 dhf
------
+---
 
 .. automodule:: pyscf.grad.dhf
    :members:
 
 mp2
------
+---
 
 .. automodule:: pyscf.grad.mp2
    :members:
 
 rhf
------
+---
 
 .. automodule:: pyscf.grad.rhf
    :members:
 
 rks
------
+---
 
 .. automodule:: pyscf.grad.rks
    :members:
 
 rohf
------
+----
 
 .. automodule:: pyscf.grad.rohf
    :members:
 
 roks
------
+----
 
 .. automodule:: pyscf.grad.roks
    :members:
@@ -102,7 +102,7 @@ tdrhf
    :members:
 
 tdrhf_slow
------
+----------
 
 .. automodule:: pyscf.grad.tdrhf_slow
    :members:
@@ -132,7 +132,7 @@ uccsd
    :members:
 
 uccsd_t
------
+-------
 
 .. automodule:: pyscf.grad.uccsd_t
    :members:
@@ -144,19 +144,19 @@ ucisd
    :members:
 
 uhf
------
+---
 
 .. automodule:: pyscf.grad.uhf
    :members:
 
 uks
------
+---
 
 .. automodule:: pyscf.grad.
    :members:
 
 ump2
------
+----
 
 .. automodule:: pyscf.grad.
    :members:

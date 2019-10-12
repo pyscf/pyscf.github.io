@@ -9,6 +9,34 @@ integral library.  In :file:`mole`, a basic class :class:`Mole` is
 defined to hold the global parameters, which will be used throughout the
 package.
 
+Examples
+========
+
+Relevant examples
+:file:`examples/gto/00-input_mole.py`
+:file:`examples/gto/01-input_geometry.py`
+:file:`examples/gto/02-dump_input.py`
+:file:`examples/gto/03-ghost_atom.py`
+:file:`examples/gto/04-input_basis.py`
+:file:`examples/gto/05-input_ecp.py`
+:file:`examples/gto/06-load_mol_from_chkfile.py`
+:file:`examples/gto/07-nucmod.py`
+:file:`examples/gto/09-apply_scf.py`
+:file:`examples/gto/10-atom_info.py`
+:file:`examples/gto/11-basis_info.py`
+:file:`examples/gto/12-serialization.py`
+:file:`examples/gto/13-symmetry.py`
+:file:`examples/gto/20-ao_integrals.py`
+:file:`examples/gto/20-ao_integrals_sph_to_spinor.py`
+:file:`examples/gto/20-soc_ao_integrals.py`
+:file:`examples/gto/20-soc_ecp.py`
+:file:`examples/gto/21-concatenate_molecules.py`
+:file:`examples/gto/22-range_separated_coulomb.py`
+:file:`examples/gto/23-orbitals_cart2sph.py`
+:file:`examples/gto/24-ao_value_on_grid.py`
+:file:`examples/gto/25-multipole-integrals.py`
+:file:`examples/gto/30-read_molpro_orb.py`
+
 Input
 =====
 
