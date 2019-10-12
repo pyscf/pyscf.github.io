@@ -1,15 +1,20 @@
 semiempirical --- Semiempirical methods
 ***************************************
 
+Program reference
+=================
+
 .. automodule:: pyscf.semiempirical
 
 MINDO3
-======
+------
+
 .. automodule:: pyscf.semiempirical.mindo3
    :members:
 
 MINDO3 Gradient
-===============
+---------------
+
 .. automodule:: pyscf.semiempirical.rmindo3_grad
       :members:
 
@@ -18,7 +23,8 @@ MINDO3 Gradient
 
 
 AM1
-===
+---
+
 .. automodule:: pyscf.semiempirical.am1
    :members:
 
