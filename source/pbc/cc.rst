@@ -122,7 +122,6 @@ eom_kccsd_rhf_ea
       :members:
 
 eom_kccsd_uhf
-
 -------------
 .. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMIP
 .. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMEA
