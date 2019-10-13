@@ -25,8 +25,6 @@ ecosystem of plugins and external modules that, for example, provide
 MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits etc. See :ref:'.. _installing_plugin:'.
 
   
-Contents
---------
 
 .. toctree::
    :maxdepth: 2
@@ -38,17 +36,19 @@ Contents
    code-rule.rst
    benchmark.rst
    tutorial.rst
+
+Main modules
+------------
+
    gto.rst
    ao2mo.rst
    df.rst
    symm.rst
    scf.rst
    dft.rst
-   dftd3.rst
    grad.rst
    hessian.rst
    soscf.rst
-   sgx.rst
    tddft.rst
    mp.rst
    ci.rst
@@ -57,25 +57,33 @@ Contents
    gw.rst
    fci.rst
    hci.rst
-   cornell_shci.rst
    mcscf.rst
-   dmrgscf.rst
-   fciqmcscf.rst
    mrpt.rst
-   icmpspt.rst
    x2c.rst
    pbc.rst
    qmmm.rst
    solvent.rst
    semiempirical.rst   
-   geomopt.rst
    lo.rst
    tools.rst
-   advanced.rst
-   ccn.rst
-   nao.rst
-   lib.rst
 
+Other modules
+-------------
+   ccn.rst
+   advanced.rst
+   lib.rst
+   sgx.rst
+
+Interfaces
+----------
+   dftd3.rst
+   geomopt.rst
+   cornell_shci.rst
+   dmrgscf.rst
+   fciqmcscf.rst
+   icmpspt.rst
+   nao.rst
+   
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
 
