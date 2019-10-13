@@ -1,7 +1,11 @@
 scf --- Mean-field methods
 **************************
 
-To run a simple HF calculation with SCF, here is an example::
+.. module:: scf
+   :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
+
+The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
+To run a simple HF calculation with SCF::
 
     import pyscf
     mol = pyscf.M(
@@ -22,7 +26,6 @@ To run a simple HF calculation with SCF, here is an example::
     )
     myhf = scf.HF(mol)
     myhf.kernel()
-
 
 Examples
 ========
@@ -68,10 +71,6 @@ Relevant examples
 :file:`examples/scf/70-background_and_hot_tuning.py`
 :file:`examples/scf/71-patch_scf_kernel.py`
 
-.. module:: scf
-   :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
-
-The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
 
 Stability analysis
 ==================

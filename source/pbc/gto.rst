@@ -5,7 +5,7 @@ pbc.gto --- Crystal cell structure
 This module provides functions to setup the basic information of a PBC calculation.  The
 :mod:`pyscf.pbc.gto` module is analogous to the basic molecular :mod:`pyscf.gto` module.
 The :class:`Cell` class for crystal structure unit cells is defined in this module and is
-analogous to the basic molecular :class:`Mole` class.  Among other details, the basis set
+analogous to the basic molecular :class:`Mole` class.  Amongst other details, the basis set
 and pseudopotentials are parsed in this module.
 
 :class:`Cell` class
@@ -16,7 +16,7 @@ functionality as the :class:`Mole` object.  For example, one can use the :class:
 object to access the atomic structure, basis functions, pseudopotentials, and certain
 analytical periodic integrals.
 
-Similar to the input in a molecular calculation, one first creates a :class:`Cell` object.
+Similar to the input of a molecular calculation, one first creates a :class:`Cell` object.
 After assigning the crystal parameters, one calls :func:`build` to fully initialize the
 :class:`Cell` object.  A shortcut function :func:`M` is available at the module level to
 simplify the input.
@@ -25,16 +25,22 @@ simplify the input.
 
 Beyond the basic parameters :attr:`atom` and :attr:`basis`, one needs to set the unit cell
 lattice vectors :attr:`a` (a 3x3 array, where each row is a real-space primitive vector)
-and the numbers of grid points in the FFT-mesh in each positive direction :attr:`gs` (a
-length-3 list or 1x3 array); the total number of grid points is 2 :attr:`gs` +1.
+and the numbers of grid points in the FFT-mesh in each positive direction :attr:`mesh` (a
+length-3 list or 1x3 array).
+
+In the :class:`Cell` class, many parameters are determined automatically according to 
+the attribute :attr:`precision`, which likewise can be set manually or left to its default
+value (1e-8). The parameters determined by :attr:`precision` include :attr:`ke_cutoff`,
+:attr:`mesh`, :attr:`rcut`, :attr:`ew_cut` and :attr:`ew_eta`. These parameters can also be
+set manually by the user.
 
 In certain cases, it is convenient to choose the FFT-mesh density based on the kinetic
 energy cutoff.  The :class:`Cell` class offers an alternative attribute
 :attr:`ke_cutoff` that can be used to set the FFT-mesh.  If :attr:`ke_cutoff` is set and
-:attr:`gs` is ``None``, the :class:`Cell` initialization function will convert the
+:attr:`mesh` is ``None``, the :class:`Cell` initialization function will convert the
 :attr:`ke_cutoff` to the equivalent FFT-mesh 
 according to the relation :math:`\mathbf{g} = \frac{\sqrt{2E_{\mathrm{cut}}}}{2\pi}\mathbf{a}^T`
-and will overwrite the :attr:`gs` attribute.
+and will overwrite the :attr:`mesh` attribute.
 
 Many PBC calculations are best performed using pseudopotentials, which are set via
 the :attr:`pseudo` attribute.  Pseudopotentials alleviate the need for impractically
@@ -53,9 +59,7 @@ _pseudo
 Nuclear-nuclear interaction energies are evaluated by means of Ewald summation, which
 depends on three parameters: the truncation radius for real-space lattice sums
 :attr:`rcut`, the Gaussian model charge :attr:`ew_eta`, and the energy cutoff
-:attr:`ew_cut`.  Although they can be set manually, these parameters are by default chosen
-automatically according to the attribute :attr:`precision`, which likewise can be set
-manually or left to its default value.
+:attr:`ew_cut`.
 
 Besides the methods and parameters provided by :class:`Mole` class (see Chapter
 :ref:`gto`), there are some parameters frequently used in the code to access the
@@ -76,11 +80,11 @@ kpts
     abs_kpts = cell.get_abs_kpts(scaled_kpts)
 
 Gv
-  The (N x 3) array of plane waves associated to :attr:`gs`.  :attr:`gs` defines
+  The (N x 3) array of plane waves associated to :attr:`mesh`.  :attr:`mesh` defines
   the number of FFT grids in each direction.  :meth:`Cell.Gv` or :meth:`get_Gv`
   convert the FFT-mesh to the plane waves.  ``Gv`` are the the plane wave bases
-  of 3D-FFT transformation.  Given ``gs = [nx,ny,nz]``, the number of vectors in
-  ``Gv`` is ``(2*nx+1)*(2*ny+1)*(2*nz+1)``.
+  of 3D-FFT transformation.  Given ``mesh = [nx,ny,nz]``, the number of vectors in
+  ``Gv`` is ``nx*ny*nz``.
 
 vol
   :attr:`Cell.vol` gives the volume of the unit cell (in atomic unit).
