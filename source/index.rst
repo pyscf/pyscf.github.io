@@ -50,6 +50,7 @@ Contents
    soscf.rst
    sgx.rst
    tddft.rst
+   tdscf.rst
    mp.rst
    ci.rst
    doci.rst
@@ -67,7 +68,7 @@ Contents
    pbc.rst
    qmmm.rst
    solvent.rst
-   semiempirical.rst   
+   semiempirical.rst
    geomopt.rst
    lo.rst
    tools.rst
@@ -76,6 +77,8 @@ Contents
    nao.rst
    lib.rst
    prop.rst
+   data.rst
+   shciscf.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
@@ -87,4 +90,5 @@ You can also download the `PDF version
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
+
 
