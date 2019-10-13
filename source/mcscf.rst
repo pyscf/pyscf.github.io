@@ -22,6 +22,7 @@ For example, a simple CASCI calculation can be run as::
     mycas = myhf.CASCI(6, 8).run()
 
 and a simple CASSCF can be run as::
+  
    import pyscf
 
     mol = pyscf.M(

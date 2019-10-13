@@ -7,23 +7,23 @@ The :mod:`pbc` module provides electronic structure implementations with periodi
 conditions based on periodic Gaussian basis functions. The PBC implementation supports
 both all-electron and pseudopotential descriptions.
 
-In PySCF, the PBC implementation has a tight relation to the molecular implementation.
-The module names, function names, and layouts of the PBC code are the same as (or as close
+In PySCF, the PBC implementation has closely related to the molecular implementation.
+The module names, function names, and layout of the PBC code are the same as (or as close
 as possible to) those of the molecular code.  The PBC code supports the use (and mixing)
-of basis sets, pseudopotentials, and effective core potentials developed accross the
-materials science and quantum chemistry communites, offering great flexibility.  Moreover,
+of basis sets, pseudopotentials, and effective core potentials developed across the
+materials science and quantum chemistry communities, offering great flexibility.  Moreover,
 many post-mean-field methods defined in the molecular code can be seamlessly mixed with
-PBC calculations performed at the gamma point.  For example, one can perform a gamma-point
+PBC calculations performed at the Gamma point.  For example, one can perform a Gamma-point
 Hartree-Fock calculation in a supercell, followed by a CCSD(T) calculation, which is
 implemented in the molecular code.
 
-In the PBC k-point calculations,
-we make small changes to the gamma-point data structures and export KHF
-and KDFT methods.  On top of these KSCF methods, we have implemented k-point CCSD and
-k-point EOM-CCSD methods.  Other post-mean-field methods can be analogously written to
-explicitly enforce translational symmetry through k-point sampling.
+In the PBC k-point module,
+we implement minor changes to the Gamma-point data structures. The associated classes and methods
+are prefixed by "K"; for example, the mean-field k-point restricted Hartree-Fock and Kohn-Sham modules are KRHF and KRKS. 
+On top of these KSCF methods, one can find many correlation methods, such as k-point CCSD and k-point EOM-CCSD methods.
+Other post-mean-field methods can be also be developed to explicitly enforce translational symmetry through k-point sampling.
 
-When using results of this code for publications, please cite the following papers:
+When using results of this code for publication, please cite the following papers:
 
 1) "Gaussian-Based Coupled-Cluster Theory for the Ground-State and Band Structure of Solids" J. McClain, Q. Sun, G. K.-L. Chan, and T. C. Berkelbach, J. Chem. Theory Comput. 13, 1209 (2017).
 

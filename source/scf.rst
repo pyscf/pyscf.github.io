@@ -1,6 +1,11 @@
 scf --- Mean-field methods
 **************************
 
+.. module:: scf
+   :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
+
+The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
+
 
 Examples
 ========
@@ -46,10 +51,6 @@ Relevant examples
 :file:`examples/scf/70-background_and_hot_tuning.py`
 :file:`examples/scf/71-patch_scf_kernel.py`
 
-.. module:: scf
-   :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
-
-The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
 
 Stability analysis
 ==================
