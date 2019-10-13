@@ -4,7 +4,12 @@ ci --- Configuration interaction
 .. module:: ci
    :synopsis: CI energy and properties
 
-The :mod:`ci` module implements the truncated CI model.
+The :mod:`ci` module implements the truncated CI model. A simple example for cisd::
+
+    import pyscf
+    mol = pyscf.M(atom = 'H 0 0 0; F 0 0 1.1',basis = 'ccpvdz')
+    mf = mol.HF().run()
+    mycc = mf.CISD().run()
 
 Examples
 ========
