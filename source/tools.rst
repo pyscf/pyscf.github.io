@@ -8,6 +8,7 @@ orbital densities, cube files, and other things to interface with
 external utilities.
 
 For example, one can write molecular orbitals in molden format as::
+    
     from pyscf import gto, scf
     from pyscf import lo
     from pyscf.tools import molden
@@ -35,6 +36,7 @@ For example, one can write molecular orbitals in molden format as::
         molden.orbital_coeff(mol, f1, mf.mo_coeff, ene=mf.mo_energy, occ=mf.mo_occ)
 
 Cube files can be generated as::
+    
     from pyscf import gto, scf
     from pyscf.tools import cubegen
     mol = gto.M(atom='''
