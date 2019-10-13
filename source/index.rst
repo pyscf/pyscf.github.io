@@ -71,18 +71,15 @@ Main modules
 Other modules
 -------------
    | :ref:`ccn`
-   | :ref:`advanced`
    | :ref:`lib`
    | :ref:`prop`
    | :ref:`data`
    | :ref:`shciscf`
    | :ref:`sgx`
+   | :ref:`advanced`
 
 Interfaces
 ----------
-.. following modules may be removed from the main source tree
-
-   
    | :ref:`dftd3`
    | :ref:`geomopt`
    | :ref:`cornell_shci`
@@ -90,7 +87,8 @@ Interfaces
    | :ref:`fciqmcscf`
    | :ref:`icmpspt`
    | :ref:`nao`
-   
+.. these modules may be removed from the main source tree   
+
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
 
