@@ -5,7 +5,7 @@ pbc.gto --- Crystal cell structure
 This module provides functions to setup the basic information of a PBC calculation.  The
 :mod:`pyscf.pbc.gto` module is analogous to the basic molecular :mod:`pyscf.gto` module.
 The :class:`Cell` class for crystal structure unit cells is defined in this module and is
-analogous to the basic molecular :class:`Mole` class.  Among other details, the basis set
+analogous to the basic molecular :class:`Mole` class.  Amongst other details, the basis set
 and pseudopotentials are parsed in this module.
 
 :class:`Cell` class
@@ -16,7 +16,7 @@ functionality as the :class:`Mole` object.  For example, one can use the :class:
 object to access the atomic structure, basis functions, pseudopotentials, and certain
 analytical periodic integrals.
 
-Similar to the input in a molecular calculation, one first creates a :class:`Cell` object.
+Similar to the input of a molecular calculation, one first creates a :class:`Cell` object.
 After assigning the crystal parameters, one calls :func:`build` to fully initialize the
 :class:`Cell` object.  A shortcut function :func:`M` is available at the module level to
 simplify the input.

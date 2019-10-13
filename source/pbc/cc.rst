@@ -3,6 +3,8 @@
 pbc.cc --- PBC coupled cluster
 ******************************
 
+The module :mod:`pbc.cc` carries out PBC coupled cluster calculation, with optional usage of k-point symmetry.
+
 Examples
 ========
 
