@@ -1,3 +1,5 @@
+.. _doci:
+
 doci --- Doubly occupied configuration interaction
 **********************************
 

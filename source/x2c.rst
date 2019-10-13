@@ -1,3 +1,5 @@
+.. _x2c:
+
 x2c --- exact-two-component approach
 ************************************
 

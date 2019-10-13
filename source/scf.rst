@@ -1,3 +1,5 @@
+.. _scf:
+
 scf --- Mean-field methods
 **************************
 

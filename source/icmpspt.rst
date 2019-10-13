@@ -1,3 +1,5 @@
+.. _icmpspt:
+
 icmpspt --- Internal-contracted MPS perturbation method
 *******************************************************
 

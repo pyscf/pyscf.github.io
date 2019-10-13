@@ -1,3 +1,5 @@
+.. _dft:
+
 dft --- Density functional theory
 *********************************
 

@@ -1,3 +1,5 @@
+.. _dmrgscf:
+
 dmrgscf
 *******
 

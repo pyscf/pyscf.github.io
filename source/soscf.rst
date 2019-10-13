@@ -1,3 +1,5 @@
+.. _soscf:
+
 soscf --- Second order Hartree-Fock solver
 ******************************************
 

@@ -1,5 +1,7 @@
-tools
-*****
+.. _tools:
+
+tools --- Useful tools
+**********************
 
 .. module:: tools
 

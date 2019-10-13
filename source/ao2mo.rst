@@ -1,3 +1,5 @@
+.. _mol_ao2mo:
+
 ao2mo --- Integral transformations
 **********************************
 

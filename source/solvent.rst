@@ -1,3 +1,5 @@
+.. _solvent:
+
 solvent --- Solvent methods
 ***************************
 .. module:: solvent

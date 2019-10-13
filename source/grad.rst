@@ -1,3 +1,5 @@
+.. _grad:
+
 grad --- Analytical nuclear gradients
 *************************************
 

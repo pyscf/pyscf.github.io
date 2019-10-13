@@ -1,3 +1,5 @@
+.. _lo:
+
 lo --- Orbital localization and analysis tools 
 **********************************************
 

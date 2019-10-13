@@ -1,3 +1,5 @@
+.. _lib:
+
 :mod:`lib` --- Helper functions, parameters, and C extensions
 *************************************************************
 

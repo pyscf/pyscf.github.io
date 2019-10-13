@@ -1,3 +1,5 @@
+.. _cornell_shci:
+
 cornell_shci --- Interface to Fast Semistochastic Heat Bath Configuration Interaction (SHCI)
 **********************************
 

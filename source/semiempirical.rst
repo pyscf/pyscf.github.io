@@ -1,3 +1,5 @@
+.. _semiempirical:
+
 semiempirical --- Semiempirical methods
 ***************************************
 

@@ -1,3 +1,5 @@
+.. _ci:
+
 ci --- Configuration interaction
 ********************************
 

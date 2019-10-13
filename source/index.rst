@@ -40,53 +40,56 @@ MPI versions of some routines, additional quantum chemistry methods and analysis
 Main modules
 ------------
 
-   gto.rst
-   ao2mo.rst
-   df.rst
-   symm.rst
-   scf.rst
-   dft.rst
-   grad.rst
-   hessian.rst
-   soscf.rst
-   tddft.rst
-   tdscf.rst
-   mp.rst
-   ci.rst
-   doci.rst
-   cc.rst
-   gw.rst
-   fci.rst
-   hci.rst
-   mcscf.rst
-   mrpt.rst
-   x2c.rst
-   pbc.rst
-   qmmm.rst
-   solvent.rst
-   semiempirical.rst   
-   lo.rst
-   tools.rst
+   | :ref:`gto`
+   | :ref:`mol_ao2mo`
+   | :ref:`mol_df`
+   | :ref:`symm`
+   | :ref:`scf`
+   | :ref:`dft`
+   | :ref:`grad`
+   | :ref:`hessian`
+   | :ref:`soscf`
+   | :ref:`tddft`
+   | :ref:`tdscf`
+   | :ref:`mp`
+   | :ref:`ci`
+   | :ref:`doci`
+   | :ref:`cc`
+   | :ref:`mol_gw`
+   | :ref:`fci`
+   | :ref:`hci`
+   | :ref:`mcscf`
+   | :ref:`mrpt`
+   | :ref:`x2c`
+   | :ref:`qmmm`
+   | :ref:`solvent`
+   | :ref:`semiempirical` 
+   | :ref:`lo`
+   | :ref:`tools`
+   | :ref:`pbc`
 
 Other modules
 -------------
-   ccn.rst
-   advanced.rst
-   lib.rst
-   prop.rst
-   data.rst
-   shciscf.rst
-   sgx.rst
+   | :ref:`ccn`
+   | :ref:`advanced`
+   | :ref:`lib`
+   | :ref:`prop`
+   | :ref:`data`
+   | :ref:`shciscf`
+   | :ref:`sgx`
 
 Interfaces
 ----------
-   dftd3.rst
-   geomopt.rst
-   cornell_shci.rst
-   dmrgscf.rst
-   fciqmcscf.rst
-   icmpspt.rst
-   nao.rst
+.. following modules may be removed from the main source tree
+
+   
+   | :ref:`dftd3`
+   | :ref:`geomopt`
+   | :ref:`cornell_shci`
+   | :ref:`dmrgscf`
+   | :ref:`fciqmcscf`
+   | :ref:`icmpspt`
+   | :ref:`nao`
    
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.

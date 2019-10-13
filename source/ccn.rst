@@ -1,3 +1,5 @@
+.. _ccn:
+
 ccn --- Auto-Generated Coupled-Cluster Equations of Arbitrary Order
 **********************************
 

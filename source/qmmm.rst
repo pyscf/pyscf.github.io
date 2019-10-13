@@ -1,3 +1,5 @@
+.. _qmmm:
+
 qmmm --- QM/MM interface
 ************************
 

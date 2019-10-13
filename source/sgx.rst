@@ -1,3 +1,5 @@
+.. _sgx:
+
 sgx --- Pseudo-spectral methods (COSX, PS, SN-K)
 ************************************************
 

@@ -1,3 +1,5 @@
+.. _hci:
+
 hci --- Interface to Heat-Bath selective CI
 *******************************************
 

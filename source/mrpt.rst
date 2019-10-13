@@ -1,3 +1,5 @@
+.. _mrpt:
+
 mrpt --- Multi-reference perturbation theory
 ********************************************
 

@@ -1,3 +1,5 @@
+.. _fci:
+
 fci --- Full configuration interaction
 **************************************
 

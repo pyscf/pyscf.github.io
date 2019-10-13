@@ -1,3 +1,5 @@
+.. _shciscf:
+
 shciscf --- Semistochastic Heat Bath Configuration Interaction for SCF
 **********************************************************************
 

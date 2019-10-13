@@ -1,3 +1,5 @@
+.. _hessian:
+
 hessian --- Analytical nuclear Hessian
 **********************************
 

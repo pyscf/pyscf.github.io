@@ -1,3 +1,5 @@
+.. _dftd3:
+
 dftd3 --- DFT plus Dispersion Correction
 **********************************
 An interface to libdftd3:

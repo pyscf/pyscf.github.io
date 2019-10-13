@@ -1,3 +1,5 @@
+.. _mcscf:
+
 mcscf --- Multi-configurational self-consistent field
 *****************************************************
 
