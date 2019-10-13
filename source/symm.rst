@@ -145,7 +145,7 @@ Enabling symmetry in other module
   To control the HF determinant symmetry,  one can assign occupancy for
   particular irreps, e.g.
 
-.. literalinclude:: ../../examples/scf/13-symmetry.py
+.. literalinclude:: ../examples/scf/13-symmetry.py
 
 * FCI
 
@@ -157,7 +157,7 @@ Enabling symmetry in other module
 
   The symmetry of active space in the CASCI/CASSCF calculations can controlled
   
-.. literalinclude:: ../../examples/mcscf/21-active_space_symmetry.py 
+.. literalinclude:: ../examples/mcscf/21-active_space_symmetry.py 
 
 * MP2 and CCSD
 

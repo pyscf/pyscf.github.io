@@ -113,7 +113,7 @@ a general solver for arbitrary Hamiltonians.  It allows users to overwrite the
 default molecular Hamiltonian with their own effective Hamiltonians.  In this
 example, we create a Hubbard model and feed its Hamiltonian to the CCSD module.
 
-.. literalinclude:: ../../examples/cc/40-ccsd_custom_hamiltonian.py
+.. literalinclude:: ../examples/cc/40-ccsd_custom_hamiltonian.py
 
 
 Using CCSD as CASCI active space solver
@@ -121,7 +121,7 @@ Using CCSD as CASCI active space solver
 CCSD program can be wrapped as a Full CI solver, which can be combined with the
 CASCI solver to approximate the multi-configuration calculation.
 
-.. literalinclude:: ../../examples/cc/42-as_casci_fcisolver.py
+.. literalinclude:: ../examples/cc/42-as_casci_fcisolver.py
 
 
 Gamma point CCSD with Periodic boundary condition
@@ -133,7 +133,7 @@ molecular code are more compatible.  You can treat the crystal object and the
 molecule object in the same manner.  In this example, you can pass the PBC mean
 field method to CC module to have the gamma point CCSD correlation.
 
-.. literalinclude:: ../../examples/pbc/12-gamma_point_post_hf.py
+.. literalinclude:: ../examples/pbc/12-gamma_point_post_hf.py
 
 
 CCSD with truncated MOs to avoid linear dependency
@@ -144,7 +144,7 @@ instability usually has noticeable effects on the CCSD convergence.  An
 effective way to remove this negative effects is to truncate the AO sets and
 allow the MO orbitals being less than AO functions.
 
-.. literalinclude:: ../../examples/cc/31-remove_linear_dep.py
+.. literalinclude:: ../examples/cc/31-remove_linear_dep.py
 
 
 Response and un-relaxed CCSD density matrix
@@ -157,7 +157,7 @@ used to compute the first order response quantities eg the analytical nuclear
 gradients.  It is not recommended to use the response density matrix for
 population analysis.
 
-.. literalinclude:: ../../examples/cc/01-density_matrix.py
+.. literalinclude:: ../examples/cc/01-density_matrix.py
 
 
 Reusing integrals in CCSD and relevant calculations
@@ -168,7 +168,7 @@ scenario, the same MO integrals can be generated once and reused in the four
 modules.  To remove the overhead of recomputing MO integrals, the three module
 support user to feed MO integrals.
 
-.. literalinclude:: ../../examples/cc/12-reuse_integrals.py
+.. literalinclude:: ../examples/cc/12-reuse_integrals.py
 
 
 Interfering CCSD-DIIS
