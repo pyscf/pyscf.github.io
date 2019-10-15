@@ -1,7 +1,7 @@
 .. _fciqmcscf:
 
-fciqmcscf
-*********
+fciqmcscf --- Interface to full-CI QMC
+**************************************
 
 An interface to the NECI (https://github.com/ghb24/NECI_STABLE) FCIQMC solver. See also :mod:`mcscf`.
 

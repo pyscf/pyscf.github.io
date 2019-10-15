@@ -1,10 +1,9 @@
 .. _dmrgscf:
 
-dmrgscf
-*******
+dmrgscf --- Interface to DMRG and DMRG-SCF/CASSCF
+*************************************************
 
-An interface to DMRG and DMRG-SCF/CASSCF. The DMRG calculation
- must be carried out with an external solver, such as
+ The DMRG calculation must be carried out with an external solver, such as
  Block (https://sanshar.github.io/Block) or StackBlock (https://github.com/sanshar/StackBlock) or CheMPS2 (https://github.com/SebWouters/CheMPS2).
  See also :mod:`mcscf`.
 
