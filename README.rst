@@ -1,2 +1,0 @@
-PySCF documentation
-===================
