@@ -36,37 +36,39 @@ MPI versions of some routines, additional quantum chemistry methods and analysis
    code-rule.rst
    benchmark.rst
    tutorial.rst
+   theory.rst
+   interface.rst
 
 Main modules
 ------------
 
    | :ref:`gto`
-   | :ref:`mol_ao2mo`
-   | :ref:`mol_df`
-   | :ref:`symm`
    | :ref:`scf`
    | :ref:`dft`
-   | :ref:`grad`
-   | :ref:`hessian`
-   | :ref:`soscf`
    | :ref:`tddft`
    | :ref:`tdscf`
+   | :ref:`mol_gw`
    | :ref:`mp`
    | :ref:`ci`
    | :ref:`doci`
-   | :ref:`cc`
-   | :ref:`mol_gw`
    | :ref:`fci`
    | :ref:`hci`
+   | :ref:`cc`
    | :ref:`mcscf`
    | :ref:`mrpt`
    | :ref:`x2c`
    | :ref:`qmmm`
    | :ref:`solvent`
-   | :ref:`semiempirical` 
-   | :ref:`lo`
-   | :ref:`tools`
+   | :ref:`semiempirical`
+   | :ref:`grad`
+   | :ref:`hessian`
    | :ref:`pbc`
+   | :ref:`tools`
+   | :ref:`mol_ao2mo`
+   | :ref:`mol_df`
+   | :ref:`lo`
+   | :ref:`symm`
+   | :ref:`soscf`
 
 Other modules
 -------------
