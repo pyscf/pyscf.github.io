@@ -38,58 +38,8 @@ MPI versions of some routines, additional quantum chemistry methods and analysis
    tutorial.rst
    theory.rst
    interface.rst
+   modules.rst
 
-Main modules
-------------
-
-   | :ref:`gto`
-   | :ref:`scf`
-   | :ref:`dft`
-   | :ref:`tddft`
-   | :ref:`tdscf`
-   | :ref:`mol_gw`
-   | :ref:`mp`
-   | :ref:`ci`
-   | :ref:`doci`
-   | :ref:`fci`
-   | :ref:`hci`
-   | :ref:`cc`
-   | :ref:`mcscf`
-   | :ref:`mrpt`
-   | :ref:`x2c`
-   | :ref:`qmmm`
-   | :ref:`solvent`
-   | :ref:`semiempirical`
-   | :ref:`grad`
-   | :ref:`hessian`
-   | :ref:`pbc`
-   | :ref:`tools`
-   | :ref:`mol_ao2mo`
-   | :ref:`mol_df`
-   | :ref:`lo`
-   | :ref:`symm`
-   | :ref:`soscf`
-
-Other modules
--------------
-   | :ref:`ccn`
-   | :ref:`lib`
-   | :ref:`prop`
-   | :ref:`data`
-   | :ref:`shciscf`
-   | :ref:`sgx`
-   | :ref:`advanced`
-
-Interfaces
-----------
-   | :ref:`dftd3`
-   | :ref:`geomopt`
-   | :ref:`cornell_shci`
-   | :ref:`dmrgscf`
-   | :ref:`fciqmcscf`
-   | :ref:`icmpspt`
-   | :ref:`nao`
-.. these modules may be removed from the main source tree   
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
