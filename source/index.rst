@@ -22,7 +22,8 @@ with the following principles:
 
 In addition to the core libraries, PySCF supports a rich
 ecosystem of plugins and external modules that, for example, provide
-MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits etc. See :ref:'.. _installing_plugin:'.
+MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
+See :ref:`installing_plugin`.
 
   
 

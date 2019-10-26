@@ -1,10 +1,10 @@
 .. _dftd3:
 
-dftd3 --- DFT plus Dispersion Correction
-**********************************
+dftd3 --- DFT with D3 dispersion correction
+*******************************************
 An interface to libdftd3:
-https://github.com/cuanto/libdftd3
-A minimal example for this::
+https://github.com/cuanto/libdftd3.
+A minimal example for this is ::
 
     from pyscf import gto,scf,dftd3
     mol = gto.Mole()
@@ -15,6 +15,7 @@ A minimal example for this::
     mol.build()
     mf = dftd3.dftd3(scf.RHF(mol))
     mf.kernel()
+
 Examples
 ========
 
@@ -24,11 +25,6 @@ Relevant examples
 
 Program reference
 =================
-
-.. automodule:: pyscf.dftd3
-
-itrf
-------
 
 .. automodule:: pyscf.dftd3.itrf
    :members:

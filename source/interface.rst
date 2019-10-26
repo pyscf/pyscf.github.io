@@ -1,5 +1,5 @@
+.. _interface:
 
-**********
 Interfaces
 **********
 
@@ -9,6 +9,8 @@ special requirements for installations, additional licences, *etc*.
 
 
 .. toctree::
+   :maxdepth: 1
+
    interface/dftd3.rst
    interface/geomopt.rst
    interface/dmrgscf.rst

@@ -1,3 +1,4 @@
+.. _modules:
 
 Main modules
 ************

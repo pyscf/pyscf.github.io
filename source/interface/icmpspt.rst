@@ -8,11 +8,6 @@ ic-MPSPT is an interface to a multi-reference perturbation method that uses DMRG
 Program reference
 =================
 
-.. automodule:: pyscf.icmpspt
- 
-interface
----------
-
 .. automodule:: pyscf.icmpspt.icmpspt
    :members:
 

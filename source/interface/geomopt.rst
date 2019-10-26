@@ -1,11 +1,11 @@
 .. _geomopt:
 
 geomopt --- Geometry optimization
-**********************************
+*********************************
 
 The :mod:`geomopt` module implements geometry optimization via
 interfaces to geomeTRIC (https://github.com/leeping/geomeTRIC) and PyBerny (https://github.com/azag0/pyberny).
-For example, optimize the structure of N2 molecule using PyBerny::
+The following example shows how to optimize the structure of N\ :sub:`2`\  molecule with PyBerny::
 
     from pyscf import gto, scf
     from pyscf.geomopt.berny_solver import optimize
@@ -31,23 +31,11 @@ Relevant examples
 Program reference
 =================
 
-.. automodule:: pyscf.geomopt
- 
-pyberny
-------
-
 .. automodule:: pyscf.geomopt.berny_solver
    :members:
 
-geomeTRIC
--------
-
 .. automodule:: pyscf.geomopt.geometric_solver
    :members:
-
-
-addons
-------
 
 .. automodule:: pyscf.geomopt.addons
    :members:

@@ -1,5 +1,5 @@
+.. _theory:
 
-*******************
 Theoretical methods
 *******************
 
@@ -10,6 +10,7 @@ This chapter introduces the basic theories of these methods and some of their mo
 
 
 .. toctree::
+   :maxdepth: 1
 
    theory/scf.rst
    theory/mp.rst

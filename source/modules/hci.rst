@@ -8,7 +8,7 @@ of the Heat-bath selected CI algorithm, where selection is done based
 on strings rather than determinants.
 For example:
 
-.. literalinclude:: ../examples/hci/00-simple_hci.py
+.. literalinclude:: ../../examples/hci/00-simple_hci.py
 
 See also :mod:`cornell_shci`.
 
