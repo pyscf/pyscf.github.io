@@ -1,7 +1,7 @@
 .. _grad:
 
-grad --- Analytical nuclear gradients
-*************************************
+:mod:`grad` --- Analytical nuclear gradients
+********************************************
 
 .. module:: grad
 	    

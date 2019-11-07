@@ -78,6 +78,8 @@ function pass all arguments to :func:`Mole.build`::
 Either way, you may have noticed two keywords ``atom`` and ``basis``.
 They are used to hold the molecular geometry and basis sets.
 
+For more examples, see :ref:`gto`. 
+
 Geometry
 --------
 

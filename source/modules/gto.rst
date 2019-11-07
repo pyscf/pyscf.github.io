@@ -1,41 +1,40 @@
 .. _gto:
 
-gto --- Molecular structure and GTO basis
-*****************************************
+:mod:`gto` --- Molecular structure and GTO basis
+************************************************
 
 The :mod:`gto` module provides the functions to parse the command line options,
-the molecular geometry and format the basic functions for `libcint`
-integral library.  In :file:`mole`, a basic class :class:`Mole` is
+the molecular geometry and format the basic functions for ``libcint``
+integral library.  In :mod:`gto.mole`, a basic class :class:`Mole` is
 defined to hold the global parameters, which will be used throughout the
 package.
 
 Examples
 ========
 
-Relevant examples
-:file:`examples/gto/00-input_mole.py`
-:file:`examples/gto/01-input_geometry.py`
-:file:`examples/gto/02-dump_input.py`
-:file:`examples/gto/03-ghost_atom.py`
-:file:`examples/gto/04-input_basis.py`
-:file:`examples/gto/05-input_ecp.py`
-:file:`examples/gto/06-load_mol_from_chkfile.py`
-:file:`examples/gto/07-nucmod.py`
-:file:`examples/gto/09-apply_scf.py`
-:file:`examples/gto/10-atom_info.py`
-:file:`examples/gto/11-basis_info.py`
-:file:`examples/gto/12-serialization.py`
-:file:`examples/gto/13-symmetry.py`
-:file:`examples/gto/20-ao_integrals.py`
-:file:`examples/gto/20-ao_integrals_sph_to_spinor.py`
-:file:`examples/gto/20-soc_ao_integrals.py`
-:file:`examples/gto/20-soc_ecp.py`
-:file:`examples/gto/21-concatenate_molecules.py`
-:file:`examples/gto/22-range_separated_coulomb.py`
-:file:`examples/gto/23-orbitals_cart2sph.py`
-:file:`examples/gto/24-ao_value_on_grid.py`
-:file:`examples/gto/25-multipole-integrals.py`
-:file:`examples/gto/30-read_molpro_orb.py`
+:download:`examples/gto/00-input_mole.py </../examples/gto/00-input_mole.py>`
+:download:`examples/gto/01-input_geometry.py </../examples/gto/01-input_geometry.py>`
+:download:`examples/gto/02-dump_input.py </../examples/gto/02-dump_input.py>`
+:download:`examples/gto/03-ghost_atom.py </../examples/gto/03-ghost_atom.py>`
+:download:`examples/gto/04-input_basis.py </../examples/gto/04-input_basis.py>`
+:download:`examples/gto/05-input_ecp.py </../examples/gto/05-input_ecp.py>`
+:download:`examples/gto/06-load_mol_from_chkfile.py </../examples/gto/06-load_mol_from_chkfile.py>`
+:download:`examples/gto/07-nucmod.py </../examples/gto/07-nucmod.py>`
+:download:`examples/gto/09-apply_scf.py </../examples/gto/09-apply_scf.py>`
+:download:`examples/gto/10-atom_info.py </../examples/gto/10-atom_info.py>`
+:download:`examples/gto/11-basis_info.py </../examples/gto/11-basis_info.py>`
+:download:`examples/gto/12-serialization.py </../examples/gto/12-serialization.py>`
+:download:`examples/gto/13-symmetry.py </../examples/gto/13-symmetry.py>`
+:download:`examples/gto/20-ao_integrals.py </../examples/gto/20-ao_integrals.py>`
+:download:`examples/gto/20-ao_integrals_sph_to_spinor.py </../examples/gto/20-ao_integrals_sph_to_spinor.py>`
+:download:`examples/gto/20-soc_ao_integrals.py </../examples/gto/20-soc_ao_integrals.py>`
+:download:`examples/gto/20-soc_ecp.py </../examples/gto/20-soc_ecp.py>`
+:download:`examples/gto/21-concatenate_molecules.py </../examples/gto/21-concatenate_molecules.py>`
+:download:`examples/gto/22-range_separated_coulomb.py </../examples/gto/22-range_separated_coulomb.py>`
+:download:`examples/gto/23-orbitals_cart2sph.py </../examples/gto/23-orbitals_cart2sph.py>`
+:download:`examples/gto/24-ao_value_on_grid.py </../examples/gto/24-ao_value_on_grid.py>`
+:download:`examples/gto/25-multipole-integrals.py </../examples/gto/25-multipole-integrals.py>`
+:download:`examples/gto/30-read_molpro_orb.py </../examples/gto/30-read_molpro_orb.py>`
 
 Input
 =====
@@ -165,7 +164,7 @@ Basis parser supports "Ghost" atom::
   mol.basis = {'GHOST': gto.basis.load('cc-pvdz', 'O'), 'H': 'sto3g'}
 
 More examples of inputing ghost atoms can be found in
-:file:`examples/gto/03-ghost_atom.py`
+:download:`examples/gto/03-ghost_atom.py </../examples/gto/03-ghost_atom.py>`
 
 Like the requirements of geometry input, you can use atomic symbol
 (case-insensitive) or the atomic nuclear charge, as the keyword of the
@@ -415,7 +414,7 @@ For example::
                       (1.0000000, 1.0000000),]],
               }
 
-Some basis sets, e.g. :file:`pyscf/gto/basis/dzp_dunning.py`, are saved in the
+Some basis sets, *e.g.*, :file:`pyscf/gto/basis/dzp_dunning.py`, are saved in the
 internal format.
 
 .. automodule:: pyscf.gto.basis

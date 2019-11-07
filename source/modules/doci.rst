@@ -1,7 +1,7 @@
 .. _doci:
 
-doci --- Doubly occupied configuration interaction
-**********************************
+:mod:`doci` --- Doubly occupied configuration interaction
+*********************************************************
 
 .. module:: doci
 The :mod:`doci` implements doubly-occupied configuration interaction. A minimal example on N2 calculation::

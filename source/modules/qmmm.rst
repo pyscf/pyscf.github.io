@@ -1,7 +1,7 @@
 .. _qmmm:
 
-qmmm --- QM/MM interface
-************************
+:mod:`qmmm` --- QM/MM interface
+*******************************
 
 To run HF with background charges, one could follow the following example::
 

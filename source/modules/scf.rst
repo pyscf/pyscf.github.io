@@ -1,7 +1,7 @@
 .. _scf:
 
-scf --- Mean-field methods
-**************************
+:mod:`scf` --- Mean-field methods
+*********************************
 
 .. module:: scf
    :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods

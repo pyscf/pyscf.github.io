@@ -1,7 +1,7 @@
 .. _mol_gw:
 
-gw --- Molecular G0W0
-*********************
+:mod:`gw` --- Molecular G0W0
+****************************
 
 .. module:: gw 
 

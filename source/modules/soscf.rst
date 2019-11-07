@@ -1,7 +1,7 @@
 .. _soscf:
 
-soscf --- Second order Hartree-Fock solver
-******************************************
+:mod:`soscf` --- Second order Hartree-Fock solver
+*************************************************
 
 .. module:: soscf
 

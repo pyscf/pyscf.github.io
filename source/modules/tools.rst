@@ -1,7 +1,7 @@
 .. _tools:
 
-tools --- Useful tools
-**********************
+:mod:`tools` --- Useful tools
+*****************************
 
 .. module:: tools
 

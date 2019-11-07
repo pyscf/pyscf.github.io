@@ -38,6 +38,7 @@ See :ref:`installing_plugin`.
    benchmark.rst
    tutorial.rst
    theory.rst
+   advanced.rst
    interface.rst
    modules.rst
 

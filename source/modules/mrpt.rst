@@ -1,7 +1,7 @@
 .. _mrpt:
 
-mrpt --- Multi-reference perturbation theory
-********************************************
+:mod:`mrpt` --- Multi-reference perturbation theory
+***************************************************
 
 .. automodule:: pyscf.mrpt
 

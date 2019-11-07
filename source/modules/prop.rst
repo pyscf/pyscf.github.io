@@ -1,8 +1,7 @@
 .. _prop:
 
-*******************************************
-prop --- Molecular properties
-*******************************************
+:mod:`prop` --- Molecular properties
+************************************
 The :mod:`prop` module provides electric and magnetic properties for molecules.
 
 The list of modules described in this chapter is:

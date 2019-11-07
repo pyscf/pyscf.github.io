@@ -1,129 +1,74 @@
 .. _pbc_cc:
 
-pbc.cc --- PBC coupled cluster
-******************************
+pbc.cc --- Coupled cluster with PBCs
+************************************
 
-The module :mod:`pbc.cc` carries out PBC coupled cluster calculation, with optional usage of k-point symmetry.
+The :mod:`pbc.cc` module implements the coupled cluster methods with periodic boundary conditions.
+It is analogous to the :mod:`cc` module.
+
 
 Examples
 ========
 
-Relevant examples
-:file:`examples/pbc/12-gamma_point_post_hf.py`
-:file:`examples/pbc/22-k_points_ccsd.py`
-:file:`examples/pbc/24-k_points_vs_gamma.py`
-:file:`examples/pbc/25-k_points_mpi_ccsd.py`
-:file:`examples/pbc/29-eom_ccsd_Ta.py`
-:file:`examples/pbc/36-ccsd_level_shift.py`
+:download:`examples/pbc/12-gamma_point_post_hf.py </../examples/pbc/12-gamma_point_post_hf.py>`
 
+:download:`examples/pbc/22-k_points_ccsd.py </../examples/pbc/22-k_points_ccsd.py>`
+
+:download:`examples/pbc/24-k_points_vs_gamma.py </../examples/pbc/24-k_points_vs_gamma.py>`
+
+:download:`examples/pbc/25-k_points_mpi_ccsd.py </../examples/pbc/25-k_points_mpi_ccsd.py>`
+
+:download:`examples/pbc/29-eom_ccsd_Ta.py </../examples/pbc/29-eom_ccsd_Ta.py>`
+
+:download:`examples/pbc/36-ccsd_level_shift.py </../examples/pbc/36-ccsd_level_shift.py>`
 
 
 Program reference
 =================
 
-.. .. automodule:: pyscf.pbc.cc
+.. automodule:: pyscf.pbc.cc
 
-ccsd
-----
-.. .. autoclass:: pyscf.pbc.cc.rccsd.RCCSD
-.. .. autoclass:: pyscf.pbc.cc.rccsd.UCCSD
-.. .. autoclass:: pyscf.pbc.cc.rccsd.GCCSD
+.. automodule:: pyscf.pbc.cc.ccsd
+   :members:
 
-.. .. automodule:: pyscf.pbc.cc.ccsd
-      :members:
+.. automodule:: pyscf.pbc.cc.kccsd
+   :members:
 
-kccsd
------
-.. .. autoclass:: pyscf.pbc.cc.kccsd.GCCSD
-.. .. automodule:: pyscf.pbc.cc.kccsd
-      :members:
+.. automodule:: pyscf.pbc.cc.kccsd_rhf
+   :members:
 
+.. automodule:: pyscf.pbc.cc.kccsd_uhf
+   :members:
 
-kccsd_rhf
----------
+.. automodule:: pyscf.pbc.cc.kccsd_t
+   :members:
 
-.. .. autoclass:: pyscf.pbc.cc.kccsd.RCCSD
-.. .. automodule:: pyscf.pbc.cc.kccsd_rhf
-      :members:
+.. automodule:: pyscf.pbc.cc.kccsd_t_rhf
+   :members:
 
-kccsd_uhf
----------
+.. automodule:: pyscf.pbc.cc.kccsd_t_rhf_slow
+   :members:
 
-.. .. autoclass:: pyscf.pbc.cc.kccsd.KUCCSD
-.. .. automodule:: pyscf.pbc.cc.kccsd_uhf
-      :members:
+.. automodule:: pyscf.pbc.cc.kintermediates
+   :members:
 
-kccsd_t
--------
+.. automodule:: pyscf.pbc.cc.kintermediates_rhf
+   :members:
 
-.. .. automodule:: pyscf.pbc.cc.kccsd_t
-      :members:
+.. automodule:: pyscf.pbc.cc.kintermediates_uhf
+   :members:
 
-kccsd_t_rhf
------------
+.. automodule:: pyscf.pbc.cc.eom_kccsd_ghf
+   :members:
 
-.. .. automodule:: pyscf.pbc.cc.kccsd_t_rhf
-      :members:
+.. automodule:: pyscf.pbc.cc.eom_kccsd_rhf
+   :members:
 
-kccsd_t_rhf_slow
-----------------
+.. automodule:: pyscf.pbc.cc.eom_kccsd_rhf_ip
+   :members:
 
-.. .. automodule:: pyscf.pbc.cc.kccsd_t_rhf_slow
-      :members:
+.. automodule:: pyscf.pbc.cc.eom_kccsd_rhf_ea
+   :members:
 
-kintermediates
---------------
-
-.. .. automodule:: pyscf.pbc.cc.kintermediates
-      :members:
-
-kintermediates_rhf
-------------------
-
-.. .. automodule:: pyscf.pbc.cc.kintermediates_rhf
-      :members:
-
-kintermediates_uhf
-------------------
-
-.. .. automodule:: pyscf.pbc.cc.kintermediates_uhf
-      :members:
-
-eom_kccsd_ghf
--------------
-
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMIP
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMEA
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMIP_Ta
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_ghf.EOMEA_Ta
-.. .. automodule:: pyscf.pbc.cc.eom_kccsd_ghf
-      :members:
-
-eom_kccsd_rhf
--------------
-
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMIP
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMEA
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMIP_Ta
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_rhf.EOMEA_Ta
-.. .. automodule:: pyscf.pbc.cc.eom_kccsd_rhf
-      :members:
-
-eom_kccsd_rhf_ip
-----------------
-
-.. .. automodule:: pyscf.pbc.cc.eom_kccsd_rhf_ip
-      :members:
-
-eom_kccsd_rhf_ea
-----------------
-
-.. .. automodule:: pyscf.pbc.cc.eom_kccsd_rhf_ea
-      :members:
-
-eom_kccsd_uhf
--------------
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMIP
-.. .. autoclass:: pyscf.pbc.cc.eom_kccsd_uhf.EOMEA
-.. .. automodule:: pyscf.pbc.cc.eom_kccsd_uhf
-      :members:
+.. automodule:: pyscf.pbc.cc.eom_kccsd_uhf
+   :members:

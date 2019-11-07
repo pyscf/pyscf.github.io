@@ -1,7 +1,7 @@
 .. _hessian:
 
-hessian --- Analytical nuclear Hessian
-**********************************
+:mod:`hessian` --- Analytical nuclear Hessian
+*********************************************
 
 The :mod:`hessian` module implements the analytical nuclear Hessian for
 mean-field methods. This module also provides functions for thermo-chemical

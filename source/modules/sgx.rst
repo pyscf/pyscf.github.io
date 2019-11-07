@@ -1,7 +1,7 @@
 .. _sgx:
 
-sgx --- Pseudo-spectral methods (COSX, PS, SN-K)
-************************************************
+:mod:`sgx` --- Pseudo-spectral methods (COSX, PS, SN-K)
+*******************************************************
 
 .. module:: sgx
 

@@ -1,7 +1,6 @@
 .. _pbc:
 
-*******************************************
-pbc --- Periodic boundary conditions
+:mod:`pbc` --- Periodic boundary conditions
 *******************************************
 The :mod:`pbc` module provides electronic structure implementations with periodic boundary
 conditions based on periodic Gaussian basis functions. The PBC implementation supports
@@ -32,6 +31,7 @@ When using results of this code for publication, please cite the following paper
 The list of modules described in this chapter is:
 
 .. toctree::
+   :maxdepth: 1
 
    pbc/gto.rst
    pbc/ao2mo.rst
@@ -47,3 +47,4 @@ The list of modules described in this chapter is:
    pbc/mix_mol.rst
    pbc/prop.rst
    pbc/gw.rst
+   pbc/x2c.rst

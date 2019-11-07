@@ -1,7 +1,7 @@
 .. _mol_df:
 
-df --- Density fitting
-**********************
+:mod:`df` --- Density fitting
+*****************************
 
 .. module:: df
    :synopsis: Density fitting and RI approximation

@@ -1,7 +1,7 @@
 .. _cc:
 
-cc --- Coupled cluster
-**********************
+:mod:`cc` --- Coupled cluster
+*****************************
 
 .. module:: cc
    :synopsis: Coupled cluster energies and properties

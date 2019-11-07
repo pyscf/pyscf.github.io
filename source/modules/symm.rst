@@ -1,7 +1,7 @@
 .. _symm:
 
-symm -- Point group symmetry and spin symmetry
-**********************************************
+:mod:`symm` -- Point group symmetry and spin symmetry
+*****************************************************
 
 .. automodule:: pyscf.symm
 

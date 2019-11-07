@@ -1,7 +1,7 @@
 .. _mcscf:
 
-mcscf --- Multi-configurational self-consistent field
-*****************************************************
+:mod:`mcscf` --- Multi-configurational self-consistent field
+************************************************************
 
 The :mod:`mcscf` implements orbital optimization for
 MCSCF and CASSCF. 1-step (combined orbital and wavefunction

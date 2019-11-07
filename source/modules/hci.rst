@@ -1,7 +1,7 @@
 .. _hci:
 
-hci --- Heat-bath selected CI
-*****************************
+:mod:`hci` --- Heat-bath selected CI
+************************************
 
 The :mod:`HCI` module is a native implementation
 of the Heat-bath selected CI algorithm, where selection is done based

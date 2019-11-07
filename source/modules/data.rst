@@ -1,9 +1,12 @@
 .. _data:
 
-data --- Data for constants
+:mod:`data` --- Data for constants
 **********************************
 
-Data for constants.
+The :mod:`data` module contains various physical constants and pre-determined data.
+
+
+Program reference
+=================
 
 .. automodule:: pyscf.data
- 

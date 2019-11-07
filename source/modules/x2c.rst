@@ -1,7 +1,7 @@
 .. _x2c:
 
-x2c --- exact-two-component approach
-************************************
+:mod:`x2c` --- exact-two-component approach
+*******************************************
 
 An example to apply scalar relativistic effects by decorating the scf object with module :mod:`x2c` is shown as following::
 

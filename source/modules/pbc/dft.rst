@@ -1,83 +1,56 @@
 .. _pbc_dft:
 
-pbc.dft  --- PBC density functional theory
-******************************************
+pbc.dft  --- DFT with PBCs
+**************************
+
+The :mod:`pbc.dft` module implements the density functional theory with periodic boundary conditions.
+It is analogous to the :mod:`dft` module.
 
 
 Examples
 ========
 
-Relevant examples
-:file:`examples/pbc/10-gamma_point_scf.py`
-:file:`examples/pbc/11-gamma_point_all_electron_scf.py`
-:file:`examples/pbc/20-k_points_scf.py`
-:file:`examples/pbc/21-k_points_all_electron_scf.py`
+:download:`examples/pbc/10-gamma_point_scf.py </../examples/pbc/10-gamma_point_scf.py>`
+
+:download:`examples/pbc/11-gamma_point_all_electron_scf.py </../examples/pbc/11-gamma_point_all_electron_scf.py>`
+
+:download:`examples/pbc/20-k_points_scf.py </../examples/pbc/20-k_points_scf.py>`
+
+:download:`examples/pbc/21-k_points_all_electron_scf.py </../examples/pbc/21-k_points_all_electron_scf.py>`
 
 
 Program reference
 =================
 
-.. .. automodule:: pyscf.pbc.dft
+.. automodule:: pyscf.pbc.dft
+   :members:
 
-rks
----
-.. .. autoclass:: pyscf.pbc.dft.rks.RKS
-.. .. automodule:: pyscf.pbc.dft.rks
-      :members:
+.. automodule:: pyscf.pbc.dft.rks
+   :members:
 
-roks
-----
-.. .. autoclass:: pyscf.pbc.dft.roks.ROKS
-.. .. automodule:: pyscf.pbc.dft.roks
-      :members:
+.. automodule:: pyscf.pbc.dft.roks
+   :members:
 
-uks
----
-.. .. autoclass:: pyscf.pbc.dft.uks.UKS
-.. .. automodule:: pyscf.pbc.dft.uks
-      :members:
+.. automodule:: pyscf.pbc.dft.uks
+   :members:
 
-cdft
-----
+.. automodule:: pyscf.pbc.dft.cdft
+   :members:
 
-.. .. automodule:: pyscf.pbc.dft.cdft
-      :members:
+.. automodule:: pyscf.pbc.dft.krks
+   :members:
 
-krks
-----
-.. .. autoclass:: pyscf.pbc.dft.krks.KRKS
-.. .. automodule:: pyscf.pbc.dft.krks
-      :members:
+.. automodule:: pyscf.pbc.dft.kroks
+   :members:
 
-kroks
------
+.. automodule:: pyscf.pbc.dft.kuks
+   :members:
 
-.. .. autoclass:: pyscf.pbc.dft.kroks.KROKS
-.. .. automodule:: pyscf.pbc.dft.kroks
-      :members:
+.. automodule:: pyscf.pbc.dft.numint
+   :members:
 
-kuks
-----
-.. .. autoclass:: pyscf.pbc.dft.kuks.KUKS
-.. .. automodule:: pyscf.pbc.dft.kuks
-      :members:
+.. automodule:: pyscf.pbc.dft.gen_grid
+   :members:
 
-numint
-------
-.. .. autoclass:: pyscf.pbc.dft.numint.NumInt
-.. .. autoclass:: pyscf.pbc.dft.numint.KNumInt
-.. .. automodule:: pyscf.pbc.dft.numint
-      :members:
-
-gen_grid
---------
-.. .. autoclass:: pyscf.pbc.dft.gen_grid.UniformGrids
-.. .. autoclass:: pyscf.pbc.dft.gen_grid.BeckeGrids
-.. .. automodule:: pyscf.pbc.dft.gen_grid
-      :members:
-
-multigrid
----------
-.. .. autoclass:: pyscf.pbc.dft.multigrid.MultiGridFFTDF
-.. .. automodule:: pyscf.pbc.dft.multigrid
-      :members:
+.. automodule:: pyscf.pbc.dft.multigrid
+   :members:

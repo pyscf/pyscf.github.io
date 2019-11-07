@@ -1,7 +1,7 @@
 .. _ccn:
 
-ccn --- Auto-Generated Coupled-Cluster Equations of Arbitrary Order
-**********************************
+:mod:`ccn` --- Auto-Generated Coupled-Cluster Equations of Arbitrary Order
+**************************************************************************
 
 .. module:: ccn
    :synopsis: Arbitrary order coupled-cluster methods

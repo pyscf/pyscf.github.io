@@ -1,7 +1,7 @@
 .. _semiempirical:
 
-semiempirical --- Semiempirical methods
-***************************************
+:mod:`semiempirical` --- Semiempirical methods
+**********************************************
 
 .. module:: semiempirical
 
