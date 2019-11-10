@@ -1,7 +1,7 @@
 .. _pbc_scf:
 
-pbc.scf --- Mean-field with periodic boundary condition
-*******************************************************
+pbc.scf --- Self-consistent field with periodic boundary conditions
+*******************************************************************
 This module is constructed to be analogous to the molecular :mod:`pyscf.scf` module to handle
 mean-field calculations with periodic boundary conditions.
 
@@ -56,7 +56,7 @@ the PBC-HF calculation with :class:`pyscf.pbc.scf.hf.RHF` or
 higher accuracy, you may wish to use
   mixed density fitting (MDF) (see :ref:`with_df`).  Here is an example to update :attr:`with_df`
 
-.. literalinclude:: ../../../examples/pbc/11-gamma_point_all_electron_scf.py
+.. literalinclude:: /../examples/pbc/11-gamma_point_all_electron_scf.py
 
   
 
@@ -101,7 +101,7 @@ k-point sampling
 
 An example demonstrating the use of k-points for a KRHF, KRKS calculation, and using the Newton (second-order SCF) solver.
 
-.. literalinclude:: ../../../examples/pbc/20-k_points_scf.py
+.. literalinclude:: /../examples/pbc/20-k_points_scf.py
 
 Smearing
 --------

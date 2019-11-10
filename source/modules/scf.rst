@@ -1,7 +1,7 @@
 .. _scf:
 
-:mod:`scf` --- Mean-field methods
-*********************************
+:mod:`scf` --- Self-consistent field methods
+********************************************
 
 .. module:: scf
    :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
@@ -32,7 +32,6 @@ To run a simple HF calculation with SCF::
 Examples
 ========
 
-Relevant examples
 :file:`examples/scf/00-simple_hf.py`
 :file:`examples/scf/01-h2o.py`
 :file:`examples/scf/02-ghf.py`
@@ -267,95 +266,40 @@ Program reference
 =================
 
 .. automodule:: pyscf.scf
- 
+   :members: 
 
 Non-relativistic Hartree-Fock
 -----------------------------
 
-.. autoclass:: pyscf.scf.hf.SCF
-   :members:
-
-----------
-
-.. autoclass:: pyscf.scf.hf.RHF
-   :members:
-
-----------
-
-.. autoclass:: pyscf.scf.rohf.ROHF
-   :members:
-
-----------
-
-.. autoclass:: pyscf.scf.uhf.UHF
-   :members:
-
-----------
-
 .. automodule:: pyscf.scf.hf
    :members:
-
-----------
-
-.. automodule:: pyscf.scf.uhf
-   :members:
-
-----------
 
 .. automodule:: pyscf.scf.hf_symm
    :members:
 
-----------
+.. automodule:: pyscf.scf.rohf
+   :members:
+
+.. automodule:: pyscf.scf.uhf
+   :members:
 
 .. automodule:: pyscf.scf.uhf_symm
    :members:
 
-----------
-
 .. automodule:: pyscf.scf.atom_hf
    :members:
-
-----------
-
-.. automodule:: pyscf.scf.cphf
-   :members:
-
-----------
 
 .. automodule:: pyscf.scf.ghf
    :members:
 
-----------
-
 .. automodule:: pyscf.scf.ghf_symm
    :members:
 
-----------
-
-.. automodule:: pyscf.scf.rohf
+.. automodule:: pyscf.scf.cphf
    :members:
-
-----------
 
 .. automodule:: pyscf.scf.ucphf
    :members:
-
-----------
-
-.. automodule:: pyscf.scf._vhf
-   :members:
-
-
-
-
-
-
-
-
-
-
-
-
 
 Relativistic Hartree-Fock
 -------------------------
@@ -363,61 +307,27 @@ Relativistic Hartree-Fock
 .. automodule:: pyscf.scf.dhf
    :members:
 
-.. automodule:: pyscf.scf.x2c
-   :members:
 
-
-
-
-
-
-addons
+Addons
 ------
 
 .. automodule:: pyscf.scf.addons
    :members:
 
-----------
-
 .. automodule:: pyscf.scf.chkfile
    :members:
-
-----------
 
 .. automodule:: pyscf.scf.diis
    :members:
 
-jk
-----------
-
 .. automodule:: pyscf.scf.jk
    :members:
 
-newton_ah
-----------
-
-.. automodule:: pyscf.scf.newton_ah
-   :members:
-
-stability
-----------
+Stability analysis
+------------------
 
 .. automodule:: pyscf.scf.stability
    :members:
 
-stability_slow
-----------
-
 .. automodule:: pyscf.scf.stability_slow
    :members:
-
-
-
-
-
-
-
-
-
-
-

@@ -36,6 +36,7 @@ extensions = [
     #'sphinxtogithub',
     #'sphinxcontrib.napoleon', # numpy style doc
     #'numpydoc', # numpy style doc
+    'sphinxcontrib.bibtex',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -108,6 +109,9 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 #html_theme = 'default'
 html_theme = 'sphinx_rtd_theme'
+#html_theme = 'kotti_docs_theme'
+#import kotti_docs_theme
+#html_theme_path = [kotti_docs_theme.get_theme_dir()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
