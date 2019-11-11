@@ -4,6 +4,8 @@
 Density functional theory (DFT)
 *******************************
 
+*Modules*: :ref:`dft <dft>`, :ref:`pbc.dft <pbc_dft>`
+
 Introduction
 ============
 

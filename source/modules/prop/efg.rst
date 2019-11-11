@@ -1,11 +1,6 @@
 efg ---
 *******
 
-Examples
-========
-
-No examples
-
 Program reference
 =================
 

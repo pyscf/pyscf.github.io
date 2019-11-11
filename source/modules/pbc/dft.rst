@@ -11,11 +11,8 @@ Examples
 ========
 
 :download:`examples/pbc/10-gamma_point_scf.py </../examples/pbc/10-gamma_point_scf.py>`
-
 :download:`examples/pbc/11-gamma_point_all_electron_scf.py </../examples/pbc/11-gamma_point_all_electron_scf.py>`
-
 :download:`examples/pbc/20-k_points_scf.py </../examples/pbc/20-k_points_scf.py>`
-
 :download:`examples/pbc/21-k_points_all_electron_scf.py </../examples/pbc/21-k_points_all_electron_scf.py>`
 
 

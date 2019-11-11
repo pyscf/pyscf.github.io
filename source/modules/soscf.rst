@@ -1,25 +1,17 @@
 .. _soscf:
 
-:mod:`soscf` --- Second order Hartree-Fock solver
-*************************************************
+:mod:`soscf` --- Second order SCF solver
+****************************************
 
 .. module:: soscf
 
-The :mod:`soscf` module implements second-order SCF optimization.
+The :mod:`soscf` module implements second-order SCF solver.
 
 Program reference
 =================
 
-.. automodule:: pyscf.soscf
- 
-main class
-----------
-
 .. automodule:: pyscf.soscf.newton_ah
    :members:
-
-soscf.ciah
-----------
 
 .. automodule:: pyscf.soscf.ciah
    :members:
