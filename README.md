@@ -12,7 +12,7 @@ Installation
 * Prerequisites
     - sphinx-build
 
-* Make HTML
+* Make HTML pages
 
         make html
 
