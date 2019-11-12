@@ -241,8 +241,8 @@ Interested readers should refer to the reference.
 An example of selecting different DIIS schemes can be found in 
 :download:`examples/scf/24-tune_diis.py </../examples/scf/24-tune_diis.py>`
 
-Co-iterative augmented hessian (CIAH) second order SCF solver
--------------------------------------------------------------
+Co-iterative augmented hessian (CIAH) second order SCF solver :cite:`sun2016co`
+-------------------------------------------------------------------------------
 
 References
 ==========
