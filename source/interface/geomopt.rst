@@ -1,10 +1,11 @@
 .. _geomopt:
 
-geomopt --- Geometry optimization
-*********************************
+:mod:`geomopt` --- Geometry optimization
+****************************************
 
 The :mod:`geomopt` module implements geometry optimization via
-interfaces to geomeTRIC (https://github.com/leeping/geomeTRIC) and PyBerny (https://github.com/azag0/pyberny).
+interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_ 
+and `PyBerny <https://github.com/azag0/pyberny>`_.
 The following example shows how to optimize the structure of N\ :sub:`2`\  molecule with PyBerny::
 
     from pyscf import gto, scf
@@ -17,15 +18,13 @@ The following example shows how to optimize the structure of N\ :sub:`2`\  molec
 Examples
 ========
 
-Relevant examples
-:file:`examples/geomopt/01-geomeTRIC.py`
-:file:`examples/geomopt/01-pyberny.py`
-:file:`examples/geomopt/02-as_pyscf_method.py`
-:file:`examples/geomopt/10-with_qmmm.py`
-:file:`examples/geomopt/11-with_ghost_atom.py`
-:file:`examples/geomopt/12-excited_states.py`
-:file:`examples/geomopt/12-mcscf_excited_states.py`
-:file:`examples/geomopt/13-ccsd_t.py`
+:download:`examples/geomopt/01-geomeTRIC.py </../examples/geomopt/01-geomeTRIC.py>`
+:download:`examples/geomopt/01-pyberny.py </../examples/geomopt/01-pyberny.py>`
+:download:`examples/geomopt/02-as_pyscf_method.py </../examples/geomopt/02-as_pyscf_method.py>`
+:download:`examples/geomopt/10-with_qmmm.py </../examples/geomopt/10-with_qmmm.py>`
+:download:`examples/geomopt/12-excited_states.py </../examples/geomopt/12-excited_states.py>`
+:download:`examples/geomopt/12-mcscf_excited_states.py </../examples/geomopt/12-mcscf_excited_states.py>`
+:download:`examples/geomopt/13-ccsd_t.py </../examples/geomopt/13-ccsd_t.py>`
 
 
 Program reference
@@ -39,4 +38,3 @@ Program reference
 
 .. automodule:: pyscf.geomopt.addons
    :members:
-

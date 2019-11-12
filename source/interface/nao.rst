@@ -1,11 +1,10 @@
 .. _nao:
 
-*******************************************
-nao --- Numerical Atomic Orbitals
-*******************************************
+:mod:`nao` --- Numerical Atomic Orbitals
+****************************************
 The :mod:`nao` module is a simple and elegant python library to perform
-iiterative Time Dependent Density Functional Theory (TDDFT) using ground state
-data from differents programs,
+iterative time-dependent density functional theory (TDDFT) using ground-state
+data from different programs,
   * `Siesta <https://departments.icmab.es/leem/siesta/>`_
   * `PYSCF <https://sunqm.github.io/pyscf/>`_
   * `OpenMX <http://openmx.ssri.psu.edu/>`_

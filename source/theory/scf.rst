@@ -11,7 +11,7 @@ Introduction
 In self-consistent field (SCF) methods, the electron interactions are treated in a mean-field way.
 Here, the SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham (KS) density functional theory (DFT).
 This Chapter summarizes the general SCF capabilities of PySCF. 
-For more details specific to DFT, see :ref:`theory_dft`.
+For more details specific to DFT, see :numref:`theory_dft`.
 
 A minimal example of using the SCF module is as follows::
 
@@ -47,8 +47,8 @@ where the molecular orbitals (MO) :math:`|\psi_i\rangle` are obtained by solving
 
    \hat{F}|\psi_i\rangle = \varepsilon_i |\psi_i\rangle \;.
 
-The Fock operator, when represented within the atomic orbital (AO) basis, has the following form 
-(in a spin unrestricted treatment):
+The Fock operator :math:`\hat{F}`, when represented within the atomic orbital (AO) basis, has the following form 
+(in a spin unrestricted formalism):
 
 .. math::
 
@@ -77,7 +77,7 @@ In the equations above, :math:`\mathbf{P}` labels the density matrix:
 
 .. math::
 
-   P_{\mu\nu}^{\alpha} = \sum_{i\in occ} C_{\mu i}^{\alpha} C_{\nu i}^{\alpha\dagger} \;,
+   P_{\mu\nu}^{\alpha} = \sum_{i\in occ} C_{\mu i}^{\alpha} C_{i\nu}^{\alpha\dagger} \;,
 
 where :math:`\mathbf{C}` represents the MO coefficients:
 
@@ -85,7 +85,7 @@ where :math:`\mathbf{C}` represents the MO coefficients:
 
    |\psi^{\alpha}\rangle  = \sum_{\mu} |\mu\rangle C_{\mu i}^{\alpha} \;.
 
-Within the AO representation, the Hartree-Fock equations reduce to the Roothaan-Hall or Pople-Nesbet equations:
+Within the AO representation, the Hartree-Fock equations reduce to the Roothaan-Hall or Pople-Nesbet :cite:`pople1954self` equations:
 
 .. math::
 
