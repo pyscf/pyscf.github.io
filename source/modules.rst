@@ -31,6 +31,7 @@ This chapter lists all the modules included in the main body of the PySCF packag
    modules/pbc.rst
    modules/prop.rst
    modules/qmmm.rst
+   modules/rt.rst
    modules/scf.rst
    modules/semiempirical.rst
    modules/sgx.rst
