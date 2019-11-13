@@ -7,74 +7,50 @@
    :synopsis: restricted and unrestricted, closed shell and open shell Hartree-Fock methods
 
 The :mod:`scf` module implements restricted and unrestricted, closed shell and open shell Hartree-Fock methods.
-To run a simple HF calculation with SCF::
 
-    import pyscf
-    mol = pyscf.M(
-        atom = 'H 0 0 0; F 0 0 1.1',  # in Angstrom
-        basis = 'ccpvdz',
-        symmetry = True,
-    )
-    myhf = mol.HF()
-    myhf.kernel()
-    # Orbital energies, Mulliken population etc.
-    myhf.analyze()
-    # myhf object can also be created using the APIs of gto, scf module
-    from pyscf import gto, scf
-    mol = gto.M(
-        atom = 'H 0 0 0; F 0 0 1.1',  # in Angstrom
-        basis = 'ccpvdz',
-        symmetry = True,
-    )
-    myhf = scf.HF(mol)
-    myhf.kernel()
 
 Examples
 ========
 
-:file:`examples/scf/00-simple_hf.py`
-:file:`examples/scf/01-h2o.py`
-:file:`examples/scf/02-ghf.py`
-:file:`examples/scf/02-rohf_uhf.py`
-:file:`examples/scf/03-level_shift.py`
-:file:`examples/scf/04-dirac_hf.py`
-:file:`examples/scf/05-breit_gaunt.py`
-:file:`examples/scf/10-glycine.py`
-:file:`examples/scf/11-linear_dep.py`
-:file:`examples/scf/12-fast_hf.py`
-:file:`examples/scf/13-symmetry.py`
-:file:`examples/scf/15-initial_guess.py`
-:file:`examples/scf/16-h2_scan.py`
-:file:`examples/scf/17-stability.py`
-:file:`examples/scf/20-density_fitting.py`
-:file:`examples/scf/21-x2c.py`
-:file:`examples/scf/22-newton.py`
-:file:`examples/scf/23-decorate_scf.py`
-:file:`examples/scf/24-callback.py`
-:file:`examples/scf/24-tune_diis.py`
-:file:`examples/scf/30-scan_pes.py`
-:file:`examples/scf/31-cr_atom_rohf_tune_init_guess.py`
-:file:`examples/scf/31-v_atom_rohf.py`
-:file:`examples/scf/32-break_spin_symm.py`
-:file:`examples/scf/40-apply_electric_field.py`
-:file:`examples/scf/40-customizing_hamiltonian.py`
-:file:`examples/scf/41-hf_with_given_densityfit_ints.py`
-:file:`examples/scf/42-remove_linear_dep.py`
-:file:`examples/scf/43-custom_get_jk.py`
-:file:`examples/scf/50-mom-deltaSCF.py`
-:file:`examples/scf/51-elecoup_mom.py`
-:file:`examples/scf/52-dynamically_control_level_shift.py`
-:file:`examples/scf/53-dynamic_sz.py`
-:file:`examples/scf/54-fractional_occupancy.py`
-:file:`examples/scf/55-overload_convergence_criteria.py`
-:file:`examples/scf/56-h2_symm_breaking.py`
-:file:`examples/scf/14-restart.py`
-:file:`examples/scf/70-background_and_hot_tuning.py`
-:file:`examples/scf/71-patch_scf_kernel.py`
-
-
-Stability analysis
-==================
+:download:`examples/scf/00-simple_hf.py </../examples/scf/00-simple_hf.py>`
+:download:`examples/scf/01-h2o.py </../examples/scf/01-h2o.py>`
+:download:`examples/scf/02-ghf.py </../examples/scf/02-ghf.py>`
+:download:`examples/scf/02-rohf_uhf.py </../examples/scf/02-rohf_uhf.py>`
+:download:`examples/scf/03-level_shift.py </../examples/scf/03-level_shift.py>`
+:download:`examples/scf/04-dirac_hf.py </../examples/scf/04-dirac_hf.py>`
+:download:`examples/scf/05-breit_gaunt.py </../examples/scf/05-breit_gaunt.py>`
+:download:`examples/scf/10-glycine.py </../examples/scf/10-glycine.py>`
+:download:`examples/scf/11-linear_dep.py </../examples/scf/11-linear_dep.py>`
+:download:`examples/scf/12-fast_hf.py </../examples/scf/12-fast_hf.py>`
+:download:`examples/scf/13-symmetry.py </../examples/scf/13-symmetry.py>`
+:download:`examples/scf/14-restart.py </../examples/scf/14-restart.py>`
+:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`
+:download:`examples/scf/16-h2_scan.py </../examples/scf/16-h2_scan.py>`
+:download:`examples/scf/17-stability.py </../examples/scf/17-stability.py>`
+:download:`examples/scf/20-density_fitting.py </../examples/scf/20-density_fitting.py>`
+:download:`examples/scf/21-x2c.py </../examples/scf/21-x2c.py>`
+:download:`examples/scf/22-newton.py </../examples/scf/22-newton.py>`
+:download:`examples/scf/23-decorate_scf.py </../examples/scf/23-decorate_scf.py>`
+:download:`examples/scf/24-callback.py </../examples/scf/24-callback.py>`
+:download:`examples/scf/24-tune_diis.py </../examples/scf/24-tune_diis.py>`
+:download:`examples/scf/30-scan_pes.py </../examples/scf/30-scan_pes.py>`
+:download:`examples/scf/31-cr_atom_rohf_tune_init_guess.py </../examples/scf/31-cr_atom_rohf_tune_init_guess.py>`
+:download:`examples/scf/31-v_atom_rohf.py </../examples/scf/31-v_atom_rohf.py>`
+:download:`examples/scf/32-break_spin_symm.py </../examples/scf/32-break_spin_symm.py>`
+:download:`examples/scf/40-apply_electric_field.py </../examples/scf/40-apply_electric_field.py>`
+:download:`examples/scf/40-customizing_hamiltonian.py </../examples/scf/40-customizing_hamiltonian.py>`
+:download:`examples/scf/41-hf_with_given_densityfit_ints.py </../examples/scf/41-hf_with_given_densityfit_ints.py>`
+:download:`examples/scf/42-remove_linear_dep.py </../examples/scf/42-remove_linear_dep.py>`
+:download:`examples/scf/43-custom_get_jk.py </../examples/scf/43-custom_get_jk.py>`
+:download:`examples/scf/50-mom-deltaSCF.py </../examples/scf/50-mom-deltaSCF.py>`
+:download:`examples/scf/51-elecoup_mom.py </../examples/scf/51-elecoup_mom.py>`
+:download:`examples/scf/52-dynamically_control_level_shift.py </../examples/scf/52-dynamically_control_level_shift.py>`
+:download:`examples/scf/53-dynamic_sz.py </../examples/scf/53-dynamic_sz.py>`
+:download:`examples/scf/54-fractional_occupancy.py </../examples/scf/54-fractional_occupancy.py>`
+:download:`examples/scf/55-overload_convergence_criteria.py </../examples/scf/55-overload_convergence_criteria.py>`
+:download:`examples/scf/56-h2_symm_breaking.py </../examples/scf/56-h2_symm_breaking.py>`
+:download:`examples/scf/70-background_and_hot_tuning.py </../examples/scf/70-background_and_hot_tuning.py>`
+:download:`examples/scf/71-patch_scf_kernel.py </../examples/scf/71-patch_scf_kernel.py>`
 
 
 Addons

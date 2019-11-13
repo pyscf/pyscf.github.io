@@ -49,7 +49,7 @@ An :class:`FFTDF` object can be initialized as follows::
     >>> print(mf.with_df)
     <pyscf.pbc.df.fft.FFTDF object at 0x1206b0f28>
 
-As the default integral scheme of PBC calculations,
+As the default DF scheme of PBC calculations,
 an :class:`FFTDF` object is created when initializing the PBC mean-field object and held in the attribute :attr:`with_df`.
 
 4-index ERI tensor and integral transformation

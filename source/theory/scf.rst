@@ -211,8 +211,8 @@ where :math:`Z_{\alpha}` denotes the nuclear charge of the :math:`\alpha`-th ato
 
 .. note::
 
-   For details about how to compute the Coulomb (:math:`\mathbf{J}`) 
-   and exchange (:math:`\mathbf{K}`) integrals, see :numref:`theory_pbc_df`.
+   For details about how to compute the Coulomb (J) 
+   and exchange (K) integrals, see :numref:`theory_pbc_df`.
 
 Finally, the total electronic energy differs from the molecular case only by a k-point summation:
 
@@ -363,6 +363,10 @@ Co-iterative augmented hessian (CIAH) second order SCF solver :cite:`sun2016co`
 
 Level shifting and smearing
 ===========================
+
+
+Stability analysis
+==================
 
 
 References
