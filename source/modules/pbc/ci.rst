@@ -11,6 +11,10 @@ Program reference
 =================
 
 .. automodule:: pyscf.pbc.ci
+   :members:
 
 .. automodule:: pyscf.pbc.ci.cisd
+   :members:
+
+.. automodule:: pyscf.pbc.ci.kcis_rhf
    :members:

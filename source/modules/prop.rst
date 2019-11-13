@@ -19,4 +19,4 @@ The list of modules described in this chapter is:
    prop/nmr.rst
    prop/polarizability.rst
    prop/ssc.rst
-
+   prop/esr.rst
