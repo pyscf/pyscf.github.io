@@ -21,7 +21,7 @@ After assigning the crystal parameters, one calls :func:`build` to fully initial
 :class:`Cell` object.  A shortcut function :func:`M` is available at the module level to
 simplify the input.
 
-.. literalinclude:: ../../../examples/pbc/00-input_cell.py
+.. literalinclude:: /../examples/pbc/00-input_cell.py
 
 Beyond the basic parameters :attr:`atom` and :attr:`basis`, one needs to set the unit cell
 lattice vectors :attr:`a` (a 3x3 array, where each row is a real-space primitive vector)
@@ -172,7 +172,7 @@ developed by quantum chemistry community can be directly used in the pbc
 calculation.  The :class:`Cell` class supports to mix the QC all-electron basis
 and PBC basis in the same calculation.
 
-.. literalinclude:: ../../../examples/pbc/04-input_basis.py
+.. literalinclude:: /../examples/pbc/04-input_basis.py
 
 .. note::
 
@@ -195,5 +195,5 @@ the pseudo potential database.  PySCF PBC program supports both the PBC
 conventional pseudo potential and ECP and the mix of the two kinds of potentials
 in the same calculation.
 
-.. literalinclude:: ../../../examples/pbc/05-input_pp.py
+.. literalinclude:: /../examples/pbc/05-input_pp.py
 

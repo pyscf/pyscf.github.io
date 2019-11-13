@@ -205,7 +205,9 @@ however, their sum is not, which leads to the :math:`V^{\rm L+J}` term (for char
 .. math::
 
    V_{\mu\nu}^{\rm L+J} (\mathbf{k})  = \frac{S_{\mu\nu}}{\Omega} 
-   \int d\mathbf{r} \left(v^{\rm L-PP}(\mathbf{r}) + \sum_{\alpha} \frac{Z_{\alpha}e^2}{r} \right) \;.
+   \int d\mathbf{r} \left(v^{\rm L-PP}(\mathbf{r}) + \sum_{\alpha} \frac{Z_{\alpha}e^2}{r} \right) \;,
+
+where :math:`Z_{\alpha}` denotes the nuclear charge of the :math:`\alpha`-th atom.
 
 .. note::
 
@@ -288,7 +290,8 @@ which is then used as the initial guess for the HF calculation of :math:`\rm Cr`
     mf.kernel(dm0=dm1)
 
 More examples can be found in 
-:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>` 
+:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`.
+
 
 Accelerating SCF convergence
 ============================
@@ -356,6 +359,11 @@ An example of selecting different DIIS schemes can be found in
 
 Co-iterative augmented hessian (CIAH) second order SCF solver :cite:`sun2016co`
 -------------------------------------------------------------------------------
+
+
+Level shifting and smearing
+===========================
+
 
 References
 ==========

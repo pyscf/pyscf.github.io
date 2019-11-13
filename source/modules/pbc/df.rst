@@ -438,17 +438,16 @@ post-HF methods for an electron correlation calculations in PBC::
 Examples
 ========
 
-DF relevant examples can be found in the PySCF examples directory::
-
-    examples/pbc/10-gamma_point_scf.py
-    examples/pbc/11-gamma_point_all_electron_scf.py
-    examples/pbc/12-gamma_point_post_hf.py
-    examples/pbc/20-k_points_scf.py
-    examples/pbc/21-k_points_all_electron_scf.py
-    examples/pbc/30-ao_integrals.py
-    examples/pbc/30-ao_value_on_grid.py
-    examples/pbc/30-mo_integrals.py
-    examples/pbc/31-low_dimensional_pbc.py
+:download:`examples/pbc/10-gamma_point_scf.py </../examples/pbc/10-gamma_point_scf.py>`
+:download:`examples/pbc/10-gamma_point_scf.py </../examples/pbc/10-gamma_point_scf.py>`
+:download:`examples/pbc/11-gamma_point_all_electron_scf.py </../examples/pbc/11-gamma_point_all_electron_scf.py>`
+:download:`examples/pbc/12-gamma_point_post_hf.py </../examples/pbc/12-gamma_point_post_hf.py>`
+:download:`examples/pbc/20-k_points_scf.py </../examples/pbc/20-k_points_scf.py>`
+:download:`examples/pbc/21-k_points_all_electron_scf.py </../examples/pbc/21-k_points_all_electron_scf.py>`
+:download:`examples/pbc/30-ao_integrals.py </../examples/pbc/30-ao_integrals.py>`
+:download:`examples/pbc/30-ao_value_on_grid.py </../examples/pbc/30-ao_value_on_grid.py>`
+:download:`examples/pbc/30-mo_integrals.py </../examples/pbc/30-mo_integrals.py>`
+:download:`examples/pbc/31-low_dimensional_pbc.py </../examples/pbc/31-low_dimensional_pbc.py>`
 
 
 Program reference
