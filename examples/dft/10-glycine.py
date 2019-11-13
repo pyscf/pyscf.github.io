@@ -1,1 +1,0 @@
-../scf/10-glycine.py

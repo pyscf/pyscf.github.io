@@ -1,1 +1,0 @@
-../scf/22-newton.py

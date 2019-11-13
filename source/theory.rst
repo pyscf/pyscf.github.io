@@ -18,6 +18,7 @@ This chapter introduces the basic theories of these methods and some of their mo
    theory/gw.rst
    theory/ci.rst
    theory/cc.rst
+   theory/adc.rst
    theory/mcscf.rst
    theory/tddft.rst
    theory/eomcc.rst
