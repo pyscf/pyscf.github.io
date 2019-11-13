@@ -35,7 +35,22 @@ FFTDF --- Fast Fourier transform based density fitting
 
 FFTDF represents the method to compute ERIs in
 reciprocal space with the Fourier transformed Coulomb kernel by using 
-numerical fast Fourier transform (FFT).
+numerical fast Fourier transform (FFT), which is implmented in the 
+PySCF class :class:`FFTDF`.
+An :class:`FFTDF` object can be initialized as follows::
+
+    >>> import numpy as np
+    >>> from pyscf.pbc import gto, df, scf
+    >>> cell = gto.M(atom='He 1 1 1', a=np.eye(3)*2, basis='3-21g')
+    >>> fftdf = df.FFTDF(cell)
+    >>> print(fftdf)
+    <pyscf.pbc.df.fft.FFTDF object at 0x111e278d0>
+    >>> mf = scf.RHF(cell)
+    >>> print(mf.with_df)
+    <pyscf.pbc.df.fft.FFTDF object at 0x1206b0f28>
+
+As the default integral scheme of PBC calculations,
+an :class:`FFTDF` object is created when initializing the PBC mean-field object and held in the attribute :attr:`with_df`.
 
 4-index ERI tensor and integral transformation
 ----------------------------------------------
@@ -44,11 +59,11 @@ For a general 4-index ERI, we have
 .. math::
 
    (i_{\mathbf{k}_i} j_{\mathbf{k}_j}|k_{\mathbf{k}_k} l_{\mathbf{k}_l}) = 
-   \Omega \sum_{\mathbf{G}}^{'} \rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G}) 
+   \Omega \sum_{\mathbf{G}\neq \mathbf{k}_i-\mathbf{k}_j} \rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G}) 
    \frac{4\pi}{|\mathbf{k}_j-\mathbf{k}_i+\mathbf{G}|^2}
    \rho_{k_{\mathbf{k}_k},l_{\mathbf{k}_l}}(\mathbf{G}_{ikjl}-\mathbf{G}) \;,
 
-where 
+where :math:`\mathbf{G}` is a reciprocal lattice vector,  
 
 .. math::
 
@@ -62,20 +77,21 @@ and :math:`\rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G})` is the Fourier 
    = \frac{1}{\Omega} \int_{\Omega} d\mathbf{r} \phi_{i_{\mathbf{k}_i}}^{*}(\mathbf{r}) \phi_{j_{\mathbf{k}_j}}(\mathbf{r}) 
    e^{-i(\mathbf{k}_j - \mathbf{k}_i + \mathbf{G})\cdot\mathbf{r}} \;.
 
-Note that the 4 k points (corresponding to the 4 AO indices) should follow the momentum
+Note that the four k points (corresponding to the four AO indices) should follow the momentum
 conservation law:
 
 .. math::
-    (\mathbf{k}_j - \mathbf{k}_i + \mathbf{k}_l - \mathbf{k}_k) \cdot a = 2n\pi.
+    (\mathbf{k}_j - \mathbf{k}_i + \mathbf{k}_l - \mathbf{k}_k) = \mathbf{G}.
 
-To evaluate these 4-index ERIs, PySCF provides the function :func:`FFTDF.get_eri`.
+To evaluate these 4-index ERIs, :class:`FFTDF` provides the function :func:`FFTDF.get_eri`.
 By default, four :math:`\Gamma` points are assigned to the four AO indices.
 As the format of molecular ERI tensor, the PBC ERI tensor is reshaped to a 2D
 array::
 
-    >>> eri = fftdf.get_eri()
+    >>> kpts = cell.make_kpts([2,2,2])
+    >>> eri = fftdf.get_eri() # \Gamma points only
     >>> print(eri.shape)
-    (4, 4)
+    (3, 3)
     >>> eri = fftdf.get_eri([kpts[0],kpts[0],kpts[1],kpts[1]])
     >>> print(eri.shape)
     (4, 4)
@@ -84,7 +100,7 @@ In addition, one can perform AO to MO transformations using the function :func:`
 Similar to :func:`FFTDF.get_eri`, the
 returned integral tensor is reshaped to a 2D array::
 
-    >>> orbs = numpy.random.random((4,2,2)) # MO coefficients
+    >>> orbs = np.random.random((4,2,2)) # MO coefficients
     >>> eri_mo = fftdf.ao2mo(orbs, [kpts[0],kpts[0],kpts[1],kpts[1]])
     >>> print(eri_mo.shape)
     (4, 4)
@@ -96,11 +112,11 @@ Hartree-Fock Coulomb matrix (J) and exchange matrix (K).  This method can take
 one density matrix or a list of density matrices as input and return the J and K
 matrices for each density matrix::
 
-    >>> dm = numpy.random.random((2,2))
+    >>> dm = np.random.random((2,2))
     >>> j, k = fftdf.get_jk(dm)
     >>> print(j.shape)
     (2, 2)
-    >>> dm = numpy.random.random((3,2,2))
+    >>> dm = np.random.random((3,2,2))
     >>> j, k = fftdf.get_jk(dm)
     >>> print(j.shape)
     (3, 2, 2)
@@ -109,11 +125,11 @@ When k points are specified, the input density matrices should have the correct
 shape that matches the number of k points::
 
     >>> kpts = cell.make_kpts([1,1,3])
-    >>> dm = numpy.random.random((3,2,2))
+    >>> dm = np.random.random((3,2,2))
     >>> j, k = fftdf.get_jk(dm, kpts=kpts)
     >>> print(j.shape)
     (3, 2, 2)
-    >>> dm = numpy.random.random((5,3,2,2))
+    >>> dm = np.random.random((5,3,2,2))
     >>> j, k = fftdf.get_jk(dm, kpts=kpts)
     >>> print(j.shape)
     (5, 3, 2, 2)
@@ -140,7 +156,7 @@ nuclear-type integrals of Gamma point::
     >>> vnuc = fftdf.get_pp(kpts)
     >>> print(vnuc.shape)
     (8, 2, 2)
-    >>> vnuc = fftdf.get_pp(kpts)
+    >>> vnuc = fftdf.get_pp()
     >>> print(vnuc.shape)
     (2, 2)
 
