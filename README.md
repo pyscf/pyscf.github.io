@@ -12,7 +12,7 @@ Installation
 * Prerequisites
     - sphinx-build
 
-    - Set `PYTHONPATH` to include PySCF source directory; otherwise, edit \"source/conf.py\" by adding `sys.path.insert(0, os.path.abspath('path\_to\_pyscf\_source'))`.
+    - Set `PYTHONPATH` to include PySCF source directory; otherwise, edit [source/conf.py](source/conf.py) by adding `sys.path.insert(0, os.path.abspath('path_to_pyscf_source'))`.
 
 * Make HTML pages
 
