@@ -25,6 +25,8 @@ Examples
 :download:`examples/geomopt/12-excited_states.py </../examples/geomopt/12-excited_states.py>`
 :download:`examples/geomopt/12-mcscf_excited_states.py </../examples/geomopt/12-mcscf_excited_states.py>`
 :download:`examples/geomopt/13-ccsd_t.py </../examples/geomopt/13-ccsd_t.py>`
+:download:`examples/geomopt/14-with_solvent.py </../examples/geomopt/14-with_solvent.py>`
+:download:`examples/geomopt/20-callback.py </../examples/geomopt/20-callback.py>`
 
 
 Program reference
