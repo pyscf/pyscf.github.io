@@ -12,10 +12,13 @@ Installation
 * Prerequisites
     - sphinx-build
 
+    - Set PYTHONPATH to include PySCF source directory; otherwise, edit \"source/conf.py\" by adding \"sys.path.insert(0, os.path.abspath('path\_to\_pyscf\_source'))\".
+
 * Make HTML pages
 
         make html
 
+    The resulting html files can be found in the \"build/html\" directory.
 
 How to contribute
 -----------------
