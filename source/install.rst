@@ -135,22 +135,19 @@ Installation without network
 If you have problems to download the external libraries on your computer, you can
 manually build the libraries, as shown in the following instructions.  First,
 you need to install libcint, libxc or xcfun libraries.
-`libcint cint3 branch <https://github.com/sunqm/libcint/tree/cint3>`_
-and `xcfun stable-1.x branch <https://github.com/dftlibs/xcfun/tree/stable-1.x>`_
-are required by PySCF.  They can be downloaded from github::
 
     $ git clone https://github.com/sunqm/libcint.git
     $ cd libcint
-    $ git checkout origin/cint3
     $ cd .. && tar czf libcint.tar.gz libcint
 
     $ git clone https://github.com/dftlibs/xcfun.git
     $ cd xcfun
+    $ # PySCF depends on this version of xcfun
     $ git checkout 355f42497a9cd17d16ae91da1f1aaaf93756ae8b
     $ cd .. && tar czf xcfun.tar.gz xcfun
 
-libxc-3.* can be found in http://octopus-code.org/wiki/Main_Page or
-`here <http://sunqm.net/pyscf/files/src/libxc-3.0.0.tar.gz>`_.
+libxc downloaded from
+`here <http://sunqm.net/pyscf/files/src/libxc-4.3.4.tar.gz>`_.
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
 
@@ -161,10 +158,11 @@ packages should be compiled with the flags::
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
-    $ tar xvzf libxc-3.0.0.tar.gz
-    $ cd libxc-0.0.0
+    $ tar xvzf libxc-4.3.4.tar.gz
+    $ cd libxc-4.3.4
     $ mkdir build && cd build
-    $ ../configure --prefix=/opt --libdir=/opt/lib --enable-shared --disable-fortran LIBS=-lm
+    $ ../configure --prefix=/opt --libdir=/opt/lib --enable-vxc --enable-fxc --enable-kxc \
+        --enable-shared --disable-static --enable-shared --disable-fortran LIBS=-lm
     $ make && make install
 
     $ tar xvzf xcfun.tar.gz
