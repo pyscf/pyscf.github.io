@@ -22,11 +22,10 @@ with the following principles:
 
 In addition to the core libraries, PySCF supports a rich
 ecosystem of plugins and external modules that, for example, provide
-MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits etc. See :ref:'.._installing_plugin:'.
+MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
+See :ref:`installing_plugin`.
 
   
-Contents
---------
 
 .. toctree::
    :maxdepth: 2
@@ -38,43 +37,11 @@ Contents
    code-rule.rst
    benchmark.rst
    tutorial.rst
-   gto.rst
-   ao2mo.rst
-   df.rst
-   symm.rst
-   scf.rst
-   dft.rst
-   dftd3.rst
-   grad.rst
-   hessian.rst
-   soscf.rst
-   sgx.rst
-   tddft.rst
-   mp.rst
-   ci.rst
-   doci.rst
-   cc.rst
-   gw.rst
-   fci.rst
-   hci.rst
-   cornell_shci.rst
-   mcscf.rst
-   dmrgscf.rst
-   fciqmcscf.rst
-   mrpt.rst
-   icmpspt.rst
-   x2c.rst
-   pbc.rst
-   qmmm.rst
-   solvent.rst
-   semiempirical.rst   
-   geomopt.rst
-   lo.rst
-   tools.rst
+   theory.rst
    advanced.rst
-   ccn.rst
-   nao.rst
-   lib.rst
+   interface.rst
+   modules.rst
+
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
@@ -86,4 +53,5 @@ You can also download the `PDF version
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
+
 

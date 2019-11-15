@@ -18,7 +18,7 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../pyscf'))
+#sys.path.insert(0, os.path.abspath('../../pyscf_master/pyscf'))
 
 # -- General configuration ------------------------------------------------
 
@@ -36,6 +36,7 @@ extensions = [
     #'sphinxtogithub',
     #'sphinxcontrib.napoleon', # numpy style doc
     #'numpydoc', # numpy style doc
+    'sphinxcontrib.bibtex',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PySCF'
-copyright = u'2015-, Qiming Sun <osirpt.sun@gmail.com>'
+copyright = u'2015-2019, The PySCF Developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -108,6 +109,9 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 #html_theme = 'default'
 html_theme = 'sphinx_rtd_theme'
+#html_theme = 'kotti_docs_theme'
+#import kotti_docs_theme
+#html_theme_path = [kotti_docs_theme.get_theme_dir()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

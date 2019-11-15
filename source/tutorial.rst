@@ -78,6 +78,8 @@ function pass all arguments to :func:`Mole.build`::
 Either way, you may have noticed two keywords ``atom`` and ``basis``.
 They are used to hold the molecular geometry and basis sets.
 
+For more examples, see :ref:`gto`. 
+
 Geometry
 --------
 
@@ -495,7 +497,7 @@ To restart a CASSCF calculation, you need prepare either CASSCF orbitals
 or CI coefficients (not that useful unless doing a DMRG-CASSCF calculation) or
 both.  For example:
 
-.. literalinclude:: ../../examples/mcscf/13-restart.py
+.. literalinclude:: /../examples/mcscf/13-restart.py
 
 Access AO integrals
 ===================
@@ -633,15 +635,15 @@ Other features
 Density fitting
 ---------------
 
-.. literalinclude:: ../../examples/scf/20-density_fitting.py
+.. literalinclude:: /../examples/scf/20-density_fitting.py
 
 Customizing Hamiltonian
 -----------------------
 
-.. literalinclude:: ../../examples/scf/40-customizing_hamiltonian.py
+.. literalinclude:: /../examples/scf/40-customizing_hamiltonian.py
 
 Symmetry in CASSCF
 ------------------
 
-.. literalinclude:: ../../examples/mcscf/21-nosymhf_then_symcasscf.py
+.. literalinclude:: /../examples/mcscf/21-nosymhf_then_symcasscf.py
 

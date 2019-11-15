@@ -1,3 +1,5 @@
+.. _advanced:
+
 Miscellaneous
 *************
 
@@ -12,7 +14,7 @@ fitting, scalar relativistic correction and second order SCF.
 The different ordering of the three decoration operations have different
 effects.  For example
 
-.. literalinclude:: ../../examples/scf/23-decorate_scf.py
+.. literalinclude:: /../examples/scf/23-decorate_scf.py
 
 FCI
 ---
@@ -28,7 +30,7 @@ operation, the density fitting for CASSCF solver only affect the CASSCF
 optimization procedure.  It does not change the 2e integrals for CASSCF
 Hamiltonian.  For example
 
-.. literalinclude:: ../../examples/mcscf/16-density_fitting.py
+.. literalinclude:: /../examples/mcscf/16-density_fitting.py
 
 
 Customizing Hamiltonian
@@ -40,9 +42,9 @@ methods :func:`get_hcore`, :func:`get_ovlp` and attribute :attr:`_eri` of SCF cl
 new Hamiltonian.  E.g. the user-defined
 Hamiltonian for Hartree-Fock
 
-.. literalinclude:: ../../examples/scf/40-customizing_hamiltonian.py
+.. literalinclude:: /../examples/scf/40-customizing_hamiltonian.py
 
 and the user-defined Hamiltonian for CASSCF
 
-.. literalinclude:: ../../examples/mcscf/40-customizing_hamiltonian.py
+.. literalinclude:: /../examples/mcscf/40-customizing_hamiltonian.py
 
