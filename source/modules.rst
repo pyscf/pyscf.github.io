@@ -8,6 +8,7 @@ This chapter lists all the modules included in the main body of the PySCF packag
 .. toctree::
    :maxdepth: 1
 
+   modules/adc.rst
    modules/ao2mo.rst
    modules/cc.rst
    modules/ccn.rst
