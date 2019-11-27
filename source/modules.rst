@@ -35,7 +35,6 @@ This chapter lists all the modules included in the main body of the PySCF packag
    modules/scf.rst
    modules/semiempirical.rst
    modules/sgx.rst
-   modules/shciscf.rst
    modules/solvent.rst
    modules/soscf.rst
    modules/symm.rst

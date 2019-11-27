@@ -16,5 +16,6 @@ special requirements for installations, additional licences, *etc*.
    interface/dmrgscf.rst
    interface/fciqmcscf.rst
    interface/cornell_shci.rst
+   interface/shciscf.rst
    interface/icmpspt.rst
    interface/nao.rst

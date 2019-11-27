@@ -3,9 +3,9 @@
 :mod:`dmrgscf` --- DMRG and DMRG-SCF/CASSCF
 *******************************************
 
-The DMRG calculation must be carried out with an external solver, such as
+The :mod:`dmrgscf` module interfaces PySCF with external DMRG solvers, such as
 `Block <https://sanshar.github.io/Block>`_, 
-`StackBlock <https://github.com/sanshar/StackBlock>`_ or 
+`StackBlock <https://github.com/sanshar/StackBlock>`_ and 
 `CheMPS2 <https://github.com/SebWouters/CheMPS2>`_.
 See also :mod:`mcscf`.
 
