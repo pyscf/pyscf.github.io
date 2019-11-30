@@ -60,6 +60,7 @@ Relevant examples
 :file:`examples/tools/05-cubegen.py`
 :file:`examples/tools/06-chgcar.py`
 :file:`examples/tools/11-davidson_eigh.py`
+:file:`examples/tools/12-einsum.py`
 
 
 Program reference

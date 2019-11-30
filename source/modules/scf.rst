@@ -21,7 +21,7 @@ Examples
 :download:`examples/scf/05-breit_gaunt.py </../examples/scf/05-breit_gaunt.py>`
 :download:`examples/scf/10-glycine.py </../examples/scf/10-glycine.py>`
 :download:`examples/scf/11-linear_dep.py </../examples/scf/11-linear_dep.py>`
-:download:`examples/scf/12-fast_hf.py </../examples/scf/12-fast_hf.py>`
+:download:`examples/scf/12-fast_newton.py </../examples/scf/12-fast_newton.py>`
 :download:`examples/scf/13-symmetry.py </../examples/scf/13-symmetry.py>`
 :download:`examples/scf/14-restart.py </../examples/scf/14-restart.py>`
 :download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`

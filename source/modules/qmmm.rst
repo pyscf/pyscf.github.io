@@ -43,6 +43,8 @@ Relevant examples
 :file:`examples/qmmm/11-soscf.py`
 :file:`examples/qmmm/20-grad.py`
 :file:`examples/qmmm/21-geom_opt.py`
+:file:`examples/qmmm/30-force_on_mm_particles.py`
+
 
 .. automodule:: pyscf.qmmm.itrf
    :members:

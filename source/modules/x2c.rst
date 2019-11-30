@@ -29,6 +29,7 @@ Examples
 Relevant examples
 :file:`examples/x2c/01-spin_free_x2c.py`
 :file:`examples/x2c/02-basis_for_x.py`
+:file:`examples/x2c/10-picture_change.py`
 
 
 Program reference

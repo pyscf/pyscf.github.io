@@ -15,10 +15,12 @@ Examples
 
 :download:`examples/ao2mo/00-mo_integrals.py </../examples/ao2mo/00-mo_integrals.py>`
 :download:`examples/ao2mo/01-outcore.py </../examples/ao2mo/01-outcore.py>`
+:download:`examples/ao2mo/04-dirac_hf_mo_integrals.py </../examples/ao2mo/04-dirac_hf_mo_integrals.py>`
 :download:`examples/ao2mo/10-diff_orbs_for_ijkl.py </../examples/ao2mo/10-diff_orbs_for_ijkl.py>`
 :download:`examples/ao2mo/11-ump2.py </../examples/ao2mo/11-ump2.py>`
 :download:`examples/ao2mo/20-eri_grad_hess.py </../examples/ao2mo/20-eri_grad_hess.py>`
 :download:`examples/ao2mo/21-spin_orbit_coupling.py </../examples/ao2mo/21-spin_orbit_coupling.py>`
+:download:`examples/ao2mo/22-rkb_no_pair_ints.py </../examples/ao2mo/22-rkb_no_pair_ints.py>`
 
 
 Program reference
