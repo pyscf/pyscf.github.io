@@ -4,7 +4,8 @@
 ********************************************************************************
 
 An interface to the `NECI <https://github.com/ghb24/NECI_STABLE>`_ FCIQMC solver. 
-See also :mod:`mcscf`.
+To use NECI, you need create a config file
+``pyscf/fciqmcscf/settings.py`` to store the path where NECI was installed.
 
 
 Program reference

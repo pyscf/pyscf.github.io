@@ -279,9 +279,9 @@ Some examples of platform specific configurations can be found in directory
 Plugins
 =======
 
-nao
+NAO
 ---
-:mod:`pyscf/nao` module includes the basic functions of numerical atomic orbitals
+The :mod:`nao` module includes the basic functions of numerical atomic orbitals
 (NAO) and the (nao based) TDDFT methods.  This module was contributed by Marc
 Barbry and Peter Koval.  You can enable this module with a cmake flag::
 
@@ -303,24 +303,6 @@ https://sanshar.github.io/Block/build.html.
 Before using the Block or CheMPS2, you need create a configuration file
 ``pyscf/dmrgscf/settings.py``  (as shown by settings.py.example) to store
 the path where the DMRG solver was installed.
-
-
-Heat-bath Selected CI
----------------------
-`Dice <https://sanshar.github.io/Dice/>`_ is an efficient implementation for
-heat-bath selected CI (SHCI) algorithm.  It can be used with the CASCI and
-CASSCF module to solve large active space problems.  The method to use SHCI
-is very much like the use of DMRG program.  The path of Dice program and other
-configurations should be initialized in the configuration file
-``pyscf/shci/settings.py`` before using the SHCI method.
-
-
-FCIQMC
-------
-NECI (https://github.com/ghb24/NECI_STABLE) is FCIQMC code developed by
-George Booth and Ali Alavi.  PySCF has an interface to call FCIQMC
-solver NECI.  To use NECI, you need create a config file
-future/fciqmc/settings.py to store the path where NECI was installed.
 
 
 Libxc
@@ -368,10 +350,4 @@ wrapper function to simplify the geometry optimization setup::
   from pyscf import gto, scf, geomopt
   mf = gto.M(atom='H 0 0 0; H 0 0 1.').apply(scf.RHF)
   mol_eq = geomopt.optimize(mf)
-
-
-XianCI
-------
-XianCI is a spin-adapted MRCI program.  "Bingbing Suo" <bsuo@nwu.edu.cn>
-is the main developer of XianCI program.
 
