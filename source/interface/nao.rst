@@ -7,7 +7,7 @@ iterative time-dependent density functional theory (TDDFT) using ground-state
 data from different programs,
   * `Siesta <https://departments.icmab.es/leem/siesta/>`_
   * `PYSCF <https://sunqm.github.io/pyscf/>`_
-  * `OpenMX <http://openmx.ssri.psu.edu/>`_
+  * `OpenMX <http://www.openmx-square.org/>`_
   * `GPAW <https://wiki.fysik.dtu.dk/gpaw>`_
 
 .. toctree::
