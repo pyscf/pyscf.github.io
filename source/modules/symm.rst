@@ -185,7 +185,7 @@ geom
    :members:
 
 Symmtry adapted basis
------
+---------------------
 
 .. automodule:: pyscf.symm.basis
    :members:
@@ -205,19 +205,19 @@ Clebsch Gordon coefficients
    :members:
 
 Parameters
-------
+----------
 
 .. automodule:: pyscf.symm.param
    :members:
 
 Spherical harmonics
-------
+-------------------
 
 .. automodule:: pyscf.symm.sph
    :members:
  
 Wigner rotation Dmatrix
-------
+-----------------------
 
 .. automodule:: pyscf.symm.Dmatrix
    :members:

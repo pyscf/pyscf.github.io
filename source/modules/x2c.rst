@@ -38,7 +38,7 @@ Program reference
 .. automodule:: pyscf.x2c
  
 X2C
-------
+---
 
 .. automodule:: pyscf.x2c.x2c
    :members:
