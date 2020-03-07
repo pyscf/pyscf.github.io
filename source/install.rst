@@ -37,6 +37,11 @@ before calling ``pip install`` command.  Libxc library can be found in
 http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
 you need to add --enable-shared flag.
 
+Geometry optimization module is not installed by default. You can install the
+``geomopt`` module using::
+
+  $ pip install pyscf[geomopt]
+
 
 Installation with conda
 =======================
