@@ -253,17 +253,6 @@ groups are saved in :attr:`Mole.topgroup` and :attr:`Mole.groupname`::
   >>> print(mol.groupname)
   Cs
 
-Also, during the :class:`Mole` object initialization, the program will move the
-charge center of the system to the origin (0,0,0) and place the main rotation
-axis on z-axis (if available, see :ref:`symm` for more details about how the
-main axis is determined).  In the last example, the molecule is rotated to::
-
-  >>> print(mol.atom_charges())
-  [[  0.00000000e+00  -8.18275415e-01   0.00000000e+00]
-   [ -7.71477460e-01   1.36379236e+00  -1.33623816e+00]
-   [ -7.71477460e-01   1.36379236e+00   1.33623816e+00]
-   [  1.54295492e+00   1.36379236e+00  -2.22044605e-16]]
-
 Sometimes it is necessary to use a lower symmetry instead of the detected
 symmetry group.  The subgroup symmetry can be specified in
 :attr:`Mole.symmetry_subgroup` and the program will first detect the highest
@@ -280,28 +269,10 @@ subgroup::
   >>> print(mol.groupname)
   C2
 
-In many situations, you may requite the program to use the point group symmetry
-in different orientation.  This can be achieved by explicit specification of the
-symmetry elements::
-
-  >>> mol = gto.Mole()
-  >>> mol.atom = 'N 0 0 0; N 0 0 1'
-  >>> mol.symmetry = 'coov'
-  >>> mol.build()
-  >>> print(mol.topgroup)
-  coov
-  >>> print(mol.groupname)
-  coov
-  >>> print(mol.atom_coords())
-  [[ 0.          0.          0.        ]
-   [ 0.          0.          1.88972612]]
-
-When a particular symmetry was assigned to :attr:`Mole.symmetry`. The program
-will use the given symmetry group for the system and use the input orientation.
-The initialization function :meth:`Mole.build` will test whether the input
-symmetry matches the input orientation.  If the given symmetry group does not
-agree to the actual input symmetry, the initialization will stop and issue an
-error message::
+When a particular symmetry was assigned to :attr:`Mole.symmetry`,
+the initialization function :meth:`Mole.build` will test whether the molecule
+geometry is subject to the required symmetry.  If not, initialization will stop
+and an error message will be issued::
 
   >>> mol = gto.Mole()
   >>> mol.atom = 'N 0 0 0; N 0 0 1'
@@ -312,10 +283,6 @@ error message::
   ('N', [0.0, 0.0, -0.9448630622825309])
   ('N', [0.0, 0.0, 0.9448630622825309])
 
-Note if Z-matrix is given in the input, the molecule may be placed in an
-arbitrary orientation.  Although still works, specifying :attr:`Mole.symmetry`
-often leads to the above error message.
-
 .. note::
   :attr:`Mole.symmetry_subgroup` does not have effects
   when specific symmetry group is assigned to :attr:`Mole.symmetry`.
@@ -325,7 +292,7 @@ information will be used to construct the symmetry adapted orbital basis (see
 also :ref:`symm`).  The symmetry adapted orbitals are held in
 :attr:`Mole.symm_orb` as a list of 2D arrays.  Each element of the list
 is an AO (atomic orbital) to SO (symmetry-adapted orbital) transformation matrix
-for an irreducible representation.  The name of the irreducible representations
+of an irreducible representation.  The name of the irreducible representations
 are stored in :attr:`Mole.irrep_name` and their internal IDs (see more details
 in :ref:`symm`) are stored in :attr:`Mole.irrep_id`::
 
