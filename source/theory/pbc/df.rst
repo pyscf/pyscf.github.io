@@ -332,7 +332,7 @@ recommended to change this parameter.
 
 The energy cutoff estimation is briefly documented below. In the GDF method, we
 introduced a smooth Gaussian function :math:`g(\eta) = \frac{1}{N} r^l e^{-\eta r^2}`
-to compensate the long range Coulomb potential of the auxiliary Gaussian basis.
+to screen the long range Coulomb potential of the auxiliary Gaussian basis.
 The Coulomb interaction between the smooth auxiliary Gaussian and the rest other
 auxiliary Gaussian basis or two-center Gaussian product is calculated in the
 reciprocal space.

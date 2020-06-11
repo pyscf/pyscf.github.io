@@ -6,7 +6,12 @@ Version history
 
 ===============  ==========
 ---------------  ----------
-1.6.5_           2019-11-17
+1.7.3_           2020-06-10
+1.7.2_           2020-05-13
+1.7.1_           2020-02-29
+1.7.0_           2020-01-01
+1.6.6_           2020-01-01
+1.6.5            2019-11-17
 1.6.4            2019-09-14
 1.6.3            2019-07-28
 1.6.2            2019-06-17
@@ -53,7 +58,11 @@ Version history
 1.0 alpha 1      2015-04-07
 ===============  ==========
 
-.. _1.6.5: https://github.com/sunqm/pyscf/releases/tag/v1.6.5
+.. _1.7.3: https://github.com/sunqm/pyscf/releases/tag/v1.7.3
+.. _1.7.2: https://github.com/sunqm/pyscf/releases/tag/v1.7.2
+.. _1.7.1: https://github.com/sunqm/pyscf/releases/tag/v1.7.1
+.. _1.7.0: https://github.com/sunqm/pyscf/releases/tag/v1.7.0
+.. _1.6.6: https://github.com/sunqm/pyscf/releases/tag/v1.6.6
 .. _1.5.5: https://github.com/sunqm/pyscf/releases/tag/v1.5.5
 .. _1.4.7: https://github.com/sunqm/pyscf/releases/tag/v1.4.7
 .. _1.3.5: https://github.com/sunqm/pyscf/releases/tag/v1.3.5
