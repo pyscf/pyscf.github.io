@@ -6,6 +6,8 @@ Version history
 
 ===============  ==========
 ---------------  ----------
+1.7.5_           2020-10-04
+1.7.4_           2020-08-02
 1.7.3_           2020-06-10
 1.7.2_           2020-05-13
 1.7.1_           2020-02-29
@@ -58,11 +60,13 @@ Version history
 1.0 alpha 1      2015-04-07
 ===============  ==========
 
-.. _1.7.3: https://github.com/sunqm/pyscf/releases/tag/v1.7.3
-.. _1.7.2: https://github.com/sunqm/pyscf/releases/tag/v1.7.2
-.. _1.7.1: https://github.com/sunqm/pyscf/releases/tag/v1.7.1
-.. _1.7.0: https://github.com/sunqm/pyscf/releases/tag/v1.7.0
-.. _1.6.6: https://github.com/sunqm/pyscf/releases/tag/v1.6.6
-.. _1.5.5: https://github.com/sunqm/pyscf/releases/tag/v1.5.5
-.. _1.4.7: https://github.com/sunqm/pyscf/releases/tag/v1.4.7
-.. _1.3.5: https://github.com/sunqm/pyscf/releases/tag/v1.3.5
+.. _1.7.5: https://github.com/pyscf/pyscf/releases/tag/v1.7.5
+.. _1.7.4: https://github.com/pyscf/pyscf/releases/tag/v1.7.4
+.. _1.7.3: https://github.com/pyscf/pyscf/releases/tag/v1.7.3
+.. _1.7.2: https://github.com/pyscf/pyscf/releases/tag/v1.7.2
+.. _1.7.1: https://github.com/pyscf/pyscf/releases/tag/v1.7.1
+.. _1.7.0: https://github.com/pyscf/pyscf/releases/tag/v1.7.0
+.. _1.6.6: https://github.com/pyscf/pyscf/releases/tag/v1.6.6
+.. _1.5.5: https://github.com/pyscf/pyscf/releases/tag/v1.5.5
+.. _1.4.7: https://github.com/pyscf/pyscf/releases/tag/v1.4.7
+.. _1.3.5: https://github.com/pyscf/pyscf/releases/tag/v1.3.5
