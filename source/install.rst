@@ -148,7 +148,7 @@ you need to install libcint, libxc or xcfun libraries.
     $ git clone https://github.com/dftlibs/xcfun.git
     $ cd xcfun
     $ # PySCF depends on this version of xcfun
-    $ git checkout 355f42497a9cd17d16ae91da1f1aaaf93756ae8b
+    $ git checkout 8ec13b06e06feccbc9e968665977df14d7bfdff8
     $ cd .. && tar czf xcfun.tar.gz xcfun
 
 libxc downloaded from
