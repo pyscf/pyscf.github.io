@@ -17,9 +17,9 @@ based quantum chemistry programs.
 
 How to cite
 ===========
-Bibtex entry::
+Bibtex entries::
 
-  @Misc{PYSCF,
+  @article{PYSCF,
     title = {PySCF: the Python‐based simulations of chemistry framework},
     author = {Qiming Sun and Timothy C. Berkelbach and Nick S. Blunt and George H. Booth and Sheng Guo and Zhendong Li and Junzi Liu and James D. McClain and Elvira R. Sayfutyarova and Sandeep Sharma and Sebastian Wouters and Garnet Kin‐Lic Chan},
     year = {2017},
@@ -32,6 +32,19 @@ Bibtex entry::
     eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/wcms.1340},
   }
 
+  @article{PYSCF,
+    title = {Recent developments in the PySCF program package},
+    author = {Sun,Qiming  and Zhang,Xing  and Banerjee,Samragni  and Bao,Peng  and Barbry,Marc  and Blunt,Nick S.  and Bogdanov,Nikolay A.  and Booth,George H.  and Chen,Jia  and Cui,Zhi-Hao  and Eriksen,Janus J.  and Gao,Yang  and Guo,Sheng  and Hermann,Jan  and Hermes,Matthew R.  and Koh,Kevin  and Koval,Peter  and Lehtola,Susi  and Li,Zhendong  and Liu,Junzi  and Mardirossian,Narbe  and McClain,James D.  and Motta,Mario  and Mussard,Bastien  and Pham,Hung Q.  and Pulkin,Artem  and Purwanto,Wirawan  and Robinson,Paul J.  and Ronca,Enrico  and Sayfutyarova,Elvira R.  and Scheurer,Maximilian  and Schurkus,Henry F.  and Smith,James E. T.  and Sun,Chong  and Sun,Shi-Ning  and Upadhyay,Shiv  and Wagner,Lucas K.  and Wang,Xiao  and White,Alec  and Whitfield,James Daniel  and Williamson,Mark J.  and Wouters,Sebastian  and Yang,Jun  and Yu,Jason M.  and Zhu,Tianyu  and Berkelbach,Timothy C.  and Sharma,Sandeep  and Sokolov,Alexander Yu.  and Chan,Garnet Kin-Lic},
+    journal = {The Journal of Chemical Physics},
+    volume = {153},
+    number = {2},
+    pages = {024109},
+    year = {2020},
+    doi = {10.1063/5.0006074},
+    URL = {https://doi.org/10.1063/5.0006074},
+    eprint = {https://doi.org/10.1063/5.0006074},
+  }
+
 In addition, if you use Libcint to compute integrals, please cite the following paper:
 
 "Libcint: An efficient general integral library for Gaussian basis functions", Q. Sun, J. Comp. Chem. 36, 1664 (2015).
@@ -39,7 +52,7 @@ In addition, if you use Libcint to compute integrals, please cite the following 
 Features
 ========
 
-.. include:: features.txt
+.. include:: FEATURES
 
 * Interface to integral package `Libcint <https://github.com/sunqm/libcint>`_
 
