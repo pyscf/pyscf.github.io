@@ -139,7 +139,7 @@ Installation without network
 
 If you have problems to download the external libraries on your computer, you can
 manually build the libraries, as shown in the following instructions.  First,
-you need to install libcint, libxc or xcfun libraries.
+you need to install libcint, libxc or xcfun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
     $ cd libcint
@@ -153,6 +153,7 @@ you need to install libcint, libxc or xcfun libraries.
 
 libxc downloaded from
 `here <http://sunqm.net/pyscf/files/src/libxc-4.3.4.tar.gz>`_.
+
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
 
