@@ -109,7 +109,7 @@ will convert :attr:`Mole.atom` to the internal format::
 
   >>> mol.atom = '''
       O        0,   0, 0             ; 1 0.0 1 0
-      
+
           H@2,0 0 1
       '''
   >>> mol.build()
@@ -142,13 +142,13 @@ Function :func:`basis.parse` can parse a basis string of NWChem format
 
   mol.basis = {'O': gto.basis.parse('''
   C    S
-       71.6168370              0.15432897       
-       13.0450960              0.53532814       
-        3.5305122              0.44463454       
+       71.6168370              0.15432897
+       13.0450960              0.53532814
+        3.5305122              0.44463454
   C    SP
-        2.9412494             -0.09996723             0.15591627       
-        0.6834831              0.39951283             0.60768372       
-        0.2222899              0.70011547             0.39195739       
+        2.9412494             -0.09996723             0.15591627
+        0.6834831              0.39951283             0.60768372
+        0.2222899              0.70011547             0.39195739
   ''')}
 
 Functions :func:`basis.load` can be load arbitrary basis from the database, even
@@ -163,7 +163,7 @@ Basis parser supports "Ghost" atom::
 
   mol.basis = {'GHOST': gto.basis.load('cc-pvdz', 'O'), 'H': 'sto3g'}
 
-More examples of inputing ghost atoms can be found in
+More examples of ghost atoms in input can be found in
 :download:`examples/gto/03-ghost_atom.py </../examples/gto/03-ghost_atom.py>`
 
 Like the requirements of geometry input, you can use atomic symbol
@@ -178,6 +178,67 @@ the third atom::
 
   mol.atom = '8 0 0 0; h1 0 1 0; H2 0 0 1'
   mol.basis = {'O': 'sto-3g', 'H': 'sto3g', 'H1': '6-31G'}
+
+
+ECP
+---
+Effective core potential (ECP) can be specified with the attribute :attr:`ecp`
+of :attr:`Mole`. Scalar type ECP is available for all molecular and crystal
+methods. The built-in scalar ECP datasets include
+
+============ ========================
+Keyword      Comment
+------------ ------------------------
+bfd
+cc-pvdz-pp
+cc-pvtz-pp   same to cc-pvdz-pp
+cc-pvqz-pp   same to cc-pvdz-pp
+cc-pv5z-pp   same to cc-pvdz-pp
+crenbl
+crenbs
+def2-svp
+def2-svpd    same to def2-svp
+def2-tzvp    same to def2-svp
+def2-tzvpd   same to def2-svp
+def2-tzvpp   same to def2-svp
+def2-tzvppd  same to def2-svp
+def2-qzvp    same to def2-svp
+def2-qzvpd   same to def2-svp
+def2-qzvpp   same to def2-svp
+def2-qzvppd  same to def2-svp
+lanl2dz
+lanl2tz
+lanl08
+sbkjc
+stuttgart
+============ ========================
+
+ECP parameters can be specified directly in input script using NWChem format.
+Examples of ECP input can be found in :download:`examples/gto/05-input_ecp.py`.
+
+Spin-orbit ECP integrals can be evaluated using PySCF integral driver. However,
+SO-ECP is not automatically applied to any methods in current version. It needs
+to be added to core Hamiltonian as shown in example
+:download:`examples/gto/20-soc_ecp.py` and
+:download:`examples/scf/44-soc_ecp.py`.
+PySCF provides the following SOC-ECPs
+
+============ ========================
+Keyword      Comment
+------------ ------------------------
+crenbl
+crenbs
+============ ========================
+
+.. note::
+  Be careful with the SO-ECP conventions when inputing them directly in the
+  input script. SO-ECP parameters may take different conventions in different
+  packages. More particularly, the treatment of the factor 2/(2l+1).  PySCF
+  assumes that this factor was multiplied in the SOC parameters. See also
+  relevant discussions in `Dirac doc
+  <http://www.diracprogram.org/doc/master/molecule_and_basis/molecule_with_ecp.html>`_
+  and `NWChem doc <https://nwchemgit.github.io/ECP.html>`_.
+
 
 
 Command line
@@ -309,7 +370,7 @@ in :ref:`symm`) are stored in :attr:`Mole.irrep_id`::
   E1uy 6 (10, 1)
   E1ux 7 (10, 1)
 
- 
+
 Program reference
 =================
 

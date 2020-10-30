@@ -42,6 +42,7 @@ Examples
 :download:`examples/scf/41-hf_with_given_densityfit_ints.py </../examples/scf/41-hf_with_given_densityfit_ints.py>`
 :download:`examples/scf/42-remove_linear_dep.py </../examples/scf/42-remove_linear_dep.py>`
 :download:`examples/scf/43-custom_get_jk.py </../examples/scf/43-custom_get_jk.py>`
+:download:`examples/scf/44-soc_ecp.py </../examples/scf/44-soc_ecp.py>`
 :download:`examples/scf/50-mom-deltaSCF.py </../examples/scf/50-mom-deltaSCF.py>`
 :download:`examples/scf/51-elecoup_mom.py </../examples/scf/51-elecoup_mom.py>`
 :download:`examples/scf/52-dynamically_control_level_shift.py </../examples/scf/52-dynamically_control_level_shift.py>`
