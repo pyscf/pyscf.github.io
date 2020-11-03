@@ -145,10 +145,11 @@ you need to install libcint, libxc or xcfun libraries::
     $ cd libcint
     $ cd .. && tar czf libcint.tar.gz libcint
 
-    $ git clone https://github.com/dftlibs/xcfun.git
+    $ # PySCF depends on xcfun version 2.1.0
+    $ git clone https://github.com/sunqm/xcfun.git
     $ cd xcfun
-    $ # PySCF depends on this version of xcfun
-    $ git checkout 8ec13b06e06feccbc9e968665977df14d7bfdff8
+    $ # This branch downgrades the required cmake version from 3.14 to 3.5
+    $ git checkout cmake-3.5
     $ cd .. && tar czf xcfun.tar.gz xcfun
 
 libxc downloaded from
