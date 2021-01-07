@@ -170,8 +170,8 @@ which is then used as the initial guess for the HF calculation of :math:`\rm Cr`
     mf.kernel(dm0=dm1)
 
 More examples can be found in 
-:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`.
-
+:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`,
+:download:`examples/scf/31-cr_atom_rohf_tune_init_guess.py </../examples/scf/31-cr_atom_rohf_tune_init_guess.py>`.
 
 Converging SCF iterations
 -------------------------
@@ -213,10 +213,29 @@ direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 
 * Level shifting
 
+    Applying level shift can help converge SCF for small gap systems.
+    This is invoked by setting the attribute :attr:`.level_shift`.
+    See examples in 
+    :download:`examples/scf/03-level_shift.py </../examples/scf/03-level_shift.py>`,
+    :download:`examples/scf/52-dynamically_control_level_shift.py </../examples/scf/52-dynamically_control_level_shift.py>`.
 
-Analysis and property calculations
-==================================
+* Fractional occupation
 
+    Fractional occupation can be invoked to converge SCF for small gap systems.
+    See examples in
+    :download:`examples/scf/54-fractional_occupancy.py </../examples/scf/54-fractional_occupancy.py>`.
+
+Stability analysis
+==================
+PySCF allows detection of both internal and external instabilities 
+for a given SCF calculation. See examples in 
+:download:`examples/scf/17-stability.py </../examples/scf/17-stability.py>`.
+
+Properties calculation
+======================
+Various properties can be computed by calling the corresponding functions,
+*e.g.*, dipole moment (:func:`.dip_moment`), nuclear gradients (:func:`.nuc_grad_method`),
+and Mülliken population (:func:`.mulliken_pop`), *etc.*
 
 References
 ==========
