@@ -1,8 +1,12 @@
 .. _pbc_scf:
 
-pbc.scf --- Self-consistent field with periodic boundary conditions
-*******************************************************************
-This module is constructed to be analogous to the molecular :mod:`pyscf.scf` module to handle
+:mod:`pbc.scf` --- Self-consistent field with periodic boundary conditions
+**************************************************************************
+
+.. module:: pbc.scf
+   :synopsis: Hartree-Fock methods with periodic boundary conditions
+
+This module is constructed to be analogous to the molecular :mod:`scf` module to handle
 mean-field calculations with periodic boundary conditions.
 
 Gamma point and single k-point calculation

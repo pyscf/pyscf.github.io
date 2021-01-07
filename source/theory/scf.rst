@@ -4,16 +4,15 @@
 Self-consistent field (SCF) methods
 ***********************************
 
-*Modules*: :ref:`scf <scf>`, :ref:`pbc.scf <pbc_scf>`, :ref:`soscf <soscf>` 
+*Modules*: :mod:`scf`, :mod:`pbc.scf`, :mod:`soscf`
 
 Introduction
 ============
-In self-consistent field (SCF) methods, the electron interactions are treated in a mean-field way.
-Here, the SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham (KS) density functional theory (DFT).
-This Chapter summarizes the general SCF capabilities of PySCF. 
-For more details specific to DFT, see :numref:`theory_dft`.
+The SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham (KS) density functional theory (DFT).
+This Chapter summarizes the general SCF capabilities in PySCF.
+More details specific to DFT are introduced in :numref:`theory_dft`.
 
-A minimal example of using the SCF module is as follows::
+A minimal example of using the :mod:`scf` module is as follows::
 
     from pyscf import gto, scf
     mol = gto.M(
@@ -24,12 +23,13 @@ A minimal example of using the SCF module is as follows::
     mf = scf.HF(mol)
     mf.kernel()
 
-This will run a HF calculation for the hydrogen fluoride molecule using the default SCF settings.
+This will run a HF calculation with the default SCF settings.
 
 
 Theory
 ======
-In HF and KS-DFT methods, the ground-state wavefunction is approximated by a single Slater determinant,
+In HF and KS-DFT, the ground-state wavefunction is expressed as a single Slater determinant 
+of molecular orbitals (MOs) :math:`\psi`,
 
 .. math::
 
@@ -39,230 +39,110 @@ In HF and KS-DFT methods, the ground-state wavefunction is approximated by a sin
    \psi_1(\mathbf{r}_2) &\psi_2(\mathbf{r}_2) &\dots  &\psi_N(\mathbf{r}_2)\\
    \vdots               &\vdots               &\ddots &\vdots\\
    \psi_1(\mathbf{r}_N) &\psi_2(\mathbf{r}_N) &\dots  &\psi_N(\mathbf{r}_N)
-   \end{vmatrix} \;,
+   \end{vmatrix} \;.
 
-where the molecular orbitals (MO) :math:`|\psi_i\rangle` are obtained by solving the Hartree-Fock equtions:
-
-.. math::
-
-   \hat{F}|\psi_i\rangle = \varepsilon_i |\psi_i\rangle \;.
-
-The Fock operator :math:`\hat{F}`, when represented within the atomic orbital (AO) basis, has the following form 
-(in a spin unrestricted formalism):
+In this way, the electron correlation is treated equivalently as a mean-field Coulomb repulsion.
+The total electronic energy :math:`E=\langle\Psi_0|\hat{H}|\Psi_0\rangle` 
+is then minimized by solving the Hartree-Fock equations
 
 .. math::
 
-   F_{\mu\nu}^{\alpha} = h_{\mu\nu} + J_{\mu\nu} - K_{\mu\nu}^{\alpha} \;,
+    \mathbf{FC} = \mathbf{SC\varepsilon} \;
 
-where 
+with :math:`\mathbf{F}`, :math:`\mathbf{C}`, and :math:`\mathbf{S}` 
+denoting the Fock matrix, 
+the expansion coefficients of MOs,
+and the overlaps among basis functions, respectively. :cite:`Pop1954`
 
-.. math::
+Methods
+=======
+Based on different treatments to spin symmetries, PySCF implements 
+four variants of HF and KS-DFT methods.
 
-   h_{\mu\nu} = \left( \mu | \hat{T} |\nu \right) + \left( \mu | \hat{V}_{nuc} |\nu \right) \;, 
+* Restricted (RHF/RKS)
 
-usually called the core Hamiltonian, is the sum of kinetic energy operator and nuclear attraction operator, and
+    The spatial parts of alpha and beta spin orbitals are constrained to be identical.
+    This is appropriate for systems with closed-shell ground states.
 
-.. math::
+* Unrestricted (UHF/UKS)
 
-   J_{\mu\nu} = \sum_{\lambda\sigma} \left(\mu\nu|\lambda\sigma\right) \left(P_{\lambda\sigma}^{\alpha}+P_{\lambda\sigma}^{\beta}\right)
+    The alpha and beta spin orbitals are computed independently by
+    solving two sets of Fock equations, with the possibility of introducing spin contaminations.
+    This is appropriate for most open-shell systems.
 
-and 
+* Restriced open-shell (ROHF/ROKS)
 
-.. math::
+    Like RHF (RKS), only one set of orbitals is computed, where the open-shell orbitals are effectively 
+    fractionally occupied. :cite:`Roo1960` 
+    The final wavefunction is an eigenfunction of the :math:`\hat{S}^2` operatoer,
+    thus no spin contamination is introduced.
+    This is appropriate for open-shell systems when unrestricted calculations give large spin contaminations,
+    *e.g.*, in the case of bond stretching.
 
-   K_{\mu\nu}^{\alpha} = \sum_{\lambda\sigma} \left(\mu\lambda|\nu\sigma\right) P_{\lambda\sigma}^{\alpha}  
+* Generalized (GHF/GKS)
 
-define the Coulomb and exchange operators, respectively.
-In the equations above, :math:`\mathbf{P}` labels the density matrix:
+    In the methods above, the spin orbitals are treated as real orbitals and are eigenfunctions of the 
+    :math:`\hat{S}_z` operator. More generally, the spin orbitals can be expressed as :cite:`SeePop1977`
 
-.. math::
+    .. math::
+        \psi(r,\xi) = \psi_\alpha(r)\alpha(\xi) + \psi_\beta(r)\beta(\xi) \;, 
 
-   P_{\mu\nu}^{\alpha} = \sum_{i\in occ} C_{\mu i}^{\alpha} C_{i\nu}^{\alpha\dagger} \;,
+    where :math:`\psi_\alpha(r)` and :math:`\psi_\beta(r)` are complex spatial orbitals, and 
+    :math:`\alpha(\xi)` and :math:`\beta(\xi)` are eigenfunctions of the :math:`\hat{S}_z` operator.
+    This is useful when the previous methods do not provide stable solutions 
+    (see :download:`examples/scf/17-stability.py </../examples/scf/17-stability.py>`)
+    or when spin-orbit coupling is considered 
+    (see :download:`examples/scf/44-soc_ecp.py </../examples/scf/44-soc_ecp.py>`).
 
-where :math:`\mathbf{C}` represents the MO coefficients:
+Calculations with these methods can be invoked by creating an instance of the corresponding class::
 
-.. math::
+    mf = scf.RHF(mol)
+    mf = scf.UHF(mol)
+    mf = scf.ROHF(mol)
+    mf = scf.GHF(mol)
+    mf.kernel()
 
-   |\psi^{\alpha}\rangle  = \sum_{\mu} |\mu\rangle C_{\mu i}^{\alpha} \;.
+More examples can be found in
+:download:`examples/scf/00-simple_hf.py </../examples/scf/00-simple_hf.py>`,
+:download:`examples/scf/01-h2o.py </../examples/scf/01-h2o.py>`,
+:download:`examples/scf/02-rohf_uhf.py </../examples/scf/02-rohf_uhf.py>`,
+:download:`examples/scf/02-ghf.py </../examples/scf/02-ghf.py>`.
 
-Within the AO representation, the Hartree-Fock equations reduce to the Roothaan-Hall or Pople-Nesbet :cite:`pople1954self` equations:
-
-.. math::
-
-   \mathbf{F}^{\alpha} \mathbf{C}^{\alpha} = \boldsymbol{\varepsilon}^{\alpha} \mathbf{S} \mathbf{C}^{\alpha} \;,
-
-where 
-
-.. math::
-
-   S_{\mu\nu} = \left( \mu | \nu \right) 
-
-is the AO overlap matrix. 
-Note that as the Coulomb and exchange operators depend on the electron density, 
-solving the Hartree-Fock equation is a nonlinear procedure,
-which requires iteratively updating the MOs and the Fock operator until reaching self-consistency.
-Finally, with the converged MOs or density matrix, one may compute various ground-state properties.
-For example, the ground-state electronic energy is expressed as
-
-.. math::
-
-   E_{\rm HF} = \frac{1}{2} \left\{{\rm Tr}[\mathbf{h}(\mathbf{P}^{\alpha}+\mathbf{P}^{\beta})]
-              + {\rm Tr}(\mathbf{F}^{\alpha}\mathbf{P}^{\alpha}) + {\rm Tr}(\mathbf{F}^{\beta}\mathbf{P}^{\beta}) \right\} \;. 
-
-
-Periodic boundary conditions
-----------------------------
-PySCF also alows the user to perform SCF calculations for solids.
-With crystalline Gaussian-type AOs as the underlying single-partial basis (see :numref:`theory_pbc_gto`),
-the molecular SCF code can be easily adapted to the cases where periodic boundary conditions (PBCs) 
-are applied. Instead of solving only one set of Roothaan-Hall or Pople-Nesbet equtions for molecules, 
-it is now necessary to solve them for each k point for solids:
-
-.. math::
-
-   \mathbf{F}(\mathbf{k}) \mathbf{C}(\mathbf{k}) = \boldsymbol{\varepsilon}(\mathbf{k}) \mathbf{S}(\mathbf{k}) \mathbf{C}(\mathbf{k}) \;,
-
-where the Fock matrix is defined (within the restricted formalism) as
-
-.. math::
-
-   \mathbf{F}(\mathbf{k}) = \mathbf{T}(\mathbf{k}) + \mathbf{V}^{\rm PP}(\mathbf{k})
-   +\mathbf{J}(\mathbf{k}) - \frac{1}{2} \mathbf{K}(\mathbf{k}) + \mathbf{V}^{L+J}(\mathbf{k}) \;.
-
-Here, :math:`\mathbf{V}^{\rm PP}` denotes the pseudopotential contribution and 
-:math:`\mathbf{V}^{L+J}` deals with the divergence of local pseudopotential and Hartree potential (see below).
-
-The one-electron overlap, kinetic energy, and local pseudopotential integrals 
-are evaluated through numerical integrations on the real-space grid according to 
-
-.. math::
-
-   S_{\mu\nu}(\mathbf{k}) = \int_\Omega d\mathbf{r} \phi_{\mu\mathbf{k}}^{*}(\mathbf{r}) \phi_{\nu\mathbf{k}}(\mathbf{r}) \;,
-
-.. math::
-
-   T_{\mu\nu}(\mathbf{k}) = -\frac{1}{2} \int_\Omega d\mathbf{r} \phi_{\mu\mathbf{k}}^{*}(\mathbf{r}) 
-   \boldsymbol{\nabla}_{\mathbf{r}}^2 \phi_{\nu\mathbf{k}}(\mathbf{r}) \;,
-
-and 
-
-.. math::
-
-   V_{\mu\nu}^{\rm L-PP}(\mathbf{k}) = \int_\Omega d\mathbf{r} \phi_{\mu\mathbf{k}}^{*}(\mathbf{r}) 
-   v^{\rm L-PP}(\mathbf{r}) \phi_{\nu\mathbf{k}}(\mathbf{r}) \;,
-
-where :math:`\Omega` labels the unit cell volume.
-The non-local part of the pseudopotential is computed in the reciprocal space:
-
-.. math::
-
-   V_{\mu\nu}^{\rm NL-PP}(\mathbf{k}) = \Omega \sum_{\mathbf{G},\mathbf{G}'} \phi_{\mu\mathbf{k}}^{*}(\mathbf{G})
-   v^{\rm NL-PP}(\mathbf{k}+\mathbf{G}, \mathbf{k}+\mathbf{G}') \phi_{\nu\mathbf{k}}(\mathbf{G}') \;,
-
-where
-
-.. math::
-
-   v^{\rm NL-PP}(\mathbf{k}+\mathbf{G}, \mathbf{k}+\mathbf{G}') = \frac{1}{\Omega} \int d\mathbf{r} \int d\mathbf{r}'
-   e^{-i(\mathbf{k}+\mathbf{G})\cdot\mathbf{r}} v^{\rm NL-PP}(\mathbf{r},\mathbf{r}') 
-   e^{ i(\mathbf{k}+\mathbf{G}^{'})\cdot\mathbf{r}'} \;.
-
-.. note::
-   The way that the pseudopotential integrals are computed differs in different density fitting schemes and for different 
-   pseudopotentials. Interested readers should refer to :numref:`theory_pbc_df` and :numref:`theory_pbc_pp`.
-
-The Coulomb and exchange matrices are defined similarly as
-
-.. math::
-
-   J_{\mu\nu}(\mathbf{k}) = \int_{\Omega} d\mathbf{r} \phi_{\mu\mathbf{k}}^{*}(\mathbf{r}) v_{\rm H}(\mathbf{r}) \phi_{\nu\mathbf{k}}(\mathbf{r}) \;,
-
-and
-
-.. math::
-
-   K_{\mu\nu}(\mathbf{k}) = \int_{\Omega} d\mathbf{r} \int d\mathbf{r}' \phi_{\mu\mathbf{k}}^{*}(\mathbf{r}) 
-   \frac{\rho(\mathbf{r}, \mathbf{r}')}{|\mathbf{r}-\mathbf{r}'|} \phi_{\nu\mathbf{k}}(\mathbf{r}') \;.
-
-Here :math:`v_{\rm H}` is the Hartree potential
-
-.. math::
-
-   v_{\rm H}(\mathbf{r}) = \frac{4\pi}{\Omega} \sum_{\mathbf{G}\neq \mathbf{0}} \frac{\rho(\mathbf{G})}{G^2} e^{i\mathbf{G}\cdot\mathbf{r}} \;,
-
-and :math:`\rho(\mathbf{r}, \mathbf{r}')` is the density matrix
-
-.. math::
-
-   \rho(\mathbf{r}, \mathbf{r}') =  \sum_{\mathbf{k}} w_{\mathbf{k}} \sum_{\lambda\sigma} P_{\lambda\sigma}(\mathbf{k}) 
-   \phi_{\lambda\mathbf{k}}(\mathbf{r}) \phi_{\sigma\mathbf{k}}^{*}(\mathbf{r}') \;,
-
-where :math:`w_{\mathbf{k}}` represents the weight of each k point.
-
-Note that the local part of the pseudopotential and the Hartree potential diverge at :math:`G=0`; 
-however, their sum is not, which leads to the :math:`V^{\rm L+J}` term (for charge neutral unit cell):
-
-.. math::
-
-   V_{\mu\nu}^{\rm L+J} (\mathbf{k})  = \frac{S_{\mu\nu}}{\Omega} 
-   \int d\mathbf{r} \left(v^{\rm L-PP}(\mathbf{r}) + \sum_{\alpha} \frac{Z_{\alpha}e^2}{r} \right) \;,
-
-where :math:`Z_{\alpha}` denotes the nuclear charge of the :math:`\alpha`-th atom.
-
-.. note::
-
-   For details about how to compute the Coulomb (J) 
-   and exchange (K) integrals, see :numref:`theory_pbc_df`.
-
-Finally, the total electronic energy differs from the molecular case only by a k-point summation:
-
-.. math::
-
-   E_{\rm HF} = \sum_{\mathbf{k}} w_{\mathbf{k}} E_{\rm HF}(\mathbf{k}) \;,
-
-where
-
-.. math::
-
-   E_{\rm HF}(\mathbf{k}) = \frac{1}{2} \left\{ {\rm Tr}\left[\mathbf{h}(\mathbf{k}) (\mathbf{P}^{\alpha}(\mathbf{k})+\mathbf{P}^{\beta}(\mathbf{k}))\right]
-              + {\rm Tr}\left[\mathbf{F}^{\alpha}(\mathbf{k}) \mathbf{P}^{\alpha}(\mathbf{k})\right] 
-              + {\rm Tr}\left[\mathbf{F}^{\beta}(\mathbf{k}) \mathbf{P}^{\beta}(\mathbf{k})\right] \right\} \;.
-
+Controllable parameters
+=======================
 
 Initial guess
-=============
-As the Roothaan-Hall and Pople-Nesbet equations are solved iteratively, 
-an initial guess for the MOs or the density matrices must be supplied.
-Poor initial guess may cause slow convergence or even divergence of the procedure. 
-Furthermore, when treating magnetic or open-shell systems, 
-the initial guess must be carefully chosen in order to get the correct state.
-
-There are several options available in PySCF for selecting the initial guess to solve the 
-SCF problem. One can set the attribute :attr:`mf.init_guess`
-to the following values to generate the initial guess in different ways:
+-------------
+PySCF provides several options as the initial guesses for solving the 
+SCF problem. These can be specified by setting the attribute :attr:`.init_guess`
+to the following values:
 
 * ``'minao'`` (default)
 
-    The initial guess density matrix is first generated based on the atomic natural orbital (ANO) basis 
-    :cite:`widmark1990density,roos2004relativistic,roos2004main,roos2005new,roos2005new_a,roos2008new`,
-    then projected onto the basis set used for the SCF calculation.
+    Superpostion of atomic density projected from the atomic natural orbital (ANO) basis.
 
-* ``'hcore'``
+* ``'1e'``
 
     The core Hamiltonian is diagonalized to get the initial MOs. 
 
 * ``'atom'``
 
-    The initial guess density matrix is from the superposition of atomic HF
-    density matrix. Commonly know as the 'SAD' method.
+    Superposition of atomic HF density matrix.
 
+* ``'huckel'``
+
+    A Hückel guess based on on-the-fly atomic HF calculations. :cite:`Leh2019`
+
+* ``'vsap'``
+
+    Superposition of atomic potentials. Note this is only available for DFT calculations. 
+    
 * ``'chk'``
 
-    Read the existing SCF results from the checkpoint file, then the density matrix is projected onto the
-    basis set used for the new SCF calculation.
+    Read the existing SCF results from the checkpoint file as the initial guess.
 
 Alternatively, the user could manually set the initial guess density matrix for an SCF calculation 
-by using the ``'dm0'`` argument. 
+by setting the ``dm0`` argument. 
 For example, the followings script first computes the HF density matrix for :math:`\rm Cr^{6+}` cation,  
 which is then used as the initial guess for the HF calculation of :math:`\rm Cr` atom. ::
 
@@ -293,80 +173,49 @@ More examples can be found in
 :download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`.
 
 
-Accelerating SCF convergence
-============================
+Converging SCF iterations
+-------------------------
+PySCF implements two types of algorithms to converge the SCF iterations, namely,
+direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 
-Direct Inversion in the Iterative Subspace (DIIS)
--------------------------------------------------
-At convergence of an SCF calcuation, one should expect the density matrix commute with 
-the Fock matrix:
+* DIIS (default)
 
-.. math::
+    With DIIS, the Fock matrix at each iteration is extrapolated using the Fock matrices from the previous iterations,
+    by minimizing the norm of the commutator :math:`[\mathbf{F},\mathbf{PS}]`. :cite:`Pul1980,Pul1982`
+    Two variants of DIIS are also implemented in PySCF, namely, EDIIS :cite:`KudScuCan2002` 
+    and ADIIS :cite:`HuYan2010`, where the objective functions to be minimized  
+    are expressed as energy funtions. 
+    Examples of selecting different DIIS schemes can be found in
+    :download:`examples/scf/24-tune_diis.py </../examples/scf/24-tune_diis.py>`.
 
-   \mathbf{SPF} - \mathbf{FPS} = \mathbf{0} \;.
+* SOSCF
+    To achieve quadratic convergence for orbital optimizations, 
+    PySCF implements a general second-order solver called the
+    Co-iterative augmented hessian (CIAH) method. :cite:`Sun2016,Sun2017`
+    This can be invoked by decorating the SCF objects with the :func:`.newton` method::
 
-Prior to convergence, it is possible to define an error vector as
+        mf = scf.RHF(mol).newton()
 
-.. math::
+    More examples can be found in 
+    :download:`examples/scf/22-newton.py </../examples/scf/22-newton.py>`.
 
-   \mathbf{e}_i \equiv \mathbf{S}\mathbf{P}_i\mathbf{F}_i - \mathbf{F}_i\mathbf{P}_i\mathbf{S} \;,
+* Damping
 
-where :math:`\mathbf{F}_i` is a linear combination of the Fock matrices in the previous SCF cycles:
+    Damping of the Fock matrix can be applied before the DIIS starts.
+    This is invoked by setting the attributes :attr:`.damp` and :attr:`.diis_start_cycle`.
+    For example, ::
 
-.. math::
+        mf.damp = 0.5
+        mf.diis_start_cycle = 2
 
-   \mathbf{F}_i = \sum_{k=i-L}^{i-1} c_k \mathbf{F}_k \;,
+    implies that the DIIS will start at the second cycle, 
+    and that the Fock matrix is dampped at the first cycle.
 
-:math:`\mathbf{P}_i` is obtained by diagonalizing :math:`\mathbf{F}_i`, and
-:math:`L` is the size of the DIIS subspace, which can be modified by setting the :attr:`mf.diis_space` attribute 
-(the default size is 8).
-The DIIS method :cite:`pulay1980convergence,pulay1982improved` 
-minimizes the square of the error vector 
-with respect to the DIIS coefficients :math:`c_k`
-under the constraint that :math:`\sum_k c_k = 1`.
-The Euler–Lagrange equation of such a constrained minimization problem reads:
-
-.. math::
-
-   \left( 
-   \begin{array}{cccc} 
-   \mathbf{e}_1\cdot\mathbf{e}_1  &\dots  &\mathbf{e}_1\cdot\mathbf{e}_L  &1      \\ 
-   \vdots                         &\ddots &\vdots                         &\vdots \\
-   \mathbf{e}_L\cdot\mathbf{e}_1  &\dots  &\mathbf{e}_L\cdot\mathbf{e}_L  &1      \\
-   1                              &\dots  &1                              &0
-   \end{array}
-   \right) \left( 
-   \begin{array}{c}
-   c_1    \\
-   \vdots \\
-   c_{L}  \\
-   \lambda
-   \end{array} 
-   \right) = \left(
-   \begin{array}{c}
-   0       \\
-   \vdots  \\
-   0       \\
-   1
-   \end{array}
-   \right) 
-
-PySCF also implements two other similar DIIS algorithms, 
-namely, EDIIS :cite:`kudin2002black` and ADIIS :cite:`hu2010accelerating`. 
-Interested readers should refer to the reference.
-An example of selecting different DIIS schemes can be found in 
-:download:`examples/scf/24-tune_diis.py </../examples/scf/24-tune_diis.py>`
-
-Co-iterative augmented hessian (CIAH) second order SCF solver :cite:`sun2016co`
--------------------------------------------------------------------------------
+* Level shifting
 
 
-Level shifting and smearing
-===========================
-
-
-Stability analysis
-==================
+Analysis and property calculations
+==================================
 
 
 References
