@@ -7,8 +7,7 @@ mean-field methods.
 Examples
 ========
 
-:download:`examples/prop/02-g_tensor.py </../examples/prop/02-g_tensor.py>`
-
+* :source:`examples/prop/02-g_tensor.py`
 
 Program reference
 =================

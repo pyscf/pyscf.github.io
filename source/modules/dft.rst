@@ -10,19 +10,23 @@ The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :
 Examples
 ========
 
-:download:`examples/dft/00-simple_dft.py </../examples/dft/00-simple_dft.py>`
-:download:`examples/dft/02-gks.py </../examples/dft/02-gks.py>`
-:download:`examples/dft/11-grid_scheme.py </../examples/dft/11-grid_scheme.py>`
-:download:`examples/dft/12-camb3lyp.py </../examples/dft/12-camb3lyp.py>`
-:download:`examples/dft/13-rsh_dft.py </../examples/dft/13-rsh_dft.py>`
-:download:`examples/dft/21-x2c.py </../examples/dft/21-x2c.py>`
-:download:`examples/dft/23-decorate_scf.py </../examples/dft/23-decorate_scf.py>`
-:download:`examples/dft/24-custom_xc_functional.py </../examples/dft/24-custom_xc_functional.py>`
-:download:`examples/dft/24-define_xc_functional.py </../examples/dft/24-define_xc_functional.py>`
-:download:`examples/dft/32-broken_symmetry_dft.py </../examples/dft/32-broken_symmetry_dft.py>`
-:download:`examples/dft/32-xcfun_as_default.py </../examples/dft/32-xcfun_as_default.py>`
-:download:`examples/dft/33-nlc_functionals.py </../examples/dft/33-nlc_functionals.py>`
-
+* :source:`examples/dft/00-simple_dft.py`
+* :source:`examples/dft/02-gks.py`
+* :source:`examples/dft/10-glycine.py`
+* :source:`examples/dft/11-grid_scheme.py`
+* :source:`examples/dft/12-camb3lyp.py`
+* :source:`examples/dft/13-rsh_dft.py`
+* :source:`examples/dft/20-density_fitting.py`
+* :source:`examples/dft/21-x2c.py`
+* :source:`examples/dft/22-newton.py`
+* :source:`examples/dft/23-decorate_scf.py`
+* :source:`examples/dft/24-custom_xc_functional.py`
+* :source:`examples/dft/24-define_xc_functional.py`
+* :source:`examples/dft/30-ao_value_on_grid.py`
+* :source:`examples/dft/31-xc_value_on_grid.py`
+* :source:`examples/dft/32-broken_symmetry_dft.py`
+* :source:`examples/dft/32-xcfun_as_default.py`
+* :source:`examples/dft/33-nlc_functionals.py`
 
 Program reference
 =================

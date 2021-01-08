@@ -10,8 +10,7 @@ periodic boundary conditions. It is analogous to the :mod:`tddft` module.
 Examples
 ========
 
-:download:`examples/pbc/22-k_points_tddft.py </../examples/pbc/22-k_points_tddft.py>`
-
+* :source:`examples/pbc/22-k_points_tddft.py`
 
 Program reference
 =================

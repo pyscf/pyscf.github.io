@@ -417,5 +417,5 @@ function is patched to the numerical integration class :attr:`mf._numint`
 dynamically.
 
 More examples of DFT XC functional customization can be found in
-:download:`examples/dft/24-custom_xc_functional.py </../examples/dft/24-custom_xc_functional.py>` and
-:download:`examples/dft/24-define_xc_functional.py </../examples/dft/24-define_xc_functional.py>`.
+:source:`examples/dft/24-custom_xc_functional.py` and
+:source:`examples/dft/24-define_xc_functional.py`.

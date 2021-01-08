@@ -18,4 +18,4 @@ and :math:`\chi_{\mu}` is a Gaussian type orbital (GTO).
 The basis set used in a PBC calculation can be specified exactly the same way 
 as that in the molecular case. 
 The following shows a simple example: 
-:download:`examples/pbc/04-input_basis.py </../examples/pbc/04-input_basis.py>`.
+:source:`examples/pbc/04-input_basis.py`.

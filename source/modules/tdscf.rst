@@ -32,13 +32,13 @@ One can perform NTO analysis for TDDFT as::
 Examples
 ========
 
-:download:`examples/tddft/00-simple_tddft.py </../examples/tddft/00-simple_tddft.py>`
-:download:`examples/tddft/01-nto_analysis.py </../examples/tddft/01-nto_analysis.py>`
-:download:`examples/tddft/21-matrix_A_B.py </../examples/tddft/21-matrix_A_B.py>`
-:download:`examples/tddft/22-density.py </../examples/tddft/22-density.py>`
-:download:`examples/tddft/30-change_xc_grids.py </../examples/tddft/30-change_xc_grids.py>`
-:download:`examples/tddft/31-energy_transfer_coupling_matrix.py </../examples/tddft/31-energy_transfer_coupling_matrix.py>`
-
+* :source:`examples/tddft/00-simple_tddft.py`
+* :source:`examples/tddft/01-nto_analysis.py`
+* :source:`examples/tddft/02-tddft_for_camb3lyp.py`
+* :source:`examples/tddft/21-matrix_A_B.py`
+* :source:`examples/tddft/22-density.py`
+* :source:`examples/tddft/30-change_xc_grids.py`
+* :source:`examples/tddft/31-energy_transfer_coupling_matrix.py`
 
 Program reference
 =================

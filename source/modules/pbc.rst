@@ -48,3 +48,46 @@ The list of modules described in this chapter is:
    pbc/prop.rst
    pbc/gw.rst
    pbc/x2c.rst
+
+Examples
+========
+
+* :source:`examples/pbc/00-input_cell.py`
+* :source:`examples/pbc/04-input_basis.py`
+* :source:`examples/pbc/05-input_pp.py`
+* :source:`examples/pbc/06-input_ke_cutoff.py`
+* :source:`examples/pbc/09-band_ase.py`
+* :source:`examples/pbc/09-init_from_ase.py`
+* :source:`examples/pbc/09-talk_to_ase.py`
+* :source:`examples/pbc/10-gamma_point_scf.py`
+* :source:`examples/pbc/11-gamma_point_all_electron_scf.py`
+* :source:`examples/pbc/12-gamma_point_post_hf.py`
+* :source:`examples/pbc/20-k_points_scf.py`
+* :source:`examples/pbc/21-k_points_all_electron_scf.py`
+* :source:`examples/pbc/22-k_points_ccsd.py`
+* :source:`examples/pbc/22-k_points_mp2.py`
+* :source:`examples/pbc/22-k_points_tddft.py`
+* :source:`examples/pbc/23-smearing.py`
+* :source:`examples/pbc/24-k_points_vs_gamma.py`
+* :source:`examples/pbc/25-k_points_mpi_ccsd.py`
+* :source:`examples/pbc/26-linear_dep.py`
+* :source:`examples/pbc/27-multigrid.py`
+* :source:`examples/pbc/28-charged_system.py`
+* :source:`examples/pbc/29-eom_ccsd_Ta.py`
+* :source:`examples/pbc/30-ao_integrals.py`
+* :source:`examples/pbc/30-ao_value_on_grid.py`
+* :source:`examples/pbc/30-mo_integrals.py`
+* :source:`examples/pbc/30-overlap_periodic_cell.py`
+* :source:`examples/pbc/31-low_dimensional_pbc.py`
+* :source:`examples/pbc/31-pbc_0D_as_mol.py`
+* :source:`examples/pbc/32-graphene.py`
+* :source:`examples/pbc/33-soc_integrals.py`
+* :source:`examples/pbc/34-pm_localization.py`
+* :source:`examples/pbc/35-gaussian_density_fit.py`
+* :source:`examples/pbc/36-ccsd_level_shift.py`
+* :source:`examples/pbc/40-customize_kpts_hamiltonian.py`
+* :source:`examples/pbc/41-pbc1d_real_space_sum.py`
+* :source:`examples/pbc/42-k2gamma.py`
+* :source:`examples/pbc/44-k_point_eom_ccsd_ghf.py`
+* :source:`examples/pbc/46-k_point_eom_ccsd_rhf.py`
+

@@ -66,10 +66,9 @@ When using results of this code for publications, please cite the following pape
 Examples
 ========
 
-:download:`examples/adc/01-closed_shell.py </../examples/adc/01-closed_shell.py>`
-:download:`examples/adc/02-open_shell.py </../examples/adc/02-open_shell.py>`
-:download:`examples/adc/03-closed_shell_different_setup.py </../examples/adc/03-closed_shell_different_setup.py>`
-
+* :source:`examples/adc/01-closed_shell.py`
+* :source:`examples/adc/02-open_shell.py`
+* :source:`examples/adc/03-closed_shell_different_setup.py`
 
 Program reference
 =================

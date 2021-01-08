@@ -167,12 +167,10 @@ Enabling symmetry in other module
 Examples
 ========
 
-Relevant examples
-:file:`examples/symm/30-guess_symmetry.py`
-:file:`examples/symm/31-symmetrize_space.py`
-:file:`examples/symm/32-symmetrize_natural_orbital.py`
-:file:`examples/symm/33-lz_adaption.py`
-
+* :source:`examples/symm/30-guess_symmetry.py`
+* :source:`examples/symm/31-symmetrize_space.py`
+* :source:`examples/symm/32-symmetrize_natural_orbital.py`
+* :source:`examples/symm/33-lz_adaption.py`
 
 Program reference
 =================

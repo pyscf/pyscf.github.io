@@ -19,8 +19,19 @@ One example for FCI calculation on HF molecule::
 Examples
 ========
 
-For a complete list of FCI examples, see
-``pyscf/examples/fci``.
+* :source:`examples/fci/00-simple_fci.py`
+* :source:`examples/fci/01-given_h1e_h2e.py`
+* :source:`examples/fci/02-selected_ci.py`
+* :source:`examples/fci/10-spin.py`
+* :source:`examples/fci/11-large_ci.py`
+* :source:`examples/fci/12-multiple_roots.py`
+* :source:`examples/fci/13-wfn_symmetry.py`
+* :source:`examples/fci/14-density_matrix.py`
+* :source:`examples/fci/15-FCI_hamiltonian.py`
+* :source:`examples/fci/30-h6_scan.py`
+* :source:`examples/fci/31-apply_2nd_quantized_op.py`
+* :source:`examples/fci/32-wfn_overlap.py`
+* :source:`examples/fci/33-rotate_wfn.py`
 
 Program reference
 =================

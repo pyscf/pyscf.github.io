@@ -7,8 +7,7 @@ The :mod:`prop.ssc` module implements the nuclear spin-spin coupling for mean-fi
 Examples
 ========
 
-:download:`examples/prop/05-ssc.py </../examples/prop/05-ssc.py>`
-
+* :source:`examples/prop/05-ssc.py`
 
 Program reference
 =================

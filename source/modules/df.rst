@@ -298,15 +298,15 @@ CASSCF object::
 Examples
 ========
 
-Relevant examples
-:file:`examples/df/00-with_df.py`
-:file:`examples/df/01-auxbasis.py`
-:file:`examples/df/10-access_df_integrals.py`
-:file:`examples/df/11-get_j_io_free.py`
-:file:`examples/df/40-precompute_df_integrals.py`
-:file:`examples/df/40-custom_df_hamiltonian.py`
-:file:`examples/df/41-df_integrals_gradients.py`
-:file:`examples/df/42-overwrite_get_jk.py`
+* :source:`examples/df/00-with_df.py`
+* :source:`examples/df/01-auxbasis.py`
+* :source:`examples/df/10-access_df_integrals.py`
+* :source:`examples/df/11-access_df_tensor.py`
+* :source:`examples/df/11-get_j_io_free.py`
+* :source:`examples/df/40-custom_df_hamiltonian.py`
+* :source:`examples/df/40-precompute_df_integrals.py`
+* :source:`examples/df/41-df_integrals_gradients.py`
+* :source:`examples/df/42-overwrite_get_jk.py`
 
 
 Program reference

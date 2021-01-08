@@ -26,10 +26,8 @@ The resulting structure of the Hessian is ::h[Atom_1, Atom_2, Atom_1_XYZ, Atom_1
 Examples
 ========
 
-Relevant examples
-:file:`examples/hessian/01-scf_hessian.py`
-:file:`examples/hessian/10-thermochemistry.py`
-
+* :source:`examples/hessian/01-scf_hessian.py`
+* :source:`examples/hessian/10-thermochemistry.py`
 
 Program reference
 =================

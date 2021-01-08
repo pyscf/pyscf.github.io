@@ -101,10 +101,29 @@ the analytical CCSD gradient module.
 Examples
 ========
 
+* :source:`examples/cc/00-simple_ccsd.py`
+* :source:`examples/cc/00-simple_ccsd_t.py`
+* :source:`examples/cc/01-density_matrix.py`
+* :source:`examples/cc/01-lambda.py`
+* :source:`examples/cc/10-ao_direct_ccsd.py`
+* :source:`examples/cc/11-frozen_core.py`
+* :source:`examples/cc/12-reuse_integrals.py`
+* :source:`examples/cc/13-standalone_ccsd_t.py`
+* :source:`examples/cc/14-ccsd_diis.py`
+* :source:`examples/cc/15-incore_mo_ccsd_t.py`
+* :source:`examples/cc/20-ip_ea_eom_ccsd.py`
+* :source:`examples/cc/21-dfccsd.py`
+* :source:`examples/cc/22-fnoccsd.py`
+* :source:`examples/cc/31-remove_linear_dep.py`
+* :source:`examples/cc/32-restart.py`
+* :source:`examples/cc/40-ccsd_custom_hamiltonian.py`
+* :source:`examples/cc/41-ccsd_custom_hamiltonian_noscf.py`
+* :source:`examples/cc/42-as_casci_fcisolver.py`
+* :source:`examples/cc/43-ccd.py`
+
 This section documents some examples about how to effectively use the CCSD
 module, and how to incorporate the CCSD solver with other PySCF functions to
-perform advanced simulations.  For a complete list of CC examples, see
-``pyscf/examples/cc``.
+perform advanced simulations.
 
 A general solver for customized Hamiltonian
 -------------------------------------------

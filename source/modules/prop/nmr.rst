@@ -6,8 +6,7 @@ The :mod:`prop.nmr` module implements the nuclear magnetic resonance (NMR) shiel
 Examples
 ========
 
-:download: `examples/prop/04-nmr.py </../examples/prop/04-nmr.py>`
-
+* :source: `examples/prop/04-nmr.py`
 
 Program reference
 =================

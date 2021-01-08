@@ -8,6 +8,11 @@
 The :mod:`gw` module provides an exact :math:`N^6` scaling GW
 implementation for eigenvalues.
 
+Examples
+========
+
+* :source:`examples/gw/00_pbc.py`
+
 Program reference
 =================
 

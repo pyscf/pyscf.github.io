@@ -15,9 +15,7 @@ The :mod:`doci` implements doubly-occupied configuration interaction. A minimal 
 Examples
 ========
 
-Relevant examples
-:file:`examples/doci/00-simple_doci_casscf.py`
-
+* :source:`examples/doci/00-simple_doci_casscf.py`
 
 Program reference
 =================

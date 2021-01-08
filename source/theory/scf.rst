@@ -90,9 +90,9 @@ four variants of HF and KS-DFT methods.
     where :math:`\psi_\alpha(r)` and :math:`\psi_\beta(r)` are complex spatial orbitals, and 
     :math:`\alpha(\xi)` and :math:`\beta(\xi)` are eigenfunctions of the :math:`\hat{S}_z` operator.
     This is useful when the previous methods do not provide stable solutions 
-    (see :download:`examples/scf/17-stability.py </../examples/scf/17-stability.py>`)
+    (see :source:`examples/scf/17-stability.py`)
     or when spin-orbit coupling is considered 
-    (see :download:`examples/scf/44-soc_ecp.py </../examples/scf/44-soc_ecp.py>`).
+    (see :source:`examples/scf/44-soc_ecp.py`).
 
 Calculations with these methods can be invoked by creating an instance of the corresponding class::
 
@@ -103,10 +103,10 @@ Calculations with these methods can be invoked by creating an instance of the co
     mf.kernel()
 
 More examples can be found in
-:download:`examples/scf/00-simple_hf.py </../examples/scf/00-simple_hf.py>`,
-:download:`examples/scf/01-h2o.py </../examples/scf/01-h2o.py>`,
-:download:`examples/scf/02-rohf_uhf.py </../examples/scf/02-rohf_uhf.py>`,
-:download:`examples/scf/02-ghf.py </../examples/scf/02-ghf.py>`.
+:source:`examples/scf/00-simple_hf.py`,
+:source:`examples/scf/01-h2o.py`,
+:source:`examples/scf/02-rohf_uhf.py`, and
+:source:`examples/scf/02-ghf.py`.
 
 Controllable parameters
 =======================
@@ -170,8 +170,8 @@ which is then used as the initial guess for the HF calculation of :math:`\rm Cr`
     mf.kernel(dm0=dm1)
 
 More examples can be found in 
-:download:`examples/scf/15-initial_guess.py </../examples/scf/15-initial_guess.py>`,
-:download:`examples/scf/31-cr_atom_rohf_tune_init_guess.py </../examples/scf/31-cr_atom_rohf_tune_init_guess.py>`.
+:source:`examples/scf/15-initial_guess.py`, and
+:source:`examples/scf/31-cr_atom_rohf_tune_init_guess.py`.
 
 Converging SCF iterations
 -------------------------
@@ -186,7 +186,7 @@ direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
     and ADIIS :cite:`HuYan2010`, where the objective functions to be minimized  
     are expressed as energy funtions. 
     Examples of selecting different DIIS schemes can be found in
-    :download:`examples/scf/24-tune_diis.py </../examples/scf/24-tune_diis.py>`.
+    :source:`examples/scf/24-tune_diis.py`.
 
 * SOSCF
     To achieve quadratic convergence for orbital optimizations, 
@@ -197,7 +197,7 @@ direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
         mf = scf.RHF(mol).newton()
 
     More examples can be found in 
-    :download:`examples/scf/22-newton.py </../examples/scf/22-newton.py>`.
+    :source:`examples/scf/22-newton.py`.
 
 * Damping
 
@@ -216,23 +216,23 @@ direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
     Applying level shift can help converge SCF for small gap systems.
     This is invoked by setting the attribute :attr:`.level_shift`.
     See examples in 
-    :download:`examples/scf/03-level_shift.py </../examples/scf/03-level_shift.py>`,
-    :download:`examples/scf/52-dynamically_control_level_shift.py </../examples/scf/52-dynamically_control_level_shift.py>`.
+    :source:`examples/scf/03-level_shift.py`, and
+    :source:`examples/scf/52-dynamically_control_level_shift.py`.
 
 * Fractional occupation
 
     Fractional occupation can be invoked to converge SCF for small gap systems.
     See examples in
-    :download:`examples/scf/54-fractional_occupancy.py </../examples/scf/54-fractional_occupancy.py>`.
+    :source:`examples/scf/54-fractional_occupancy.py`.
 
 Stability analysis
 ==================
 PySCF allows detection of both internal and external instabilities 
 for a given SCF calculation. See examples in 
-:download:`examples/scf/17-stability.py </../examples/scf/17-stability.py>`.
+:source:`examples/scf/17-stability.py`.
 
-Properties calculation
-======================
+Property calculation
+====================
 Various properties can be computed by calling the corresponding functions,
 *e.g.*, dipole moment (:func:`.dip_moment`), nuclear gradients (:func:`.nuc_grad_method`),
 and Mülliken population (:func:`.mulliken_pop`), *etc.*

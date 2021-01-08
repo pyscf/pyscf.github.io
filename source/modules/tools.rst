@@ -52,16 +52,14 @@ Cube files can be generated as::
 Examples
 ========
 
-Relevant examples
-:file:`examples/tools/01-fcidump.py`
-:file:`examples/tools/02-molden.py`
-:file:`examples/tools/03-print_mo_and_dm.py`
-:file:`examples/tools/04-analyze_local_orbitals.py`
-:file:`examples/tools/05-cubegen.py`
-:file:`examples/tools/06-chgcar.py`
-:file:`examples/tools/11-davidson_eigh.py`
-:file:`examples/tools/12-einsum.py`
-
+* :source:`examples/tools/01-fcidump.py`
+* :source:`examples/tools/02-molden.py`
+* :source:`examples/tools/03-print_mo_and_dm.py`
+* :source:`examples/tools/04-analyze_local_orbitals.py`
+* :source:`examples/tools/05-cubegen.py`
+* :source:`examples/tools/06-chgcar.py`
+* :source:`examples/tools/11-davidson_eigh.py`
+* :source:`examples/tools/12-einsum.py`
 
 Program reference
 =================

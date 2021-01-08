@@ -10,10 +10,8 @@ Gaussian type atomic orbitals replaced by the corresponding crystalline orbitals
 Examples
 ========
 
-:download:`examples/pbc/30-mo_integrals.py </../examples/pbc/30-mo_integrals.py>`
-
-:download:`examples/pbc/41-pbc1d_real_space_sum.py </../examples/pbc/41-pbc1d_real_space_sum.py>`
-
+* :source:`examples/pbc/30-mo_integrals.py`
+* :source:`examples/pbc/41-pbc1d_real_space_sum.py`
 
 Program reference
 =================

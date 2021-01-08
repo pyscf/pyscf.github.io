@@ -3,6 +3,7 @@
 :mod:`qmmm` --- QM/MM interface
 *******************************
 
+The :mod:`qmmm` module implements a generic interface for use with MM programs.
 To run HF with background charges, one could follow the following example::
 
     import numpy
@@ -30,24 +31,21 @@ To run HF with background charges, one could follow the following example::
 Examples
 ========
 
-Relevant examples
-:file:`examples/qmmm/00-hf.py`
-:file:`examples/qmmm/01-dft.py`
-:file:`examples/qmmm/02-mcscf.py`
-:file:`examples/qmmm/03-ccsd.py`
-:file:`examples/qmmm/04-cisd.py`
-:file:`examples/qmmm/05-mp2.py`
-:file:`examples/qmmm/06-tddft.py`
-:file:`examples/qmmm/10-x2c.py`
-:file:`examples/qmmm/11-newton.py`
-:file:`examples/qmmm/11-soscf.py`
-:file:`examples/qmmm/20-grad.py`
-:file:`examples/qmmm/21-geom_opt.py`
-:file:`examples/qmmm/30-force_on_mm_particles.py`
-
+* :source:`examples/qmmm/00-hf.py`
+* :source:`examples/qmmm/01-dft.py`
+* :source:`examples/qmmm/02-mcscf.py`
+* :source:`examples/qmmm/03-ccsd.py`
+* :source:`examples/qmmm/04-cisd.py`
+* :source:`examples/qmmm/05-mp2.py`
+* :source:`examples/qmmm/06-tddft.py`
+* :source:`examples/qmmm/10-x2c.py`
+* :source:`examples/qmmm/11-newton.py`
+* :source:`examples/qmmm/11-soscf.py`
+* :source:`examples/qmmm/20-grad.py`
+* :source:`examples/qmmm/21-geom_opt.py`
+* :source:`examples/qmmm/22-with_solvent.py`
+* :source:`examples/qmmm/30-force_on_mm_particles.py`
 
 .. automodule:: pyscf.qmmm.itrf
    :members:
 
-The :mod:`qmmm` module implements a generic interface for use with MM
-programs.

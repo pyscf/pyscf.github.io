@@ -12,29 +12,29 @@ package.
 Examples
 ========
 
-:download:`examples/gto/00-input_mole.py </../examples/gto/00-input_mole.py>`
-:download:`examples/gto/01-input_geometry.py </../examples/gto/01-input_geometry.py>`
-:download:`examples/gto/02-dump_input.py </../examples/gto/02-dump_input.py>`
-:download:`examples/gto/03-ghost_atom.py </../examples/gto/03-ghost_atom.py>`
-:download:`examples/gto/04-input_basis.py </../examples/gto/04-input_basis.py>`
-:download:`examples/gto/05-input_ecp.py </../examples/gto/05-input_ecp.py>`
-:download:`examples/gto/06-load_mol_from_chkfile.py </../examples/gto/06-load_mol_from_chkfile.py>`
-:download:`examples/gto/07-nucmod.py </../examples/gto/07-nucmod.py>`
-:download:`examples/gto/09-apply_scf.py </../examples/gto/09-apply_scf.py>`
-:download:`examples/gto/10-atom_info.py </../examples/gto/10-atom_info.py>`
-:download:`examples/gto/11-basis_info.py </../examples/gto/11-basis_info.py>`
-:download:`examples/gto/12-serialization.py </../examples/gto/12-serialization.py>`
-:download:`examples/gto/13-symmetry.py </../examples/gto/13-symmetry.py>`
-:download:`examples/gto/20-ao_integrals.py </../examples/gto/20-ao_integrals.py>`
-:download:`examples/gto/20-ao_integrals_sph_to_spinor.py </../examples/gto/20-ao_integrals_sph_to_spinor.py>`
-:download:`examples/gto/20-soc_ao_integrals.py </../examples/gto/20-soc_ao_integrals.py>`
-:download:`examples/gto/20-soc_ecp.py </../examples/gto/20-soc_ecp.py>`
-:download:`examples/gto/21-concatenate_molecules.py </../examples/gto/21-concatenate_molecules.py>`
-:download:`examples/gto/22-range_separated_coulomb.py </../examples/gto/22-range_separated_coulomb.py>`
-:download:`examples/gto/23-orbitals_cart2sph.py </../examples/gto/23-orbitals_cart2sph.py>`
-:download:`examples/gto/24-ao_value_on_grid.py </../examples/gto/24-ao_value_on_grid.py>`
-:download:`examples/gto/25-multipole-integrals.py </../examples/gto/25-multipole-integrals.py>`
-:download:`examples/gto/30-read_molpro_orb.py </../examples/gto/30-read_molpro_orb.py>`
+* :source:`examples/gto/00-input_mole.py`
+* :source:`examples/gto/01-input_geometry.py`
+* :source:`examples/gto/02-dump_input.py`
+* :source:`examples/gto/03-ghost_atom.py`
+* :source:`examples/gto/04-input_basis.py`
+* :source:`examples/gto/05-input_ecp.py`
+* :source:`examples/gto/06-load_mol_from_chkfile.py`
+* :source:`examples/gto/07-nucmod.py`
+* :source:`examples/gto/09-apply_scf.py`
+* :source:`examples/gto/10-atom_info.py`
+* :source:`examples/gto/11-basis_info.py`
+* :source:`examples/gto/12-serialization.py`
+* :source:`examples/gto/13-symmetry.py`
+* :source:`examples/gto/20-ao_integrals.py`
+* :source:`examples/gto/20-ao_integrals_sph_to_spinor.py`
+* :source:`examples/gto/20-soc_ao_integrals.py`
+* :source:`examples/gto/20-soc_ecp.py`
+* :source:`examples/gto/21-concatenate_molecules.py`
+* :source:`examples/gto/22-range_separated_coulomb.py`
+* :source:`examples/gto/23-orbitals_cart2sph.py`
+* :source:`examples/gto/24-ao_value_on_grid.py`
+* :source:`examples/gto/25-multipole-integrals.py`
+* :source:`examples/gto/30-read_molpro_orb.py`
 
 Input
 =====
@@ -164,7 +164,7 @@ Basis parser supports "Ghost" atom::
   mol.basis = {'GHOST': gto.basis.load('cc-pvdz', 'O'), 'H': 'sto3g'}
 
 More examples of ghost atoms in input can be found in
-:download:`examples/gto/03-ghost_atom.py </../examples/gto/03-ghost_atom.py>`
+:source:`examples/gto/03-ghost_atom.py`.
 
 Like the requirements of geometry input, you can use atomic symbol
 (case-insensitive) or the atomic nuclear charge, as the keyword of the
@@ -214,13 +214,13 @@ stuttgart
 ============ ========================
 
 ECP parameters can be specified directly in input script using NWChem format.
-Examples of ECP input can be found in :download:`examples/gto/05-input_ecp.py`.
+Examples of ECP input can be found in :source:`examples/gto/05-input_ecp.py`.
 
 Spin-orbit ECP integrals can be evaluated using PySCF integral driver. However,
 SO-ECP is not automatically applied to any methods in current version. It needs
 to be added to core Hamiltonian as shown in example
-:download:`examples/gto/20-soc_ecp.py` and
-:download:`examples/scf/44-soc_ecp.py`.
+:source:`examples/gto/20-soc_ecp.py` and
+:source:`examples/scf/44-soc_ecp.py`.
 PySCF provides the following SOC-ECPs
 
 ============ ========================

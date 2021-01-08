@@ -19,6 +19,7 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('../../pyscf_master/pyscf'))
+sys.path.append(os.path.abspath("./tools/extensions"))
 
 # -- General configuration ------------------------------------------------
 
@@ -37,6 +38,7 @@ extensions = [
     #'sphinxcontrib.napoleon', # numpy style doc
     #'numpydoc', # numpy style doc
     'sphinxcontrib.bibtex',
+    'pyscfdocext',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
