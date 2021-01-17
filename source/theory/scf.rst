@@ -113,9 +113,10 @@ Controllable parameters
 
 Initial guess
 -------------
-PySCF provides several options as the initial guesses for solving the 
-SCF problem. These can be specified by setting the attribute :attr:`.init_guess`
-to the following values:
+PySCF provides several options as the initial guesses for solving the
+SCF problem; see :cite:`Leh2019` for a review and assessment of
+initial guesses. These can be specified by setting the attribute
+:attr:`.init_guess` to the following values:
 
 * ``'minao'`` (default)
 
@@ -123,19 +124,19 @@ to the following values:
 
 * ``'1e'``
 
-    The core Hamiltonian is diagonalized to get the initial MOs. 
+    The core Hamiltonian is diagonalized to get the initial MOs. The use of the 1e guess is not recommended, because the guess is very bad.
 
 * ``'atom'``
 
-    Superposition of atomic HF density matrix.
+    Superposition of atomic HF density matrix. The atomic HF calculations are spin-restricted and employ spherically averaged occupations with ground states determined in :cite:`Leh2020`.
 
 * ``'huckel'``
 
-    A Hückel guess based on on-the-fly atomic HF calculations. :cite:`Leh2019`
+    A Hückel guess based on on-the-fly atomic HF calculations like in ``'atom'``. :cite:`Leh2019`
 
 * ``'vsap'``
 
-    Superposition of atomic potentials. Note this is only available for DFT calculations. 
+    Superposition of atomic potentials. Note this is only available for DFT calculations. :cite:`Leh2019`
     
 * ``'chk'``
 
