@@ -495,11 +495,16 @@ basis functions, electron densities, and integrals.
 Some examples can be found in 
 :source:`examples/dft/30-ao_value_on_grid.py`, and
 :source:`examples/dft/31-xc_value_on_grid.py`.
-Following is an example of computing the nonnegative kinetic energy density
+Following is an example of computing the kinetic energy from the 
+nonnegative kinetic energy density
 
 .. math::
 
-    t_s(\mathbf{r}) = \frac{1}{2} \sum_{i\in occ} |\nabla\psi_i(\mathbf{r})|^2 \;.
+    t_s(\mathbf{r}) = \frac{1}{2} \sum_{i\in occ} |\nabla\psi_i(\mathbf{r})|^2 \;,
+
+.. math::
+
+    T_s = \int d\mathbf{r} t_s(\mathbf{r}) \;.
 
 .. code-block:: python
 
@@ -509,8 +514,12 @@ Following is an example of computing the nonnegative kinetic energy density
     grids.build(with_non0tab=True)
     weights = grids.weights
     ao1 = numint.eval_ao(mol, grids.coords, deriv=1, non0tab=grids.non0tab)
-    ts = 0.5 * numpy.einsum('g,xgp,pi,xgq,qi->', weights, ao1[1:], orbo, ao1[1:], orbo)
+    ts = 0.5 * numpy.einsum('xgp,pi,xgq,qi->g', ao1[1:], orbo, ao1[1:], orbo)
+    Ts = numpy.einsum('g,g->', weights, ts)
 
+    Ts_ao = mol.intor("int1e_kin")
+    Ts_anal = np.einsum("ui,uv,vi->", orbo, Ts_ao, orbo)
+    print(numpy.linalg.norm(Ts - Ts_anal))
 
 
 References
