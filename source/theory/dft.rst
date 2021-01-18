@@ -45,9 +45,9 @@ KS-DFT defines the total electronic energy as follows
 
 .. math::
 
-    E = E_{T_{s}}[\rho] + E_{\rm ext}[\rho] + E_J[\rho] + E_{\rm xc}[\rho] \;,
+    E = T_s + E_{\rm ext} + E_J + E_{\rm xc} \;,
 
-where :math:`E_{T_s}` is the noninteracting kinetic energy,
+where :math:`T_s` is the noninteracting kinetic energy,
 :math:`E_{\rm ext}` is the energy due to external potentials,
 :math:`E_J` is the Coulomb energy, and
 :math:`E_{\rm xc}` is the exchange-correlation (XC) energy.
