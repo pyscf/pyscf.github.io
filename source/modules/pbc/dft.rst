@@ -3,6 +3,9 @@
 pbc.dft  --- DFT with PBCs
 **************************
 
+.. module:: pbc.dft
+   :synopsis: Density functional theory with periodic boundary conditions
+
 The :mod:`pbc.dft` module implements the density functional theory with periodic boundary conditions.
 It is analogous to the :mod:`dft` module.
 

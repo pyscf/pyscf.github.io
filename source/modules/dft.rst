@@ -4,6 +4,8 @@
 ****************************************
 
 .. module:: dft
+   :synopsis: Density functional theory
+
 The :mod:`dft` module implements Kohn-Sham density functional theory. Also see :mod:`scf`.
 
 

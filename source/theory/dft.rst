@@ -4,14 +4,64 @@
 Density functional theory (DFT)
 *******************************
 
-*Modules*: :ref:`dft <dft>`, :ref:`pbc.dft <pbc_dft>`
+*Modules*: :mod:`dft`, :mod:`pbc.dft`
 
 Introduction
 ============
+The Kohn-Sham density functional theory (KS-DFT) is implemented as derived 
+classes of the :class:`pyscf.scf.hf.SCF` class, thus, the methods and capabilities introduced in 
+:numref:`theory_scf` also apply to the :mod:`dft` module.
+
+A minimal example of using the :mod:`dft` module is as follows::
+
+    from pyscf import gto, scf
+    mol = gto.M(
+        atom = 'H 0 0 0; F 0 0 1.1',  # in Angstrom
+        basis = 'ccpvdz',
+        symmetry = True,
+    )
+    mf = scf.RKS(mol)
+    mf.xc = 'lda,vwn' #default functional
+    mf.kernel()
+
+This will run a restricted closed-shell DFT calculation with the default LDA functional.
 
 Theory
 ======
+The Hohenberg-Kohn theorems state that 
+for an interacting inhomogeneous electron gas in a static external potential :math:`v_{\rm ext}(\mathbf{r})`,
+(1) the potential :math:`v_{\rm ext}(\mathbf{r})`, and hence the total energy are unique functionals of the 
+electron density :math:`\rho(\mathbf{r})`; 
+(2) the electron density that minimizes the total energy is the exact ground-state density :cite:`HohKoh1964`.
+This implies that the many-body problem of :math:`N` electrons with :math:`3N` spatial coordinates
+can be reduced to the problem of solving for the electron density
+with only 3 spatial coordinates. Such an approach, which is often called the orbital-free DFT, 
+however, is in practice challenging due to the difficulty of constructing accurate kinetic energy functionals.
+In contrast, KS-DFT, which was firstly proposed by Kohn and Sham :cite:`KohSha1965`,
+uses the electron density of a reference noninteracting system
+to represent the density of the true interacting system. 
+As a result, KS-DFT can be formulated similarly as Hartree-Fock (HF) theory.
+KS-DFT defines the total electronic energy as follows
 
+.. math::
+
+    E = E_{T_{s}}[\rho] + E_{\rm ext}[\rho] + E_J[\rho] + E_{\rm xc}[\rho] \;,
+
+where :math:`E_{T_s}` is the noninteracting kinetic energy,
+:math:`E_{\rm ext}` is the energy due to external potentials,
+:math:`E_J` is the Coulomb energy, and
+:math:`E_{\rm xc}` is the exchange-correlation (XC) energy.
+Note that the exact functional form of :math:`E_{\rm xc}` is unknown,
+thus it has to be approximated, which leads to various density functional approximations.
+These include local density approximation (LDA; XC energy only depends on electron densities), 
+generalized gradient approximation (GGA; XC energy also depends on density gradients), 
+meta-GGA (XC energy also depends on density laplacians),
+non-local correlation functionals (the correlation potential has a non-local form),
+hybrid density functionals (a fraction of exact exchange is also included), and
+long-range corrected density functionals (long-range part of the exchange energy is repalaced by the exact exchange energy), etc.
+Variationally minimizing the total energy leads to the same Fock equations as in :numref:`theory_scf`,
+but with the exact exchange :math:`\hat{K}` replaced by the XC potential :math:`\hat{v}_{\rm xc}`,
+which is the functional derivative of :math:`E_{\rm xc}`.
 
 Predefined XC functionals and functional aliases
 ================================================
@@ -29,6 +79,10 @@ functional. E.g. xc = 'b86' leads to B86 exchange only (without correlation).
 Note that in the early PySCF DFT implementations (1.5.0 or earlier), the program
 does not support functional alias. Both exchange and correlation have to be
 explicitly assigned. xc = 'pbe' gives only the PBE exchange.
+See more examples in 
+:source:`examples/dft/00-simple_dft.py`,
+:source:`examples/dft/32-xcfun_as_default.py`, and
+:source:`examples/dft/33-nlc_functionals.py`.
 
 libxc
 -----
@@ -231,6 +285,7 @@ REVPBE              REVPBE              PBE
 PBESOL              PBESOL              PBESOL
 TPSS                TPSS                TPSS
 REVTPSS             REVTPSS             REVTPSS
+SCAN                SCAN                SCAN
 BLOC                BLOC                TPSSLOC
 OLYP                OPTX                LYP
 RPBE                RPBE                PBE
@@ -269,6 +324,11 @@ M06L           M06-L exchange
 M06HF          M06-HF exchange
 TPSS           TPSS original exchange functional
 REVTPSS        Reviewed TPSS exchange functional
+SCAN           SCAN exchange functional
+RSCAN          rSCAN exchange functional
+RPPSCAN        r++SCAN exchange functional
+R2SCAN         r2SCAN exchange functional
+R4SCAN         r4SCAN exchange functional
 B97            B97 exchange
 B97_1          B97-1 exchange
 B97_2          B97-2 exchange
@@ -307,6 +367,11 @@ M06L           M06-L Correlation
 M062X          M06-2X Correlation
 TPSS           TPSS original correlation functional
 REVTPSS        Revised TPSS correlation functional
+SCAN           SCAN correlation functional
+RSCAN          rSCAN correlation functional
+RPPSCAN        r++SCAN correlation functional
+R2SCAN         r2SCAN correlation functional
+R4SCAN         r4SCAN correlation functional
 PZ81           PZ81 LDA correlation
 P86            P86C GGA correlation
 B97            B97 correlation
@@ -326,7 +391,7 @@ PW91           PW91 Correlation
 Customizing XC functionals
 ==========================
 XC functionals of DFT methods can be customized. The simplest way to customize
-the XC functional is to assigned a string expression to :attr:`mf.xc`::
+the XC functional is to assign a string expression to :attr:`mf.xc`::
 
     from pyscf import gto, dft
     mol = gto.M(atom='H  0  0  0; F  0.9  0  0', basis='6-31g')
@@ -419,3 +484,36 @@ dynamically.
 More examples of DFT XC functional customization can be found in
 :source:`examples/dft/24-custom_xc_functional.py` and
 :source:`examples/dft/24-define_xc_functional.py`.
+
+Numerical integration grids
+===========================
+PySCF implements several numerical integration grids,
+which can be tuned in DFT calculations following the examples in 
+:source:`examples/dft/11-grid_scheme.py`.
+In addition, these grids can be used for general numerical evaluations of
+basis functions, electron densities, and integrals.
+Some examples can be found in 
+:source:`examples/dft/30-ao_value_on_grid.py`, and
+:source:`examples/dft/31-xc_value_on_grid.py`.
+Following is an example of computing the nonnegative kinetic energy density
+
+.. math::
+
+    t_s(\mathbf{r}) = \frac{1}{2} \sum_{i\in occ} |\nabla\psi_i(\mathbf{r})|^2 \;.
+
+.. code-block:: python
+
+    from pyscf.dft import gen_grid, numint
+    orbo = mf.mo_coeff[:,mf.mo_occ>0]
+    grids = gen_grid.Grids(mol)
+    grids.build(with_non0tab=True)
+    weights = grids.weights
+    ao1 = numint.eval_ao(mol, grids.coords, deriv=1, non0tab=grids.non0tab)
+    ts = 0.5 * numpy.einsum('g,xgp,pi,xgq,qi->', weights, ao1[1:], orbo, ao1[1:], orbo)
+
+
+
+References
+==========
+.. bibliography:: ref_dft.bib
+   :style: unsrt

@@ -43,16 +43,22 @@ of molecular orbitals (MOs) :math:`\psi`,
 
 In this way, the electron correlation is treated equivalently as a mean-field Coulomb repulsion.
 The total electronic energy :math:`E=\langle\Psi_0|\hat{H}|\Psi_0\rangle` 
-is then minimized by solving the Hartree-Fock equations
+is then minimized by solving a set of Fock equations
 
 .. math::
 
-    \mathbf{FC} = \mathbf{SC\varepsilon} \;
+    \hat{f} \psi_i(\mathbf{r}) = \varepsilon_i \psi_i(\mathbf{r})
 
-with :math:`\mathbf{F}`, :math:`\mathbf{C}`, and :math:`\mathbf{S}` 
-denoting the Fock matrix, 
-the expansion coefficients of MOs,
-and the overlaps among basis functions, respectively. :cite:`Pop1954`
+with the Fock operator :math:`\hat{f}` defined as
+
+.. math::
+
+    \hat{f} = \hat{T}_s + \hat{v}_{\rm ext} + \hat{J} + \hat{K} \;,
+
+where :math:`\hat{T}_s` is the noninteracting kinetic energy operator,
+:math:`\hat{v}_{\rm ext}` is the external potential,
+:math:`\hat{J}` is the Coulomb operator, and
+:math:`\hat{K}` is the exact exchange operator. :cite:`SzaOst2012`
 
 Methods
 =======
@@ -96,11 +102,14 @@ four variants of HF and KS-DFT methods.
 
 Calculations with these methods can be invoked by creating an instance of the corresponding class::
 
-    mf = scf.RHF(mol)
-    mf = scf.UHF(mol)
-    mf = scf.ROHF(mol)
-    mf = scf.GHF(mol)
-    mf.kernel()
+    mf = scf.RHF(mol).run()
+    mf = scf.UHF(mol).run()
+    mf = scf.ROHF(mol).run()
+    mf = scf.GHF(mol).run()
+    mf = scf.RKS(mol).run()
+    mf = scf.UKS(mol).run()
+    mf = scf.ROKS(mol).run()
+    mf = scf.GKS(mol).run()
 
 More examples can be found in
 :source:`examples/scf/00-simple_hf.py`,
