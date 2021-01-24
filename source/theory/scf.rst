@@ -250,16 +250,16 @@ for example,
 
 * dipole moment::
  
-  mf.dip_moment()
+    mf.dip_moment()
 
 * Mülliken population:: 
 
-  mf.mulliken_pop()
+    mf.mulliken_pop()
 
 * nuclear gradients::
 
-  g = mf.Gradients()
-  g.kernel()
+    g = mf.Gradients()
+    g.kernel()
 
 References
 ==========
