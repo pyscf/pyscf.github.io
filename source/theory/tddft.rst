@@ -146,6 +146,16 @@ and they can be computed as follows::
     g1 = tdg.kernel(state=1) #first excited state
     g2 = tdg.kernel(state=2) #second excited state
 
+Natural transition orbital analysis
+-----------------------------------
+Natural transition orbitals (NTOs) can be computed by 
+singular value decomposition of the transition density matrix.
+In PySCF, these orbitals can be obtained as follows::
+
+    weights, nto_coeff = mytd.get_nto(state=1)
+
+where ``nto_coeff`` are the coefficients for NTOs represented in AO basis,
+and they are ordered as occupied orbitals followed by virtual orbitals.
 
 References
 ==========

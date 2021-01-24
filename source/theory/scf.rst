@@ -246,8 +246,20 @@ for a given SCF calculation. See examples in
 Property calculation
 ====================
 Various properties can be computed by calling the corresponding functions,
-*e.g.*, dipole moment (:func:`.dip_moment`), nuclear gradients (:func:`.nuc_grad_method`),
-and Mülliken population (:func:`.mulliken_pop`), *etc.*
+for example, 
+
+* dipole moment::
+ 
+  mf.dip_moment()
+
+* Mülliken population:: 
+
+  mf.mulliken_pop()
+
+* nuclear gradients::
+
+  g = mf.Gradients()
+  g.kernel()
 
 References
 ==========
