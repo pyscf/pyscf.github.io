@@ -58,7 +58,7 @@ the PBC-HF calculation with :class:`pyscf.pbc.scf.hf.RHF` or
   Hartree-Fock, all-electron, and post-Hartree-Fock calculations, is
   Gaussian density fitting. This can be used by setting the :attr:`with_df` attribute (see :ref:`pbc_df`) or, conveniently, by using the :func:`density_fit` function (see :ref:`pbc_density_fit`). For
 higher accuracy, you may wish to use
-  mixed density fitting (MDF) (see :ref:`with_df`).  Here is an example to update :attr:`with_df`
+  mixed density fitting (MDF) (see :ref:`pbc_mdf`).  Here is an example to update :attr:`with_df`
 
 .. literalinclude:: /../examples/pbc/11-gamma_point_all_electron_scf.py
 
@@ -153,7 +153,7 @@ Note that when calling :func:`get_bands`, the choice of :attr:`exxdiv` affects t
 SCF calculation (i.e. redoing self-consistency at each k point).
 
 
-.. _pbc_density_fit
+.. _pbc_density_fit:
 
 Gaussian density fitting
 ========================

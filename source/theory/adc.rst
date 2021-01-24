@@ -4,10 +4,10 @@
 Algebraic diagrammatic construction (ADC) scheme
 ************************************************
 
-*Modules*: :ref:`adc <adc>`
+*Modules*: :mod:`adc`
 
 Background: Propagator Theory
-============
+=============================
 
 The algebraic diagrammatic construction (ADC) theory has a close connection with the propagator theory, where the central object of interest is a propagator of the many-body system. 
 The general expression for a retarded propagator that describes response of a many-electron system to an external perturbation with frequency :math:`\omega` is:

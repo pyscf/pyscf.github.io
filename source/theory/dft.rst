@@ -12,7 +12,7 @@ The Kohn-Sham density functional theory (KS-DFT) is implemented as derived
 classes of the :class:`pyscf.scf.hf.SCF` class, thus, the methods and capabilities introduced in 
 :numref:`theory_scf` also apply to the :mod:`dft` module.
 
-A minimal example of using the :mod:`dft` module is as follows::
+A minimal example of using the :mod:`dft` module is as follows. ::
 
     from pyscf import gto, scf
     mol = gto.M(
@@ -28,11 +28,11 @@ This will run a restricted closed-shell DFT calculation with the default LDA fun
 
 Theory
 ======
-The Hohenberg-Kohn theorems state that 
+The Hohenberg-Kohn theorems :cite:`HohKoh1964` state that 
 for an interacting inhomogeneous electron gas in a static external potential :math:`v_{\rm ext}(\mathbf{r})`,
 (1) the potential :math:`v_{\rm ext}(\mathbf{r})`, and hence the total energy are unique functionals of the 
 electron density :math:`\rho(\mathbf{r})`; 
-(2) the electron density that minimizes the total energy is the exact ground-state density :cite:`HohKoh1964`.
+(2) the electron density that minimizes the total energy is the exact ground-state density.
 This implies that the many-body problem of :math:`N` electrons with :math:`3N` spatial coordinates
 can be reduced to the problem of solving for the electron density
 with only 3 spatial coordinates. Such an approach, which is often called the orbital-free DFT, 
@@ -55,7 +55,7 @@ Note that the exact functional form of :math:`E_{\rm xc}` is unknown,
 thus it has to be approximated, which leads to various density functional approximations.
 These include local density approximation (LDA; XC energy only depends on electron densities), 
 generalized gradient approximation (GGA; XC energy also depends on density gradients), 
-meta-GGA (XC energy also depends on density laplacians),
+meta-GGA (XC energy also depends on kinetic energy densities),
 non-local correlation functionals (the correlation potential has a non-local form),
 hybrid density functionals (a fraction of exact exchange is also included), and
 long-range corrected density functionals (long-range part of the exchange energy is repalaced by the exact exchange energy), etc.
@@ -519,8 +519,13 @@ nonnegative kinetic energy density
 
     Ts_ao = mol.intor("int1e_kin")
     Ts_anal = np.einsum("ui,uv,vi->", orbo, Ts_ao, orbo)
-    print(numpy.linalg.norm(Ts - Ts_anal))
+    print(asb(Ts - Ts_anal))
 
+Dispersion corrections
+======================
+Grimme's "D3" dispersion correction :cite:`DFTD3` can be added with
+an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_.
+See :numref:`dftd3`.
 
 References
 ==========

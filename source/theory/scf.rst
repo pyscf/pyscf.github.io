@@ -235,6 +235,8 @@ direct Inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
     See examples in
     :source:`examples/scf/54-fractional_occupancy.py`.
 
+.. _stability_analysis:
+
 Stability analysis
 ==================
 PySCF allows detection of both internal and external instabilities 

@@ -31,6 +31,7 @@ sys.path.append(os.path.abspath("./tools/extensions"))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    #'sphinx.ext.autosectionlabel',
     #'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
@@ -40,6 +41,8 @@ extensions = [
     'sphinxcontrib.bibtex',
     'pyscfdocext',
 ]
+
+#numfig = True
 
 #bibtex_reference_style = 'super'
 #bibtex_default_style = 'unsrt'
@@ -58,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PySCF'
-copyright = u'2015-2020, The PySCF Developers'
+copyright = u'2015-2021, The PySCF Developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

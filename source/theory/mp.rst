@@ -1,6 +1,6 @@
+.. _theory_mp2:
 
+Second-Order Møller–Plesset Perturbation Theory
+***********************************************
 
-Møller-Plesset perturbation theory
-**********************************
-
-*Modules*: :ref:`mp <mp>`, :ref:`pbc.mp <pbc_mp>`
+*Modules*: :mod:`mp`, :mod:`pbc.mp`

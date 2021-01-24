@@ -3,6 +3,9 @@
 :mod:`tdscf` --- TDHF and TDDFT
 *******************************
 
+.. module:: tdscf
+   :synopsis: time-dependent Hartree-Fock and density functional theory
+
 The :mod:`tdscf` module implements the time-dependent Hartree-Fock and 
 time-dependent density functional theory.
 
