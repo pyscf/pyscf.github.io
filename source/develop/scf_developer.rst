@@ -6,6 +6,9 @@ Self-consistent field (SCF) methods
 
 *Modules*: :mod:`scf`, :mod:`pbc.scf`, :mod:`soscf`
 
+[ALSO HAVE BRIEF OVERVIEW OF THE SCF CLASS/DERIVED CLASSES AND KEY ATTRIBUTES]
+
+
 Overview
 ========
 The SCF iterative loop is the :func:`pyscf.scf.hf.kernel` function
