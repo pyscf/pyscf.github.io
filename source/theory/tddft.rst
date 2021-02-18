@@ -8,9 +8,10 @@ Time-dependent Hartree-Fock and Density Functional Theory
 Introduction
 ============
 PySCF implements the time-dependent Hartree-Fock (TDHF) and 
-time-dependent density fuctional theory (TDDFT) to compute excite-state energies 
-and transition properties in the :mod:`tdscf` module.
-A minimal example of running a TDDFT calculation is as follows ::
+time-dependent density functional theory (TDDFT) (frequency domain)
+linear response theories to compute excited-state energies 
+and transition properties in the :mod:`tdscf` module. 
+A minimal example that runs a TDDFT calculation is as follows ::
 
     from pyscf import gto, scf, dft, tddft
     mol = gto.Mole()
@@ -35,8 +36,8 @@ and transition dipole moments of the ten lowest singlet exicted states.
 
 Theory
 ======
-By applying first-order time-dependent perturbation theory to the reference 
-HF or KS-DFT state, one can derive the non-Hermitian TDHF or TDDFT equations
+Using first-order time-dependent perturbation theory within HF or KS theory,
+one obtains the non-Hermitian TDHF or TDDFT equations for the excitation energies
 :cite:`DreHea2005`:
 
 .. math::
@@ -60,8 +61,8 @@ where :math:`\mathbf{A}` and :math:`\mathbf{B}` are the orbital
 hessians which also appear in the stability analysis for reference states (see :numref:`stability_analysis`),
 :math:`\omega` is the excitation energy, and 
 :math:`\mathbf{X}` and :math:`\mathbf{Y}` represent the response of the density matrix.
-In the cases where the system possesses
-degenerate ground states or triplet instabilities, the algorithms used to solve the 
+In cases where the system possesses
+a degenerate ground state or has triplet instabilities, the algorithms used to solve the 
 above equations may be unstable. This can be solved by applying the Tamm-Dancoff approximation (TDA) :cite:`HirHea1999`,
 which simply neglects the :math:`\mathbf{B}` and :math:`\mathbf{Y}` matrices and leads to a 
 Hermitian eigenvalue problem
@@ -70,11 +71,11 @@ Hermitian eigenvalue problem
 
     \mathbf{AX} = \omega\mathbf{X} \;.
 
-Note that when TDA is applied, TDHF reduces to the same formalism as configuration interaction singles (CIS),
-because the Coulomb operator projected onto the space of singly-excited Slater determinants
-yields terms that are equivalent to the linear response of the HF exchange and Coulomb potentials.
-However, in the case of TDDFT, linear response of the exchange-correlation (XC) potential leads to 2nd order derivative of 
-the XC functional, which does not appear in the ground-state DFT.
+.. Note that when TDA is applied, TDHF reduces to the same formalism as configuration interaction singles (CIS),
+.. because the Coulomb operator projected onto the space of singly-excited Slater determinants
+.. yields terms that are equivalent to the linear response of the HF exchange and Coulomb potentials.
+.. However, in the case of TDDFT, linear response of the exchange-correlation (XC) potential leads to 2nd order derivative of 
+.. the XC functional, which does not appear in the ground-state DFT.
 
 
 Methods
@@ -92,7 +93,7 @@ attribute :attr:`.singlet` to ``False``::
     mytd.singlet = False
     mytd.kernel()
 
-One can also perform symmety analysis by calling the :func:`.analyze()` method,
+One can also perform symmetry analysis by calling the :func:`.analyze()` method,
 which also computes the oscillator strengths and dipole moments::
 
     mytd.analyze(verbose=4)
@@ -109,7 +110,7 @@ both length and velocity gauges::
     mytd.oscillator_strength(gauge='length')
     mytd.oscillator_strength(gauge='velocity')
 
-Higer order corrections :cite:`LesEgiLi2015` 
+Higher order corrections :cite:`LesEgiLi2015` 
 to the oscillator strength can also be included::
 
     #include corrections due to magnetic dipole and electric quadruple
