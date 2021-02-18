@@ -3,7 +3,7 @@
 Main modules
 ************
 
-This chapter lists all the modules included in the main body of the PySCF package.
+.. This chapter lists all the modules included in the main body of the PySCF package.
 
 .. toctree::
    :maxdepth: 1

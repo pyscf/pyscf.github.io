@@ -11,3 +11,4 @@ Periodic boundary conditions
    pbc/gto.rst
    pbc/df.rst
    pbc/pp.rst
+   pbc/mix_mol.rst

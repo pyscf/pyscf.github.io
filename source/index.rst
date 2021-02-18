@@ -25,11 +25,10 @@ ecosystem of plugins and external modules that, for example, provide
 MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
 See :ref:`installing_plugin`.
 
-  
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :numbered:
+   :caption: User documentation
 
    overview.rst
    version.rst
@@ -40,8 +39,18 @@ See :ref:`installing_plugin`.
    theory.rst
    advanced.rst
    interface.rst
-   modules.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer documentation
+
+   develop/scf_developer.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API documentation
+
+   modules.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
@@ -53,5 +62,3 @@ You can also download the `PDF version
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
-
-

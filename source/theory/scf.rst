@@ -29,7 +29,7 @@ This will run a HF calculation with the default SCF settings.
 Background
 ==========
 In HF and KS-DFT, the ground-state wavefunction is expressed as a single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs) :math:`\psi`,
-:math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots \psi_N(N)|`::
+:math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots \psi_N(N)|`:
 
 .. math::
 
@@ -75,7 +75,7 @@ constraints on :math:`\psi(1)`.
 
   Orbitals either have alpha or beta spin :math:`\psi_i =\phi_i(r)\alpha` or `\psi_i = \phi_i(r)\beta`, and
   for every orbital of alpha spin, there is one of beta spin with the same spatial component. The
-  closed shell determinant is thus :math:`\Phi=\mathcal{A}|\phi_1(r_1)\alpha \phi_1(r_2)\beta \ldots \phi_{N/2}(r_{N-1})\alpha \phi_{N/2}(r_N)\beta`
+  closed shell determinant is thus :math:`\Phi=\mathcal{A}|\phi_1(r_1)\alpha \phi_1(r_2)\beta \ldots \phi_{N/2}(r_{N-1})\alpha \phi_{N/2}(r_N)\beta|`
   and :math:`S=0`.
 
 * Unrestricted (UHF/UKS)
@@ -198,6 +198,7 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
     :source:`examples/scf/24-tune_diis.py`.
 
 * SOSCF
+
     To achieve quadratic convergence for orbital optimizations, 
     PySCF implements a general second-order solver called the
     co-iterative augmented hessian (CIAH) method. :cite:`Sun2016,Sun2017`
@@ -238,7 +239,7 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 * Smearing
 
     Smearing sets fractional occupancies according to a temperature function. See the example
-    :source:`...`
+    :source:`examples/pbc/23-smearing.py`.
 	    
 .. _stability_analysis:
 

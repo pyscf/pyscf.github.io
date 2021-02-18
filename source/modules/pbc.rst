@@ -44,7 +44,6 @@ The list of modules described in this chapter is:
    pbc/cc.rst
    pbc/mpicc.rst
    pbc/tools.rst
-   pbc/mix_mol.rst
    pbc/prop.rst
    pbc/gw.rst
    pbc/x2c.rst
