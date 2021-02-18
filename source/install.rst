@@ -59,14 +59,14 @@ PySCF docker image
 The following command starts a container with the jupyter notebook server
 listening for HTTP connections on port 8888::
 
-  $ docker run -it -p 8888:8888 pyscf/pyscf-1.5.0
+  $ docker run -it -p 8888:8888 pyscf/pyscf:latest
 
 Then visit ``https://localhost:8888`` with your browser to use notebook and
 pyscf.
 
 Another way to use PySCF in docker container is to start an Ipython shell::
 
-  $ docker run -it pyscf/pyscf-1.5.0 start.sh ipython
+  $ docker run -it pyscf/pyscf:latest start.sh ipython
 
 
 .. _compile_c_extensions:
@@ -78,7 +78,7 @@ Manual installation requires `cmake <http://www.cmake.org>`_,
 and `h5py <http://www.h5py.org/>`_ libraries.
 You can download the latest PySCF (or the development branch) from github::
 
-  $ git clone https://github.com/sunqm/pyscf
+  $ git clone https://github.com/pyscf/pyscf.git
   $ cd pyscf
   $ git checkout dev  # optional if you'd like to try out the development branch
 
@@ -92,7 +92,7 @@ Build the C extensions in :file:`pyscf/lib`::
 
 This will automatically download the analytical GTO integral library `libcint
 <https://github.com/sunqm/libcint.git>`_ and the DFT exchange correlation
-functional libraries `libxc <http://www.tddft.org/programs/Libxc>`_ and `xcfun
+functional libraries `Libxc <http://www.tddft.org/programs/Libxc>`_ and `XCFun
 <https://github.com/dftlibs/xcfun.git>`_.  Finally, to make Python find
 the :code:`pyscf` package, add the top-level :code:`pyscf` directory (not
 the :code:`pyscf/pyscf` subdirectory) to :code:`PYTHONPATH`.  For example, if
@@ -139,21 +139,15 @@ Installation without network
 
 If you have problems to download the external libraries on your computer, you can
 manually build the libraries, as shown in the following instructions.  First,
-you need to install libcint, libxc or xcfun libraries::
+you need to install libcint, Libxc and XCFun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
-    $ cd libcint
-    $ cd .. && tar czf libcint.tar.gz libcint
+    $ tar czf libcint.tar.gz libcint
 
-    $ # PySCF depends on xcfun version 2.1.0
-    $ git clone https://github.com/sunqm/xcfun.git
-    $ cd xcfun
-    $ # This branch downgrades the required cmake version from 3.14 to 3.5
-    $ git checkout cmake-3.5
-    $ cd .. && tar czf xcfun.tar.gz xcfun
+    $ wget https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
 
-libxc downloaded from
-`here <http://sunqm.net/pyscf/files/src/libxc-4.3.4.tar.gz>`_.
+    $ git clone https://github.com/dftlibs/xcfun.git
+    $ tar czf xcfun.tar.gz xcfun
 
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
@@ -315,16 +309,15 @@ the path where the DMRG solver was installed.
 Libxc
 -----
 By default, building PySCF will automatically download and install
-`Libxc 3.0.0 <http://www.tddft.org/programs/octopus/wiki/index.php/Libxc:download>`_.
+`Libxc 4.3.4 <https://www.tddft.org/programs/libxc/download/>`_.
 :mod:`pyscf.dft.libxc` module provided a general interface to access Libxc functionals.
 
 
-Xcfun
+XCFun
 -----
 By default, building PySCF will automatically download and install
-latest xcfun code from https://github.com/dftlibs/xcfun.
-:mod:`pyscf.dft.xcfun` module provided a general interface to access Libxc
-functionals.
+latest XCFun code from https://github.com/dftlibs/xcfun.
+:mod:`pyscf.dft.xcfun` module provided a general interface to access XCFun functionals.
 
 
 TBLIS

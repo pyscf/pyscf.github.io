@@ -33,24 +33,24 @@ See :ref:`installing_plugin`.
    overview.rst
    version.rst
    install.rst
-   code-rule.rst
    benchmark.rst
    tutorial.rst
    theory.rst
-   advanced.rst
-   interface.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: Developer documentation
 
+   code-rule.rst
    develop/scf_developer.rst
+   advanced.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: API documentation
 
    modules.rst
+   interface.rst
 
 You can also download the `PDF version
 <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
