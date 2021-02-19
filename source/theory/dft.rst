@@ -8,7 +8,7 @@ Density functional theory (DFT)
 
 Introduction
 ============
-The Kohn-Sham density functional theory (KS-DFT) is implemented as derived 
+Kohn-Sham density functional theory (KS-DFT) is implemented through derived 
 classes of the :class:`pyscf.scf.hf.SCF` class, thus, the methods and capabilities introduced in 
 :numref:`theory_scf` also apply to the :mod:`dft` module.
 
@@ -24,23 +24,14 @@ A minimal example of using the :mod:`dft` module is as follows. ::
     mf.xc = 'lda,vwn' #default functional
     mf.kernel()
 
-This will run a restricted closed-shell DFT calculation with the default LDA functional.
+This will run a restricted closed-shell Kohn-Sham DFT calculation with the default LDA functional.
 
 Theory
 ======
-The Hohenberg-Kohn theorems :cite:`HohKoh1964` state that 
-for an interacting inhomogeneous electron gas in a static external potential :math:`v_{\rm ext}(\mathbf{r})`,
-(1) the potential :math:`v_{\rm ext}(\mathbf{r})`, and hence the total energy are unique functionals of the 
-electron density :math:`\rho(\mathbf{r})`; 
-(2) the electron density that minimizes the total energy is the exact ground-state density.
-This implies that the many-body problem of :math:`N` electrons with :math:`3N` spatial coordinates
-can be reduced to the problem of solving for the electron density
-with only 3 spatial coordinates. Such an approach, which is often called the orbital-free DFT, 
-however, is in practice challenging due to the difficulty of constructing accurate kinetic energy functionals.
-In contrast, KS-DFT, which was firstly proposed by Kohn and Sham :cite:`KohSha1965`,
+KS-DFT, first proposed by Kohn and Sham :cite:`KohSha1965`,
 uses the electron density of a reference noninteracting system
 to represent the density of the true interacting system. 
-As a result, KS-DFT can be formulated similarly as Hartree-Fock (HF) theory.
+As a result, the computational formulation of KS-DFT resembles that of Hartree-Fock (HF) theory.
 KS-DFT defines the total electronic energy as follows
 
 .. math::
@@ -48,38 +39,45 @@ KS-DFT defines the total electronic energy as follows
     E = T_s + E_{\rm ext} + E_J + E_{\rm xc} \;,
 
 where :math:`T_s` is the noninteracting kinetic energy,
-:math:`E_{\rm ext}` is the energy due to external potentials,
+:math:`E_{\rm ext}` is the energy due to the external potential,
 :math:`E_J` is the Coulomb energy, and
 :math:`E_{\rm xc}` is the exchange-correlation (XC) energy.
-Note that the exact functional form of :math:`E_{\rm xc}` is unknown,
-thus it has to be approximated, which leads to various density functional approximations.
-These include local density approximation (LDA; XC energy only depends on electron densities), 
-generalized gradient approximation (GGA; XC energy also depends on density gradients), 
-meta-GGA (XC energy also depends on kinetic energy densities),
-non-local correlation functionals (the correlation potential has a non-local form),
-hybrid density functionals (a fraction of exact exchange is also included), and
-long-range corrected density functionals (long-range part of the exchange energy is repalaced by the exact exchange energy), etc.
-Variationally minimizing the total energy leads to the same Fock equations as in :numref:`theory_scf`,
-but with the exact exchange :math:`\hat{K}` replaced by the XC potential :math:`\hat{v}_{\rm xc}`,
-which is the functional derivative of :math:`E_{\rm xc}`.
+In practice :math:`E_{\rm xc}` is approximated by a density functional approximation. These
+may be divided into several classes, such as
+
+- local density approximations (e.g. LDA; XC energy depends only on the electron density :math:`\rho`), 
+- generalized gradient approximations (GGA; XC energy also depends on the density gradient :math:`|\nabla\rho|`), 
+- meta-GGAs (XC energy also depends on the kinetic energy density and Laplacian :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
+- non-local correlation functionals (XC energy involves a double integral)
+- hybrid density functionals (a fraction of exact exchange is used), and
+- long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
+
+Variationally minimizing the total energy with respect to the density leads to the KS equations
+for the non-interacting reference orbitals. These have the same form as the Fock equations in :numref:`theory_scf`,
+but with exact exchange :math:`\hat{K}` replaced by the XC potential :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`.
+For hybrid and meta-GGa calculations, PySCF uses the generalized KS formalism [CITE] where the
+generalized KS equations minimize the total energy with respect to the orbitals themselves. 
+
 
 Predefined XC functionals and functional aliases
 ================================================
-There are a number of pure exchange-correlation functional and hybrid
-functionals predefined in the package. Some functionals have aliased names. When
-a functional names is assigned to the attribute :attr:`xc`, the DFT code will
-look into the compound functional table (including hybrid functionals and
-aliased pure functionals) and dispatch the functional to exchange and
-correlation parts if the name was found in the table. E.g.  xc = 'pbe' leads to
-the compound PBE functional which is equivalent to the assignment xc = 'pbe,pbe',
-the PBE exchange plus PBE correlation. If the functional name was not found in
-the compound functional table, the functional will be treated as exchange
-functional. E.g. xc = 'b86' leads to B86 exchange only (without correlation).
+The XC functional is assigned via the attribute :attr:`xc`. This
+is a comma separated string (precise grammar discussed below [LINK]) e.g.
+xc = 'pbe,pbe' denotes PBE exchange plus PBE correlation. 
+In common usage, a single name is often used to refer to the combination of a particular
+exchange and correlation approximation.
+To support this, PySCF will first examine a lookup table
+to see if :attr:`xc` corresponds to a common compound name. 
+If so,  the implementation  dispatches to the
+appropriate exchange and correlation forms, e.g.  xc = 'pbe' translates to 
+ xc = 'pbe,pbe'. If the name is not found in
+the compound functional table and only a single string is found, it will be treated as an exchange
+functional only, e.g. xc = 'b86' leads to B86 exchange only (without correlation).
+Note that  earlier PySCF versions (1.5.0 or earlier)
+did not support compound functional aliases, and both exchange and correlation always had to be
+explicitly assigned.
 
-Note that in the early PySCF DFT implementations (1.5.0 or earlier), the program
-does not support functional alias. Both exchange and correlation have to be
-explicitly assigned. xc = 'pbe' gives only the PBE exchange.
-See more examples in 
+See examples in 
 :source:`examples/dft/00-simple_dft.py`,
 :source:`examples/dft/32-xcfun_as_default.py`, and
 :source:`examples/dft/33-nlc_functionals.py`.
@@ -167,8 +165,8 @@ TPSS0          .25*HF + .75*TPSS, TPSS
 OPTXCORR       0.7344536875999693*SLATER - 0.6984752285760186*OPTX
 =============  ========================================
 
-The list above is incomplete. Please refer to libxc manual
-(https://www.tddft.org/programs/libxc/functionals/) for complete list of the
+The list above is incomplete. Please refer to the libxc manual
+(https://www.tddft.org/programs/libxc/functionals/) for a complete list of 
 hybrid functionals.
 
 The (aliased) pure functionals for libxc are
@@ -226,7 +224,7 @@ SCAN_VV10           SCAN                SCAN_VV10
 SCAN_RVV10          SCAN                SCAN_RVV10
 ==================  ==================  ====================
 
-Libxc provides the implementation of individual exchange and correlation
+Libxc provides implementation of individual exchange and correlation
 functionals, such as B86, P88, LYP, VWN, etc.  Please refer to libxc manual
 (https://www.tddft.org/programs/libxc/functionals/) for the supported
 functionals.
@@ -235,7 +233,7 @@ xcfun
 -----
 
 Another XC functional library that PySCF supports is xcfun
-(http://dftlibs.org/xcfun/). Xcfun library can evaluate arbitrary derivatives of
+(http://dftlibs.org/xcfun/). The Xcfun library can evaluate arbitrary derivatives of
 XC functionals. The predefined compound functionals in xcfun are
 
 =============  ========================================
@@ -415,48 +413,48 @@ The XC functional string is parsed against the rules, as described below.
   first part describes the exchange functional, the second part sets the
   correlation functional.
 
-  - If "," not appeared in string, the entire string is treated as the name of a
+  - If "," does not appear in the string, the entire string is treated as the name of a
     compound functional (containing both the exchange and the correlation
-    functional) which was declared in the functional aliases list. See
+    functional) which should be in the functional aliases list. See
     the list of predefined XC functionals in the section above.
 
-    If the string was not found in the aliased functional list, it is treated as
-    X functional.
+    If the string is not found in the aliased functional list, it is treated as
+    an X functional.
 
-  - To input only X functional (without C functional), leave the second part
-    blank. E.g. description='slater,' means a functional with LDA contribution
+  - To input only an X functional (without a C functional), leave the second part
+    blank. E.g. description='slater,' means a functional with the LDA contribution
     only.
 
-  - To neglect the contribution of X functional (just apply C functional), leave
-    blank in the first part, e.g. description=',vwn' means a functional with VWN
+  - To neglect the contribution of the X functional (i.e. to just use a C functional), leave
+    the first part blank, e.g. description=',vwn' means a functional with VWN
     only.
 
   - If compound XC functional is specified, no matter whether it is in the X
-    part (the string in front of comma) or the C part (the string behind comma),
+    part (the string in front of the comma) or the C part (the string behind the comma),
     both X and C functionals of the compound XC functional will be used.
 
-* The functional name can be placed in arbitrary order.  Two names need to be
+* The functional name can be placed in an arbitrary order.  Two names need to be
   separated by operators "+" or "-".  Blank spaces are ignored.  NOTE the parser
   only reads operators "+" "-" "*".  / is not supported.
 
 * A functional name can have at most one factor.  If the factor is not given, it
-  is set to 1.  Compound functional can be scaled as a unit. For example
+  is set to 1.  Compound functionals can be scaled as a unit. For example
   '0.5*b3lyp' is equivalent to 'HF*0.1 + .04*LDA + .36*B88, .405*LYP + .095*VWN'
 
 * String "HF" stands for exact exchange (HF K matrix).  "HF" can be put in the
-  correlation functional part (after comma). Putting "HF" in the correlation
-  part is the same to putting "HF" in the exchange part.
+  correlation functional part (after the comma). Putting "HF" in the correlation
+  part is the same as putting "HF" in the exchange part.
 
 * String "RSH" means range-separated operator. Its format is RSH(alpha; beta;
   omega).  Another way to input RSH is to use keywords SR_HF and LR_HF:
   "SR_HF(0.1) * alpha_plus_beta" and "LR_HF(0.1) * alpha" where the number in
   parenthesis is the value of omega.
 
-* Be careful with the libxc convention of GGA functional, in which the LDA
+* Be careful with the libxc convention of GGA functionals, in which the LDA
   contribution is included.
 
 
-There is another way to customize XC functionals which uses the :py:meth:`eval_xc`
+There is also another way to customize XC functionals which uses the :py:meth:`eval_xc`
 method of the numerical integral class::
 
     mol = gto.M(atom='H 0 0 0; F 0.9 0 0', basis = '6-31g')
@@ -490,12 +488,12 @@ Numerical integration grids
 PySCF implements several numerical integration grids,
 which can be tuned in DFT calculations following the examples in 
 :source:`examples/dft/11-grid_scheme.py`.
-In addition, these grids can be used for general numerical evaluations of
+In addition, these grids can be used for the general numerical evaluation of
 basis functions, electron densities, and integrals.
 Some examples can be found in 
 :source:`examples/dft/30-ao_value_on_grid.py`, and
 :source:`examples/dft/31-xc_value_on_grid.py`.
-Following is an example of computing the kinetic energy from the 
+The following is an example that computes the kinetic energy from the 
 nonnegative kinetic energy density
 
 .. math::
@@ -525,7 +523,7 @@ Dispersion corrections
 ======================
 Grimme's "D3" dispersion correction :cite:`DFTD3` can be added with
 an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_.
-See :mod:`dftd3`.
+See :numref:`dftd3`.
 
 References
 ==========
