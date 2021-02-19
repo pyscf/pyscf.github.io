@@ -42,6 +42,9 @@ Program reference
 .. automodule:: pyscf.dft.uks
    :members:
 
+.. automodule:: pyscf.dft.roks
+   :members:
+
 .. automodule:: pyscf.dft.gks
    :members:
 

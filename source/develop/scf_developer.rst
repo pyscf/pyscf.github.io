@@ -6,15 +6,44 @@ Self-consistent field (SCF) methods
 
 *Modules*: :mod:`scf`, :mod:`pbc.scf`, :mod:`soscf`
 
-[ALSO HAVE BRIEF OVERVIEW OF THE SCF CLASS/DERIVED CLASSES AND KEY ATTRIBUTES]
-
-
 Overview
 ========
-The SCF iterative loop is the :func:`pyscf.scf.hf.kernel` function
-which takes a mean-field object. The current mean-field classes in PySCF
-are ...
+The class :class:`pyscf.scf.hf.SCF` is the base class for all mean-field methods,
+which are implemented as derived classes. These include
 
+=================================== ======
+:class:`pyscf.scf.hf.RHF`           RHF
+:class:`pyscf.scf.uhf.UHF`          UHF
+:class:`pyscf.scf.rohf.ROHF`        ROHF
+:class:`pyscf.scf.ghf.GHF`          GHF
+:class:`pyscf.scf.dhf.DHF`          Dirac-HF
+:class:`pyscf.scf.dhf.RDHF`         restricted Dirac-HF
+:class:`pyscf.dft.rks.RKS`          RKS-DFT
+:class:`pyscf.dft.uks.UKS`          UKS-DFT
+:class:`pyscf.dft.roks.ROKS`        ROKS-DFT
+:class:`pyscf.dft.gks.GKS`          GKS-DFT
+:class:`pyscf.dft.dks.DKS`          Diras-KS-DFT
+:class:`pyscf.dft.dks.RDKS`         restricted Diras-KS-DFT
+:class:`pyscf.pbc.scf.hf.SCF`       base class for SCF methods with PBC at :math:`\Gamma` point
+:class:`pyscf.pbc.scf.hf.RHF`       :math:`\Gamma`-point RHF
+:class:`pyscf.pbc.scf.uhf.UHF`      :math:`\Gamma`-point UHF
+:class:`pyscf.pbc.scf.rohf.ROHF`    :math:`\Gamma`-point ROHF
+:class:`pyscf.pbc.scf.ghf.GHF`      :math:`\Gamma`-point GHF
+:class:`pyscf.pbc.dft.rks.RKS`      :math:`\Gamma`-point RKS-DFT
+:class:`pyscf.pbc.dft.uks.UKS`      :math:`\Gamma`-point UKS-DFT
+:class:`pyscf.pbc.dft.roks.ROKS`    :math:`\Gamma`-point ROKS-DFT
+:class:`pyscf.pbc.scf.khf.KSCF`     base class for SCF methods with PBC and with k-point sampling 
+:class:`pyscf.pbc.scf.khf.KRHF`     KRHF
+:class:`pyscf.pbc.scf.kuhf.KUHF`    KUHF
+:class:`pyscf.pbc.scf.krohf.KROHF`  KROHF
+:class:`pyscf.pbc.scf.kghf.KGHF`    KGHF
+:class:`pyscf.pbc.dft.krks.KRKS`    KRKS-DFT
+:class:`pyscf.pbc.dft.kuks.KUKS`    KUKS-DFT
+:class:`pyscf.pbc.dft.kroks.KROKS`  KROKS-DFT
+=================================== ======
+
+The SCF iterative loop is the :func:`pyscf.scf.hf.kernel` function
+which takes a mean-field object.
 The :func:`kernel` function carries out the following steps:
 
 - generating an initial guess -- :func:`get_init_guess`
@@ -77,8 +106,8 @@ Following shows an example of HF with a Hubbard model Hamiltonian::
     # ignore the customized Hamiltonian if memory is not enough.
     mol.incore_anyway = True
 
-    n = 12 # No. of sites
-    mol.nelectron = n // 2 # half filling
+    n = 10
+    mol.nelectron = n
 
     h1 = numpy.zeros((n,n))
     for i in range(n-1):

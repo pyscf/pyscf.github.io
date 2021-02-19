@@ -195,9 +195,20 @@ Program reference
 .. automodule:: pyscf.pbc.scf.uhf
    :members:
 
+.. automodule:: pyscf.pbc.scf.rohf
+   :members:
+
+.. automodule:: pyscf.pbc.scf.ghf
+   :members:
+
 .. automodule:: pyscf.pbc.scf.khf
    :members:
 
 .. automodule:: pyscf.pbc.scf.kuhf
    :members:
 
+.. automodule:: pyscf.pbc.scf.krohf
+   :members:
+
+.. automodule:: pyscf.pbc.scf.kghf
+   :members:
