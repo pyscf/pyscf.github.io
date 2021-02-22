@@ -22,8 +22,8 @@ which are implemented as derived classes. These include
 :class:`pyscf.dft.uks.UKS`          UKS-DFT
 :class:`pyscf.dft.roks.ROKS`        ROKS-DFT
 :class:`pyscf.dft.gks.GKS`          GKS-DFT
-:class:`pyscf.dft.dks.DKS`          Diras-KS-DFT
-:class:`pyscf.dft.dks.RDKS`         restricted Diras-KS-DFT
+:class:`pyscf.dft.dks.DKS`          Dirac-KS-DFT
+:class:`pyscf.dft.dks.RDKS`         restricted Dirac-KS-DFT
 :class:`pyscf.pbc.scf.hf.SCF`       base class for SCF methods with PBC at :math:`\Gamma` point
 :class:`pyscf.pbc.scf.hf.RHF`       :math:`\Gamma`-point RHF
 :class:`pyscf.pbc.scf.uhf.UHF`      :math:`\Gamma`-point UHF
