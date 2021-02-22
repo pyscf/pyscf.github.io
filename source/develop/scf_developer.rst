@@ -42,6 +42,16 @@ which are implemented as derived classes. These include
 :class:`pyscf.pbc.dft.kroks.KROKS`  KROKS-DFT
 =================================== ======
 
+The key attributes of the SCF class include
+
+==================  ====================
+:attr:`init_guess`  initial guess method
+:attr:`DIIS`        DIIS method, can be :class:`pyscf.scf.diis.DIIS`, :class:`pyscf.scf.diis.EDIIS`, or :class:`pyscf.scf.diis.ADIIS`
+:attr:`mo_coeff`    saved MO coefficients
+:attr:`mo_energy`   saved MO energies
+:attr:`mo_occ`      saved MO occupations
+==================  ====================
+
 The SCF iterative loop is the :func:`pyscf.scf.hf.kernel` function
 which takes a mean-field object.
 The :func:`kernel` function carries out the following steps:
@@ -55,32 +65,41 @@ The :func:`kernel` function carries out the following steps:
   - building the 2-e part -- :func:`get_veff` (takes the DM as input, and internally
     calls :func:`get_jk`, which calls :func:`get_j` and :func:`get_k`)
 
-  - obtaining the 1-e overlap -- :func:`get_ovlp`
-
-  - assembling the Fock matrix from ``hcore`` and ``veff`` and extrapolating
+  - assembling the Fock matrix from :math:`h_{\rm core}` and :math:`v_{\rm eff}` and extrapolating
     by DIIS -- :func:`get_fock`
 
-  - testing for convergence -- :func:`get_grad`
+- obtaining the 1-e overlap -- :func:`get_ovlp`
 
-  - computing the new eigenvectors and eigenvalues, and filling the
-    new DM -- :func:`eig` and :func:`get_occ`, and assembling the new DM -- :func:`make_rdm1`
+- computing the new eigenvectors and eigenvalues -- :func:`eig`, 
+  and filling and assembling the new DM -- :func:`get_occ` and :func:`make_rdm1`
 
-  - updating the energy -- :func:`energy_tot`, which calls :func:`energy_elec` and :func:`energy_nuc`
+- testing for convergence -- :func:`get_grad`
 
-  - writing results to the checkfile -- :func:`dump_chk`
+- updating the energy -- :func:`energy_tot`, which calls :func:`energy_elec` and :func:`energy_nuc`
+
+- optionally writing results to the checkfile -- :func:`dump_chk`
 
 Internally, different methods reuse this kernel by overwriting the
 mean-field methods.
 
 - DFT SCF is implemented by
   specializing :meth:`get_veff` and :meth:`energy_elec` for the various KS objects 
-  (see e.g. :func:`pyscf.dft.rks.get_veff` and :func:`pyscf.dft.rks.energy_elec`).
+  (see e.g., :func:`pyscf.dft.rks.get_veff` and :func:`pyscf.dft.rks.energy_elec`).
 
-- Density Fitting is implemented by
+- Density Fitting (DF) is applied by overwriting the :meth:`get_jk` method 
+  with the DF three center 2-e integrals. (see e.g., :func:`pyscf.df.df_jk.density_fit`)
   
-- Gamma point PBC SCF re-implements (list of functions)
+- :math:`\Gamma`-point PBC SCF re-implements
 
-- k-point PBC SCF re-implements
+  - :meth:`get_ovlp` and :meth:`get_hcore` with crystal orbital 1-e integrals and optionally PBC pseudopotentials
+
+  - :meth:`get_jk` with PBC DF integrals (e.g., :func:`pyscf.pbc.df.df_jk.get_jk`)
+
+  - :meth:`energy_nuc` with Ewald summation (:func:`pyscf.pbc.gto.ewald`)
+
+- Based on the :math:`\Gamma`-point PBC SCF, 
+  k-point PBC SCF re-implements :meth:`get_ovlp`, :meth:`get_hcore` and :meth:`get_jk` with an additional k-point loop,
+  and :meth:`energy_elec` with a k-point summation.
 
 
 Incore implementation
