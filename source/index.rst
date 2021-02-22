@@ -42,8 +42,7 @@ See :ref:`installing_plugin`.
    :caption: Developer documentation
 
    code-rule.rst
-   develop/scf_developer.rst
-   develop/dft_developer.rst
+   develop.rst
    advanced.rst
 
 .. toctree::

@@ -23,3 +23,5 @@ This chapter introduces the basic theories of these methods and some of their mo
    theory/tddft.rst
    theory/rt.rst
    theory/pbc.rst
+   theory/solvent.rst
+   theory/qmmm.rst
