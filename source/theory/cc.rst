@@ -1,7 +1,7 @@
-
+.. _theory_scf:
 
 ********************
 Coupled cluster (CC)
 ********************
 
-*Modules*: :ref:`cc <cc>`, :ref:`pbc.cc <pbc_cc>`
+*Modules*: :mod:`cc`, :mod:`pbc.cc`

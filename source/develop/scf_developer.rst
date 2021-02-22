@@ -114,13 +114,9 @@ The molecular HF operator relies on the following underlying AO integral functio
   If enough memory is provided, the two-electron repulsion integral is computed (:meth:`mol.intor('int2e')`)
   and saved as the attribute :attr:`_eri`, 
   and is then contracted with the DM (:func:`pyscf.scf.hf.dot_eri_dm`) (incore algorithm).
-  Otherwise, a "direct" algorithm, where the AO integrals are computed on the flow,
-  is used (:func:`pyscf.scf._vhf.direct`). CHECK------- The incore path can be forced by 
-  setting :attr:`.incore_anyway` of the :class:`Mole` object to `True`. 
-
-.. The eigenvalues and eigenvectors of the Hamiltonian is computed by solving the 
-.. generalized eigenvalue problem (:func:`pyscf.scf.hf.eig`).
-.. And the electronic energy is computed by contracting the Hamiltonian with the DM (:func:`pyscf.scf.hf.energy_elec`).
+  Otherwise, a "direct" algorithm, where the AO integrals are computed on the fly,
+  is used (:func:`pyscf.scf._vhf.direct`). The incore path can be forced by 
+  setting :attr:`.incore_anyway` of the :class:`Mole` object to ``True``. 
 
 Custom Hamiltonians
 ===================
@@ -138,7 +134,7 @@ The following shows an example of HF with a Hubbard model Hamiltonian::
 
     # incore_anyway=True ensures the customized Hamiltonian (the _eri attribute)
     # is used.  Without this parameter,  MO integral transformation used in
-    # subsequent post-HF calculations may <-----------CHECK CHECK
+    # subsequent post-HF calculations may 
     # ignore the customized Hamiltonian if there is not enough memory.
     mol.incore_anyway = True
 
