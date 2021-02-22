@@ -15,3 +15,4 @@ Guides for module development
    develop/soscf_developer.rst
    develop/ao2mo_developer.rst  
    develop/df_developer.rst
+   develop/pbc_developer.rst

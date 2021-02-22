@@ -1,1 +1,3 @@
-PBC stuff
+
+Periodic boundary conditions
+****************************
