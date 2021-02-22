@@ -133,7 +133,7 @@ The following shows an example of HF with a Hubbard model Hamiltonian::
     mol = gto.M()
 
     # incore_anyway=True ensures the customized Hamiltonian (the _eri attribute)
-    # is used.  Without this parameter,  MO integral transformation used in
+    # is used.  Without this parameter, the MO integral transformation used in
     # subsequent post-HF calculations may 
     # ignore the customized Hamiltonian if there is not enough memory.
     mol.incore_anyway = True
