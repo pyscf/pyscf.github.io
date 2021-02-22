@@ -18,6 +18,9 @@ In addition to :meth:`get_jk`, :meth:`get_veff` also calls
 to compute the exchange-correlation (XC) energy and potential.
 The XC energy is added to the total electronic energy in :meth:`energy_elec`.
 
+<--- Important attributes of the DFT class.
+
+
 Numerical grids
 ===============
 The XC functionals are evaluated on numerical quadrature grids.
