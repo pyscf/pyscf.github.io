@@ -523,7 +523,7 @@ Dispersion corrections
 ======================
 Grimme's "D3" dispersion correction :cite:`DFTD3` can be added with
 an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_.
-See :numref:`dftd3`.
+See :mod:`dftd3`.
 
 References
 ==========

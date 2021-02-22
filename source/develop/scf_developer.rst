@@ -98,13 +98,27 @@ mean-field methods.
   - :meth:`energy_nuc` with Ewald summation (:func:`pyscf.pbc.gto.ewald`)
 
 - Based on the :math:`\Gamma`-point PBC SCF, 
-  k-point PBC SCF re-implements :meth:`get_ovlp`, :meth:`get_hcore` and :meth:`get_jk` with an additional k-point loop,
-  and :meth:`energy_elec` with a k-point summation.
+  k-point PBC SCF computes :meth:`make_rdm1`, :meth:`get_ovlp`, :meth:`get_hcore`, :meth:`get_jk`, :meth:`eig` at each k-point,
+  and re-implements :meth:`energy_elec` with a k-point summation.
 
 
 Incore implementation
 =====================
-Define simplest one to modify: here 2e integrals are incore.
+The molecular HF Hamiltonian is implemented as follows:
+
+- :meth:`get_hcore` calls 1-e integral functions 
+  :meth:`mol.intor('int1e_kin')` and :meth:`mol.intor('int1e_nuc')` (or :meth:`mol.intor('ECPscalar')` if using ECP)
+  to compute the kinetic energy and nuclear attraction matrices.
+
+- :meth:`get_jk` computes Coulomb and exchange matrices for the input DM.
+  If enough memory is provided, the two-electron repulsion integral is computed (:meth:`mol.intor('int2e')`)
+  and saved as the attribute :attr:`_eri`,
+  and is then contracted with the DM (:func:`pyscf.scf.hf.dot_eri_dm`).
+  Otherwise, the "direct" algorithm is used (:func:`pyscf.scf._vhf.direct`).
+
+The eigenvalues and eigenvectors of the Hamiltonian is computed by solving the 
+generalized eigenvalue problem (:func:`pyscf.scf.hf.eig`).
+And the electronic energy is computed by contracting the Hamiltonian with the DM (:func:`pyscf.scf.hf.energy_elec`).
 
 Custom Hamiltonians
 ===================

@@ -486,6 +486,7 @@ GDF helper functions
 --------------------
 
 .. automodule:: pyscf.pbc.df.df_jk
+   :members:
 
 .. automodule:: pyscf.pbc.df.df_ao2mo
 
