@@ -1,8 +1,7 @@
 .. _theory_mcscf:
 
-Multi-configurational self-consistent field (MCSCF)
-***************************************************
+Multi-configuration self-consistent field (MCSCF)
+*************************************************
 
+*Modules*: :mod:`mcscf`
 
-Complete active space self-consistent field (CASSCF)
-====================================================

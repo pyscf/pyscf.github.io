@@ -22,5 +22,4 @@ This chapter introduces the basic theories of these methods and some of their mo
    theory/mcscf.rst
    theory/tddft.rst
    theory/rt.rst
-   theory/eomcc.rst
    theory/pbc.rst

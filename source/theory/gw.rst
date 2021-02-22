@@ -1,6 +1,6 @@
+.. _theory_gw:
 
+GW methods
+**********
 
-GW method
-*********
-
-*Modules*: :ref:`gw <gw>`, :ref:`pbc.gw <pbc_gw>`
+*Modules*: :mod:`gw`, :mod:`pbc.gw`

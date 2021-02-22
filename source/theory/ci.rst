@@ -2,19 +2,5 @@
 
 Configuration interaction (CI)
 ******************************
+*Modules*: :mod:`ci`, :mod:`fci`, :mod:`pbc.ci`
 
-
-CI singles and doubles (CISD)
-=============================
-
-
-Complete active space CI (CASCI)
-================================
-
-
-Full CI
-=======
-
-
-Selected CI
-===========

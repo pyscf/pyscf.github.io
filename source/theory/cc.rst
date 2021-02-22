@@ -1,7 +1,7 @@
-.. _theory_scf:
+.. _theory_cc:
 
-********************
-Coupled cluster (CC)
-********************
+***********************
+Coupled cluster Methods
+***********************
 
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
