@@ -19,7 +19,7 @@ to compute the exchange-correlation (XC) energy and potential.
 The XC energy is added to the total electronic energy in :meth:`energy_elec`.
 
 <--- Important attributes of the DFT class.
-
+<--- Also, maybe necessary refs for grids
 
 Numerical grids
 ===============
