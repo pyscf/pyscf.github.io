@@ -55,7 +55,7 @@ may be divided into several classes, such as
 Variationally minimizing the total energy with respect to the density leads to the KS equations
 for the non-interacting reference orbitals. These have the same form as the Fock equations in :numref:`theory_scf`,
 but with exact exchange :math:`\hat{K}` replaced by the XC potential :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`.
-For hybrid and meta-GGa calculations, PySCF uses the generalized KS formalism [CITE] where the
+For hybrid and meta-GGa calculations, PySCF uses the generalized KS formalism :cite:`GKS` where the
 generalized KS equations minimize the total energy with respect to the orbitals themselves. 
 
 
