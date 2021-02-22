@@ -1,7 +1,7 @@
 .. _develop:
 
-Guides for module development 
-*****************************
+Guidelines for module development 
+*********************************
 
 .. toctree::
    :maxdepth: 1
