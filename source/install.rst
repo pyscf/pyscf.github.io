@@ -37,10 +37,21 @@ before calling ``pip install`` command.  Libxc library can be found in
 http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
 you need to add --enable-shared flag.
 
-Geometry optimization module is not installed by default. You can install the
-``geomopt`` module using::
+Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extlibs`.
+Individual external module (for example the geometry optimization library) can
+be installed using pip extra dependency::
 
   $ pip install pyscf[geomopt]
+
+Command to install all external modules::
+
+  $ pip install pyscf[all]
+
+External modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extlibs`).
+To install the latest version of the external modules from github, github repo
+url with prefix `git+` can be placed in the argument list of pip command::
+
+  $ pip install git+https://github.com/pyscf/geomopt
 
 
 Installation with conda
@@ -51,6 +62,10 @@ If you have `Conda <https://conda.io/docs/>`_
 environment, PySCF package can be installed with Conda cloud::
 
   $ conda install -c pyscf pyscf
+
+External libraries are not available on conda cloud. They should be installed
+with pip command or through environment variable `PYSCF_EXT_PATH` (see the
+section :ref:`installing_extlibs`).
 
 
 PySCF docker image
@@ -351,3 +366,79 @@ wrapper function to simplify the geometry optimization setup::
   mf = gto.M(atom='H 0 0 0; H 0 0 1.').apply(scf.RHF)
   mol_eq = geomopt.optimize(mf)
 
+
+.. _installing_extlibs:
+
+External libraries
+==================
+Since PySCF-2.0, some modules were moved from the main code trunk to external
+projects hosted in https://github.com/pyscf.
+
+------------------- ---------------------------------------------------------
+Project             URL                                                
+------------------- ---------------------------------------------------------
+semiemprical        https://github.com/pyscf/semiemprical
+cornell_shci        https://github.com/pyscf/cornell_shci
+dftd3               https://github.com/pyscf/dftd3
+dmrgscf             https://github.com/pyscf/dmrgscf
+doci                https://github.com/pyscf/doci
+eph                 https://github.com/pyscf/eph
+extras              https://github.com/pyscf/extras
+fciqmcscf           https://github.com/pyscf/fciqmcscf
+icmpspt             https://github.com/pyscf/icmpspt
+mrpt                https://github.com/pyscf/mrpt
+naive_hci           https://github.com/pyscf/naive_hci
+nao                 https://github.com/pyscf/nao
+rt                  https://github.com/pyscf/rt
+semiempirical       https://github.com/pyscf/semiempirical
+shciscf             https://github.com/pyscf/shciscf
+zquatev             https://github.com/sunqm/zquatev
+tblis
+------------------- ---------------------------------------------------------
+
+There are a couple of methods to install the external libraries.
+
+* Pypi command. For pypi newer than 19.0, projects that are hosted
+  on github can be installed in command line::
+
+    $ pip install git+https://github.com/pyscf/semiemprical
+
+  A particular release on github can be installed with the release URL you found
+  on github::
+
+    $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
+
+* Pypi command for a local copy. If you wish to develop an external library
+  locally, you can use the local install mode of pip. In this way, it's
+  recommended to operate in virtual environment so that changes you made do
+  not pollute the system default python runtime environment. For example::
+
+    $ python -m venv /home/abc/pyscf-local-env
+    $ source /home/abc/pyscf-local-env/bin/activate
+    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
+    $ pip install -e /home/abc/semiemprical
+
+* Environment variable `PYSCF_EXT_PATH`. You can put the location of each
+  external library or a file that contains these locations in this environment
+  varialbe. PySCF library will parse the paths defined in this environment
+  variable and load the relevent submodules. For example::
+
+    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
+    $ git clone https://github.com/pyscf/mrpt /home/abc/mrpt
+    $ git clone https://github.com/pyscf/dftd3 /home/abc/dftd3
+    $ echo /home/abc/mrpt >> /home/abc/.pyscf_ext_modules
+    $ echo /home/abc/dftd3 >> /home/abc/.pyscf_ext_modules
+    $ export PYSCF_EXT_PATH=/home/abc/semiemprical:/home/abc/.pyscf_ext_modules
+
+  Using the so-defined environment variable `PYSCF_EXT_PATH`, three external
+  submodules (semiemprical, mrpt, dftd3) will be loaded when pyscf was imported.
+  In this way, you don't have to use the python virtual environment.
+
+Once the external libraries are correctly installed (with any methods shown
+above), you can use them as the regular submodules developed inside the pyscf
+main branch::
+
+    >>> import pyscf
+    >>> from pyscf.semiemprical import MINDO
+    >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
+    >>> MINDO(mol).run()
