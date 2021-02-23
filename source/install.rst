@@ -37,18 +37,18 @@ before calling ``pip install`` command.  Libxc library can be found in
 http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
 you need to add --enable-shared flag.
 
-Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extlibs`.
-Individual external module (for example the geometry optimization library) can
+Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extproj`.
+Individual extended module (for example the geometry optimization module) can
 be installed using pip extra dependency::
 
   $ pip install pyscf[geomopt]
 
-Command to install all external modules::
+Command to install all extended modules::
 
   $ pip install pyscf[all]
 
-External modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extlibs`).
-To install the latest version of the external modules from github, github repo
+Extended modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extproj`).
+To install the latest version of the extended modules from github, github repo
 url with prefix `git+` can be placed in the argument list of pip command::
 
   $ pip install git+https://github.com/pyscf/geomopt
@@ -63,9 +63,9 @@ environment, PySCF package can be installed with Conda cloud::
 
   $ conda install -c pyscf pyscf
 
-External libraries are not available on conda cloud. They should be installed
+Extended modules are not available on conda cloud. They should be installed
 with pip command or through environment variable `PYSCF_EXT_PATH` (see the
-section :ref:`installing_extlibs`).
+section :ref:`installing_extproj`).
 
 
 PySCF docker image
@@ -367,11 +367,11 @@ wrapper function to simplify the geometry optimization setup::
   mol_eq = geomopt.optimize(mf)
 
 
-.. _installing_extlibs:
+.. _installing_extproj:
 
-External libraries
-==================
-Since PySCF-2.0, some modules were moved from the main code trunk to external
+Extended modules
+================
+Since PySCF-2.0, some modules were moved from the main code trunk to extended
 projects hosted in https://github.com/pyscf.
 
 ------------------- ---------------------------------------------------------
@@ -396,7 +396,7 @@ zquatev             https://github.com/sunqm/zquatev
 tblis
 ------------------- ---------------------------------------------------------
 
-There are a couple of methods to install the external libraries.
+There are a couple of methods to install the extended modules.
 
 * Pypi command. For pypi newer than 19.0, projects that are hosted
   on github can be installed in command line::
@@ -408,7 +408,7 @@ There are a couple of methods to install the external libraries.
 
     $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
 
-* Pypi command for a local copy. If you wish to develop an external library
+* Pypi command for a local copy. If you wish to develop an extended module
   locally, you can use the local install mode of pip. In this way, it's
   recommended to operate in virtual environment so that changes you made do
   not pollute the system default python runtime environment. For example::
@@ -419,7 +419,7 @@ There are a couple of methods to install the external libraries.
     $ pip install -e /home/abc/semiemprical
 
 * Environment variable `PYSCF_EXT_PATH`. You can put the location of each
-  external library or a file that contains these locations in this environment
+  extended module or a file that contains these locations in this environment
   varialbe. PySCF library will parse the paths defined in this environment
   variable and load the relevent submodules. For example::
 
@@ -430,11 +430,11 @@ There are a couple of methods to install the external libraries.
     $ echo /home/abc/dftd3 >> /home/abc/.pyscf_ext_modules
     $ export PYSCF_EXT_PATH=/home/abc/semiemprical:/home/abc/.pyscf_ext_modules
 
-  Using the so-defined environment variable `PYSCF_EXT_PATH`, three external
+  Using the so-defined environment variable `PYSCF_EXT_PATH`, three extended
   submodules (semiemprical, mrpt, dftd3) will be loaded when pyscf was imported.
   In this way, you don't have to use the python virtual environment.
 
-Once the external libraries are correctly installed (with any methods shown
+Once the extended modules are correctly installed (with any methods shown
 above), you can use them as the regular submodules developed inside the pyscf
 main branch::
 
