@@ -35,7 +35,7 @@ See :ref:`installing_plugin`.
    install.rst
    benchmark.rst
    tutorial.rst
-   theory.rst
+   user.rst
 
 .. toctree::
    :maxdepth: 1
