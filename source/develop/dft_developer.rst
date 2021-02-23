@@ -8,7 +8,7 @@ Density functional theory (DFT)
 
 Overview
 ========
-The DFT methods in modules :mod:`pyscf.dft` and :mod:`pyscf.pbc.dft` 
+The KS-DFT methods in modules :mod:`pyscf.dft` and :mod:`pyscf.pbc.dft` 
 are implemented as derived classes of the base SCF class :class:`pyscf.scf.hf.SCF`. 
 The major modifications of DFT with respect to HF include the re-implementation of the 
 :meth:`get_veff` and :meth:`energy_elec` methods.
@@ -19,12 +19,11 @@ to compute the exchange-correlation (XC) energy and potential.
 The XC energy is added to the total electronic energy in :meth:`energy_elec`.
 
 The key attributes of the KS classes include
-
 ==========================  ===== 
 :attr:`xc`                  names of the XC functionals
 :attr:`nlc`                 names of the non-local correlation functionals
 :attr:`omega`               :math:`\omega` of the range-separated Coulomb operator :math:`e^{-\omega r_{12}^2} / r_{12}`
-:attr:`grids`               :class:`dft.gen_grid.Grids` (or :class:`pbc.dft.gen_grid.Grids`) objects which defines the DFT grids
+:attr:`grids`               :class:`dft.gen_grid.Grids` (or :class:`pbc.dft.gen_grid.Grids`) objects which define the DFT grids
 ==========================  =====
 
 Numerical grids
