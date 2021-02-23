@@ -19,6 +19,7 @@ to compute the exchange-correlation (XC) energy and potential.
 The XC energy is added to the total electronic energy in :meth:`energy_elec`.
 
 The key attributes of the KS classes include
+
 ==========================  ===== 
 :attr:`xc`                  names of the XC functionals
 :attr:`nlc`                 names of the non-local correlation functionals

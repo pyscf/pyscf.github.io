@@ -70,7 +70,7 @@ To support this, PySCF will first examine a lookup table
 to see if :attr:`xc` corresponds to a common compound name. 
 If so,  the implementation  dispatches to the
 appropriate exchange and correlation forms, e.g.  xc = 'pbe' translates to 
- xc = 'pbe,pbe'. If the name is not found in
+xc = 'pbe,pbe'. If the name is not found in
 the compound functional table and only a single string is found, it will be treated as an exchange
 functional only, e.g. xc = 'b86' leads to B86 exchange only (without correlation).
 Note that  earlier PySCF versions (1.5.0 or earlier)
