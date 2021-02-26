@@ -47,12 +47,24 @@ Command to install all extended modules::
 
   $ pip install pyscf[all]
 
-Extended modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extproj`).
-To install the latest version of the extended modules from github, github repo
+Extension modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extproj`).
+To install the latest version of the extension modules from github, github repo
 url with prefix `git+` can be placed in the argument list of pip command::
 
   $ pip install git+https://github.com/pyscf/geomopt
 
+Installation on Fedora
+======================
+
+If you are running Fedora Linux, you can install PySCF as a distribution package::
+
+  # dnf install python3-pyscf
+
+If you are running on an X86-64 platform, dnf should automatically
+install the optimized integral library, qcint, instead of the
+cross-platform libcint library.
+
+Extension modules are not available in the Fedora package.
 
 Installation with conda
 =======================
@@ -63,7 +75,7 @@ environment, PySCF package can be installed with Conda cloud::
 
   $ conda install -c pyscf pyscf
 
-Extended modules are not available on conda cloud. They should be installed
+Extension modules are not available on conda cloud. They should be installed
 with pip command or through environment variable `PYSCF_EXT_PATH` (see the
 section :ref:`installing_extproj`).
 
@@ -369,9 +381,9 @@ wrapper function to simplify the geometry optimization setup::
 
 .. _installing_extproj:
 
-Extended modules
+Extension modules
 ================
-Since PySCF-2.0, some modules were moved from the main code trunk to extended
+Since PySCF-2.0, some modules were moved from the main code trunk to extension
 projects hosted in https://github.com/pyscf.
 
 ------------------- ---------------------------------------------------------
@@ -396,7 +408,7 @@ zquatev             https://github.com/sunqm/zquatev
 tblis
 ------------------- ---------------------------------------------------------
 
-There are a couple of methods to install the extended modules.
+There are a couple of methods to install the extension modules.
 
 * Pypi command. For pypi newer than 19.0, projects that are hosted
   on github can be installed in command line::
@@ -408,7 +420,7 @@ There are a couple of methods to install the extended modules.
 
     $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
 
-* Pypi command for a local copy. If you wish to develop an extended module
+* Pypi command for a local copy. If you wish to develop an extension module
   locally, you can use the local install mode of pip. In this way, it's
   recommended to operate in virtual environment so that changes you made do
   not pollute the system default python runtime environment. For example::
@@ -419,7 +431,7 @@ There are a couple of methods to install the extended modules.
     $ pip install -e /home/abc/semiemprical
 
 * Environment variable `PYSCF_EXT_PATH`. You can put the location of each
-  extended module or a file that contains these locations in this environment
+  extension module or a file that contains these locations in this environment
   varialbe. PySCF library will parse the paths defined in this environment
   variable and load the relevent submodules. For example::
 
@@ -430,11 +442,11 @@ There are a couple of methods to install the extended modules.
     $ echo /home/abc/dftd3 >> /home/abc/.pyscf_ext_modules
     $ export PYSCF_EXT_PATH=/home/abc/semiemprical:/home/abc/.pyscf_ext_modules
 
-  Using the so-defined environment variable `PYSCF_EXT_PATH`, three extended
+  Using the so-defined environment variable `PYSCF_EXT_PATH`, three extension
   submodules (semiemprical, mrpt, dftd3) will be loaded when pyscf was imported.
   In this way, you don't have to use the python virtual environment.
 
-Once the extended modules are correctly installed (with any methods shown
+Once the extension modules are correctly installed (with any methods shown
 above), you can use them as the regular submodules developed inside the pyscf
 main branch::
 
