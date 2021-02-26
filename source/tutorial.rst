@@ -9,29 +9,6 @@ development. It involves some knowledge of coding in Python.  An Ipython
 notebook of user-guide can be found in
 https://github.com/nmardirossian/PySCF_Tutorial.
 
-Quick setup
-===========
-
-You can install PySCF from github repo::
-
-  $ sudo apt-get install python-h5py python-scipy cmake
-  $ git clone https://github.com/sunqm/pyscf
-  $ cd pyscf/pyscf/lib
-  $ mkdir build
-  $ cd build
-  $ cmake ..
-  $ make
-
-You may need to update the Python runtime searching path :code:`PYTHONPATH`
-(assuming the pyscf source code is put in /home/abc, replacing it with your own
-path)::
-
-  $ echo 'export PYTHONPATH=/home/abc/pyscf:$PYTHONPATH' >> ~/.bashrc
-  $ source ~/.bashrc
-
-.. note::  The quick setup does not provide the best performance.
-  Please see :ref:`installing` for the installation with optimized libraries.
-
 
 A simple example
 ================
