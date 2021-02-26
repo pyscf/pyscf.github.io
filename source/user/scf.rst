@@ -8,9 +8,10 @@ Self-consistent field (SCF) methods
 
 Introduction
 ============
-The SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham (KS) density functional theory (DFT). This chapter summarizes
-the general SCF capabilities in PySCF.
-Details specific to DFT can be found in :numref:`theory_dft`.
+The SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham
+(KS) density functional theory (DFT). This chapter summarizes the
+general SCF capabilities in PySCF.  Details specific to DFT can be
+found in :numref:`theory_dft`.
 
 A minimal example showing how to use the :mod:`scf` module is::
 
@@ -28,8 +29,10 @@ This will run a HF calculation with the default SCF settings.
 
 Background
 ==========
-In HF and KS-DFT, the ground-state wavefunction is expressed as a single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs) :math:`\psi`,
-:math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots \psi_N(N)|`:
+In HF and KS-DFT, the ground-state wavefunction is expressed as a
+single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
+:math:`\psi`, :math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots
+\psi_N(N)|`:
 
 .. math::
 
@@ -190,19 +193,22 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 
 * DIIS (default)
 
-    With DIIS, the Fock matrix at each iteration is extrapolated using  Fock matrices from the previous iterations,
-    by minimizing the norm of the commutator :math:`[\mathbf{F},\mathbf{PS}]`. :cite:`Pul1980,Pul1982`
-    Two variants of DIIS are  implemented in PySCF, namely, EDIIS :cite:`KudScuCan2002` 
-    and ADIIS :cite:`HuYan2010`.
-    Examples of selecting different DIIS schemes can be found in
+    With DIIS, the Fock matrix at each iteration is extrapolated using
+    Fock matrices from the previous iterations, by minimizing the norm
+    of the commutator
+    :math:`[\mathbf{F},\mathbf{PS}]`. :cite:`Pul1980,Pul1982` Two
+    variants of DIIS are implemented in PySCF, namely, EDIIS
+    :cite:`KudScuCan2002` and ADIIS :cite:`HuYan2010`.  Examples of
+    selecting different DIIS schemes can be found in
     :source:`examples/scf/24-tune_diis.py`.
 
 * SOSCF
 
-    To achieve quadratic convergence for orbital optimizations, 
-    PySCF implements a general second-order solver called the
-    co-iterative augmented hessian (CIAH) method. :cite:`Sun2016,Sun2017`
-    This can be invoked by decorating the SCF objects with the :func:`.newton` method::
+    To achieve quadratic convergence for orbital optimizations, PySCF
+    implements a general second-order solver called the co-iterative
+    augmented hessian (CIAH) method. :cite:`Sun2016,Sun2017` This can
+    be invoked by decorating the SCF objects with the :func:`.newton`
+    method::
 
         mf = scf.RHF(mol).newton()
 
@@ -212,8 +218,8 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 * Damping
 
     Damping of the Fock matrix can be applied before DIIS starts.
-    This is invoked by setting attributes :attr:`.damp` and :attr:`.diis_start_cycle`.
-    For example, ::
+    This is invoked by setting attributes :attr:`.damp` and
+    :attr:`.diis_start_cycle`.  For example, ::
 
         mf.damp = 0.5
         mf.diis_start_cycle = 2
@@ -223,36 +229,38 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 
 * Level shifting
 
-    A level shift forces a gap between the occupied and virtual Fock eigenvalues.
-    Applying a level shift can help to converge SCF for small gap systems.
-    This is invoked by setting the attribute :attr:`.level_shift`.
-    See examples in 
+    A level shift forces a gap between the occupied and virtual Fock
+    eigenvalues.  Applying a level shift can help to converge SCF for
+    small gap systems.  This is invoked by setting the attribute
+    :attr:`.level_shift`.  See examples in
     :source:`examples/scf/03-level_shift.py`, and
     :source:`examples/scf/52-dynamically_control_level_shift.py`.
 
 * Fractional occupation
 
-    Fractional occupation can be invoked to converge SCF for small gap systems.
-    See the example in
+    Fractional occupation can be invoked to converge SCF for small gap
+    systems.  See the example in
     :source:`examples/scf/54-fractional_occupancy.py`.
 
 * Smearing
 
-    Smearing sets fractional occupancies according to a temperature function. See the example
-    :source:`examples/pbc/23-smearing.py`.
+    Smearing sets fractional occupancies according to a temperature
+    function. See the example :source:`examples/pbc/23-smearing.py`.
 	    
 .. _stability_analysis:
 
 Stability analysis
 ==================
-PySCF allows detection of both internal and external instabilities 
-for a given SCF calculation. See examples in 
+
+PySCF allows detection of both internal and external instabilities for
+a given SCF calculation. See examples in
 :source:`examples/scf/17-stability.py`.
 
 Property calculation
 ====================
-Various properties can be computed by calling the corresponding functions,
-for example, 
+
+Various properties can be computed by calling the corresponding
+functions, for example,
 
 * dipole moment::
  
@@ -267,8 +275,51 @@ for example,
     g = mf.Gradients()
     g.kernel()
 
-    
+
+    Restart from an old calculation
+---------------------------------
+
+Although alike many other quantum chemistry codes, there is no
+`restart` mechanism available in PySCF package, calculations can still
+be "restarted" by reading in an earlier wave function as the initial
+guess for the wave function.  The initial guess can be prepared in
+many ways.  One is to read the ``chkpoint`` file which is generated in
+the previous or other calculations::
+
+  >>> from pyscf import scf
+  >>> mf = scf.RHF(mol)
+  >>> mf.chkfile = '/path/to/chkfile'
+  >>> mf.init_guess = 'chkfile'
+  >>> mf.kernel()
+
+``/path/to/chkfile`` can be found in the output in the calculation
+(if mol.verbose >= 4, the filename of the chkfile will be dumped in the output).
+By setting :attr:`chkfile` and :attr:`init_guess`, the SCF module can read the
+molecular orbitals from the given :attr:`chkfile` and rotate them to
+representation of the required basis.  The example
+:file:`examples/scf/15-initial_guess.py` records other methods to generate SCF
+initial guess.
+
+Initial guess can be fed to the calculation directly.  For example, we can read
+the initial guess form a chkfile and achieve the same effects as the on in the
+previous example::
+
+  >>> from pyscf import scf
+  >>> mf = scf.RHF(mol)
+  >>> dm = scf.hf.from_chk(mol, '/path/to/chkfile')
+  >>> mf.kernel(dm)
+
+:func:`scf.hf.from_chk` reads the chkpoint file and generates the corresponding
+density matrix represented in the required basis.
+
+Initial guess ``chkfile`` is not limited to the calculation based on the same
+molecular and same basis set.  One can first do a cheap SCF (with
+small basis sets) or a model SCF (dropping a few atoms, or charged
+system), then use :func:`scf.hf.from_chk` to project the
+results to the target basis sets.
+
 References
 ==========
+
 .. bibliography:: ref_scf.bib
    :style: unsrt
