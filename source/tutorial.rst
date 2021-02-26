@@ -9,41 +9,20 @@ development. It involves some knowledge of coding in Python.  An Ipython
 notebook of user-guide can be found in
 https://github.com/nmardirossian/PySCF_Tutorial.
 
-Quick setup
-===========
-
-You can install PySCF from github repo::
-
-  $ sudo apt-get install python-h5py python-scipy cmake
-  $ git clone https://github.com/sunqm/pyscf
-  $ cd pyscf/pyscf/lib
-  $ mkdir build
-  $ cd build
-  $ cmake ..
-  $ make
-
-You may need to update the Python runtime searching path :code:`PYTHONPATH`
-(assuming the pyscf source code is put in /home/abc, replacing it with your own
-path)::
-
-  $ echo 'export PYTHONPATH=/home/abc/pyscf:$PYTHONPATH' >> ~/.bashrc
-  $ source ~/.bashrc
-
-.. note::  The quick setup does not provide the best performance.
-  Please see :ref:`installing` for the installation with optimized libraries.
-
 
 A simple example
 ================
 
-Here is an example to run HF calculation for hydrogen molecule::
+Here is an example to run a HF calculation on the hydrogen molecule::
 
   >>> from pyscf import gto, scf
-  >>> mol = gto.M(atom='H 0 0 0; H 0 0 1.2', basis='ccpvdz')
+  >>> mol = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='ccpvdz')
   >>> mf = scf.RHF(mol)
   >>> mf.kernel()
-  converged SCF energy = -1.06111199785749
-  -1.06111199786
+  converged SCF energy = -1.12870009355644
+  -1.1287000935564409
+
+The coordinates are given by default in Ångström.
 
 
 Initializing a molecule
@@ -83,26 +62,28 @@ For more examples, see :ref:`gto`.
 Geometry
 --------
 
-Molecular geometry can be input in Cartesian format::
+The molecular geometry can be input in Cartesian format::
 
   >>> mol = gto.Mole()
   >>> mol.atom = '''O 0, 0, 0
   ... H   0  1  0; H 0, 0, 1'''
 
-The atoms in the molecule are represented by an element symbol plus three
-numbers for coordinates.  Different atoms should be separated by ``;`` or line
-break. In the same atom, ``,`` can be used to separate different items.
-Z-matrix input format is also supported by the input parser::
+The atoms in the molecule are represented by an element symbol plus
+three numbers for coordinates.  Different atoms should be separated by
+``;`` or a line break. In the same atom, ``,`` can be used to separate
+different items.  The input parser also supports the Z-matrix input
+format::
 
   >>> mol = gto.Mole()
   >>> mol.atom = '''O
   ... H, 1, 1.2;  H   1 1.2   2 105'''
 
-Similarly,  different atoms need to be separated by ``;`` or line break.
-If you need to label an atom to distinguish it from the rest, you can prefix
-or suffix number or special characters ``1234567890~!@#$%^&*()_+.?:<>[]{}|``
-(except ``,`` and ``;``) to an atomic symbol.  With this decoration, you can
-specify different basis sets, or masses, or nuclear models for different atoms::
+Similarly, different atoms need to be separated by ``;`` or a line
+break.  If you need to label an atom to distinguish it from the
+others, you can prefix or suffix the atom symbol with a number
+``1234567890`` or a special character ``~!@#$%^&*()_+.?:<>[]{}|`` (not
+``,`` and ``;``). With this decoration, you can specify different
+basis sets, masses, or nuclear models on different atoms::
 
   >>> mol = gto.Mole()
   >>> mol.atom = '''8 0 0 0; h:1 0 1 0; H@2 0 0'''
@@ -114,14 +95,16 @@ specify different basis sets, or masses, or nuclear models for different atoms::
 Basis set
 ---------
 
-The simplest way is to assign a string of basis name to :attr:`mol.basis`::
+The simplest way to define the basis set is to assign the name of the
+basis as a string to :attr:`mol.basis`::
 
   mol.basis = 'sto3g'
 
-This input will apply the specified basis set to all atoms.  The basis name in
-the string is case insensitive.  White space, dash and underscore in the basis
-name are all ignored.  If different basis sets are required for different
-elements,  a python ``dict`` can be assigned to the basis attribute::
+This input will apply the specified basis set to all atoms. The name
+of the basis set in the string is case insensitive.  White spaces,
+dashes and underscores in the name are all ignored.  If different
+basis sets are required for different elements, a Python ``dict`` can
+be used::
 
   mol.basis = {'O': 'sto3g', 'H': '6-31g'}
 
@@ -131,7 +114,7 @@ You can find more examples in section :ref:`input_basis` and in the file
 Other parameters
 ----------------
 
-You can assign more informations to the molecular object::
+You can assign more information to the molecular object::
 
   mol.symmetry = 1
   mol.charge = 1
@@ -139,27 +122,29 @@ You can assign more informations to the molecular object::
   mol.nucmod = {'O1': 1} 
   mol.mass = {'O1': 18, 'H': 2} 
 
-.. note::
-  :attr:`Mole.spin` is *2S*, the unpaired electrons = the difference between the
-  numbers of alpha and beta electrons.
+.. note:: :attr:`Mole.spin` is *2S*, the number of unpaired electrons
+  i.e. the difference between the number of alpha and beta electrons.
 
 :class:`Mole` also defines some global parameters.  You can control the
 print level globally with :attr:`~Mole.verbose`::
 
   mol.verbose = 4
 
-The print level can be 0 (quite, no output) to 9 (very noise).  Mostly,
-the useful messages are printed at level 4 (info), and 5 (debug).
-You can also specify the place where to write the output messages::
+The print level can be 0 (quiet, no output) to 9 (very noisy).  The
+most useful messages are printed at level 4 (info) and 5 (debug).  You
+can also specify a place where to write the output messages::
 
   mol.output = 'path/to/my_log.txt'
 
-Without assigning this variable, messages will be dumped to :attr:`sys.stdout`.
-You can control the maximum memory usage globally::
+If this variable is not assigned, messages will be dumped to
+:attr:`sys.stdout`.
+
+The maximum memory usage can be controlled globally::
 
   mol.max_memory = 1000 # MB
   
-The default size can be defined with shell environment variable `PYSCF_MAX_MEMORY`
+The default size can also be defined with the shell environment
+variable `PYSCF_MAX_MEMORY`
 
 :attr:`~Mole.output` and :attr:`~Mole.max_memory` can be assigned from command
 line::
@@ -237,8 +222,9 @@ Apply non-relativistic Hartree-Fock::
   >>> print('E(HF) = %g' % m.kernel())
   E(HF) = -149.544214749
 
-The ground state of oxygen molecule should be triplet.  So we change the spin to
-``2`` (2 more alpha electrons than beta electrons)::
+However, the ground state of the oxygen molecule is a triplet. So, we
+need to set the spin to ``2`` (a triplet has two more alpha electrons
+than beta electrons)::
 
   >>> o2_tri = mol.copy()
   >>> o2_tri.spin = 2
@@ -256,7 +242,7 @@ Run UHF::
   S^2 = 2.032647, 2S+1 = 3.021686
 
 where we called :func:`mf.scf`, which is an alias name of ``mf.kernel``.
-You can impose symmetry::
+You can also impose symmetry::
 
   >>> o2_sym = mol.copy()
   >>> o2_sym.spin = 2
