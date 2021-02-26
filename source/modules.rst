@@ -1,7 +1,7 @@
 .. _modules:
 
-Main modules
-************
+API documentation
+*****************
 
 .. This chapter lists all the modules included in the main body of the PySCF package.
 

@@ -1,11 +1,13 @@
 .. _develop:
 
-Guidelines for module development 
-*********************************
+Developer documentation 
+***********************
 
 .. toctree::
    :maxdepth: 1
 
+   code-rule.rst
+   design.rst
    develop/scf_developer.rst
    develop/dft_developer.rst
    develop/tdscf_developer.rst

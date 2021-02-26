@@ -28,27 +28,12 @@ See :ref:`installing_plugin`.
 .. toctree::
    :maxdepth: 1
    :numbered:
-   :caption: User documentation
 
    overview.rst
-   version.rst
    install.rst
-   benchmark.rst
    tutorial.rst
    user.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Developer documentation
-
-   code-rule.rst
    develop.rst
-   advanced.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: API documentation
-
    modules.rst
    interface.rst
 

@@ -1,10 +1,9 @@
 .. _theory_pbc_df:
 
-Density fitting
-***************
+Density fitting for crystalline calculations
+********************************************
 
-Introduction
-============
+*Modules*: :mod:`pbc.df`
 
 Density fitting (DF) techniques are useful to reduce the computational cost of
 two-electron repulsion integrals (ERIs), especially when periodic boundary conditions (PBCs) are applied.

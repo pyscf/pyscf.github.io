@@ -1,7 +1,7 @@
 .. _theory:
 
-Theoretical methods
-*******************
+User guide
+**********
 
 A variety of electronic structure methods are implemented in the PySCF package, 
 including mean-field theories, many-body perturbation theories, and coupled-cluster theory, *etc*.
@@ -23,6 +23,8 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/mcscf.rst
    user/tddft.rst
    user/rt.rst
-   user/pbc.rst
    user/solvent.rst
    user/qmmm.rst
+   user/x2c.rst
+   user/df.rst
+   user/pbc.rst
