@@ -18,3 +18,4 @@ Developer documentation
    develop/ao2mo_developer.rst  
    develop/df_developer.rst
    develop/pbc_developer.rst
+   advanced.rst
