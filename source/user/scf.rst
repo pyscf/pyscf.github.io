@@ -8,28 +8,14 @@ Self-consistent field (SCF) methods
 
 Introduction
 ============
-The SCF methods include both Hartree-Fock (HF) theory and Kohn-Sham
-(KS) density functional theory (DFT). This chapter summarizes the
-general SCF capabilities in PySCF.  Details specific to DFT can be
-found in :numref:`theory_dft`.
 
-A minimal example showing how to use the :mod:`scf` module is::
+Self-consistent field (SCF) methods include both Hartree-Fock (HF) theory
+and Kohn-Sham (KS) density functional theory (DFT). Self-consistent
+field theories only depend on the electronic density matrices, and are
+the simplest level of quantum chemical models. Details that are
+specific to DFT can be found in :numref:`theory_dft`.
 
-    from pyscf import gto, scf
-    mol = gto.M(
-        atom = 'H 0 0 0; F 0 0 1.1',  # in Angstrom
-        basis = 'ccpvdz',
-        symmetry = True,
-    )
-    mf = scf.HF(mol)
-    mf.kernel()
-
-This will run a HF calculation with the default SCF settings.
-
-
-Background
-==========
-In HF and KS-DFT, the ground-state wavefunction is expressed as a
+In both HF and KS-DFT, the ground-state wavefunction is expressed as a
 single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
 :math:`\psi`, :math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots
 \psi_N(N)|`:
@@ -44,124 +30,108 @@ single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
    \psi_1(N) &\psi_2(N) &\dots  &\psi_N(N)
    \end{vmatrix} \;.
 
-The total electronic energy :math:`E=\langle\Psi_0|\hat{H}|\Psi_0\rangle` 
-is then minimized, subject to orbital orthogonality. This is equivalent
-to treating the electron interaction via a mean-field approximation.
+The total electronic energy
+:math:`E=\langle\Psi_0|\hat{H}|\Psi_0\rangle` is then minimized,
+subject to orbital orthogonality; this is equivalent to the
+description of the electrons as independent particles that only
+interact via each others' mean field.
 
-The minimum is obtained by solving the Fock equation
+It can be shown that the minimization of the total energy within a
+given basis set (see e.g. :cite:`Lehtola2020_M_1218` or any standard
+textbook on quantum chemistry like :cite:`SzaOst2012`) leads to the
+equation
 
 .. math::
 
-    \hat{f} \psi_i = \varepsilon_i \psi_i
+    \mathbf{F} \mathbf{C} = \mathbf{S} \mathbf{C} \mathbf{E}
 
-with the Fock operator :math:`\hat{f}` defined as
+where :math:`\mathbf{C}` is the matrix of molecular orbital
+coefficients, :math:`\mathbf{E}` is a diagonal matrix of the
+corresponding eigenenergies, and :math:`\mathbf{S}` is the atomic
+orbital overlap matrix. The Fock matrix :math:`\mathbf{F}` is defined
+as
 
 .. math::
 
-    \hat{f} = -\frac{1}{2}\nabla^2 + \hat{v}_{\rm ext} + \hat{J} + \hat{K} \;,
+    \mathbf{F} = \mathbf{T} + \mathbf{V} + \mathbf{J} + \mathbf{K}\;
 
-where :math:`-\frac{1}{2}\nabla^2` is the noninteracting kinetic energy operator,
-:math:`\hat{v}_{\rm ext}` is the external potential,
-:math:`\hat{J}` is the Coulomb operator, and
-:math:`\hat{K}` is the exact exchange operator. :cite:`SzaOst2012`
-
-Variants
-========
-The general spin-orbital can be written as
-    .. math::
-        \psi_i(1) = \phi_{i\alpha}(r)\alpha + \phi_{i\beta}(r)\beta \;, 
-
-PySCF supplies four variants of the HF and KS-DFT methods  implementing different
-constraints on :math:`\psi(1)`. 
-
-* Restricted (RHF/RKS)
-
-  Orbitals either have alpha or beta spin :math:`\psi_i =\phi_i(r)\alpha` or `\psi_i = \phi_i(r)\beta`, and
-  for every orbital of alpha spin, there is one of beta spin with the same spatial component. The
-  closed shell determinant is thus :math:`\Phi=\mathcal{A}|\phi_1(r_1)\alpha \phi_1(r_2)\beta \ldots \phi_{N/2}(r_{N-1})\alpha \phi_{N/2}(r_N)\beta|`
-  and :math:`S=0`.
-
-* Unrestricted (UHF/UKS)
-  
-  Orbitals either have alpha or beta spin, and alpha and beta spin orbitals can have different spatial components. The determinant is
-  thus :math:`\Phi=\mathcal{A}|\phi_1(r_1)\sigma_1 \phi_2(r_2)\sigma_2 \ldots \phi_{N}(r_N)\sigma_N|` where :math:`\sigma \in \{\alpha,\beta\}`.
-  This introduces spin contamination for states not of maximal :math:`S_z`.
-
-* Restricted open-shell (ROHF/ROKS)
-  For :math:`N_\alpha > N_\beta`. The first :math:`N_\beta` orbitals have the same spatial components
-  for :math:`\alpha` and :math:`\beta` spin, while the remaining orbitals are of :math:`\alpha` spin.
-  i.e. :math:`\Phi=\mathcal{A}|\phi_1 \alpha \phi_1\beta \ldots \phi_{N_\beta} \alpha \phi_{N_\beta}\beta \phi_{N_\beta+1}\alpha \ldots \phi_{N}\alpha|`
-  The final wavefunction is an eigenfunction of the :math:`\hat{S}^2` operator with :math:`S_z=S`.
-
-* Generalized (GHF/GKS)
-
-  The general form of the spin-orbital :math:`\psi` is used.
-  This is useful when the previous methods do not provide stable solutions 
-  (see :source:`examples/scf/17-stability.py`)
-  or when the Hamiltonian does not commute with :math:`\hat{S}_z` (e.g. with spin-orbit coupling)
-  (see :source:`examples/scf/44-soc_ecp.py`).
-  
-Calculations with these methods can be invoked by creating an instance of the corresponding class::
-
-    mf = scf.RHF(mol).run()
-    mf = scf.UHF(mol).run()
-    mf = scf.ROHF(mol).run()
-    mf = scf.GHF(mol).run()
-    mf = scf.RKS(mol).run()
-    mf = scf.UKS(mol).run()
-    mf = scf.ROKS(mol).run()
-    mf = scf.GKS(mol).run()
-
-More examples can be found in
-:source:`examples/scf/00-simple_hf.py`,
-:source:`examples/scf/01-h2o.py`,
-:source:`examples/scf/02-rohf_uhf.py`, and
-:source:`examples/scf/02-ghf.py`.
-
-Controllable parameters
-=======================
+where :math:`\mathbf{T}` is the kinetic energy matrix,
+:math:`\mathbf{V}` is the external potential, :math:`\mathbf{J}` is
+the Coulomb matrix, and :math:`\mathbf{K}` is the exchange matrix. 
 
 Initial guess
--------------
-PySCF provides several options for the initial guess to solve the
-SCF problem; see :cite:`Leh2019` for a review and assessment of
-initial guesses. These can be specified by setting the attribute
-:attr:`.init_guess` to the following values:
+=============
+
+The Coulomb and exchange matrices depend on the occupied orbitals,
+meaning that the SCF equation :math:`\mathbf{F C}=\mathbf{S C E}`
+needs to be solved self-consistently by some sort of iterative
+procedure, which begins from some initial guess. The accuracy of
+several initial guesses for SCF calculations has recently been
+assessed in :cite:`Lehtola2019_JCTC_1593`, to which we refer for
+detailed discussion on initial guesses.
+
+Several of initial guess have been implemented in PySCF; the used
+variant is controlled by the :attr:`.init_guess` attribute of the SCF
+solver. The following values are possible
 
 * ``'minao'`` (default)
 
-    Superposition of atomic densities projected from the atomic natural orbital (ANO) basis.
+    Superposition of atomic densities projected in a minimal basis
+    obtained from the first contracted functions in the cc-pVTZ or
+    cc-pVTZ-PP basis set. The guess orbitals are obtained by
+    diagonalizing the Fock matrix that arises from the spin-restricted
+    guess density.
 
 * ``'1e'``
 
-    The core Hamiltonian is diagonalized to get the initial MOs. For quantum chemistry problems,
-    the use of the 1e guess is not recommended, because the guess is very bad.
+    The one-electron guess, also known as the core guess, obtains the
+    guess orbitals from the diagonalization of the core Hamiltonian
+    :math:`\mathbf{H}_0 = \mathbf{T} + \mathbf{V}`, thereby ignoring
+    all interelectronic interactions and the screening of nuclear
+    charge. The 1e guess should only be used as a last resort, because
+    it is so bad for molecular systems; see
+    :cite:`Lehtola2019_JCTC_1593`.
 
 * ``'atom'``
 
-    Superposition of atomic HF density matrices. The atomic HF calculations are spin-restricted and employ spherically averaged occupations
-    with ground states determined in :cite:`Leh2020`.
+    Superposition of atomic HF density matrices. The atomic HF
+    calculations are spin-restricted and employ spherically averaged
+    fractional occupations with ground states determined with fully
+    numerical calculations at the complete basis set limit in
+    :cite:`Lehtola2020_PRA_012516`.
 
 * ``'huckel'``
 
-    A Hückel guess based on on-the-fly atomic HF calculations like in ``'atom'``. :cite:`Leh2019`
+    This is the parameter-free Hückel guess described in
+    :cite:`Lehtola2019_JCTC_1593`, which is based on on-the-fly atomic
+    HF calculations that are performed analogously to ``'atom'``. The
+    spherically averaged atomic spin-restricted Hartree-Fock
+    calculations yield a minimal basis of atomic orbitals and orbital
+    energies, which are used to build a Hückel type matrix that is
+    diagonalized to obtain guess orbitals.
 
 * ``'vsap'``
 
-    Superposition of atomic potentials. Note this is only available for DFT calculations. :cite:`Leh2019`
+    Superposition of atomic potentials as described in
+    :cite:`Lehtola2019_JCTC_1593`. Pretabulated, fully numerical
+    atomic potentials determined with the approach of
+    :cite:`Lehtola2020_PRA_012516` are used to build a guess potential
+    on a DFT quadrature grid; this potential is then used to obtain
+    the orbitals. Note this option is only available for DFT
+    calculations in PySCF.
     
 * ``'chk'``
 
-    Read the existing SCF results from the checkpoint file as the initial guess.
+    Read in the orbitals from the checkpoint file and use them as the
+    initial guess (see below for more details).
 
-Alternatively, the user can manually set the initial guess density matrix for an SCF calculation 
-through the ``dm0`` argument. 
-For example, the following script first computes the HF density matrix for the :math:`\rm Cr^{6+}` cation,  
-which is then used as an initial guess for a HF calculation of the :math:`\rm Cr` atom. ::
+Alternatively, the user can also override the initial guess density
+matrix for an SCF calculation through the ``dm0`` argument.  For
+example, the following script first computes the HF density matrix for
+the :math:`\rm Cr^{6+}` cation, and then uses it as an initial guess
+for a HF calculation of the :math:`\rm Cr` atom. ::
 
-    #
-    # use cation to produce initial guess
-    #
+    # First calculate the Cr6+ cation
     mol = gto.Mole()
     mol.build(
         symmetry = 'D2h',
@@ -175,6 +145,7 @@ which is then used as an initial guess for a HF calculation of the :math:`\rm Cr
     mf.kernel()
     dm1 = mf.make_rdm1()
 
+    # Now switch to the neutral atom in the septet state
     mol.charge = 0
     mol.spin = 6
     mol.build(False,False)
@@ -182,33 +153,80 @@ which is then used as an initial guess for a HF calculation of the :math:`\rm Cr
     mf = scf.RHF(mol)
     mf.kernel(dm0=dm1)
 
-More examples can be found in 
+More examples can be found in
 :source:`examples/scf/15-initial_guess.py`, and
 :source:`examples/scf/31-cr_atom_rohf_tune_init_guess.py`.
 
+Restart from an old calculation
+-------------------------------
+
+Although alike many other quantum chemistry codes, there is no
+`restart` mechanism available in PySCF package, calculations can still
+be "restarted" by reading in an earlier wave function as the initial
+guess for the wave function.  The initial guess can be prepared in
+many ways.  One is to read the ``chkpoint`` file which is generated in
+the previous or other calculations::
+
+  >>> from pyscf import scf
+  >>> mf = scf.RHF(mol)
+  >>> mf.chkfile = '/path/to/chkfile'
+  >>> mf.init_guess = 'chkfile'
+  >>> mf.kernel()
+
+``/path/to/chkfile`` can be found in the output in the calculation (if
+``mol.verbose >= 4``, the filename of the chkfile will be dumped in
+the output).  By setting :attr:`chkfile` and :attr:`init_guess`, the
+SCF module can read the molecular orbitals from the given
+:attr:`chkfile` and rotate them to representation of the required
+basis.
+
+The initial guess can also be fed in directly to the calculation. For
+example, we can read in the density matrix from a checkpoint file, and
+pass it directly to the SCF solver with::
+
+  >>> from pyscf import scf
+  >>> mf = scf.RHF(mol)
+  >>> dm = scf.hf.from_chk(mol, '/path/to/chkfile')
+  >>> mf.kernel(dm)
+
+This approach leads to the same result as setting :attr:`init_guess`
+to `chkfile`.
+
+N.B. The ``chkfile`` initial guess is not limited to calculations on
+the same molecule or the same basis set. One can first do a cheaper
+SCF calculation with smaller basis sets, or run an SCF calculation on
+a model system (e.g. drop a few atoms or run the same system in an
+easier charge/spin state), then use :func:`scf.hf.from_chk` to project
+the results to the target basis sets.
+
+
 Converging SCF iterations
--------------------------
-PySCF implements two algorithms to converge the SCF iteration, namely,
-direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
+=========================
+
+Even with a very good initial guess, making the SCF procedure converge
+is sometimes challenging. PySCF implements two kinds of approaches for
+SCF, namely, direct inversion in the iterative subspace (DIIS) and
+second-order SCF (SOSCF).
 
 * DIIS (default)
 
     With DIIS, the Fock matrix at each iteration is extrapolated using
     Fock matrices from the previous iterations, by minimizing the norm
-    of the commutator
-    :math:`[\mathbf{F},\mathbf{PS}]`. :cite:`Pul1980,Pul1982` Two
-    variants of DIIS are implemented in PySCF, namely, EDIIS
-    :cite:`KudScuCan2002` and ADIIS :cite:`HuYan2010`.  Examples of
-    selecting different DIIS schemes can be found in
+    of the commutator :math:`[\mathbf{F},\mathbf{PS}]` where
+    :math:`\mathbf{P}` is the density matrix
+    :cite:`Pulay1980_CPL_393,Pulay1982_JCC_556`.  Two variants of DIIS
+    are implemented in PySCF, namely, EDIIS :cite:`Kudin2002_JCP_8255`
+    and ADIIS :cite:`Hu2010_JCP_054109`.  Examples of selecting
+    different DIIS schemes can be found in
     :source:`examples/scf/24-tune_diis.py`.
 
 * SOSCF
 
-    To achieve quadratic convergence for orbital optimizations, PySCF
-    implements a general second-order solver called the co-iterative
-    augmented hessian (CIAH) method. :cite:`Sun2016,Sun2017` This can
-    be invoked by decorating the SCF objects with the :func:`.newton`
-    method::
+    To achieve quadratic convergence in the orbital optimization,
+    PySCF implements a general second-order solver called the
+    co-iterative augmented hessian (CIAH) method
+    :cite:`Sun2016,Sun2017_CPL_291`. This method can be invoked by
+    decorating the SCF objects with the :func:`.newton` method::
 
         mf = scf.RHF(mol).newton()
 
@@ -217,47 +235,64 @@ direct inversion in the iterative subspace (DIIS) and second-order SCF (SOSCF).
 
 * Damping
 
-    Damping of the Fock matrix can be applied before DIIS starts.
-    This is invoked by setting attributes :attr:`.damp` and
+    The Fock matrix can be damped before DIIS acceleration kicks in.
+    This is achieved by setting the attributes :attr:`.damp` and
     :attr:`.diis_start_cycle`.  For example, ::
 
         mf.damp = 0.5
         mf.diis_start_cycle = 2
 
-    implies that DIIS will start at the second cycle, 
-    and that the Fock matrix is damped at the first cycle.
+    means that DIIS will start at the second cycle, and that the Fock
+    matrix is damped by 50% in the first cycle.
 
 * Level shifting
 
-    A level shift forces a gap between the occupied and virtual Fock
-    eigenvalues.  Applying a level shift can help to converge SCF for
-    small gap systems.  This is invoked by setting the attribute
-    :attr:`.level_shift`.  See examples in
+    A level shift increases the gap between the occupied and virtual
+    orbitals, thereby slowing down and stabilizing the orbital update.
+    A level shift can help to converge SCF in the case of systems with
+    small HOMO-LUMO gaps. Level shifting is invoked by setting the
+    attribute :attr:`.level_shift`.  See examples in
     :source:`examples/scf/03-level_shift.py`, and
     :source:`examples/scf/52-dynamically_control_level_shift.py`.
 
-* Fractional occupation
+* Fractional occupations
 
-    Fractional occupation can be invoked to converge SCF for small gap
-    systems.  See the example in
+    Fractional occupations can also be invoked to help the SCF
+    converge for small gap systems.  See the example in
     :source:`examples/scf/54-fractional_occupancy.py`.
 
 * Smearing
 
     Smearing sets fractional occupancies according to a temperature
     function. See the example :source:`examples/pbc/23-smearing.py`.
-	    
+
+
 .. _stability_analysis:
 
 Stability analysis
 ==================
 
-PySCF allows detection of both internal and external instabilities for
-a given SCF calculation. See examples in
-:source:`examples/scf/17-stability.py`.
+Even when the SCF converges, the wave function that is found may not
+correspond to a local minimum; calculations can sometimes also
+converge onto saddle points. Since saddle points are also extrema of
+the energy functional, the orbital gradient vanishes and the SCF
+equation :math:`\mathbf{F C}=\mathbf{S C E}` is satisfied
+:cite:`Lehtola2020_M_1218`. However, in such cases the energy can be
+decreased by perturbing the orbitals away from the saddle point, which
+means that the wave function is unstable.
 
-Property calculation
-====================
+Instabilities in the wave function are conventionally classified as
+either internal or external :cite:`Seeger1977_JCP_3045`. External
+instabilities mean that the energy can be decreased by loosening some
+constraints on the wave function, such as allowing restricted
+Hartree-Fock orbitals to transform into unrestricted Hartree-Fock,
+whereas internal instabilities mean that the SCF has converged onto an
+excited state instead of the ground state. PySCF allows detecting both
+internal and external instabilities for a given SCF calculation; see
+the examples in :source:`examples/scf/17-stability.py`.
+
+Property calculations
+=====================
 
 Various properties can be computed by calling the corresponding
 functions, for example,
@@ -275,48 +310,78 @@ functions, for example,
     g = mf.Gradients()
     g.kernel()
 
+Also several response properties are available in PySCF, see the
+examples in :source:`examples/prop/17-stability.py`.
+    
 
-    Restart from an old calculation
----------------------------------
+Spin-restricted, spin-unrestricted, restricted open-shell, and generalized calculations
+=======================================================================================
 
-Although alike many other quantum chemistry codes, there is no
-`restart` mechanism available in PySCF package, calculations can still
-be "restarted" by reading in an earlier wave function as the initial
-guess for the wave function.  The initial guess can be prepared in
-many ways.  One is to read the ``chkpoint`` file which is generated in
-the previous or other calculations::
+The general spin-orbital used in the HF or KS-DFT wave function can be
+written as
+    .. math::
+        \psi_i(1) = \phi_{i\alpha}(r)\alpha + \phi_{i\beta}(r)\beta \;,
 
-  >>> from pyscf import scf
-  >>> mf = scf.RHF(mol)
-  >>> mf.chkfile = '/path/to/chkfile'
-  >>> mf.init_guess = 'chkfile'
-  >>> mf.kernel()
+Four variants of the ansatz :math:`\psi(1)` are commonly used in
+quantum chemistry; they are also all available in PySCF.
 
-``/path/to/chkfile`` can be found in the output in the calculation
-(if mol.verbose >= 4, the filename of the chkfile will be dumped in the output).
-By setting :attr:`chkfile` and :attr:`init_guess`, the SCF module can read the
-molecular orbitals from the given :attr:`chkfile` and rotate them to
-representation of the required basis.  The example
-:file:`examples/scf/15-initial_guess.py` records other methods to generate SCF
-initial guess.
+* Restricted (RHF/RKS)
 
-Initial guess can be fed to the calculation directly.  For example, we can read
-the initial guess form a chkfile and achieve the same effects as the on in the
-previous example::
+  The spin-orbitals are either alpha (spin-up) or beta (spin-down),
+  :math:`\psi_i =\phi_i(r)\alpha` or :math:`\psi_i = \phi_i(r)\beta`,
+  and the alpha and beta orbitals share the same spatial orbital
+  :math:`\phi_i(r)`. The closed-shell determinant is thus
+  :math:`\Phi=\mathcal{A}|\phi_1(r_1)\alpha \phi_1(r_2)\beta \ldots
+  \phi_{N/2}(r_{N-1})\alpha \phi_{N/2}(r_N)\beta|` and :math:`S=0`.
 
-  >>> from pyscf import scf
-  >>> mf = scf.RHF(mol)
-  >>> dm = scf.hf.from_chk(mol, '/path/to/chkfile')
-  >>> mf.kernel(dm)
+* Unrestricted (UHF/UKS)
+  
+  The orbitals can have either alpha or beta spin, but the alpha and
+  beta orbitals may have different spatial components. The determinant
+  is thus :math:`\Phi=\mathcal{A}|\phi_1(r_1)\sigma_1
+  \phi_2(r_2)\sigma_2 \ldots \phi_{N}(r_N)\sigma_N|` where
+  :math:`\sigma \in \{\alpha,\beta\}`.  Spin contamination is
+  introduced for states that don't have maximal :math:`S_z`.
 
-:func:`scf.hf.from_chk` reads the chkpoint file and generates the corresponding
-density matrix represented in the required basis.
+* Restricted open-shell (ROHF/ROKS)
 
-Initial guess ``chkfile`` is not limited to the calculation based on the same
-molecular and same basis set.  One can first do a cheap SCF (with
-small basis sets) or a model SCF (dropping a few atoms, or charged
-system), then use :func:`scf.hf.from_chk` to project the
-results to the target basis sets.
+  Equivalent to RHF/RKS for :math:`N_\alpha = N_\beta`.  For
+  :math:`N_\alpha > N_\beta`, the first :math:`N_\beta` orbitals have
+  the same spatial components for both :math:`\alpha` and
+  :math:`\beta` spin. The remaining :math:`N_\alpha - N_\beta`
+  orbitals are of :math:`\alpha` spin.  :math:`\Phi=\mathcal{A}|\phi_1
+  \alpha \phi_1\beta \ldots \phi_{N_\beta} \alpha \phi_{N_\beta}\beta
+  \phi_{N_\beta+1}\alpha \ldots \phi_{N}\alpha|` The final
+  wavefunction is an eigenfunction of the :math:`\hat{S}^2` operator
+  with :math:`S_z=S`.
+
+* Generalized (GHF/GKS)
+
+  The general form of the spin-orbital :math:`\psi` is used. GHF/GKS
+  is useful when none of the previous methods provide stable solutions
+  (see :source:`examples/scf/17-stability.py`), or when the
+  Hamiltonian does not commute with :math:`\hat{S}_z` (e.g. in the
+  presence of spin-orbit coupling, see
+  :source:`examples/scf/44-soc_ecp.py`).
+  
+Calculations with these methods can be invoked by creating an instance
+of the corresponding class::
+
+    mf = scf.RHF(mol).run()
+    mf = scf.UHF(mol).run()
+    mf = scf.ROHF(mol).run()
+    mf = scf.GHF(mol).run()
+    mf = scf.RKS(mol).run()
+    mf = scf.UKS(mol).run()
+    mf = scf.ROKS(mol).run()
+    mf = scf.GKS(mol).run()
+
+More examples can be found in
+:source:`examples/scf/00-simple_hf.py`,
+:source:`examples/scf/01-h2o.py`,
+:source:`examples/scf/02-rohf_uhf.py`, and
+:source:`examples/scf/02-ghf.py`.
+
 
 References
 ==========
