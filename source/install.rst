@@ -38,12 +38,12 @@ http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
 you need to add --enable-shared flag.
 
 Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extproj`.
-Individual extended module (for example the geometry optimization module) can
+Individual extension module (for example the geometry optimization module) can
 be installed using pip extra dependency::
 
   $ pip install pyscf[geomopt]
 
-Command to install all extended modules::
+Command to install all extension modules::
 
   $ pip install pyscf[all]
 
@@ -382,7 +382,7 @@ wrapper function to simplify the geometry optimization setup::
 .. _installing_extproj:
 
 Extension modules
-================
+=================
 Since PySCF-2.0, some modules were moved from the main code trunk to extension
 projects hosted in https://github.com/pyscf.
 
@@ -395,7 +395,6 @@ dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
 eph                 https://github.com/pyscf/eph
-extras              https://github.com/pyscf/extras
 fciqmcscf           https://github.com/pyscf/fciqmcscf
 icmpspt             https://github.com/pyscf/icmpspt
 mrpt                https://github.com/pyscf/mrpt
@@ -408,10 +407,12 @@ zquatev             https://github.com/sunqm/zquatev
 tblis
 ------------------- ---------------------------------------------------------
 
-There are a couple of methods to install the extension modules.
+Based on the technique of namespace
+pacakges specified in `PEP 420 <https://www.python.org/dev/peps/pep-0420/>`,
+PySCF developed a couple of methods to install the extension modules.
 
-* Pypi command. For pypi newer than 19.0, projects that are hosted
-  on github can be installed in command line::
+* Pypi command. For pypi version newer than 19.0, projects that are hosted on
+  github can be installed in command line::
 
     $ pip install git+https://github.com/pyscf/semiemprical
 
@@ -420,10 +421,11 @@ There are a couple of methods to install the extension modules.
 
     $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
 
-* Pypi command for a local copy. If you wish to develop an extension module
-  locally, you can use the local install mode of pip. In this way, it's
-  recommended to operate in virtual environment so that changes you made do
-  not pollute the system default python runtime environment. For example::
+* Pypi command for local paths. If you wish to load an extension module developed
+  in a local directory, you can use the local install mode of pip. In this way,
+  it is recommended to operate in the python virtual environment so that changes
+  you made do not pollute the system default python runtime environment. For
+  example::
 
     $ python -m venv /home/abc/pyscf-local-env
     $ source /home/abc/pyscf-local-env/bin/activate
@@ -448,7 +450,7 @@ There are a couple of methods to install the extension modules.
 
 Once the extension modules are correctly installed (with any methods shown
 above), you can use them as the regular submodules developed inside the pyscf
-main branch::
+main project::
 
     >>> import pyscf
     >>> from pyscf.semiemprical import MINDO
