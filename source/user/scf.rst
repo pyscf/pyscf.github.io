@@ -53,7 +53,7 @@ as
 
 .. math::
 
-    \mathbf{F} = \mathbf{T} + \mathbf{V} + \mathbf{J} - \mathbf{K}\;
+    \mathbf{F} = \mathbf{T} + \mathbf{V} + \mathbf{J} + \mathbf{K}\;
 
 where :math:`\mathbf{T}` is the kinetic energy matrix,
 :math:`\mathbf{V}` is the external potential, :math:`\mathbf{J}` is
@@ -175,10 +175,11 @@ the previous or other calculations::
 
 ``/path/to/chkfile`` can be found in the output in the calculation (if
 ``mol.verbose >= 4``, the filename of the chkfile will be dumped in
-the output).  If there is a chance a later restart might be required,
-it is recommended to set :attr:`chkfile` explicitly in the
-earlier calculation as the chkfile might otherwise be deleted upon
-successful completion, see comments in
+the output).  If the results of the calculation are needed at a later
+stage (e.g. for an eventual restart or use as an initial guess for a
+larger calculation), the :attr:`chkfile` attribute should be set
+explicitly as the chkfile might otherwise be deleted upon successful
+completion of the calculation, see comments in
 :source:`examples/scf/14-restart.py`.
 By setting :attr:`chkfile` and :attr:`init_guess`, the
 SCF module can read the molecular orbitals from the given
