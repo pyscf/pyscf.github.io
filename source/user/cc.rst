@@ -72,13 +72,11 @@ They are returned in the MO basis::
     dm1 = mycc.make_rdm1()
     dm2 = mycc.make_rdm2()
 
-Gradients can be calculated::
+Analytical nuclear gradients can be calculated::
 
-    from pyscf.cc import ccsd_grad
     from pyscf import grad
-    grad_e = ccsd_grad.kernel(mycc)
-    grad_n = grad.grad_nuc(mol)
-    grad = grad_e + grad_nuc
+    mygrad = mycc.Gradients()
+    grad = mygrad.kernel()
 
 The CCSD Lambda equations can be solved::
 
