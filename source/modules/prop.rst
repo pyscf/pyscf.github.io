@@ -20,3 +20,13 @@ The list of modules described in this chapter is:
    prop/polarizability.rst
    prop/ssc.rst
    prop/esr.rst
+
+Examples
+========
+
+* :source:`examples/prop/01-freq.py`
+* :source:`examples/prop/02-g_tensor.py`
+* :source:`examples/prop/03-hfc.py`
+* :source:`examples/prop/04-nmr.py`
+* :source:`examples/prop/05-ssc.py`
+

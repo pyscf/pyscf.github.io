@@ -18,16 +18,17 @@ The following example shows how to optimize the structure of N\ :sub:`2`\  molec
 Examples
 ========
 
-:download:`examples/geomopt/01-geomeTRIC.py </../examples/geomopt/01-geomeTRIC.py>`
-:download:`examples/geomopt/01-pyberny.py </../examples/geomopt/01-pyberny.py>`
-:download:`examples/geomopt/02-as_pyscf_method.py </../examples/geomopt/02-as_pyscf_method.py>`
-:download:`examples/geomopt/10-with_qmmm.py </../examples/geomopt/10-with_qmmm.py>`
-:download:`examples/geomopt/12-excited_states.py </../examples/geomopt/12-excited_states.py>`
-:download:`examples/geomopt/12-mcscf_excited_states.py </../examples/geomopt/12-mcscf_excited_states.py>`
-:download:`examples/geomopt/13-ccsd_t.py </../examples/geomopt/13-ccsd_t.py>`
-:download:`examples/geomopt/14-with_solvent.py </../examples/geomopt/14-with_solvent.py>`
-:download:`examples/geomopt/20-callback.py </../examples/geomopt/20-callback.py>`
-
+* :source:`examples/geomopt/01-geomeTRIC.py`
+* :source:`examples/geomopt/01-pyberny.py`
+* :source:`examples/geomopt/02-as_pyscf_method.py`
+* :source:`examples/geomopt/10-with_qmmm.py`
+* :source:`examples/geomopt/11-with_ghost_atom.py`
+* :source:`examples/geomopt/12-excited_states.py`
+* :source:`examples/geomopt/12-mcscf_excited_states.py`
+* :source:`examples/geomopt/13-ccsd_t.py`
+* :source:`examples/geomopt/14-with_solvent.py`
+* :source:`examples/geomopt/15-tddft_with_solvent.py`
+* :source:`examples/geomopt/20-callback.py`
 
 Program reference
 =================

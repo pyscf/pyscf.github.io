@@ -15,10 +15,8 @@ See also :mod:`cornell_shci`.
 Examples
 ========
 
-Relevant examples
-:file:`examples/hci/00-simple_hci.py`
-:file:`examples/hci/10-spin.py`
-
+* :source:`examples/hci/00-simple_hci.py`
+* :source:`examples/hci/10-spin.py`
 
 Program reference
 =================

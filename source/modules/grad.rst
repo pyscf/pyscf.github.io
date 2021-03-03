@@ -24,18 +24,15 @@ For example, the RHF gradient can be computed by::
 Examples
 ========
 
-Relevant examples
-:file:`examples/grad/01-scf_grad.py`
-:file:`examples/grad/02-dft_grad.py`
-:file:`examples/grad/03-mp2_grad.py`
-:file:`examples/grad/04-cisd_grad.py`
-:file:`examples/grad/05-ccsd_grad.py`
-:file:`examples/grad/06-tddft_gradients.py`
-:file:`examples/grad/10-excited_state_cisd_grad.py`
-:file:`examples/grad/11-excited_state_casci_grad.py`
-:file:`examples/grad/16-scan_force.py`
-
-
+* :source:`examples/grad/01-scf_grad.py`
+* :source:`examples/grad/02-dft_grad.py`
+* :source:`examples/grad/03-mp2_grad.py`
+* :source:`examples/grad/04-cisd_grad.py`
+* :source:`examples/grad/05-ccsd_grad.py`
+* :source:`examples/grad/06-tddft_gradients.py`
+* :source:`examples/grad/10-excited_state_cisd_grad.py`
+* :source:`examples/grad/11-excited_state_casci_grad.py`
+* :source:`examples/grad/16-scan_force.py`
 
 Program reference
 =================

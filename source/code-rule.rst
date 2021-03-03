@@ -29,8 +29,11 @@ Code standard
     have minimal effects on the other modules.
 
 * Not enforced but recommended
-  - Compatible with Python 2.6, 2.7, 3.2, 3.3, 3.4;
+
+  - Compatible with Python 3.5, 3.6, 3.7, 3.8, 3.9;
+
   - Following C89 (gnu89) standard for C code;
+
   - Using ctypes to bridge C/python functions
 
 

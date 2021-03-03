@@ -8,8 +8,7 @@ mean-field methods.
 Examples
 ========
 
-:download:`examples/prop/01-freq.py </../examples/prop/01-freq.py>`
-
+* :source:`examples/prop/01-freq.py`
 
 Program reference
 =================

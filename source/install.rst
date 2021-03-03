@@ -37,11 +37,34 @@ before calling ``pip install`` command.  Libxc library can be found in
 http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
 you need to add --enable-shared flag.
 
-Geometry optimization module is not installed by default. You can install the
-``geomopt`` module using::
+Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extproj`.
+Individual extension module (for example the geometry optimization module) can
+be installed using pip extra dependency::
 
   $ pip install pyscf[geomopt]
 
+Command to install all extension modules::
+
+  $ pip install pyscf[all]
+
+Extension modules can be found in `https://github.com/pyscf` (see also :ref:`installing_extproj`).
+To install the latest version of the extension modules from github, github repo
+url with prefix `git+` can be placed in the argument list of pip command::
+
+  $ pip install git+https://github.com/pyscf/geomopt
+
+Installation on Fedora
+======================
+
+If you are running Fedora Linux, you can install PySCF as a distribution package::
+
+  # dnf install python3-pyscf
+
+If you are running on an X86-64 platform, dnf should automatically
+install the optimized integral library, qcint, instead of the
+cross-platform libcint library.
+
+Extension modules are not available in the Fedora package.
 
 Installation with conda
 =======================
@@ -52,6 +75,10 @@ environment, PySCF package can be installed with Conda cloud::
 
   $ conda install -c pyscf pyscf
 
+Extension modules are not available on conda cloud. They should be installed
+with pip command or through environment variable `PYSCF_EXT_PATH` (see the
+section :ref:`installing_extproj`).
+
 
 PySCF docker image
 ==================
@@ -59,14 +86,14 @@ PySCF docker image
 The following command starts a container with the jupyter notebook server
 listening for HTTP connections on port 8888::
 
-  $ docker run -it -p 8888:8888 pyscf/pyscf-1.5.0
+  $ docker run -it -p 8888:8888 pyscf/pyscf:latest
 
 Then visit ``https://localhost:8888`` with your browser to use notebook and
 pyscf.
 
 Another way to use PySCF in docker container is to start an Ipython shell::
 
-  $ docker run -it pyscf/pyscf-1.5.0 start.sh ipython
+  $ docker run -it pyscf/pyscf:latest start.sh ipython
 
 
 .. _compile_c_extensions:
@@ -78,7 +105,7 @@ Manual installation requires `cmake <http://www.cmake.org>`_,
 and `h5py <http://www.h5py.org/>`_ libraries.
 You can download the latest PySCF (or the development branch) from github::
 
-  $ git clone https://github.com/sunqm/pyscf
+  $ git clone https://github.com/pyscf/pyscf.git
   $ cd pyscf
   $ git checkout dev  # optional if you'd like to try out the development branch
 
@@ -92,7 +119,7 @@ Build the C extensions in :file:`pyscf/lib`::
 
 This will automatically download the analytical GTO integral library `libcint
 <https://github.com/sunqm/libcint.git>`_ and the DFT exchange correlation
-functional libraries `libxc <http://www.tddft.org/programs/Libxc>`_ and `xcfun
+functional libraries `Libxc <http://www.tddft.org/programs/Libxc>`_ and `XCFun
 <https://github.com/dftlibs/xcfun.git>`_.  Finally, to make Python find
 the :code:`pyscf` package, add the top-level :code:`pyscf` directory (not
 the :code:`pyscf/pyscf` subdirectory) to :code:`PYTHONPATH`.  For example, if
@@ -139,21 +166,15 @@ Installation without network
 
 If you have problems to download the external libraries on your computer, you can
 manually build the libraries, as shown in the following instructions.  First,
-you need to install libcint, libxc or xcfun libraries::
+you need to install libcint, Libxc and XCFun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
-    $ cd libcint
-    $ cd .. && tar czf libcint.tar.gz libcint
+    $ tar czf libcint.tar.gz libcint
 
-    $ # PySCF depends on xcfun version 2.1.0
-    $ git clone https://github.com/sunqm/xcfun.git
-    $ cd xcfun
-    $ # This branch downgrades the required cmake version from 3.14 to 3.5
-    $ git checkout cmake-3.5
-    $ cd .. && tar czf xcfun.tar.gz xcfun
+    $ wget https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
 
-libxc downloaded from
-`here <http://sunqm.net/pyscf/files/src/libxc-4.3.4.tar.gz>`_.
+    $ git clone https://github.com/dftlibs/xcfun.git
+    $ tar czf xcfun.tar.gz xcfun
 
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
@@ -315,16 +336,15 @@ the path where the DMRG solver was installed.
 Libxc
 -----
 By default, building PySCF will automatically download and install
-`Libxc 3.0.0 <http://www.tddft.org/programs/octopus/wiki/index.php/Libxc:download>`_.
+`Libxc 4.3.4 <https://www.tddft.org/programs/libxc/download/>`_.
 :mod:`pyscf.dft.libxc` module provided a general interface to access Libxc functionals.
 
 
-Xcfun
+XCFun
 -----
 By default, building PySCF will automatically download and install
-latest xcfun code from https://github.com/dftlibs/xcfun.
-:mod:`pyscf.dft.xcfun` module provided a general interface to access Libxc
-functionals.
+latest XCFun code from https://github.com/dftlibs/xcfun.
+:mod:`pyscf.dft.xcfun` module provided a general interface to access XCFun functionals.
 
 
 TBLIS
@@ -358,3 +378,81 @@ wrapper function to simplify the geometry optimization setup::
   mf = gto.M(atom='H 0 0 0; H 0 0 1.').apply(scf.RHF)
   mol_eq = geomopt.optimize(mf)
 
+
+.. _installing_extproj:
+
+Extension modules
+=================
+Since PySCF-2.0, some modules were moved from the main code trunk to extension
+projects hosted in https://github.com/pyscf.
+
+------------------- ---------------------------------------------------------
+Project             URL                                                
+------------------- ---------------------------------------------------------
+semiemprical        https://github.com/pyscf/semiemprical
+cornell_shci        https://github.com/pyscf/cornell_shci
+dftd3               https://github.com/pyscf/dftd3
+dmrgscf             https://github.com/pyscf/dmrgscf
+doci                https://github.com/pyscf/doci
+eph                 https://github.com/pyscf/eph
+fciqmcscf           https://github.com/pyscf/fciqmcscf
+icmpspt             https://github.com/pyscf/icmpspt
+mrpt                https://github.com/pyscf/mrpt
+naive_hci           https://github.com/pyscf/naive_hci
+nao                 https://github.com/pyscf/nao
+rt                  https://github.com/pyscf/rt
+semiempirical       https://github.com/pyscf/semiempirical
+shciscf             https://github.com/pyscf/shciscf
+zquatev             https://github.com/sunqm/zquatev
+tblis
+------------------- ---------------------------------------------------------
+
+Based on the technique of namespace
+pacakges specified in `PEP 420 <https://www.python.org/dev/peps/pep-0420/>`,
+PySCF developed a couple of methods to install the extension modules.
+
+* Pypi command. For pypi version newer than 19.0, projects that are hosted on
+  github can be installed in command line::
+
+    $ pip install git+https://github.com/pyscf/semiemprical
+
+  A particular release on github can be installed with the release URL you found
+  on github::
+
+    $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
+
+* Pypi command for local paths. If you wish to load an extension module developed
+  in a local directory, you can use the local install mode of pip. In this way,
+  it is recommended to operate in the python virtual environment so that changes
+  you made do not pollute the system default python runtime environment. For
+  example::
+
+    $ python -m venv /home/abc/pyscf-local-env
+    $ source /home/abc/pyscf-local-env/bin/activate
+    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
+    $ pip install -e /home/abc/semiemprical
+
+* Environment variable `PYSCF_EXT_PATH`. You can put the location of each
+  extension module or a file that contains these locations in this environment
+  varialbe. PySCF library will parse the paths defined in this environment
+  variable and load the relevent submodules. For example::
+
+    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
+    $ git clone https://github.com/pyscf/mrpt /home/abc/mrpt
+    $ git clone https://github.com/pyscf/dftd3 /home/abc/dftd3
+    $ echo /home/abc/mrpt >> /home/abc/.pyscf_ext_modules
+    $ echo /home/abc/dftd3 >> /home/abc/.pyscf_ext_modules
+    $ export PYSCF_EXT_PATH=/home/abc/semiemprical:/home/abc/.pyscf_ext_modules
+
+  Using the so-defined environment variable `PYSCF_EXT_PATH`, three extension
+  submodules (semiemprical, mrpt, dftd3) will be loaded when pyscf was imported.
+  In this way, you don't have to use the python virtual environment.
+
+Once the extension modules are correctly installed (with any methods shown
+above), you can use them as the regular submodules developed inside the pyscf
+main project::
+
+    >>> import pyscf
+    >>> from pyscf.semiemprical import MINDO
+    >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
+    >>> MINDO(mol).run()

@@ -1,9 +1,12 @@
 .. _mp:
 
-:mod:`mp` --- MP2
-*****************
+:mod:`mp` --- Second-Order Møller–Plesset Perturbation Theory
+*************************************************************
 
-The :mod:`mp` module implements 2nd order Moller-Plesset
+.. module:: mp
+   :synopsis: MP2
+
+The :mod:`mp` module implements 2nd order Møller-Plesset
 perturbation theory from various mean-field references.
 
 Program reference

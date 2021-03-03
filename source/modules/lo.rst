@@ -28,18 +28,19 @@ of the original atomic orbitals)::
 Examples
 ========
 
-Relevant examples
-:file:`examples/local_orb/01-pop_with_meta_lowdin.py`
-:file:`examples/local_orb/01-pop_with_nao.py`
-:file:`examples/local_orb/02-pop_with_iao.py`
-:file:`examples/local_orb/03-split_localization.py`
-:file:`examples/local_orb/04-ibo_benzene_cubegen.py`
-:file:`examples/local_orb/05-ibo_periodic_diamond_cubegen.py`
-:file:`examples/local_orb/10-modify_valence_space_for_meta_lowdin.py`
-:file:`examples/local_orb/40-hubbard_model_PM_localization.py`
-:file:`examples/local_orb/nlocal.py`
-:file:`examples/local_orb/pmloc.py`
-:file:`examples/local_orb/ulocal.py`
+* :source:`examples/local_orb/01-pop_with_meta_lowdin.py`
+* :source:`examples/local_orb/01-pop_with_nao.py`
+* :source:`examples/local_orb/02-pop_with_iao.py`
+* :source:`examples/local_orb/03-split_localization.py`
+* :source:`examples/local_orb/04-ibo_benzene_cubegen.py`
+* :source:`examples/local_orb/05-ibo_periodic_diamond_cubegen.py`
+* :source:`examples/local_orb/06-vvo_livvo_water_cubegen.py`
+* :source:`examples/local_orb/07-pipek_mezey.py`
+* :source:`examples/local_orb/10-modify_valence_space_for_meta_lowdin.py`
+* :source:`examples/local_orb/40-hubbard_model_PM_localization.py`
+* :source:`examples/local_orb/nlocal.py`
+* :source:`examples/local_orb/pmloc.py`
+* :source:`examples/local_orb/ulocal.py`
 
 Program reference
 =================

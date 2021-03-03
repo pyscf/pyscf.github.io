@@ -3,6 +3,9 @@
 pbc.dft  --- DFT with PBCs
 **************************
 
+.. module:: pbc.dft
+   :synopsis: Density functional theory with periodic boundary conditions
+
 The :mod:`pbc.dft` module implements the density functional theory with periodic boundary conditions.
 It is analogous to the :mod:`dft` module.
 
@@ -10,11 +13,10 @@ It is analogous to the :mod:`dft` module.
 Examples
 ========
 
-:download:`examples/pbc/10-gamma_point_scf.py </../examples/pbc/10-gamma_point_scf.py>`
-:download:`examples/pbc/11-gamma_point_all_electron_scf.py </../examples/pbc/11-gamma_point_all_electron_scf.py>`
-:download:`examples/pbc/20-k_points_scf.py </../examples/pbc/20-k_points_scf.py>`
-:download:`examples/pbc/21-k_points_all_electron_scf.py </../examples/pbc/21-k_points_all_electron_scf.py>`
-
+* :source:`examples/pbc/10-gamma_point_scf.py`
+* :source:`examples/pbc/11-gamma_point_all_electron_scf.py`
+* :source:`examples/pbc/20-k_points_scf.py`
+* :source:`examples/pbc/21-k_points_all_electron_scf.py`
 
 Program reference
 =================

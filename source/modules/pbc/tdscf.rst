@@ -1,7 +1,10 @@
 .. _pbc_tdscf:
 
-pbc.tdscf --- TDHF and TDDFT with PBCs
-**************************************
+:mod:`pbc.tdscf` --- TDHF and TDDFT with periodic boundary conditions
+*********************************************************************
+
+.. module:: pbc.tdscf
+   :synopsis: TDHF and TDDFT with periodic boundary conditions
 
 The :mod:`pbc.tdscf` implements the time-dependent Hartree-Fock and time-dependent density functional theory with 
 periodic boundary conditions. It is analogous to the :mod:`tddft` module.
@@ -10,8 +13,7 @@ periodic boundary conditions. It is analogous to the :mod:`tddft` module.
 Examples
 ========
 
-:download:`examples/pbc/22-k_points_tddft.py </../examples/pbc/22-k_points_tddft.py>`
-
+* :source:`examples/pbc/22-k_points_tddft.py`
 
 Program reference
 =================

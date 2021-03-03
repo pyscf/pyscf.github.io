@@ -30,9 +30,7 @@ Here is a simple example of how to use pseudo spectral integrals in SCF calculat
 Examples
 ========
 
-Relevant examples
-:file:`examples/sgx/00-simple_sgx.py`
-
+* :source:`examples/sgx/00-simple_sgx.py`
 
 Program reference
 =================

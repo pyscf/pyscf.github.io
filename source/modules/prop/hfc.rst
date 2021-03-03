@@ -7,8 +7,7 @@ The :mod:`prop.hfc` module implements the hyperfine coupling tensor for mean-fie
 Examples
 ========
 
-:download:`examples/prop/03-hfc.py </../examples/prop/03-hfc.py>`
-
+* :source:`examples/prop/03-hfc.py`
 
 Program reference
 =================

@@ -10,18 +10,12 @@ It is analogous to the :mod:`cc` module.
 Examples
 ========
 
-:download:`examples/pbc/12-gamma_point_post_hf.py </../examples/pbc/12-gamma_point_post_hf.py>`
-
-:download:`examples/pbc/22-k_points_ccsd.py </../examples/pbc/22-k_points_ccsd.py>`
-
-:download:`examples/pbc/24-k_points_vs_gamma.py </../examples/pbc/24-k_points_vs_gamma.py>`
-
-:download:`examples/pbc/25-k_points_mpi_ccsd.py </../examples/pbc/25-k_points_mpi_ccsd.py>`
-
-:download:`examples/pbc/29-eom_ccsd_Ta.py </../examples/pbc/29-eom_ccsd_Ta.py>`
-
-:download:`examples/pbc/36-ccsd_level_shift.py </../examples/pbc/36-ccsd_level_shift.py>`
-
+* :source:`examples/pbc/12-gamma_point_post_hf.py`
+* :source:`examples/pbc/22-k_points_ccsd.py`
+* :source:`examples/pbc/24-k_points_vs_gamma.py`
+* :source:`examples/pbc/25-k_points_mpi_ccsd.py`
+* :source:`examples/pbc/29-eom_ccsd_Ta.py`
+* :source:`examples/pbc/36-ccsd_level_shift.py`
 
 Program reference
 =================
