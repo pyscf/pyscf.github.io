@@ -6,6 +6,10 @@ Coupled-cluster theory
 
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
 
+The interfaces to coupled cluster and MP2 calculations look very similar
+in PySCF.  Therefore, note the similarities of this section to the
+:ref:`theory_mp2` documentation.
+
 Introduction
 ============
 Coupled-cluster (CC) theory is a post-Hartree-Fock method capable of describing
@@ -28,13 +32,16 @@ A minimal example of a CCSD and CCSD(T) calculation is as follows::
         symmetry = True,
     )
     mf = scf.HF(mol).run()
+    # Note that the line following these comments could be replaced by
+    # mycc = cc.CCSD(mf)
+    # mycc.kernel()
     mycc = cc.CCSD(mf).run()
     print('CCSD total energy', mycc.e_tot)
     et = mycc.ccsd_t()
     print('CCSD(T) total energy', mycc.e_tot + et)
 
 Spin symmetry
-===============
+=============
 The CC module in PySCF supports a number of broken spin symmetry reference
 wavefunctions.  In particular, CC can be performed with a spin-restricted,
 spin-unrestricted, and general (spin-mixed) Hartree-Fock solution, leading
@@ -95,8 +102,10 @@ use the ``frozen`` keyword argument::
 To freeze occupied and/or unoccupied orbitals with finer control, a list of
 0-based orbital indices can be provided as the ``frozen`` keyword argument::
     
-    mycc = cc.CCSD(mf, frozen=[0,1]).run() # freeze 2 core orbitals
-    mycc = cc.CCSD(mf, frozen=[0,1,16,17,18]).run() # freeze 2 core orbitals and 3 unoccupied orbitals
+    # freeze 2 core orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1]).run()
+    # freeze 2 core orbitals and 3 unoccupied orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1,16,17,18]).run()
 
 
 Equation-of-motion coupled-cluster theory 
