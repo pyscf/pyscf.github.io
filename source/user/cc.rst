@@ -90,15 +90,13 @@ By default, CCSD calculations are performed in PySCF without any frozen
 orbitals, including core orbitals. To freeze the lowest-energy core orbitals,
 use the ``frozen`` keyword argument::
 
-    mycc = cc.CCSD(mf)
-    mycc.kernel(frozen=2) # freeze lowest 2 core orbitals
+    mycc = cc.CCSD(mf, frozen=2).run()
 
 To freeze occupied and/or unoccupied orbitals with finer control, a list of
 0-based orbital indices can be provided as the ``frozen`` keyword argument::
     
-    mycc = cc.CCSD(mf)
-    mycc.kernel(frozen=[0,1]) # freeze 2 core orbitals
-    mycc.kernel(frozen=[0,1,16,17,18]) # freeze 2 core orbitals and 3 unoccupied orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1]).run() # freeze 2 core orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1,16,17,18]).run() # freeze 2 core orbitals and 3 unoccupied orbitals
 
 
 Equation-of-motion coupled-cluster theory 
