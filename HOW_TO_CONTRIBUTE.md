@@ -18,24 +18,25 @@ Pip installable packages
 All sphinx related sources files (i.e. `.rst` and `.md`) are contained in `pyscf-doc/source`.
 
 ```bash
-cd sources
+cd source
+../scripts/material_style_patch.sh apply
+../scripts/generate_api_docs.sh
 ablog build
-ablog serve
+ablog serve # this will open a tab in your default browser
 ```
 
-If you want to regenerate the API Docs, run the following:
+> :warning: :warning: :warning: PySCF must be accessible in your current Python environment when you run `../scripts/generate_api_docs.sh`.
+
+> :warning: :warning: :warning: Running `ablog build` will be slow after you've generated the API docs. There are two hack-y strategies to speed these up: 1) Follow the instructions above and after running `ablog build` you can delete `source/api_docs`. The HTML files will still exist in `source/_website` so they'll still show up when you serve the website, but `sphinx` will no longer need to generate them every time. 2) You can skip the `../scripts/generate_api_docs.sh` command above and deal with the broken link.
+
+## How to push changes
+
+> :warning: :warning: :warning: Run the following before `git add`-ing any files. This is a temporary workaround until the upstream branch of `pyscf-doc` switches to using the `source/conf.py` and `source/index.rst` the are correctly setup for the `sphinx-material` theme.
+
 
 ```bash
 cd source
-../scripts/generate_api_docs.sh
-```
-
-> :warning: Warning: PySCF must be accessible in your current Python environment when you run `../scripts/generate_api_docs.sh`.
-
-## How to push changes (and make them viewable online)
-
-```bash
-
+../scripts/material_style_patch.sh revert
 ```
 
 ## Adding Blog Posts
