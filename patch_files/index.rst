@@ -33,8 +33,8 @@ Here is a list of most recent posts:
    :maxdepth: 1
 
    Install <install.rst>
-   User Guide <theory.rst>
-   Developer Guide <modules.rst>
+   User Guide <user.rst>
+   Developer Guide <develop.rst>
    API Docs <api_docs/pyscf.rst>
    Blog <blog_wrapper.rst>
    about.md
