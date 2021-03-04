@@ -5,8 +5,8 @@ Second-Order Møller–Plesset Perturbation Theory
 
 *Modules*: :mod:`mp`, :mod:`pbc.mp`
 
-The interfaces to coupled cluster and MP2 calculations look very similar
-in PySCF.  Therefore, note the similarities of this section to the
+The interfaces to coupled cluster and MP2 calculations are similar
+in PySCF.  Therefore, note the parallels between this section and the
 :ref:`theory_cc` documentation.
 
 
@@ -28,7 +28,7 @@ which outputs
   converged SCF energy = -99.9873974403487
   E(MP2) = -100.198764900659  E_corr = -0.211367460310054
 
-the Hartree--Fock energy, the MP2 energy and their difference, the
+namely, the Hartree--Fock energy, the MP2 energy and their difference, the
 MP2 correlation energy.
 
 .. note::
@@ -45,10 +45,10 @@ MP2 correlation energy.
 Spin symmetry
 =============
 
-The MP2 module in PySCF supports a number of broken spin symmetry reference
-wavefunctions.  In particular, MP2 can be performed with a spin-restricted,
-spin-unrestricted, and general (spin-mixed) Hartree-Fock solution, leading
-to the RMP2, UMP2, and GMP2 methods.
+The MP2 module in PySCF supports a number of reference wavefunctions with
+broken spin symmetry wavefunctions.  In particular, MP2 can be performed with a
+spin-restricted, spin-unrestricted, and general (spin-mixed) Hartree-Fock
+solution, leading to the RMP2, UMP2, and GMP2 methods.
 
 The module-level ``mp.MP2(mf)`` constructor can infer the correct method based
 on the level of symmetry-breaking in the mean-field argument.  For more explicit
@@ -92,9 +92,9 @@ can be calculated::
 Frozen orbitals
 ===============
 
-By default, MP2 calculations are performed in PySCF without any frozen
-orbitals, including core orbitals. To freeze the lowest-energy core
-orbitals, use the ``frozen`` keyword argument::
+By default, MP2 calculations in PySCF include all electrons; that is, also
+core orbitals are correlated. To freeze the lowest-energy core orbitals, use
+the ``frozen`` keyword argument::
 
     mymp = mp.MP2(mf, frozen=2).run()
 
@@ -168,8 +168,8 @@ state, we can write a function to compute the correlation energy as
 In this example, we concatenate :math:`\alpha` and :math:`\beta` orbitals to
 mimic the spin-orbitals.  After integral transformation, we zeroed out the
 integrals of different spin.  Here, the :mod:`ao2mo` module provides the general
-2-electron MO integral transformation, using chemist's notation for the
-integrals.  Using this module, you are able to do
+2-electron MO integral transformation, using chemists' notation for the
+integrals.  Using this module, you can perform
 *arbitrary* integral transformation for *arbitrary* integrals. For example, the
 following code gives the ``(ov|vv)`` type integrals::
 
