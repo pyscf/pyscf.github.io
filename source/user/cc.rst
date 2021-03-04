@@ -6,9 +6,8 @@ Coupled-cluster theory
 
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
 
-The interfaces to coupled cluster and MP2 calculations are similar
-in PySCF.  Therefore, note the parallels between this section and the
-:ref:`theory_mp2` documentation.
+The MP2 and coupled-cluster functionalities of PySCF are similar.  See
+also :ref:`theory_mp2`.
 
 Introduction
 ============
@@ -18,8 +17,8 @@ variational.
 PySCF has extensive support for CC calculations with single and double excitations (CCSD).
 It can also include a perturbative treatment of triple excitations (CCSD(T)),
 which is a very accurate method for single-reference quantum chemistry.
-CC calculations can be performed after standard or density-fitted SCF
-calculations.
+CC calculations can be performed with or without density fitting,
+depending on the initial SCF calculation.
 Correlated excited states are
 accessible through the equation-of-motion (EOM) CCSD framework, described below.
 
@@ -93,8 +92,8 @@ The CCSD Lambda equations can be solved::
 Frozen orbitals
 ===============
 
-By default, CCSD calculations in PySCF include all electrons; that is, also
-core orbitals are correlated. To freeze the lowest-energy core orbitals,
+By default, CCSD calculations in PySCF correlate all electrons in all available
+orbitals. To freeze the lowest-energy core orbitals,
 use the ``frozen`` keyword argument::
 
     mycc = cc.CCSD(mf, frozen=2).run()
