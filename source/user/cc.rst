@@ -102,7 +102,7 @@ To freeze occupied and/or unoccupied orbitals with finer control, a list of
 Equation-of-motion coupled-cluster theory 
 =========================================
 
-EOM-CCSD can be used to calculate neutral electronic excitations (EE-EOM-CCSD),
+EOM-CCSD can be used to calculate neutral excitation energies (EE-EOM-CCSD),
 spin-flip excitations (SF-EOM-CCSD),
 or charged excitations, i.e. ionization potentials (IP-EOM-CCSD) or electron affinities
 (EA-EOM-CCSD).  The EOM functions return the requested number of 
