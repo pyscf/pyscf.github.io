@@ -6,8 +6,8 @@ Coupled-cluster theory
 
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
 
-The interfaces to coupled cluster and MP2 calculations look very similar
-in PySCF.  Therefore, note the similarities of this section to the
+The interfaces to coupled cluster and MP2 calculations are similar
+in PySCF.  Therefore, note the parallels between this section and the
 :ref:`theory_mp2` documentation.
 
 Introduction
@@ -42,10 +42,10 @@ A minimal example of a CCSD and CCSD(T) calculation is as follows::
 
 Spin symmetry
 =============
-The CC module in PySCF supports a number of broken spin symmetry reference
-wavefunctions.  In particular, CC can be performed with a spin-restricted,
-spin-unrestricted, and general (spin-mixed) Hartree-Fock solution, leading
-to the RCCSD, UCCSD, and GCCSD methods.
+The CC module in PySCF supports a number of reference wave functions with
+broken spin symmetry.  In particular, CC can be performed with a
+spin-restricted, spin-unrestricted, and general (spin-mixed) Hartree-Fock
+solution, leading to the RCCSD, UCCSD, and GCCSD methods.
 
 The module-level ``cc.CCSD(mf)`` constructor can infer the correct method based
 on the level of symmetry-breaking in the mean-field argument.  For more explicit
@@ -93,8 +93,8 @@ The CCSD Lambda equations can be solved::
 Frozen orbitals
 ===============
 
-By default, CCSD calculations are performed in PySCF without any frozen
-orbitals, including core orbitals. To freeze the lowest-energy core orbitals,
+By default, CCSD calculations in PySCF include all electrons; that is, also
+core orbitals are correlated. To freeze the lowest-energy core orbitals,
 use the ``frozen`` keyword argument::
 
     mycc = cc.CCSD(mf, frozen=2).run()
