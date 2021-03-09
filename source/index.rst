@@ -1,49 +1,42 @@
-.. PySCF documentation master file, created by
-   sphinx-quickstart on Thu Jan 15 01:55:04 2015.
+
+.. PySCF index file, created by `ablog start` on Mon Feb  8 20:10:55 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PySCF documentation!
-===============================
- 
-PySCF is a collection of electronic structure programs powered by Python.
-The package aims to provide a simple, light-weight, and efficient platform for
-quantum chemistry calculations and code development.  The program is developed
-with the following principles:
+Welcome to the PySCF Website!
+=================================
 
-* Easy to install, to use, to extend and to be embedded;
+The Python-based Simulations of Chemistry Framework
+PySCF is an open-source collection of electronic structure modules powered by Python. The package aims to provide a simple, lightweight, and efficient platform for quantum chemistry calculations and methodology development.
 
-* Minimal requirements on libraries (no Boost or MPI) and computing
-  resources (perhaps sacrificing efficiency to reduce I/O);
 
-* 90/10 Python/C (only computational hot spots are written in C);
 
-* 90/10 functional/OOP (unless performance critical, functions are pure).
+Check out our blog!
+-------------------
 
-In addition to the core libraries, PySCF supports a rich
-ecosystem of plugins and external modules that, for example, provide
-MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
-See :ref:`installing_plugin`.
+Here is a list of most recent posts:
+
+.. postlist:: 5
+   :excerpts:
+
+
+.. `toctree` directive, below, contains list of non-post `.rst` files.
+   This is how they appear in Navigation sidebar. Note that directive
+   also contains `:hidden:` option so that it is not included inside the page.
+
+   Posts are excluded from this directive so that they aren't double listed
+   in the sidebar both under Navigation and Recent Posts.
+
+.. removed :numbered:
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
-   :numbered:
 
-   overview.rst
-   install.rst
-   tutorial.rst
-   user.rst
-   develop.rst
-   modules.rst
-   interface.rst
+   Install <install.rst>
+   User Guide <user.rst>
+   Developer Guide <develop.rst>
+   API Docs <api_docs/pyscf.rst>
+   Blog <blog_wrapper.rst>
+   about.md
 
-You can also download the `PDF version
-<http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
-
-
-.. Indices and tables
-.. ==================
-.. 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
