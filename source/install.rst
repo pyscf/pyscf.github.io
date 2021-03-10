@@ -72,7 +72,7 @@ Extension modules are not available in the Fedora package.
 Installation with conda
 =======================
 
-If you have `Conda <https://conda.io/docs/>`_ 
+If you have `Conda <https://conda.io/docs/>`_
 (or `Anaconda <https://www.continuum.io/downloads#linux>`_)
 environment, PySCF package can be installed with Conda cloud::
 
@@ -149,7 +149,7 @@ For Mac OS X/macOS, you may get an import error if your OS X/macOS version is
 This is caused by the incorrect RPATH.  Script
 ``pyscf/lib/_runme_to_fix_dylib_osx10.11.sh`` in ``pyscf/lib`` directory can be
 used to fix this problem::
- 
+
     cd pyscf/lib
     sh _runme_to_fix_dylib_osx10.11.sh
 
@@ -166,7 +166,6 @@ used to fix this problem::
 
 Environment variables and global configures
 ===========================================
-There are a couple of environment variables 
 
 ----------------------- ---------------------------------------------------------
 Env variable            Comments
@@ -301,9 +300,6 @@ you can assign the libraries to the variable ``BLAS_LIBRARIES`` in
   It can be solved by preloading MKL core library with:
   ``export LD_PRELOAD=$MKLROOT/lib/intel64/libmkl_avx.so:$MKLROOT/lib/intel64/libmkl_core.so``
 
-If you install 
-Configure CMAKE_CONFIGURE_ARGS
-
 
 .. _installing_qcint:
 Using optimized integral library
@@ -427,7 +423,7 @@ Since PySCF-2.0, some modules were moved from the main code trunk to extension
 projects hosted in https://github.com/pyscf.
 
 ------------------- ---------------------------------------------------------
-Project             URL                                                
+Project             URL
 ------------------- ---------------------------------------------------------
 cornell_shci        https://github.com/pyscf/cornell_shci
 dftd3               https://github.com/pyscf/dftd3
