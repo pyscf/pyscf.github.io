@@ -175,7 +175,13 @@ the previous or other calculations::
 
 ``/path/to/chkfile`` can be found in the output in the calculation (if
 ``mol.verbose >= 4``, the filename of the chkfile will be dumped in
-the output).  By setting :attr:`chkfile` and :attr:`init_guess`, the
+the output).  If the results of the calculation are needed at a later
+stage (e.g. for an eventual restart or use as an initial guess for a
+larger calculation), the :attr:`chkfile` attribute should be set
+explicitly as the chkfile might otherwise be deleted upon successful
+completion of the calculation, see comments in
+:source:`examples/scf/14-restart.py`.
+By setting :attr:`chkfile` and :attr:`init_guess`, the
 SCF module can read the molecular orbitals from the given
 :attr:`chkfile` and rotate them to representation of the required
 basis.
