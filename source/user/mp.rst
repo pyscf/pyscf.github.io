@@ -1,7 +1,7 @@
 .. _theory_mp2:
 
-Second-Order Møller–Plesset Perturbation Theory
-***********************************************
+Second-Order Møller–Plesset Perturbation Theory (MP2)
+*****************************************************
 
 *Modules*: :mod:`mp`, :mod:`pbc.mp`
 
@@ -38,6 +38,12 @@ MP2 correlation energy.
   .. code ::
     
     pyscf.mp.MP2(mf).kernel()
+
+  or
+
+  .. code ::
+    
+    pyscf.mp.MP2(mf).run()
   
   for the same result.
 
@@ -81,11 +87,9 @@ They are returned in the MO basis::
     dm1 = mymp.make_rdm1()
     dm2 = mymp.make_rdm2()
 
-Gradients can be calculated:cite:`Pople1979,Handy1985`::
+Analytical nuclear gradients can be calculated :cite:`Pople1979,Handy1985` ::
 
-    from pyscf import grad
-    mygrad = mymp.Gradients()
-    grad = mygrad.kernel()
+    mygrad = mymp.nuc_grad_method().run()
 
 
 Frozen orbitals
