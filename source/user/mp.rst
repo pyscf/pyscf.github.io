@@ -87,7 +87,7 @@ They are returned in the MO basis::
     dm1 = mymp.make_rdm1()
     dm2 = mymp.make_rdm2()
 
-Analytical nuclear gradients can be calculated :cite:`Pople1979,Handy1985` ::
+Analytical nuclear gradients can be calculated :cite:`Pople1979,Handy1985,Yamaguchi2011m` ::
 
     mygrad = mymp.nuc_grad_method().run()
 

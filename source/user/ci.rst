@@ -116,7 +116,7 @@ They are returned in the MO basis::
     dm2 = myci.make_rdm2()
 
 Analytical nuclear gradients can be calculated
-(see :cite:`Osamura1987` and references therein)::
+(see :cite:`Osamura1987,Yamaguchi2011` and references therein)::
 
     mygrad = myci.nuc_grad_method().run()
 
