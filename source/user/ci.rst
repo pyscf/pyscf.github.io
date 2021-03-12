@@ -15,7 +15,7 @@ Introduction
 ============
 
 Configuration interaction is a post-Hartree--Fock method, diagonalising
-the hamiltonian matrix. FCI includes all Slater determinants of
+the many-electron Hamiltonian matrix. FCI includes all Slater determinants of
 appropriate symmetry in the eigenvector basis. CISD includes only those
 that differ from the Hartree--Fock determinant by at most two occupied
 spinorbitals.
