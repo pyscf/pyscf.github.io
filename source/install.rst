@@ -16,27 +16,6 @@ If you already have pyscf installed, you can upgrade it to the new version::
 
   $ pip install --upgrade pyscf
 
-Note we observed that our precompiled python wheels sometimes does not work with
-certain version of Python (python-3.4 and python-3.5).  If you're using mac OS X
-with python-3.4 or python-3.5, pip may execute the setup.py file in the source
-code and it may be terminated due to an error of library path of BLAS library.
-BLAS library is required to install PySCF library.  The installation script can
-detect the installed BLAS libraries in the system and choose one for the
-program.  If BLAS library is existed but wasn't found by the installation
-script, you can specify the BLAS library either through the environment
-``LDFLAGS``, e.g. ``LDFLAGS="-L/path/to/blas -lblas" pip install pyscf`` or the
-environment variable ``PYSCF_INC_DIR``, e.g.
-``PYSCF_INC_DIR=/path/to/blas:/path/to/other/lib pip install`` to tell the
-installation script which BLAS libraries to link against.
-Another issue of the installation script you may get is that pyscf.dft module is
-not working.  pyscf.dft module requires the exchange-correlation functional
-library ``libxc`` which was not yet available in the PyPI repository. To enable
-pyscf.dft module, you can download and manually compile libxc library and set
-the environment variable ``PYSCF_INC_DIR``, e.g. ``export PYSCF_INC_DIR=/path/to/libxc``
-before calling ``pip install`` command.  Libxc library can be found in
-http://octopus-code.org/wiki/Libxc:download.  When compiling the libxc library,
-you need to add --enable-shared flag.
-
 Since PySCF-2.0, some modules were developed indepently as :ref:`installing_extproj`.
 Individual extension module (for example the geometry optimization module) can
 be installed using pip extra dependency::
@@ -52,6 +31,30 @@ To install the latest version of the extension modules from github, github repo
 url with prefix `git+` can be placed in the argument list of pip command::
 
   $ pip install git+https://github.com/pyscf/geomopt
+
+
+Pip install the latest code on github
+-------------------------------------
+The latest code on github can be installed::
+
+  $ pip install git+https://github.com/pyscf/pyscf
+
+To install the features developed on a particular branch::
+
+  $ pip install git+https://github.com/pyscf/pyscf@<branch_name>
+
+This install method compiles and links C extensions against the libraries in
+your system. It requires Cmake, BLAS library and GCC compiler (more detalis of
+prerequisites can be found :ref:`compile_c_extensions`). The C extensions are
+compiled with default settings specified in the `CMakeLists.txt` file. If you
+would like to tune the cmake compilation parameters, you can set the environment
+envariable `CMAKE_CONFIGURE_ARGS`. The contents of this environment variable
+will be completely passed to cmake command. For example, if you have multiple
+BLAS libraries available in your system and MKL is the one you would like to
+use, you can sepcify the environment variable (see also :ref:`installing_blas`)::
+
+  $ export CMAKE_CONFIGURE_ARGS="-DBLA_VENDOR=Intel10_64lp_seq"
+
 
 Installation on Fedora
 ======================
@@ -69,7 +72,7 @@ Extension modules are not available in the Fedora package.
 Installation with conda
 =======================
 
-If you have `Conda <https://conda.io/docs/>`_ 
+If you have `Conda <https://conda.io/docs/>`_
 (or `Anaconda <https://www.continuum.io/downloads#linux>`_)
 environment, PySCF package can be installed with Conda cloud::
 
@@ -97,12 +100,17 @@ Another way to use PySCF in docker container is to start an Ipython shell::
 
 
 .. _compile_c_extensions:
-Manual installation from github repo
-====================================
+Compiling from source code
+==========================
 
-Manual installation requires `cmake <http://www.cmake.org>`_,
-`numpy <http://www.numpy.org/>`_, `scipy <http://www.scipy.org/>`_
-and `h5py <http://www.h5py.org/>`_ libraries.
+Prerequisites for manual install are
+
+* Cmake >= 3.10
+* Python >= 3.6
+* Numpy >= 1.13
+* Scipy >= 0.19
+* h5py >= 2.7
+
 You can download the latest PySCF (or the development branch) from github::
 
   $ git clone https://github.com/pyscf/pyscf.git
@@ -120,10 +128,10 @@ Build the C extensions in :file:`pyscf/lib`::
 This will automatically download the analytical GTO integral library `libcint
 <https://github.com/sunqm/libcint.git>`_ and the DFT exchange correlation
 functional libraries `Libxc <http://www.tddft.org/programs/Libxc>`_ and `XCFun
-<https://github.com/dftlibs/xcfun.git>`_.  Finally, to make Python find
-the :code:`pyscf` package, add the top-level :code:`pyscf` directory (not
-the :code:`pyscf/pyscf` subdirectory) to :code:`PYTHONPATH`.  For example, if
-:code:`pyscf` is installed in ``/opt``, :code:`PYTHONPATH` should be like::
+<https://github.com/dftlibs/xcfun.git>`_.  Finally, to make Python find the
+`pyscf` package, add the top-level `pyscf` directory (not the `pyscf/pyscf`
+subdirectory) to `PYTHONPATH`.  For example, if `pyscf` is installed in
+``/opt``, `PYTHONPATH` should be like::
 
   export PYTHONPATH=/opt/pyscf:$PYTHONPATH
 
@@ -141,10 +149,9 @@ For Mac OS X/macOS, you may get an import error if your OS X/macOS version is
 This is caused by the incorrect RPATH.  Script
 ``pyscf/lib/_runme_to_fix_dylib_osx10.11.sh`` in ``pyscf/lib`` directory can be
 used to fix this problem::
- 
+
     cd pyscf/lib
     sh _runme_to_fix_dylib_osx10.11.sh
-
 
 .. note::
 
@@ -155,25 +162,56 @@ used to fix this problem::
   When the RPATH was removed, you need to add ``pyscf/lib`` and
   ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
 
-Last, it's recommended to set a scratch directory for PySCF.  The default scratch
-directory is controlled by environment variable :code:`PYSCF_TMPDIR`.  If it's
-not specified, the system temporary directory :code:`TMPDIR` will be used as the
-scratch directory.
 
 
+Environment variables and global configures
+===========================================
+
+----------------------- ---------------------------------------------------------
+Env variable            Comments
+----------------------- ---------------------------------------------------------
+`PYSCF_MAX_MEMORY`      Maximum memory to use (in MB)
+`PYSCF_TMPDIR`          Directory to put temporary files
+`PYSCF_CONFIG_FILE`     A file with various pyscf default settings
+`PYSCF_EXT_PATH`        Path of external extensions
+----------------------- ---------------------------------------------------------
+
+`PYSCF_MAX_MEMORY` sets the default maximum memory (in MB) when creating `Mole`
+(or `Cell`) object. It corresponds to the attribute `max_memory``of Mole` (or
+`Cell`) object.
+
+The environment variable `PYSCF_TMPDIR` controls which directory to put
+intermediates and temporary data when running pyscf. If this environment
+variable is not set, the system-wide temporary directory `TMPDIR` will be used
+as the scratch directory. It's highly recommended to set this variable to a
+directory with enough disk space. Many quantum chemistry methods consume a huge
+amount of temporary storage space.
+
+`PYSCF_CONFIG_FILE` is a python file that predefines default parameters in the
+program. You may noticed the statements `getattr(__config__, "FOOBAR")` many
+places in the source code. These global parameters are defined in
+`PYSCF_CONFIG_FILE` and loaded during the pyscf module was imported.
+By default, this environment variable points to `~/.pyscf_conf.py`.
+
+`PYSCF_EXT_PATH` allows you to include PySCF extensions with the package. Please
+find detail document in :ref:`installing_extproj`.
+
+
+.. _installing_wo_network:
 Installation without network
 ============================
 
-If you have problems to download the external libraries on your computer, you can
-manually build the libraries, as shown in the following instructions.  First,
-you need to install libcint, Libxc and XCFun libraries::
+External libraries (libcint, libxc, xcfun) will be downloaded and installed when
+compiling the C extensions. This section shows how to install the external
+libraries without accessing to network. First, you need to install libcint,
+Libxc and XCFun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
     $ tar czf libcint.tar.gz libcint
 
     $ wget https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
 
-    $ git clone https://github.com/dftlibs/xcfun.git
+    $ git clone https://github.com/sunqm/xcfun.git
     $ tar czf xcfun.tar.gz xcfun
 
 Assuming ``/opt`` is the place where these libraries will be installed, these
@@ -189,8 +227,9 @@ packages should be compiled with the flags::
     $ tar xvzf libxc-4.3.4.tar.gz
     $ cd libxc-4.3.4
     $ mkdir build && cd build
-    $ ../configure --prefix=/opt --libdir=/opt/lib --enable-vxc --enable-fxc --enable-kxc \
-        --enable-shared --disable-static --enable-shared --disable-fortran LIBS=-lm
+    $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 \
+        -DENABLE_FORTRAN=0 -DDISABLE_KXC=0 -DDISABLE_LXC=1 \
+        -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
     $ tar xvzf xcfun.tar.gz
@@ -211,7 +250,6 @@ Finally update the ``PYTHONPATH`` environment for Python interpreter.
 
 
 .. _installing_blas:
-
 Using optimized BLAS
 ====================
 
@@ -264,7 +302,6 @@ you can assign the libraries to the variable ``BLAS_LIBRARIES`` in
 
 
 .. _installing_qcint:
-
 Using optimized integral library
 ================================
 
@@ -380,24 +417,21 @@ wrapper function to simplify the geometry optimization setup::
 
 
 .. _installing_extproj:
-
 Extension modules
 =================
 Since PySCF-2.0, some modules were moved from the main code trunk to extension
 projects hosted in https://github.com/pyscf.
 
 ------------------- ---------------------------------------------------------
-Project             URL                                                
+Project             URL
 ------------------- ---------------------------------------------------------
-semiemprical        https://github.com/pyscf/semiemprical
 cornell_shci        https://github.com/pyscf/cornell_shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
-eph                 https://github.com/pyscf/eph
 fciqmcscf           https://github.com/pyscf/fciqmcscf
 icmpspt             https://github.com/pyscf/icmpspt
-mrpt                https://github.com/pyscf/mrpt
+mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
 nao                 https://github.com/pyscf/nao
 rt                  https://github.com/pyscf/rt
@@ -438,14 +472,14 @@ PySCF developed a couple of methods to install the extension modules.
   variable and load the relevent submodules. For example::
 
     $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
-    $ git clone https://github.com/pyscf/mrpt /home/abc/mrpt
+    $ git clone https://github.com/pyscf/doci /home/abc/doci
     $ git clone https://github.com/pyscf/dftd3 /home/abc/dftd3
-    $ echo /home/abc/mrpt >> /home/abc/.pyscf_ext_modules
+    $ echo /home/abc/doci >> /home/abc/.pyscf_ext_modules
     $ echo /home/abc/dftd3 >> /home/abc/.pyscf_ext_modules
     $ export PYSCF_EXT_PATH=/home/abc/semiemprical:/home/abc/.pyscf_ext_modules
 
   Using the so-defined environment variable `PYSCF_EXT_PATH`, three extension
-  submodules (semiemprical, mrpt, dftd3) will be loaded when pyscf was imported.
+  submodules (semiemprical, doci, dftd3) will be loaded when pyscf was imported.
   In this way, you don't have to use the python virtual environment.
 
 Once the extension modules are correctly installed (with any methods shown

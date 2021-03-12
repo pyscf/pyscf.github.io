@@ -6,6 +6,9 @@ Coupled-cluster theory
 
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
 
+The MP2 and coupled-cluster functionalities of PySCF are similar.  See
+also :ref:`theory_mp2`.
+
 Introduction
 ============
 Coupled-cluster (CC) theory is a post-Hartree-Fock method capable of describing
@@ -14,8 +17,8 @@ variational.
 PySCF has extensive support for CC calculations with single and double excitations (CCSD).
 It can also include a perturbative treatment of triple excitations (CCSD(T)),
 which is a very accurate method for single-reference quantum chemistry.
-CC calculations can be performed after standard or density-fitted SCF
-calculations.
+CC calculations can be performed with or without density fitting,
+depending on the initial SCF calculation.
 Correlated excited states are
 accessible through the equation-of-motion (EOM) CCSD framework, described below.
 
@@ -28,17 +31,20 @@ A minimal example of a CCSD and CCSD(T) calculation is as follows::
         symmetry = True,
     )
     mf = scf.HF(mol).run()
+    # Note that the line following these comments could be replaced by
+    # mycc = cc.CCSD(mf)
+    # mycc.kernel()
     mycc = cc.CCSD(mf).run()
     print('CCSD total energy', mycc.e_tot)
     et = mycc.ccsd_t()
     print('CCSD(T) total energy', mycc.e_tot + et)
 
 Spin symmetry
-===============
-The CC module in PySCF supports a number of broken spin symmetry reference
-wavefunctions.  In particular, CC can be performed with a spin-restricted,
-spin-unrestricted, and general (spin-mixed) Hartree-Fock solution, leading
-to the RCCSD, UCCSD, and GCCSD methods.
+=============
+The CC module in PySCF supports a number of reference wave functions with
+broken spin symmetry.  In particular, CC can be performed with a
+spin-restricted, spin-unrestricted, and general (spin-mixed) Hartree-Fock
+solution, leading to the RCCSD, UCCSD, and GCCSD methods.
 
 The module-level ``cc.CCSD(mf)`` constructor can infer the correct method based
 on the level of symmetry-breaking in the mean-field argument.  For more explicit
@@ -72,13 +78,11 @@ They are returned in the MO basis::
     dm1 = mycc.make_rdm1()
     dm2 = mycc.make_rdm2()
 
-Gradients can be calculated::
+Analytical nuclear gradients can be calculated::
 
-    from pyscf.cc import ccsd_grad
     from pyscf import grad
-    grad_e = ccsd_grad.kernel(mycc)
-    grad_n = grad.grad_nuc(mol)
-    grad = grad_e + grad_nuc
+    mygrad = mycc.Gradients()
+    grad = mygrad.kernel()
 
 The CCSD Lambda equations can be solved::
 
@@ -88,25 +92,25 @@ The CCSD Lambda equations can be solved::
 Frozen orbitals
 ===============
 
-By default, CCSD calculations are performed in PySCF without any frozen
-orbitals, including core orbitals. To freeze the lowest-energy core orbitals,
+By default, CCSD calculations in PySCF correlate all electrons in all available
+orbitals. To freeze the lowest-energy core orbitals,
 use the ``frozen`` keyword argument::
 
-    mycc = cc.CCSD(mf)
-    mycc.kernel(frozen=2) # freeze lowest 2 core orbitals
+    mycc = cc.CCSD(mf, frozen=2).run()
 
 To freeze occupied and/or unoccupied orbitals with finer control, a list of
 0-based orbital indices can be provided as the ``frozen`` keyword argument::
     
-    mycc = cc.CCSD(mf)
-    mycc.kernel(frozen=[0,1]) # freeze 2 core orbitals
-    mycc.kernel(frozen=[0,1,16,17,18]) # freeze 2 core orbitals and 3 unoccupied orbitals
+    # freeze 2 core orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1]).run()
+    # freeze 2 core orbitals and 3 unoccupied orbitals
+    mycc = cc.CCSD(mf, frozen=[0,1,16,17,18]).run()
 
 
 Equation-of-motion coupled-cluster theory 
 =========================================
 
-EOM-CCSD can be used to calculate neutral electronic excitations (EE-EOM-CCSD),
+EOM-CCSD can be used to calculate neutral excitation energies (EE-EOM-CCSD),
 spin-flip excitations (SF-EOM-CCSD),
 or charged excitations, i.e. ionization potentials (IP-EOM-CCSD) or electron affinities
 (EA-EOM-CCSD).  The EOM functions return the requested number of 
