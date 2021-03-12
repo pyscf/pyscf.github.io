@@ -1,4 +1,4 @@
-.. _theory_gto:
+.. _user_gto:
 
 Molecules and crystals
 **********************
@@ -211,6 +211,28 @@ object.  The other attributes of :class:`Mole` object such as :attr:`verbose`,
 More details of the crystal :class:`Cell` object and the relevant input
 parameters are documented in :ref:`pbc_gto`.
 
+Basis set and pseudopotential
+-----------------------------
+PySCF uses the crystalline Gaussian-type orbitals as the basis functions
+for solid calculations.
+These orbitals are Bloch functions, which have the form
+
+.. math::
+
+   \phi_{\mathbf{k}}(\mathbf{r}) = \sum_{\mathbf{T}} e^{i\mathbf{k}\cdot \mathbf{T}} \chi(\mathbf{r}-\mathbf{T}) \;,
+
+where :math:`\mathbf{T}` is a lattice vector,
+:math:`\mathbf{k}` is a crystal momentum vector,
+and :math:`\chi` is a conventional Gaussian basis function centered within a cell.
+
+The predefined basis sets for solid calculations include 
+the valence basis sets that are optimized for GTH pseudopotentials (see :source:`pyscf/pbc/gto/pseudo`).
+In addition, the predefined basis sets and ECPs for molecular calculations 
+can be used in solid calculations as well (see :source:`examples/pbc/05-input_pp.py`).
+Finally, the ways to customize basis sets and pseudopotentials are just like those in molecular calculations
+(see :source:`examples/pbc/04-input_basis.py`).
+
+
 1D and 2D systems
 -----------------
 
@@ -232,56 +254,6 @@ constitutes the periodic surface. When :attr:`cell.dimension` is 1, y and z axes
 are treated as vacuum thus wire is placed on the x axis.  When
 :attr:`cell.dimension` is 0, all three directions are vacuum.  The PBC system is
 actually the same to the molecular system.
-
-
-
-gto.Mole
-========
-
-Molecular Structure
--------------------
-
-Basis (GTO)
------------
-
-ECP
----
-
-Spin and charge
----------------
-
-Symmetry
---------
-
-
-pbc.gto.Cell
-============
-
-Unit cell
----------
-
-Basis (crystalline GTO)
------------------------
-PySCF uses the crystalline Gaussian-type atomic orbitals (AOs) as the one-particle basis
-for solid calculations with periodic boundary conditions (PBCs).
-These AOs are Bloch waves with the following form:
-
-.. math::
-
-   \phi_{\mu\mathbf{k}}(\mathbf{r}) = \sum_{\mathbf{T}} e^{i\mathbf{k}\cdot \mathbf{T}} \chi_{\mu}(\mathbf{r}-\mathbf{T}) \;,
-
-where :math:`\mathbf{T}` is a lattice translation vector,
-:math:`\mathbf{k}` is a crystal momentum vector in the first Brillouin zone,
-and :math:`\chi_{\mu}` is a Gaussian type orbital (GTO).
-
-The basis set used in a PBC calculation can be specified exactly the same way
-as that in the molecular case.
-The following shows a simple example:
-:source:`examples/pbc/04-input_basis.py`.
-
-Pseudopotential
----------------
-
 
 
 Access AO integrals
@@ -413,16 +385,3 @@ methods::
     eri = df.DF(cell).get_eri()
 
 See also :ref:`pbc_df` for more details of the PBC density fitting module.
-
-
-Other features
-==============
-Density fitting
----------------
-
-.. literalinclude:: /../examples/scf/20-density_fitting.py
-
-Customizing Hamiltonian
------------------------
-
-.. literalinclude:: /../examples/scf/40-customizing_hamiltonian.py

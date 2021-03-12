@@ -1,4 +1,4 @@
-.. _theory_scf:
+.. _user_scf:
 
 ***********************************
 Self-consistent field (SCF) methods
@@ -13,7 +13,7 @@ Self-consistent field (SCF) methods include both Hartree-Fock (HF) theory
 and Kohn-Sham (KS) density functional theory (DFT). Self-consistent
 field theories only depend on the electronic density matrices, and are
 the simplest level of quantum chemical models. Details that are
-specific to DFT can be found in :numref:`theory_dft`.
+specific to DFT can be found in :numref:`user_dft`.
 
 In both HF and KS-DFT, the ground-state wavefunction is expressed as a
 single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
