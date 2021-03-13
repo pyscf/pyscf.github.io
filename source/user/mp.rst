@@ -1,4 +1,4 @@
-.. _theory_mp2:
+.. _user_mp2:
 
 Second-Order Møller–Plesset Perturbation Theory
 ***********************************************
@@ -6,7 +6,7 @@ Second-Order Møller–Plesset Perturbation Theory
 *Modules*: :mod:`mp`, :mod:`pbc.mp`
 
 The MP2 and coupled-cluster functionalities of PySCF are similar.  See
-also :ref:`theory_cc`.
+also :numref:`user_cc`.
 
 Introduction
 ============
