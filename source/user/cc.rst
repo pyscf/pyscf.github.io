@@ -80,9 +80,7 @@ They are returned in the MO basis::
 
 Analytical nuclear gradients can be calculated::
 
-    from pyscf import grad
-    mygrad = mycc.Gradients()
-    grad = mygrad.kernel()
+    mygrad = mycc.nuc_grad_method().run()
 
 The CCSD Lambda equations can be solved::
 
