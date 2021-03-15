@@ -339,83 +339,6 @@ Some examples of platform specific configurations can be found in directory
 ``pyscf/lib/cmake_arch_config``.
 
 
-.. _installing_plugin:
-
-Plugins
-=======
-
-NAO
----
-The :mod:`nao` module includes the basic functions of numerical atomic orbitals
-(NAO) and the (nao based) TDDFT methods.  This module was contributed by Marc
-Barbry and Peter Koval.  You can enable this module with a cmake flag::
-
-    $ cmake -DENABLE_NAO=1 ..
-
-More information of the compilation can be found in :file:`pyscf/lib/nao/README.md`.
-
-
-DMRG solver
------------
-Density matrix renormalization group (DMRG) implementations Block
-(https://sanshar.github.io/Block) and
-CheMPS2 (http://sebwouters.github.io/CheMPS2/index.html)
-are efficient DMRG solvers for ab initio quantum chemistry problem.
-`Installing Block <https://sanshar.github.io/Block/build.html>`_ requires
-C++11 compiler.  If C++11 is not supported by your compiler, you can
-register and download the precompiled Block binary from
-https://sanshar.github.io/Block/build.html.
-Before using the Block or CheMPS2, you need create a configuration file
-``pyscf/dmrgscf/settings.py``  (as shown by settings.py.example) to store
-the path where the DMRG solver was installed.
-
-
-Libxc
------
-By default, building PySCF will automatically download and install
-`Libxc 4.3.4 <https://www.tddft.org/programs/libxc/download/>`_.
-:mod:`pyscf.dft.libxc` module provided a general interface to access Libxc functionals.
-
-
-XCFun
------
-By default, building PySCF will automatically download and install
-latest XCFun code from https://github.com/dftlibs/xcfun.
-:mod:`pyscf.dft.xcfun` module provided a general interface to access XCFun functionals.
-
-
-TBLIS
------
-`TBLIS <https://github.com/devinamatthews/tblis>`_ provides a native algorithm
-to perform tensor contraction for arbitrary high dimensional tensors. The native
-algorithm does not need to transform tensors into matrices then call the BLAS
-libraries for the matrix contraction.  Tensor transposing and data moving are
-largely avoided in TBLIS tensor library.  The interface to TBLIS offers an
-efficient implementation for :func:`numpy.einsum` style tensor contraction.
-To enable the tlibs-einsum plugin, you can set the cmake flags
-``-DENABLE_TBLIS`` when compiling the C extensions::
-
-  $ cmake -DENABLE_TBLIS=ON ..
-
-Note TBLIS library was implemented with C++11 standard. You need at least GCC
-5.2 to compile this plugin.
-
-
-Pyberny
--------
-The geometry optimizer `Pyberny <https://github.com/jhrmnn/pyberny>`_ provides an
-independent implementation that supports various geometry optimization
-techniques (comprising redundant internal coordinates, iterative Hessian
-estimate, trust region, line search, and coordinate weighing etc.).  It can take
-the output of PySCF Gradients :ref:`scanner` and generate new geometry to feed
-back to PySCF program.  The geometry optimization :mod:`geomopt` exposes a
-wrapper function to simplify the geometry optimization setup::
-
-  from pyscf import gto, scf, geomopt
-  mf = gto.M(atom='H 0 0 0; H 0 0 1.').apply(scf.RHF)
-  mol_eq = geomopt.optimize(mf)
-
-
 .. _installing_extproj:
 Extension modules
 =================
@@ -438,7 +361,7 @@ rt                  https://github.com/pyscf/rt
 semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
-tblis
+tblis               https://github.com/pyscf/pyscf-tblis
 ------------------- ---------------------------------------------------------
 
 Based on the technique of namespace
@@ -490,3 +413,41 @@ main project::
     >>> from pyscf.semiemprical import MINDO
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
+
+
+NAO
+---
+The :mod:`nao` module includes the basic functions of numerical atomic orbitals
+(NAO) and the (nao based) TDDFT methods.  This module was contributed by Marc
+Barbry and Peter Koval. More details of :mod:`nao` can be found in
+https://github.com/pyscf/nao/blob/master/README.md. This module can be installed::
+
+    $ pip install https://github.com/pyscf/nao
+
+
+DMRG solver
+-----------
+Density matrix renormalization group (DMRG) implementations Block
+(https://sanshar.github.io/Block) and
+CheMPS2 (http://sebwouters.github.io/CheMPS2/index.html)
+are efficient DMRG solvers for ab initio quantum chemistry problem.
+`Installing Block <https://sanshar.github.io/Block/build.html>`_ requires
+C++11 compiler.  If C++11 is not supported by your compiler, you can
+register and download the precompiled Block binary from
+https://sanshar.github.io/Block/build.html.
+Before using the Block or CheMPS2, you need create a configuration file
+``pyscf/dmrgscf/settings.py``  (as shown by settings.py.example) to store
+the path where the DMRG solver was installed.
+
+
+TBLIS
+-----
+`TBLIS <https://github.com/devinamatthews/tblis>`_ provides a native algorithm
+to perform tensor contraction for arbitrary high dimensional tensors. The native
+algorithm does not need to transform tensors into matrices then call the BLAS
+libraries for the matrix contraction.  Tensor transposing and data moving are
+largely avoided in TBLIS tensor library.  The interface to TBLIS offers an
+efficient implementation for :func:`numpy.einsum` style tensor contraction.
+The tlibs-einsum plugin can be enabled::
+
+  $ pip install pyscf-tblis
