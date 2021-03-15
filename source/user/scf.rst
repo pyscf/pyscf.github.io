@@ -389,6 +389,29 @@ More examples can be found in
 :source:`examples/scf/02-ghf.py`.
 
 
+Scalar relativistic correction
+==========
+Scalar relativistic effects can be applied on the one-body operator through eXact-2-component (X2c) Hamiltonian. 
+X2c Hamiltonian can be invoked by decorating the SCF objects with the :func:`.x2c` method, three other equivalent function names are also listed below::
+
+    mf = scf.RHF(mol).x2c()
+    mf = scf.RHF(mol).x2c1e()
+    mf = scf.RHF(mol).sfx2c()
+    mf = scf.RHF(mol).sfx2c1e()
+
+Note that the :func:`.x2c` method only decorates the one-body operatore of SCF objects.
+It can only account for the mass-velocity effect,
+picture change effect and spin-orbit coupling needs to be accounted for elsewhere.
+Once the SCF object is decorated by :func:`.x2c` method, 
+the corresponding post-SCF objects will also automatically have the X2c Hamiltonian applied.
+To turn it off explicitly, one can do::
+
+    mf.with_x2c = False
+
+More examples can be found in 
+:source:`examples/scf/21-x2c.py`.
+
+
 References
 ==========
 
