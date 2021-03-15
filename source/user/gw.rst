@@ -41,12 +41,12 @@ calculations.
 Analytic continuation
 ---------------------
 
-Integration via analytic continuation is implemented in the the ``GWAC`` module
+Integration via analytic continuation is implemented in the ``GWAC`` module
 that is accessed with ``freq_int='ac'``, which is also
 the default ``GW`` module.  GW-AC has :math:`N^4` scaling and is recommended for
 valence states only.
 The analytic continuation can be done using a Pade
-approximation (default) or a two-pole model, controlled by the ``ac``
+approximation (default, more reliable) or a two-pole model, controlled by the ``ac``
 attribute::
 
     mygw = gw.GW(mf) # same as freq_int='ac' or GWAC module
@@ -58,8 +58,8 @@ Contour deformation
 -------------------
 
 Integration via contour deformation is implemented in the ``GWCD`` module
-that is accessed with ``freq_int='ac'``.
-GW-AC has :math:`N^4` scaling and is slower, but more robust, than GW-CD.
+that is accessed with ``freq_int='cd'``.
+GW-CD has :math:`N^4` scaling and is slower, but more robust, than GW-AC.
 GW-CD is particularly recommended for accurate core and high-energy states::
 
     mygw = gw.GW(mf, freq_int='cd').run(orbs=[0,1])
