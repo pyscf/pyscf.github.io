@@ -391,19 +391,19 @@ More examples can be found in
 
 Scalar relativistic correction
 ==========
-Scalar relativistic effects can be applied on the one-body operator through eXact-2-component (X2C) Hamiltonian :cite:`dyall2001interfacing`. 
-The X2C Hamiltonian can be invoked by decorating the SCF objects with the :func:`.x2c` method, three other equivalent function names are also listed below::
+Scalar relativistic effects can be applied on the one-body operators through spin-free eXact-2-component (SFX2C) Hamiltonian :cite:`dyall2001interfacing`. 
+The SFX2C Hamiltonian can be invoked by decorating the SCF objects with the :func:`.x2c` method, three other equivalent function names are also listed below::
 
     mf = scf.RHF(mol).x2c()
     mf = scf.RHF(mol).x2c1e()
     mf = scf.RHF(mol).sfx2c()
     mf = scf.RHF(mol).sfx2c1e()
 
-Note that the :func:`.x2c` method only decorates the one-body operator of SCF objects.
-It can only account for the mass-velocity effect,
-picture change effect and spin-orbit coupling needs to be accounted for elsewhere.
+Note that the SFX2C Hamiltonian only changes the one-body operators,
+and it only accounts for the mass-velocity effect,
+while picture change effect and spin-orbit coupling are not included.
 Once the SCF object is decorated by :func:`.x2c` method, 
-the corresponding post-SCF objects will also automatically have the X2C Hamiltonian applied.
+the corresponding post-SCF objects will also automatically have the SFX2C Hamiltonian applied.
 To turn it off explicitly, one can do::
 
     mf.with_x2c = False
