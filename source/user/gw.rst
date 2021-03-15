@@ -47,11 +47,19 @@ the default ``GW`` module.  GW-AC has :math:`N^4` scaling and is recommended for
 valence states only.
 The analytic continuation can be done using a Pade
 approximation (default, more reliable) or a two-pole model, controlled by the ``ac``
-attribute::
+attribute.
+GW-AC supports frozen core orbitals for reducing computational cost, 
+controlled by the ``frozen`` attribute (number of frozen core MOs neglected in GW-AC
+calculation). Frozen core orbitals are not supported by other GW methods currently.
+There are two ways to compute GW orbital energies, controlled by the ``linearized`` attribute: 
+``linearized=False`` (default) solves the quasiparticle equation through a Newton solver 
+self-consistently, while ``linearized=True`` employs a linearization approximation::
 
     mygw = gw.GW(mf) # same as freq_int='ac' or GWAC module
     # mygw.ac = 'pade' # default
     mygw.ac = 'twopole'
+    mygw.frozen = 1 # default is None
+    mygw.linearized = False # default
     mygw.kernel(orbs=range(nocc-3,nocc+3))
 
 Contour deformation
