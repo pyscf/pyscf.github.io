@@ -1,4 +1,4 @@
-.. _theory_scf:
+.. _user_scf:
 
 ***********************************
 Self-consistent field (SCF) methods
@@ -13,7 +13,7 @@ Self-consistent field (SCF) methods include both Hartree-Fock (HF) theory
 and Kohn-Sham (KS) density functional theory (DFT). Self-consistent
 field theories only depend on the electronic density matrices, and are
 the simplest level of quantum chemical models. Details that are
-specific to DFT can be found in :numref:`theory_dft`.
+specific to DFT can be found in :numref:`user_dft`.
 
 In both HF and KS-DFT, the ground-state wavefunction is expressed as a
 single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
@@ -387,6 +387,29 @@ More examples can be found in
 :source:`examples/scf/01-h2o.py`,
 :source:`examples/scf/02-rohf_uhf.py`, and
 :source:`examples/scf/02-ghf.py`.
+
+
+Scalar relativistic correction
+==========
+Scalar relativistic effects can be applied on the one-body operators through spin-free eXact-2-component (SFX2C) Hamiltonian :cite:`dyall2001interfacing`. 
+The SFX2C Hamiltonian can be invoked by decorating the SCF objects with the :func:`.x2c` method, three other equivalent function names are also listed below::
+
+    mf = scf.RHF(mol).x2c()
+    mf = scf.RHF(mol).x2c1e()
+    mf = scf.RHF(mol).sfx2c()
+    mf = scf.RHF(mol).sfx2c1e()
+
+Note that the SFX2C Hamiltonian only changes the one-body operators,
+and it only accounts for the mass-velocity effect,
+while picture change effect and spin-orbit coupling are not included.
+Once the SCF object is decorated by :func:`.x2c` method, 
+the corresponding post-SCF objects will also automatically have the SFX2C Hamiltonian applied.
+To turn it off explicitly, one can do::
+
+    mf.with_x2c = False
+
+More examples can be found in 
+:source:`examples/scf/21-x2c.py`.
 
 
 References

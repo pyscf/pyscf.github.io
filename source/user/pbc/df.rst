@@ -1,4 +1,4 @@
-.. _theory_pbc_df:
+.. _user_pbc_df:
 
 Density fitting for crystalline calculations
 ********************************************

@@ -1,4 +1,4 @@
-.. _theory_df:
+.. _user_df:
 
 Density fitting
 ***************

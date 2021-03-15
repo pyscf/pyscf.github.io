@@ -1,4 +1,4 @@
-.. _developer_scf:
+.. _developer_dft:
 
 *******************************
 Density functional theory (DFT)

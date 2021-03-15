@@ -1,4 +1,4 @@
-.. _theory_cc:
+.. _user_cc:
 
 **********************
 Coupled-cluster theory 
@@ -7,7 +7,7 @@ Coupled-cluster theory
 *Modules*: :mod:`cc`, :mod:`pbc.cc`
 
 The MP2 and coupled-cluster functionalities of PySCF are similar.  See
-also :ref:`theory_mp2`.
+also :numref:`user_mp2`.
 
 Introduction
 ============
@@ -80,9 +80,7 @@ They are returned in the MO basis::
 
 Analytical nuclear gradients can be calculated::
 
-    from pyscf import grad
-    mygrad = mycc.Gradients()
-    grad = mygrad.kernel()
+    mygrad = mycc.nuc_grad_method().run()
 
 The CCSD Lambda equations can be solved::
 
