@@ -10,13 +10,14 @@ Introduction
 =============================
 The algebraic diagrammatic construction theory (ADC(n)) is a post-Hartree-Fock
 method used for computing correlated excited states of molecules.
+:cite:`Schirmer1983,Schirmer1998`
 The ADC methods involve perturbative expansion of a propagator followed
 by truncation at a certain order :math:`n`. The ADC(n) methods provide access to
 excitation energies and their corresponding transition intensities via a
 'one-shot' calculation. At present, the `adc` module in PySCF contains different
 variants of the method (ADC(2), ADC(2)-X and ADC(3)) that can be used to calculate
 charged excitations such as ionization potentials (IP-ADC) and
-electron affinities (EA-ADC).
+electron affinities (EA-ADC). :cite:`Trofimov2005,Banerjee2019`
 
 A simple ADC calculation involves the calculation of ground-state ADC(n) energy
 and amplitudes that correspond to those of the :math:`n`-th order
@@ -57,6 +58,7 @@ Spin-restricted and spin-unrestricted calculations
 The `adc` module can be used to perform calculations of IP's and EA's of closed- and
 open-shell molecules starting with the RHF and UHF reference
 wavefunctions, leading to the RADC(n) and UADC(n) methods, respectively.
+:cite:`Banerjee2021`
 See :ref:`theory_scf` to know more about the different reference wavefunctions.
 
 Shown below is an example of a IP-/EA-UADC(2) calculation::
