@@ -1,4 +1,4 @@
-.. _theory_dft:
+.. _user_dft:
 
 *******************************
 Density functional theory (DFT)
@@ -10,7 +10,7 @@ Introduction
 ============
 Kohn-Sham density functional theory (KS-DFT) is implemented through derived 
 classes of the :class:`pyscf.scf.hf.SCF` class, thus, the methods and capabilities introduced in 
-:numref:`theory_scf` also apply to the :mod:`dft` module.
+:numref:`user_scf` also apply to the :mod:`dft` module.
 
 A minimal example of using the :mod:`dft` module is as follows. ::
 
