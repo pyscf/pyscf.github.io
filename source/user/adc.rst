@@ -11,19 +11,20 @@ Introduction
 The algebraic diagrammatic construction theory (ADC(n)) is a post-Hartree-Fock
 method used for computing correlated excited states of molecules.
 :cite:`Schirmer1983,Schirmer1998`
-The ADC methods involve perturbative expansion of a propagator followed
-by truncation at a certain order :math:`n`. The ADC(n) methods provide access to
+The ADC methods involve a perturbative expansion of a propagator followed
+by truncation at a certain order :math:`n` that defines the ADC(n) approximation.
+The ADC(n) methods provide access to the
 excitation energies and their corresponding transition intensities via a
 'one-shot' calculation. At present, the `adc` module in PySCF contains different
-variants of the method (ADC(2), ADC(2)-X and ADC(3)) that can be used to calculate
-charged excitations such as ionization potentials (IP-ADC) and
+ADC approximations (ADC(2), ADC(2)-X and ADC(3)) that can be used to calculate
+charged excitations, such as ionization potentials (IP-ADC) and
 electron affinities (EA-ADC). :cite:`Trofimov2005,Banerjee2019`
 
-A simple ADC calculation involves the calculation of ground-state ADC(n) energy
-and amplitudes that correspond to those of the :math:`n`-th order
-Møller--Plesset perturbation theory (MPn), followed by the calculation of the
-ADC(n) spectroscopic properties (e.g., ionization/electron-attachment energies
-and their corresponding transition intensities).
+A simple ADC(n) computation involves the calculation of the ground-state energy
+and wavefunction that correspond to those of the :math:`n`-th order
+Møller--Plesset perturbation theory (MPn), followed by the evaluation of the
+ADC(n) excitation energies (e.g., IP or EA) and the corresponding transition
+probabilities.
 
 An example of IP and EA computation using the default ADC method (ADC(2))
 is shown below::
@@ -36,8 +37,21 @@ is shown below::
         e_ip,v_ip,p_ip,x_ip,adc_es = myadc.ip_adc()
         e_ea,v_ea,p_ea,x_ea,adc_ea = myadc.ea_adc()
 
-Alternatively, one can specify the type of charged excitation and order of
-the desired ADC computation::
+In the example shown above, the ground state calculation is performed by
+running the function ``kernel_gs()``, whereas the excited state calculations
+are carried out using the ``ip_adc()`` and ``ea_adc()`` functions.
+
+Alternatively, both the ground and excited state calculations can be run
+together using the ``kernel()`` function::
+
+        from pyscf import gto, scf, adc
+        mol = gto.M(atom='H 0 0 0; F 0 0 1', basis='ccpvdz')
+        mf = scf.RHF(mol).run()
+        myadc = adc.ADC(mf)
+        myadc.kernel()
+
+The ``kernel()`` by default performs a IP-ADC(2) calculation. One can specify the type of charged
+excitation and order of the desired ADC computation::
 
         myadc.method = "adc(3)"
         myadc.method_type = "ea"
@@ -59,9 +73,10 @@ The `adc` module can be used to perform calculations of IP's and EA's of closed-
 open-shell molecules starting with the RHF and UHF reference
 wavefunctions, leading to the RADC(n) and UADC(n) methods, respectively.
 :cite:`Banerjee2021`
-See :ref:`theory_scf` to know more about the different reference wavefunctions.
+See :ref:`theory_scf` to learn more about the different reference wavefunctions.
 
-Shown below is an example of a IP-/EA-UADC(2) calculation::
+Shown below is an example of the IP- and EA-UADC(2) calculations for the
+open-shell OH radical::
 
         from pyscf import gto, scf, adc
         mol = gto.M(atom='O 0 0 0; H 0 0 1', basis='aug-cc-pvdz')
@@ -78,33 +93,38 @@ More examples can be found in
 :source:`examples/adc/`04-open_shell_different_setup.py`.
 
 
-Properties
-==========
-A number of properties such as spectroscopic amplitudes and spectroscopic factors
-are available at the ADC(n) level via the flag ``compute_properties``, which is
-is set to True by default::
+Spectroscopic properties
+=========================
+The `adc` module supports calculation of the spectroscopic factors, which provide
+information about probabilities of transitions in the photoelectron spectra. :cite:`Banerjee2021`
+Computation of spectroscopic factors is performed by default and can be switched
+off by setting ``compute_properties = False`` ::
 
-        myadc.compute_properties = True
+        myadc.compute_properties = False
         myadc.method = "adc(3)"
         myadc.method_type = "ip"
         myadc.kernel(nroots = 3)
 
-Additionally, the `adc` module can be used to compute Dyson orbitals corresponding
-to ionized and electron-attached states::
+After the ADC calculation is performed, the `adc` module can be used to compute
+the Dyson orbitals :cite:`Oana2007` corresponding to ionized and electron-attached states::
 
         dyson_orb = myadc.compute_dyson_mo()
 
 
 Analysis of spectroscopic properties
 =====================================
-The `adc` module provides analysis of the ADC(n) eigenvectors by default,
-whereas an additional analysis of spectroscopic factors is invoked when the flag
-``compute_properties`` is set to True. The analysis of the ADC(n) eigenvectors
-and spectroscopic factors can be performed as::
+The `adc` module allows to perform the analysis of the ADC(n) eigenvectors, that
+can be useful for characterizing the nature of electronic transitions. When
+``compute_properties`` is set to True, this analysis will also display the largest
+contributions to the spectroscopic factors. The analysis of the ADC(n) eigenvectors
+and spectroscopic factors can be invoked using the ``analyze()`` function::
 
         myadc.kernel(nroots = 3)
         myadc.analyze()
 
+
+Algorithms and job control
+===========================
 
 The capabilities of the `adc` module at present are summarized in in the
 following table:
@@ -116,10 +136,6 @@ following table:
  ADC(2)-X   RHF, UHF    Yes                IP, EA, spec factors, Dyson orb
  ADC(3)     RHF, UHF    Yes                IP, EA, spec factors, Dyson orb
 ========== ========== ==================== ===============================
-
-
-Algorithms and job control
-===========================
 
 The ADC(n) calculations can be performed using different algorithms, depending on
 the available memory controlled by the ``max_memory`` keyword:
