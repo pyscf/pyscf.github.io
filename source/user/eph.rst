@@ -83,7 +83,7 @@ One can specify a different cutoff frequency (in cm-1) when constructing the EPH
     myeph = eph.EPH(mf, cutoff_frequency=60)
     ephmat, omega = myeph.kernel()
 
-Similar to keeping imaginary frequencies, one can set keep_imag_frequency to True when initializing the object::
+Similarly, to keep the imaginary frequencies, one can set keep_imag_frequency to True when initializing the object::
 
     myeph = eph.EPH(mf, keep_imag_frequency=True)
     ephmat, omega = myeph.kernel()
