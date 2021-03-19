@@ -14,9 +14,14 @@ method used for computing correlated excited states of molecules.
 The ADC methods involve a perturbative expansion of a propagator followed
 by truncation at a certain order :math:`n` that defines the ADC(n) approximation.
 Depending upon the property being investigated, propagators can be of different
-types, which lead to different variants of the ADC method.
-At present, the `adc` module in PySCF can be used to calculate
-charged excitations, such as ionization potentials (IP-ADC) and
+types. Some common examples include the polarization propagator for neutral
+electronic excitations, the one-particle Green's function for charged excitations,
+and the two-electron propagator for Auger electron spectroscopy.
+The different propagators lead to different variants of the ADC method.
+
+At present, the `adc` module in PySCF can be used to calculate the one-particle
+Green's function, that provides access to charged excitations,
+such as ionization potentials (IP-ADC) and
 electron affinities (EA-ADC) with different ADC(n) approximations
 (ADC(2), ADC(2)-X and ADC(3)). :cite:`Trofimov2005,Banerjee2019`
 The ADC(n) methods provide access to the
