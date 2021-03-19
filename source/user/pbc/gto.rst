@@ -81,7 +81,7 @@ Finally, custom basis sets can be defined just like that in molecular calculatio
 Low-dimentional systems
 -----------------------
 
-PySCF :mod:`pbc` module supports the low-dimensional periodic systems. You can initialize
+The PySCF  :mod:`pbc` module also supports low-dimensional periodic systems. You can initialize
 the attribute :attr:`Cell.dimension` to specify the dimension of the system::
 
   >>> cell.dimension = 2
