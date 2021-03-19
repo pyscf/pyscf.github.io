@@ -10,14 +10,18 @@ Introduction
 ============
 
 Auxiliary second-order Green's function perturbation theory (AGF2) 
-:cite:`Backhouse2020a,Backhouse2020b`, is a post-Hartree--Fock method
-primarily intended for the calculation of ionization potentials (IPs) 
-and electron affinities (EAs). 
-AGF2 claculations can be performed with or without density fitting, and
-for restricted or unrestricted Hartree--Fock references.
+:cite:`Backhouse2020a,Backhouse2020b`, is an iterative, :math:`\mathcal{O}[N^5]` scaling 
+post-Hartree--Fock method primarily intended for the calculation of 
+charged excitation spectra, ionization potentials (IPs) and electron affinities (EAs),
+with energetics and single-particle static properties also available. 
+It can also be considered loosely as an iterative approximate ADC(2) method.
+One advantage is that the entire spectrum of charged excitations is found
+simultaneously, as the full Greens function is self-consistently optimized.
+AGF2 calculations can be performed with or without density fitting, and
+for restricted or unrestricted Hartree--Fock references, and is available with a hybrid
+parallelism capabilities.
 
-Basic usage of AGF2 as given in :source:`examples/agf2/00-simple_agf2.py`
-is
+Basic usage of AGF2 as given in :source:`examples/agf2/00-simple_agf2.py`, as
 
 .. literalinclude::
     ../../examples/agf2/00-simple_agf2.py
@@ -30,8 +34,7 @@ In AGF2, one iteratively solves the Dyson equation
 .. math::
     G(\omega) = G_0(\omega) + G_0(\omega) \Sigma(\omega) G(\omega),
 
-using the MP2 self-energy, which possess the frequency-dependent 
-spectral function
+using the self-energy correct through second-order perturbation theory, which can be written as 
 
 .. math::
     \Sigma_{xy}(\omega)
@@ -40,7 +43,7 @@ spectral function
     &+ \sum_{abi} \frac{ (xa|bi) [ 2 (ya|bi) - (yb|ai) ] }
                        { E_a + E_b - E_i }.
 
-In AGF2, the first two moments of the MP2 self-energy 
+In AGF2, the first two spectral moments of the MP2 self-energy,
 
 .. math::
     T_{xy}^{(0)} &= \sum_{ija} (xi|ja) [ 2 (yi|ja) - (yj|ia) ] \\
@@ -50,10 +53,13 @@ In AGF2, the first two moments of the MP2 self-energy
                  &+ \sum_{abi} (xa|bi) [ 2 (ya|bi) - (yb|ai) ]
                     (E_a + E_b - E_i),
 
-are used in order to express this frequency dependence as a set of 
-compressed :math:`2p1h` and :math:`1p2h` states, forming an effective 
-single-particle Hamiltonian. 
-This allows Dyson equation to be solved via the eigenvalue problem
+are used as a conserved quantity in order to coarse-grain 
+this frequency dependence as a set of 
+compressed and renormalized :math:`2p1h` and :math:`1p2h` states. These
+are used to form an effective 
+single-particle Hamiltonian whose size now only scales with :math:`\mathcal{O}[N]`,
+rather than :math:`math{O}[N^3]` if the full frequency-dependence was maintained. 
+This allows Dyson equation to be solved via the hermitian eigenvalue problem
 
 .. math::
     \begin{pmatrix} F & v \\ v^\dagger & \epsilon \end{pmatrix}
@@ -61,26 +67,36 @@ This allows Dyson equation to be solved via the eigenvalue problem
 
 where :math:`F` is the Fock matrix, :math:`\epsilon` the compressed 
 states coupling to :math:`F` with coupling strength :math:`v`, and
-:math:`\phi_n` are termed the *quasi-molecular orbitals* (QMOs). 
+:math:`\phi_n` are termed the *quasi-molecular orbitals* (QMOs),
+which represent the Dyson orbitals each iteration, and span both the original MOs
+and these auxiliary functions.
 The QMOs can be reinserted into the self-energy in place of the 
-:math:`i,j,a` and :math:`a,b,i` indices, permitting self-consistency.
+:math:`i,j,a` and :math:`a,b,i` indices, permitting self-consistency to
+convergence in the Greens function with this coarse-grained description of the
+frequency-dependence of the self-energy.
 
-Additonally, once projected into the physical space, the QMOs define a
-correlated (non-idempotent) density matrix, permiting a further
+Additionally, once projected into the physical space, the QMOs define a
+correlated (non-idempotent) density matrix, permitting a further
 self-consistency in the Fock matrix in a similar fashion to a
 Hartree--Fock calculation. 
 The correct number of electrons remain in the physical space throughout
 this process via optimisation of a chemical potential :math:`\mu`.
+Finally, we note that self-consistency based on higher-order spectral moments of either
+the self-energy or resulting Greens function at each iteration is possible, with
+a limiting behavior to the traditional 2nd-order Greens function method (GF2).
+However, numerical investigations have shown that this higher-order self-consistency
+leads to a deterioration of results, and therefore the consistency based on the 
+first two self-energy spectral moments is the default behavior.
 
-Photemission spectra
+Photoemission spectra
 ====================
 
-The compression performed in AGF2 permits the calculation of full
-photoemission spectra, as now additional computational effort is
-required to calculation large numbers of excitations (i.e. as it would
-be in a configuration interaction calculation which employs an
-iterative eigensolver). 
-An example of a calculation which provides the spectral function can be
+The compression of the effective dynamics performed in AGF2 permits 
+the calculation of the full spectrum of charged excitations, as no 
+additional computational effort is required for this (in contrast to
+iterative eigensolvers of effective hamiltonians), and the computational
+effort is therefore independent of the number of excitations requested.
+An example of a calculation which provides the full spectral function can be
 found in :source:`examples/agf2/03-photoemission_spectra.py`:
 
 .. literalinclude::
@@ -108,9 +124,10 @@ Parallelisation
 
 The AGF2 module supports both MPI an OpenMP parallelisation in an aim to
 provide a scalable method applicable to interesting problems in quantum
-chemistry. 
+chemistry. Furthermore, the dominant scaling step is embarrassingly parallel. 
 Distribution of computational load is handled by the optional dependency 
-``mpi4py``, and will run without MPI if an installation cannot be found.
+``mpi4py``, and will run without MPI using OpenMP threads if an installation 
+cannot be found.
 
 References
 ==========
