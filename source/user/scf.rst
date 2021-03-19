@@ -18,19 +18,7 @@ specific to DFT can be found in :numref:`user_dft`.
 In both HF and KS-DFT, the ground-state wavefunction is expressed as a
 single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
 :math:`\psi`, :math:`\Phi_0 = \mathcal{A}|\psi_1(1)\psi_2(2) \ldots
-\psi_N(N)|`:
-
-.. math::
-
-   |\Phi_0\rangle = \frac{1}{\sqrt{N!}}
-   \begin{vmatrix} 
-   \psi_1(1) &\psi_2(1) &\dots  &\psi_N(1)\\
-   \psi_1(2) &\psi_2(2) &\dots  &\psi_N(2)\\
-   \vdots               &\vdots               &\ddots &\vdots\\
-   \psi_1(N) &\psi_2(N) &\dots  &\psi_N(N)
-   \end{vmatrix} \;.
-
-The total electronic energy
+\psi_N(N)|`. The total electronic energy
 :math:`E=\langle\Psi_0|\hat{H}|\Psi_0\rangle` is then minimized,
 subject to orbital orthogonality; this is equivalent to the
 description of the electrons as independent particles that only
@@ -389,10 +377,62 @@ More examples can be found in
 :source:`examples/scf/02-ghf.py`.
 
 
+Linear dependencies
+===================
+
+Most quantum chemistry programs solve the self-consistent field
+equations
+
+.. math::
+
+    \mathbf{F} \mathbf{C} = \mathbf{S} \mathbf{C} \mathbf{E}
+
+in an orthonormal basis, which is formally obtained as
+
+.. math::
+
+    \mathbf{C} = \mathbf{X} \tilde{\mathbf{C}}
+
+where the orthogonalizing matrix :math:`\mathbf{X}` is typically
+chosen as :math:`\mathbf{X}=\mathbf{S}^{-1/2}`. By expressing the
+orbitals in terms of the half-inverse overlap matrix, the generalized
+eigenproblem :math:`\mathbf{F} \mathbf{C} = \mathbf{S} \mathbf{C}
+\mathbf{E}` can be rewritten as a regular eigenproblem
+:math:`\tilde{\mathbf{F}} \tilde{\mathbf{C}} = \tilde{\mathbf{C}}
+\mathbf{E}` :cite:`Lehtola2020_M_1218`.
+
+Moreover, as the half-inverse overlap matrix :math:`\mathbf{S}^{-1/2}`
+is typically formed by the canonical orthonormalization procedure
+:cite:`Lowdin1970_AQC_185` in which eigenvectors of the overlap matrix
+with small eigenvalues are thrown out, this procedure typically
+results in a better-conditioned basis since linearly dependent
+combinations of the basis functions are excluded by the procedure.
+
+At variance, PySCF relies on SciPy's generalized eigenvalue solver by
+default, which may fail for poorly conditioned basis sets. One can,
+however, switch to the use of canonical orthonormalization by toggling
+e.g.::
+  
+  mf = scf.RHF(mol).apply(scf.addons.remove_linear_dep_)
+
+In the presence of truly pathological linear dependencies, such as
+those that occur in molecular calculations with multiply augmented
+basis sets, and at extreme molecular geometries where two nuclei are
+close to each other, also canonical orthonormalization fails.
+However, the addons module also implements the partial Cholesky
+orthonormalization technique
+:cite:`Lehtola2019_JCP_241102,Lehtola2020_PRA_032504`, which has been
+shown to work reliably even in the presence of such truly pathological
+linear dependencies.
+  
 Scalar relativistic correction
-==========
-Scalar relativistic effects can be applied on the one-body operators through spin-free eXact-2-component (SFX2C) Hamiltonian :cite:`dyall2001interfacing`. 
-The SFX2C Hamiltonian can be invoked by decorating the SCF objects with the :func:`.x2c` method, three other equivalent function names are also listed below::
+==============================
+
+Scalar relativistic effects can be applied on the one-body operators
+through spin-free eXact-2-component (SFX2C) Hamiltonian
+:cite:`dyall2001interfacing`.  The SFX2C Hamiltonian can be invoked by
+decorating the SCF objects with the :func:`.x2c` method, three other
+equivalent function names are also listed below::
 
     mf = scf.RHF(mol).x2c()
     mf = scf.RHF(mol).x2c1e()
@@ -400,10 +440,10 @@ The SFX2C Hamiltonian can be invoked by decorating the SCF objects with the :fun
     mf = scf.RHF(mol).sfx2c1e()
 
 Note that the SFX2C Hamiltonian only changes the one-body operators,
-and it only accounts for the mass-velocity effect,
-while picture change effect and spin-orbit coupling are not included.
-Once the SCF object is decorated by :func:`.x2c` method, 
-the corresponding post-SCF objects will also automatically have the SFX2C Hamiltonian applied.
+and it only accounts for the mass-velocity effect, while picture
+change effect and spin-orbit coupling are not included.  Once the SCF
+object is decorated by :func:`.x2c` method, the corresponding post-SCF
+objects will also automatically have the SFX2C Hamiltonian applied.
 To turn it off explicitly, one can do::
 
     mf.with_x2c = False
