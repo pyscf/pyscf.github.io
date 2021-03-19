@@ -32,13 +32,13 @@ which takes a EPH object and carries out the following steps:
 
   - building the e-e part -- :func:`hess_elec`
 
-  - building the e-nu part -- :func:`hess_nuc`
+  - building the e-nuc part -- :func:`hess_nuc`
 
-- computing the vibrational frequencies and Polarization vectors -- :func:`get_mode`, which calls :func:`solve_hmat` for diagonalization
+- computing the vibrational frequencies and polarization vectors -- :func:`get_mode`, which calls :func:`solve_hmat` for diagonalization
 
 - building the electron phonon coupling matrix -- :func:`get_eph`, which consists of
 
-  - computing the e-nu part -- :func:`vnuc_generator`
+  - computing the e-nuc part -- :func:`vnuc_generator`
 
   - computing the e-e part from MO derivative -- :func:`rhf_deriv_generator`
 
