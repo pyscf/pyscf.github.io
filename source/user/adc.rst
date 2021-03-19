@@ -1,4 +1,4 @@
-.. _theory_adc:
+.. _user_adc:
 
 ************************************************
 Algebraic diagrammatic construction (ADC) scheme
@@ -13,12 +13,15 @@ method used for computing correlated excited states of molecules.
 :cite:`Schirmer1983,Schirmer1998`
 The ADC methods involve a perturbative expansion of a propagator followed
 by truncation at a certain order :math:`n` that defines the ADC(n) approximation.
+Depending upon the property being investigated, propagators can be of different
+types, which lead to different variants of the ADC method.
+At present, the `adc` module in PySCF can be used to calculate
+charged excitations, such as ionization potentials (IP-ADC) and
+electron affinities (EA-ADC) with different ADC(n) approximations
+(ADC(2), ADC(2)-X and ADC(3)). :cite:`Trofimov2005,Banerjee2019`
 The ADC(n) methods provide access to the
 excitation energies and their corresponding transition intensities via a
-'one-shot' calculation. At present, the `adc` module in PySCF contains different
-ADC approximations (ADC(2), ADC(2)-X and ADC(3)) that can be used to calculate
-charged excitations, such as ionization potentials (IP-ADC) and
-electron affinities (EA-ADC). :cite:`Trofimov2005,Banerjee2019`
+'one-shot' calculation.
 
 A simple ADC(n) computation involves the calculation of the ground-state energy
 and wavefunction that correspond to those of the :math:`n`-th order
@@ -73,7 +76,7 @@ The `adc` module can be used to perform calculations of IP's and EA's of closed-
 open-shell molecules starting with the RHF and UHF reference
 wavefunctions, leading to the RADC(n) and UADC(n) methods, respectively.
 :cite:`Banerjee2021`
-See :ref:`theory_scf` to learn more about the different reference wavefunctions.
+See :ref:`user_scf` to learn more about the different reference wavefunctions.
 
 Shown below is an example of the IP- and EA-UADC(2) calculations for the
 open-shell OH radical::
@@ -132,9 +135,9 @@ following table:
 ========== ========== ==================== ===============================
  Method     Reference  Spin-adaptation        Properties
 ---------- ---------- -------------------- -------------------------------
- ADC(2)     RHF, UHF    Yes                IP, EA, spec factors, Dyson orb
- ADC(2)-X   RHF, UHF    Yes                IP, EA, spec factors, Dyson orb
- ADC(3)     RHF, UHF    Yes                IP, EA, spec factors, Dyson orb
+ ADC(2)     RHF, UHF    Yes                IP, EA, spectroscopic factors, Dyson orb
+ ADC(2)-X   RHF, UHF    Yes                IP, EA, spectroscopic factors, Dyson orb
+ ADC(3)     RHF, UHF    Yes                IP, EA, spectroscopic factors, Dyson orb
 ========== ========== ==================== ===============================
 
 The ADC(n) calculations can be performed using different algorithms, depending on
@@ -156,8 +159,8 @@ the available memory controlled by the ``max_memory`` keyword:
 
 * Density-fitted (DF) algorithm
 
- Memory and disk usage greatly reduced by approximating
- two-electron integrals. A simple example of a
+ The memory and disk usage can be greatly reduced by approximating the
+ two-electron integrals with density-fitting. A simple example of a
  DF-ADC(2) calculation is::
 
     from pyscf import gto, scf, adc, df
