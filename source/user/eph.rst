@@ -8,7 +8,7 @@ Electron Phonon Matrix
 
 Introduction
 ============
-Electron-Phonon (eph) Interaction describes the coupling between the electrons and the nuclear degree of freedom. First order eph matrix elements are most commonly used to compute electron/phonon transport properties. PySCF supports first order eph matrix calculation by either Coupled Perturbed Kohn Sham/Hartree Fock (CPKS/CPHF) or finite difference. In periodic system, only Gamma-point calculation with FFTDF is supported.
+Electron-Phonon (eph) Interaction describes the coupling between the electrons and the nuclear degree of freedom. First order eph matrix elements are most commonly used to compute electron/phonon transport properties. PySCF supports first order eph matrix calculation by either Coupled Perturbed Kohn Sham/Hartree Fock (CPKS/CPHF) or finite difference. In periodic system, only Gamma-point calculation with FFTDF is supported. In both cases, a geometrically relaxed structure is required, or the structure instability could lead to imaginary vibrational modes.
 
 A minimal example of analytical eph matrix calculation is as follows::
 
@@ -91,7 +91,7 @@ Similarly, to keep the imaginary frequencies, one can set keep_imag_frequency to
 Matrix element representation
 -----------------------------
 
-The eph matrix are computed in the atomic orbital (AO) basis by default. One can also request them in the MO basis as follows::
+The eph matrix is computed in the atomic orbital (AO) basis by default. One can also request it in the MO basis as follows::
 
     myeph = eph.EPH(mf)
     ephmat, omega = myeph.kernel(mo_rep=True)
