@@ -13,7 +13,7 @@ Program reference
 
 .. automodule:: pyscf.eph
 
-Finite differnce
+Finite difference
 ----------------
 
 .. automodule:: pyscf.eph.eph_fd
