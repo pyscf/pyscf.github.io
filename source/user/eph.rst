@@ -76,7 +76,7 @@ Output control
 Filtering noisy frequencies
 ---------------------------
 
-Due to molecular geometry not fully relaxed or simply numerical noise, diagonalization of the mass-weighted hessian can potentially yield unphysical vibrational modes, eg, imaginary frequencies or non-vanishing frequencies which should be strictly zero. PySCF by default filters out modes below 80 cm-1 and remove imaginary modes.
+The diagonalization of the mass-weighted hessian can sometimes yield unphysical vibrational modes that correspond to imaginary frequencies or to non-zero frequencies which should strictly vanish. These unphysical modes may arise either from the use of not fully relaxed geometries, the use of insufficiently accurate density functional quadrature, or simply numerical noise. By default, modes below 80 cm-1 are filtered out in PySCF; note that this also includes any negative frequencies.
 
 One can specify a different cutoff frequency (in cm-1) when constructing the EPH object as follows::
 
