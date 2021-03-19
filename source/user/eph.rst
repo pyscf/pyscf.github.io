@@ -52,7 +52,7 @@ Analytical eph matrix elements
 ------------------------------
 
 The module-level ``eph.EPH(mf)`` constructor can infer the correct method based
-on the level of symmetry-breaking in the mean-field argument.  For more explicit
+on the type of the mf argument.  For more explicit
 control or inspection, the respective classes and functions can be found in
 ``rhf.py``, ``uhf.py``, ``rks.py`` and ``uks.py``.
 
