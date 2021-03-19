@@ -58,8 +58,7 @@ represents the lattice vectors. The format of :attr:`~Cell.a` is array-like::
 Each row of the 3-by-3 matrix of :attr:`~Cell.a` represents a lattice vector
 in Cartesian coordinate, with the same unit as the input :attr:`atom` parameter.
 
-.. note:: It is recommended that the input lattice vectors (row by row) form a 
-          right-handed coordinate system.
+.. note:: The input lattice vectors (row by row) should form a right-handed coordinate system, as otherwise some integrals may be computed incorrectly in PySCF.
 
 Basis set and pseudopotential
 -----------------------------
@@ -164,4 +163,3 @@ methods::
     eri = df.DF(cell).get_eri()
 
 See :numref:`user_pbc_df` for more details of the PBC density fitting methods.
-
