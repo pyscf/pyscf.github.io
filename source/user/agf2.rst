@@ -104,8 +104,8 @@ found in :source:`examples/agf2/03-photoemission_spectra.py`:
 .. literalinclude::
     ../../examples/agf2/03-photoemission_spectra.py
 
-Additionally, the Dyson orbitals corresponding to excitations are accessibly
-directly from the method, which can be seen in
+Additionally, the Dyson orbitals corresponding to individual excitations are 
+accessible directly from the method, which can be seen in
 :source:`examples/agf2/10-dyson_orbitals.py`.
 
 Restart a calculation
