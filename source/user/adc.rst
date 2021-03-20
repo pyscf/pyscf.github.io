@@ -58,14 +58,14 @@ together using the ``kernel()`` function::
         myadc = adc.ADC(mf)
         myadc.kernel()
 
-The ``kernel()`` by default performs a IP-ADC(2) calculation. One can specify the type of charged
+By default, the ``kernel()`` function performs a IP-ADC(2) calculation. One can specify the type of charged
 excitation and order of the desired ADC computation::
 
         myadc.method = "adc(3)"
         myadc.method_type = "ea"
         myadc.kernel()
 
-The ADC functions return the ``nroots`` eigenvalues with the lowest energy. The
+The ADC functions return the ``nroots`` lowest-energy eigenvalues. The
 default value of ``nroots`` is set to 1. More roots can be requested using::
 
         myadc.kernel(nroots=3)
