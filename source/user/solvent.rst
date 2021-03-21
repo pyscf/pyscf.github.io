@@ -135,9 +135,9 @@ constants listed below. These parameters are obtained from https://gaussian.com/
 More dataset can be found in Minnesota Solvent Descriptor Database
 (https://comp.chem.umn.edu/solvation)
 
----------------------------------- --------------------
+================================== ====================
 Solvent                            dielectric constant
----------------------------------- --------------------
+================================== ====================
 Water                              78.3553
 Acetonitrile                       35.688
 Methanol                           32.613
@@ -322,7 +322,7 @@ TriChloroEthene                    3.422
 TriEthylAmine                      2.3832
 Xylene-mixture                     2.3879
 z-1,2-DiChloroEthene               9.2
----------------------------------- --------------------
+================================== ====================
 
 
 Polarizable embedding
