@@ -183,9 +183,9 @@ old operation systems, the build may fail to build `XCFun` if the system does
 not have a proper c++ compiler. To speed up compilation or bypass failed
 compilation, CMake options listed below can be used.
 
------------------ --------------------------------------------------------------
+================= ==============================================================
 Flags             Comments
------------------ --------------------------------------------------------------
+================= ==============================================================
 `ENABLE_LIBXC`    Whehter to use `LibXC` library in PySCF. If `-DENABLE_XCFUN-OFF`
                   is appended to cmake command, `LibXC` will not be
                   compiled and the dft module will use `XCFun` to evaluate
@@ -201,7 +201,7 @@ Flags             Comments
 `WITH_F12`        Whether or not to compile the F12 relevant integrals.
 `DISABLE_DFT`     Set this flag to skip the entire dft module. Neither `LibXC`
                   nor `XCFun` will be compiled.
------------------ ---------------------------------------------------------------
+----------------- --------------------------------------------------------------
 
 CMake config file
 -----------------
@@ -226,14 +226,14 @@ directory ``pyscf/lib/cmake_arch_config``.
 Environment variables and global configures
 ===========================================
 
------------------------ ---------------------------------------------------------
+======================= =========================================================
 Env variable            Comments
------------------------ ---------------------------------------------------------
+======================= =========================================================
 `PYSCF_MAX_MEMORY`      Maximum memory to use in MB
 `PYSCF_TMPDIR`          Directory for temporary files
 `PYSCF_CONFIG_FILE`     File where various PySCF default settings are stored
 `PYSCF_EXT_PATH`        Path for finding external extensions
------------------------ ---------------------------------------------------------
+======================= =========================================================
 
 `PYSCF_MAX_MEMORY` sets the default maximum memory in MB when creating
 `Mole` (or `Cell`) object. It corresponds to the attribute
@@ -405,9 +405,9 @@ Extension modules
 As of PySCF-2.0, some modules have been moved from the main code trunk
 to extension projects hosted at https://github.com/pyscf.
 
-------------------- ---------------------------------------------------------
+=================== =========================================================
 Project             URL
-------------------- ---------------------------------------------------------
+=================== =========================================================
 cornell_shci        https://github.com/pyscf/cornell_shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
@@ -422,7 +422,7 @@ semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
 tblis               https://github.com/pyscf/pyscf-tblis
-------------------- ---------------------------------------------------------
+=================== =========================================================
 
 Based on the technique of namespace packages specified in `PEP 420
 <https://www.python.org/dev/peps/pep-0420/>`, PySCF has developed a
