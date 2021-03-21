@@ -176,6 +176,52 @@ directory can be used to fix this problem::
   ``pyscf/lib`` and ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
 
 
+CMake options and compiling flags
+---------------------------------
+A complete build by default may take long time to finish compilation. In certain
+old operation systems, the build may fail to build `XCFun` if the system does
+not have a proper c++ compiler. To speed up compilation or bypass failed
+compilation, CMake options listed below can be used.
+
+----------------- --------------------------------------------------------------
+Flags             Comments
+----------------- --------------------------------------------------------------
+`ENABLE_LIBXC`    Whehter to use `LibXC` library in PySCF. If `-DENABLE_XCFUN-OFF`
+                  is appended to cmake command, `LibXC` will not be
+                  compiled and the dft module will use `XCFun` to evaluate
+                  XC functionals.
+`ENABLE_XCFUN`    Whehter to use `XCFun` library in PySCF
+`BUILD_LIBXC`     Setting it to `OFF` to skip compiling `Libxc`. The dft module
+                  still calls `LibXC` library by default. The dft module will be
+                  linked against the `LibXC` library from early build.
+`BUILD_XCFUN`     Setting it to `OFF` to skip compiling `XCFun`. The dft module
+                  will be linked against the `LibXC` library from early build.
+`BUILD_LIBCINT`   Setting it to `OFF` to skip compiling `libcint`. The integral
+                  library from early build will be used.
+`WITH_F12`        Whether or not to compile the F12 relevant integrals.
+`DISABLE_DFT`     Set this flag to skip the entire dft module. Neither `LibXC`
+                  nor `XCFun` will be compiled.
+----------------- ---------------------------------------------------------------
+
+CMake config file
+-----------------
+
+CMake options can be saved in a configuration file
+``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
+automatically loaded and overwrite the default CMake options during
+compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
+to include advanced compiler optimization flags::
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
+
+Other settings, variables, and flags can also be set in this file::
+
+  set(ENABLE_XCFUN Off)
+  set(WITH_F12 Off)
+
+Some examples of platform-specific configurations can be found in
+directory ``pyscf/lib/cmake_arch_config``.
+
 
 Environment variables and global configures
 ===========================================
@@ -350,26 +396,6 @@ URL of the integral library in lib/CMakeLists.txt file::
      GIT_REPOSITORY
      https://github.com/sunqm/qcint.git
      ...
-
-
-Cmake config file
-=================
-
-CMake options can be saved in a configuration file
-``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
-automatically loaded and overwrite the default CMake options during
-compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
-to include advanced compiler optimization flags::
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
-
-Other settings, variables, and flags can also be set in this file::
-
-  set(ENABLE_XCFUN Off)
-  set(WITH_F12 Off)
-
-Some examples of platform-specific configurations can be found in
-directory ``pyscf/lib/cmake_arch_config``.
 
 
 .. _installing_extproj:
