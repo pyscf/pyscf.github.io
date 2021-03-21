@@ -57,53 +57,20 @@ The function :func:`restore` restores a set of integrals to the desired permutat
 
 The kernel function
 ===================
-``Args``
-    ``eri_or_mol``
-        ``eri_or_mol`` is the first argument parsed to the :func:`kernel` function.
-        It can either be a four-dimensional array that stores the AO integrals explicitly or a :class:`Mole` object.
-        If it is an array, everything will be kept in memory, the incore algorithm will be used.
-        If it is an :class:`Mole` object, the AO integrals will be computed on the fly, 
-        the outcore algorithm will be used.
+.. py:function:: kernel(eri_or_mol, mo_coeffs, erifile=None, dataname='eri_mo', intor='int2e', *args, **kwargs)
 
-    ``mo_coeffs``
-        ``mo_coeffs`` is the second argument parsed to the :func:`kernel`.
-        It can be either a single set of mo coefficients in numpy array or a list of four sets of mo coefficients.
-        Each of the four sets of mo coefficients correspond to a index in (ij|kl).
-        If only one is provided, the four indices will correspond to the same mo coefficients.
+    :arg eri_or_mol: It can either be a four-dimensional array that stores the AO integrals explicitly or a :class:`Mole` object. If it is an array, everything will be kept in memory, the incore algorithm will be used. If it is an :class:`Mole` object, the AO integrals will be computed on the fly, the outcore algorithm will be used.
+    :arg mo_coeffs: It can be either a single set of mo coefficients in numpy array or a list of four sets of mo coefficients. Each of the four sets of mo coefficients correspond to a index in (ij|kl). If only one is provided, the four indices will correspond to the same mo coefficients.
+    :keyword erifile: It is the name of the hdf5 file in which the integrals are stored.If the ``eri_or_mol`` argument is an numpy array, :func:`kernel` will call the incore algorithm to perform the transformation,this argument will then be of no use. If specified, the integrals will be stored in the HDF5 file or the related group.If not specified, pyscf will use an anonymous temp file and returns a ``numpy.ndarray`` in the end.
+    :type erifile: str or :class:`h5py.Group` object or :class:`h5py.File` object
+    :keyword str dataname: ``dataname`` labels the integrals stored in the erifile. The integrals can be reused by assigning different dataname. If the erifile already contains the given dataname, the old integrals will be overwritten. 
+    :keyword str intor: the name of the integral you want to evaluate. More details can be found at :mod:`gto`.
+    :keyword int comp: the component of the integral to be evaluated. It is closely related to ``intor``, more details can also be found at :mod:`gto`.
 
-``Kwargs``
-    ``erifile`` : ``str`` or `h5py.Group` object or `h5py.File` object
-        ``erifile`` is the name of the hdf5 file in which the integrals are stored.
-        If the ``eri_or_mol`` argument is an numpy array, :func:`kernel` will call the incore algorithm to perform the transformation,
-        this argument will then be of no use. 
-        If specified, the integrals will be stored in the HDF5 file or the related group.
-        If not specified, pyscf will use an anonymous temp file and returns a ``numpy.ndarray`` in the end.
-        The default value for erifile is ``None``.
+    :keyword aosym: 
+    :type aosym: int or str
 
-
-    ``dataname`` : ``str``     
-        ``dataname`` labels the integrals stored in the erifile.
-        The integrals can be reused by assigning different dataname.
-        If the erifile already contains the given dataname,
-        the old integrals will be overwritten.
-        The default value for dataname is ``"eri_mo"``.
-
-    ``intor`` : ``str``
-    ``intor`` is the name of the integral you want to evaluate.
-    More details can be found at :mod:`gto`.
-    The default value for intor is ``"int2e"``.
-
-    ``comp`` : ``int``
-        ``comp`` is the component of the integral you want to evaluate.
-        It is closely related to ``intor``, 
-        more details can also be found at :mod:`gto`.
-
-    ``aosym`` : ``int`` or ``str``
-
-    ``compact`` : ``bool``
-        When it is ``True``, the returned MO integrals has (up to 4-fold) permutation symmetry.
-        When it is ``False``, the function will abandon any permutation symmetry, 
-        and return the "plain" MO integrals without any permutation symmetry.
+    :keyword bool compact: When it is ``True``, the returned MO integrals has (up to 4-fold) permutation symmetry. When it is ``False``, the function will abandon any permutation symmetry, and return the "plain" MO integrals without any permutation symmetry.
 
 Load the integrals
 ==================
@@ -149,9 +116,12 @@ The function determines the symmetry of the input array by its shape based on th
 If the input doesn't have the shape of any of the symmetries, pyscf will throw an error.
 
 Listed are the symmetry label that this function takes. It can be either ``str`` or ``int``.
-    - ``'s8', '8', 8`` : 8-fold symmetry
-    - ``'s4, '4', 4`` : 4-fold symmetry
-    - ``'s2kl', '2kl'`` : 2-fold symmetry between ij indices.
-    - ``'s2ij', '2ij'`` : 2-fold symmetry between kl indices.
-    - ``'s1', '1', 1`` : 1-fold symmetry or no symmetry.
+
+============== ====
+'s8', '8', 8   8-fold symmetry
+'s4, '4', 4    4-fold symmetry
+'s2kl', '2kl'  2-fold symmetry between ij indices.
+'s2ij', '2ij'  2-fold symmetry between kl indices.
+'s1', '1', 1   1-fold symmetry or no symmetry.
+============== ====
 
