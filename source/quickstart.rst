@@ -4,16 +4,35 @@ Quickstart
 
 The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. Please also note that the cells below often share objects in-between one another.
 
+.. _INPUT:
+
 Input Parsing
 =============
 
-Molecules (or cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways:
+Molecules (or cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways (`gto/00-input_mole.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/00-input_mole.py>`_):
 
   >>> from pyscf import gto, scf
-  >>> mol = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='ccpvdz')
+  >>> mol_h2o = gto.Mole()
+  >>> mol_h2o.atom = '''O 0 0 0; H 0 1 0; H 0 0 1'''
+  >>> mol_h2o.basis = 'ccpvdz'
+  >>> mol_h2o.build()
+
+or - using the convenient shortcut function - as  
+
+  >>> mol_h2o = gto.M(atom = 'O 0 0 0; H 0 1 0; H 0 0 1', basis = 'ccpvdz')
+
+Calling ``build()`` initializes a bunch of internal control parameters. Whenever you change the value of the attributes of :class:`Mole`, you need call this function to refresh the internal data of the object.
+
+Symmetry may be specified in ``Mole.symmetry`` as ``True`` or ``False`` (default is ``False``, i.e., off). Alternatively, a particular subgroup can be specified by a string argument (`gto/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/13-symmetry.py>`_):
+
+  >>> mol_co = gto.M(atom = 'C 0 0 0; O 0 0 1.5', symmetry = 'c2v') 
+
+.. _MF:
 
 Mean-Field Theory
 =================
+
+.. _HF:
 
 Hartree-Fock
 ------------
@@ -59,17 +78,27 @@ can turn it on with the ``symmetry`` variable::
   converged SCF energy = -149.628992314169  <S^2> = 2.0326472  2S+1 = 3.0216864
   -149.6289923141695
 
+.. _KSDFT:
+
 Kohn-Sham Density Functional Theory
 -----------------------------------
+
+.. _TDMF:
 
 Time-Dependent Mean-Field Theory
 --------------------------------
 
+.. _LOC:
+
 Spatially Localized Molecular Orbitals
 --------------------------------------
 
+.. _REL:
+
 Relativistic Effects
 --------------------
+
+.. _SYM:
 
 Symmetry Handling
 -----------------
