@@ -11,7 +11,7 @@ Installation
 * Prerequisites
     - [sphinx](https://pypi.org/project/Sphinx/)
     
-    - [sphinxcontrib-bibtex](https://pypi.org/project/sphinxcontrib-bibtex/)
+    - [sphinxcontrib-bibtex](https://pypi.org/project/sphinxcontrib-bibtex/) v1.0.0
 
     - Set `PYTHONPATH` to include the PySCF source directory; otherwise, uncomment `sys.path.append(os.path.abspath('path_to_pyscf'))` in [source/conf.py](source/conf.py).
 
