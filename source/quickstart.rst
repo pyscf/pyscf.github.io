@@ -2,7 +2,7 @@
 Quickstart
 **********
 
-The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory.
+The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. Please also note that the cells below often share object in-between one another.
 
 Input Parsing
 =============
@@ -69,14 +69,14 @@ Relativistic Effects
 Symmetry Handling
 -----------------
 
-Integrals & Density Fitting Methods
-===================================
+Integrals & Density Fitting
+===========================
 
 1- and 2-Electron Integrals
 ---------------------------
 
-Density Fitting
----------------
+Density Fitting Techniques
+--------------------------
 
 Correlated Wave Function Theory
 ===============================
