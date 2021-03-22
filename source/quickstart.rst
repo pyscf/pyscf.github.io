@@ -78,8 +78,8 @@ Integrals & Density Fitting Methods
 Density Fitting
 ---------------
 
-Correlated Theory
-=================
+Correlated Wave Function Theory
+===============================
 
 Møller-Plesset Perturbation Theory
 ----------------------------------
@@ -92,20 +92,20 @@ Møller-Plesset level of theory with :mod:`mp.mp2`::
   >>> print('E(MP2) = %.9g' % mp2.kernel()[0])
   E(MP2) = -0.379359288
 
-Coupled Cluster Theory
-----------------------
+Coupled Cluster
+---------------
 
-Algebraic Diagrammatic Construction Theory
-------------------------------------------
+Algebraic Diagrammatic Construction
+-----------------------------------
 
-Full Configuration Interaction Theory
--------------------------------------
+Full Configuration Interaction
+------------------------------
 
 Multiconfigurational Methods
 ============================
 
-Complete Active Space Configuration Interaction Theory
-------------------------------------------------------
+Complete Active Space Configuration Interaction
+-----------------------------------------------
 
 CASCI and CASSCF calculations can be run with similar inputs::
 
@@ -120,14 +120,14 @@ CASCI and CASSCF calculations can be run with similar inputs::
 In this example, the CAS space is (6e, 4o), that is, six electrons in
 four orbitals.
 
-Complete Active Space Self-Consistent Field Theory
---------------------------------------------------
-
-Density Matrix Renormalization Group Theory
+Complete Active Space Self-Consistent Field
 -------------------------------------------
 
-Full Configuration Interaction Quantum Monte Carlo Theory
----------------------------------------------------------
+Density Matrix Renormalization Group
+------------------------------------
+
+Full Configuration Interaction Quantum Monte Carlo
+--------------------------------------------------
 
 Multireference Perturbation Theory
 ----------------------------------
