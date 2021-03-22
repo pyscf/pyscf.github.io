@@ -2,18 +2,13 @@
 Quickstart
 **********
 
-This tutorial shows simple examples of using PySCF to run quantum
-chemical calculations. An Ipython notebook of user-guide can be found
-at https://github.com/nmardirossian/PySCF_Tutorial.
+The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated [``examples``](https://github.com/pyscf/pyscf/tree/master/examples) directory.
 
+Mean-Field Theory
+=================
 
-
-Simple examples
-===============
-
-
-Hartree-Fock calculations
--------------------------
+Hartree-Fock
+------------
 
 Here is an example to run a HF calculation on the hydrogen molecule::
 
