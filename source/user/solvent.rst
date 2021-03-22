@@ -12,11 +12,11 @@ Solvation models
 Introduction
 ============
 
-Solvation modesl allows the quantum chemistry calculations to include the
+Solvation model allows the quantum chemistry calculations to include the
 interactions between solvents and the quantum solute. Solvents can be treated
 implicitly, known as continuum solvents, and explicitly. For continuum solvents,
-PySCF implemented the ddCOSMO (domain-decomposition COSMO solvation model). For
-the explicit solvent environment, PySCF provided the interface to call the
+we implemented the ddCOSMO (domain-decomposition COSMO solvation model). For
+the explicit solvent environment, we provided the interface to call the
 polarizable embedding library CPPE.
 
 
