@@ -1,0 +1,951 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>2.12.2. Density fitting &#8212; PySCF 1.7.5 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/material.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="author" title="About these documents" href="../../../about/" />
+    <link rel="index" title="Index" href="../../../genindex/" />
+    <link rel="search" title="Search" href="../../../search/" />
+    <link rel="next" title="2.12.3. Pseudopotentials" href="../pp/" />
+    <link rel="prev" title="2.12.1. Crystalline Gaussian-type atomic orbitals" href="../gto/" /> 
+  
+   
+  
+<style type="text/css">
+  ul.ablog-archive {
+    list-style: none;
+    overflow: auto;
+    margin-left: 0px;
+  }
+  ul.ablog-archive li {
+    float: left;
+    margin-right: 5px;
+    font-size: 80%;
+  }
+  ul.postlist a {
+    font-style: italic;
+  }
+  ul.postlist-style-disc {
+    list-style-type: disc;
+  }
+  ul.postlist-style-none {
+    list-style-type: none;
+  }
+  ul.postlist-style-circle {
+    list-style-type: circle;
+  }
+</style>
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=indigo data-md-color-accent=yellow>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#theory/pbc/df" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../../" title="PySCF 1.7.5 documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">PySCF</span>
+          <span class="md-header-nav__topic"> 2.12.2. Density fitting </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../../search/" method="GET" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder="Search"
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+      
+  
+  <script src="../../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../../"versions.json"",
+        target_loc = "../../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../../" class="md-tabs__link">PySCF 1.7.5 documentation</a></li>
+            
+            <li class="md-tabs__item"><a href="../../../install/" class="md-tabs__link">Install</a></li>
+            
+            <li class="md-tabs__item"><a href="../../" class="md-tabs__link">User Guide</a></li>
+            
+            <li class="md-tabs__item"><a href="../../../modules/" class="md-tabs__link">Developer Guide</a></li>
+            
+            <li class="md-tabs__item"><a href="../../../api_docs/modules/" class="md-tabs__link">API Docs</a></li>
+            
+            <li class="md-tabs__item"><a href="../../../blog_wrapper/" class="md-tabs__link">Blog</a></li>
+            
+            <li class="md-tabs__item"><a href="../../../about/" class="md-tabs__link">About</a></li>
+          <li class="md-tabs__item"><a href="../../" class="md-tabs__link"><span class="section-number">2. </span>Theoretical methods</a></li>
+          <li class="md-tabs__item"><a href="../" class="md-tabs__link"><span class="section-number">2.12. </span>Periodic boundary conditions</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../../" title="PySCF 1.7.5 documentation" class="md-nav__button md-logo">
+      
+        <img src="../../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../../"
+       title="PySCF 1.7.5 documentation">PySCF</a>
+  </label>
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../install/" class="md-nav__link">1. Install</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../" class="md-nav__link">2. User Guide</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../../scf/" class="md-nav__link">2.1. Self-consistent field (SCF) methods</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../dft/" class="md-nav__link">2.2. Density functional theory (DFT)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../mp/" class="md-nav__link">2.3. Møller-Plesset perturbation theory</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../gw/" class="md-nav__link">2.4. GW method</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../ci/" class="md-nav__link">2.5. Configuration interaction (CI)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../cc/" class="md-nav__link">2.6. Coupled cluster (CC)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../adc/" class="md-nav__link">2.7. Algebraic diagrammatic construction (ADC) scheme</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../mcscf/" class="md-nav__link">2.8. Multi-configurational self-consistent field (MCSCF)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../tddft/" class="md-nav__link">2.9. Time-dependent density functional theory (TDDFT)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../rt/" class="md-nav__link">2.10. Real-time time-dependent density functional theory</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../eomcc/" class="md-nav__link">2.11. Equation-of-motion coupled cluster (EOM-CC)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../" class="md-nav__link">2.12. Periodic boundary conditions</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../modules/" class="md-nav__link">3. Developer Guide</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../blog_wrapper/" class="md-nav__link">4. Blog</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../../about/" class="md-nav__link">5. About</a>
+      
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">Contents</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#theory-pbc-df--page-root" class="md-nav__link">2.12.2. Density fitting</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#introduction" class="md-nav__link">2.12.2.1. Introduction</a>
+        </li>
+        <li class="md-nav__item"><a href="#fftdf-fast-fourier-transform-based-density-fitting" class="md-nav__link">2.12.2.2. FFTDF — Fast Fourier transform based density fitting</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#index-eri-tensor-and-integral-transformation" class="md-nav__link">2.12.2.2.1. 4-index ERI tensor and integral transformation</a>
+        </li>
+        <li class="md-nav__item"><a href="#coulomb-and-exchange-integrals" class="md-nav__link">2.12.2.2.2. Coulomb and exchange integrals</a>
+        </li>
+        <li class="md-nav__item"><a href="#nuclear-type-integrals" class="md-nav__link">2.12.2.2.3. Nuclear type integrals</a>
+        </li>
+        <li class="md-nav__item"><a href="#kinetic-energy-cutoff" class="md-nav__link">2.12.2.2.4. Kinetic energy cutoff</a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#aftdf-analytic-fourier-transform-based-density-fitting" class="md-nav__link">2.12.2.3. AFTDF — Analytic Fourier transform based density fitting</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#id1" class="md-nav__link">2.12.2.3.1. Kinetic energy cutoff</a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#gdf-gaussian-density-fitting" class="md-nav__link">2.12.2.4. GDF — Gaussian density fitting</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#auxiliary-gaussian-basis" class="md-nav__link">2.12.2.4.1. Auxiliary Gaussian basis</a>
+        </li>
+        <li class="md-nav__item"><a href="#id2" class="md-nav__link">2.12.2.4.2. Kinetic energy cutoff</a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#mdf-mixed-gaussian-and-plane-wave-density-fitting" class="md-nav__link">2.12.2.5. MDF — Mixed Gaussian and plane-wave density fitting</a>
+        </li>
+        <li class="md-nav__item"><a href="#all-electron-calculation" class="md-nav__link">2.12.2.6. All-electron calculation</a>
+        </li>
+        <li class="md-nav__item"><a href="#low-dimension-system" class="md-nav__link">2.12.2.7. Low-dimension system</a>
+        </li>
+        <li class="md-nav__item"><a href="#interface-to-molecular-df-post-hf-methods" class="md-nav__link">2.12.2.8. Interface to molecular DF-post-HF methods</a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../../_sources/theory/pbc/df.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+             <div class="section" id="density-fitting">
+<span id="theory-pbc-df"></span><h1><span class="section-number">2.12.2. </span>Density fitting<a class="headerlink" href="#density-fitting" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2><span class="section-number">2.12.2.1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Density fitting (DF) techniques are useful to reduce the computational cost of
+two-electron repulsion integrals (ERIs), especially when periodic boundary conditions (PBCs) are applied.
+In PySCF, there are four types of DF methods available for PBC calculations:
+FFTDF (plane-wave density fitting with fast Fourier transformation, which is the default scheme),
+AFTDF (plane-wave density fitting with analytical Fourier transformation),
+GDF (Gaussian density fitting) and
+MDF (mixed Gaussian and plane-wave density fitting).
+They are implemented in the <a class="reference internal" href="../../../modules/pbc/df/#module-pbc.df" title="pbc.df: Density fitting and RI approximation with periodic boundary conditions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pbc.df</span></code></a> module.
+The characters of these DF methods are summarized in the following table.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 15%" />
+<col style="width: 15%" />
+<col style="width: 14%" />
+<col style="width: 20%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Subject</p></td>
+<td><p>FFTDF</p></td>
+<td><p>AFTDF</p></td>
+<td><p>GDF</p></td>
+<td><p>MDF</p></td>
+</tr>
+<tr class="row-even"><td><p>Initialization</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Slow</p></td>
+<td><p>Slow</p></td>
+</tr>
+<tr class="row-odd"><td><p>HF Coulomb matrix (J)</p></td>
+<td><p>Fast</p></td>
+<td><p>Slow</p></td>
+<td><p>Fast</p></td>
+<td><p>Moderate</p></td>
+</tr>
+<tr class="row-even"><td><p>HF exchange matrix (K)</p></td>
+<td><p>Slow</p></td>
+<td><p>Slow</p></td>
+<td><p>Fast</p></td>
+<td><p>Moderate</p></td>
+</tr>
+<tr class="row-odd"><td><p>Building ERIs</p></td>
+<td><p>Slow</p></td>
+<td><p>Slow</p></td>
+<td><p>Fast</p></td>
+<td><p>Moderate</p></td>
+</tr>
+<tr class="row-even"><td><p>All-electron calculation</p></td>
+<td><p>Huge error</p></td>
+<td><p>Large error</p></td>
+<td><p>Accurate</p></td>
+<td><p>Most accurate</p></td>
+</tr>
+<tr class="row-odd"><td><p>Low-dimension system</p></td>
+<td><p>N/A</p></td>
+<td><p>0D,1D,2D</p></td>
+<td><p>0D,1D,2D</p></td>
+<td><p>0D,1D,2D</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="fftdf-fast-fourier-transform-based-density-fitting">
+<span id="fftdf"></span><h2><span class="section-number">2.12.2.2. </span>FFTDF — Fast Fourier transform based density fitting<a class="headerlink" href="#fftdf-fast-fourier-transform-based-density-fitting" title="Permalink to this headline">¶</a></h2>
+<p>FFTDF represents the method to compute ERIs in
+reciprocal space with the Fourier transformed Coulomb kernel by using
+numerical fast Fourier transform (FFT), which is implmented in the
+PySCF class <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code>.
+An <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> object can be initialized as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fftdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">FFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">fftdf</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.fft.FFTDF object at 0x111e278d0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.fft.FFTDF object at 0x1206b0f28&gt;</span>
+</pre></div>
+</div>
+<p>As the default DF scheme of PBC calculations,
+an <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> object is created when initializing the PBC mean-field object and held in the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">with_df</span></code>.</p>
+<div class="section" id="index-eri-tensor-and-integral-transformation">
+<h3><span class="section-number">2.12.2.2.1. </span>4-index ERI tensor and integral transformation<a class="headerlink" href="#index-eri-tensor-and-integral-transformation" title="Permalink to this headline">¶</a></h3>
+<p>For a general 4-index ERI, we have</p>
+<div class="math notranslate nohighlight">
+\[(i_{\mathbf{k}_i} j_{\mathbf{k}_j}|k_{\mathbf{k}_k} l_{\mathbf{k}_l}) =
+\Omega \sum_{\mathbf{G}\neq \mathbf{k}_i-\mathbf{k}_j} \rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G})
+\frac{4\pi}{| \mathbf{k}_j-\mathbf{k}_i+\mathbf{G}|^2}
+\rho_{k_{\mathbf{k}_k},l_{\mathbf{k}_l}}(\mathbf{G}_{ikjl}-\mathbf{G}) \;,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{G}\)</span> is a reciprocal lattice vector,</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{G}_{ikjl} = \mathbf{k}_i + \mathbf{k}_k - \mathbf{k}_j - \mathbf{k}_l \;,\]</div>
+<p>and <span class="math notranslate nohighlight">\(\rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G})\)</span> is the Fourier transformed orbital pair density:</p>
+<div class="math notranslate nohighlight">
+\[\rho_{i_{\mathbf{k}_i},j_{\mathbf{k}_j}}(\mathbf{G})
+= \frac{1}{\Omega} \int_{\Omega} d\mathbf{r} \phi_{i_{\mathbf{k}_i}}^{*}(\mathbf{r}) \phi_{j_{\mathbf{k}_j}}(\mathbf{r})
+e^{-i(\mathbf{k}_j - \mathbf{k}_i + \mathbf{G})\cdot\mathbf{r}} \;.\]</div>
+<p>Note that the four k points (corresponding to the four AO indices) should follow the momentum
+conservation law:</p>
+<div class="math notranslate nohighlight">
+\[(\mathbf{k}_j - \mathbf{k}_i + \mathbf{k}_l - \mathbf{k}_k) = \mathbf{G}.\]</div>
+<p>To evaluate these 4-index ERIs, <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> provides the function <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_eri()</span></code>.
+By default, four <span class="math notranslate nohighlight">\(\Gamma\)</span> points are assigned to the four AO indices.
+As the format of molecular ERI tensor, the PBC ERI tensor is reshaped to a 2D
+array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eri</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_eri</span><span class="p">()</span> <span class="c1"># \Gamma points only</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">eri</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(3, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eri</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_eri</span><span class="p">([</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">eri</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(4, 4)</span>
+</pre></div>
+</div>
+<p>In addition, one can perform AO to MO transformations using the function <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.ao2mo()</span></code>.
+Similar to <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_eri()</span></code>, the
+returned integral tensor is reshaped to a 2D array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># MO coefficients</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eri_mo</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="p">[</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">eri_mo</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(4, 4)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="coulomb-and-exchange-integrals">
+<h3><span class="section-number">2.12.2.2.2. </span>Coulomb and exchange integrals<a class="headerlink" href="#coulomb-and-exchange-integrals" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> class provides a method <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_jk()</span></code> to compute
+Hartree-Fock Coulomb matrix (J) and exchange matrix (K).  This method can take
+one density matrix or a list of density matrices as input and return the J and K
+matrices for each density matrix:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(3, 2, 2)</span>
+</pre></div>
+</div>
+<p>When k points are specified, the input density matrices should have the correct
+shape that matches the number of k points:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(3, 2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(5, 3, 2, 2)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="nuclear-type-integrals">
+<h3><span class="section-number">2.12.2.2.3. </span>Nuclear type integrals<a class="headerlink" href="#nuclear-type-integrals" title="Permalink to this headline">¶</a></h3>
+<p>PBC nuclear-electron interaction and pseudo-potential (PP) integrals can be
+computed with the FFTDF methods <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_nuc()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_pp()</span></code>.
+<code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_nuc()</span></code> function only evaluates the integral of the point charge.
+If PP was specified in the cell object, <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_nuc()</span></code> produces the
+integrals of the point nuclei with the effective charges.  If PP was not
+defined in the cell object, <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_pp()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">FFTDF.get_nuc()</span></code>
+produce the same integrals.  Depending on the input k-point(s),
+the two functions can produce the nuclear-type integrals for a single k-point or
+a list of nuclear-type integrals for the k-points.  By default, they compute the
+nuclear-type integrals of Gamma point:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">vnuc</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_pp</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vnuc</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vnuc</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_pp</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vnuc</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(8, 2, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vnuc</span> <span class="o">=</span> <span class="n">fftdf</span><span class="o">.</span><span class="n">get_pp</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vnuc</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">(2, 2)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="kinetic-energy-cutoff">
+<h3><span class="section-number">2.12.2.2.4. </span>Kinetic energy cutoff<a class="headerlink" href="#kinetic-energy-cutoff" title="Permalink to this headline">¶</a></h3>
+<p>The accuracy of FFTDF integrals are affected by the kinetic energy cutoff.  The
+default kinetic energy cutoff is a conservative estimation based on the basis
+set and the lattice parameter.  You can adjust the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">FFTDF.mesh</span></code>
+(the numbers of grid points in each positive direction) to change the kinetic
+energy cutoff.  If any values in <code class="xref py py-attr docutils literal notranslate"><span class="pre">FFTDF.mesh</span></code> is too small to reach the
+required accuracy <code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.precision</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> may output a warning
+message, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WARN</span><span class="p">:</span> <span class="n">ke_cutoff</span><span class="o">/</span><span class="n">mesh</span> <span class="p">(</span><span class="mf">12.437</span> <span class="o">/</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">enough</span> <span class="k">for</span> <span class="n">FFTDF</span> <span class="n">to</span> <span class="n">get</span> <span class="n">integral</span> <span class="n">accuracy</span> <span class="mf">1e-08</span><span class="o">.</span>
+<span class="n">Coulomb</span> <span class="n">integral</span> <span class="n">error</span> <span class="ow">is</span> <span class="o">~</span> <span class="mf">2.6</span> <span class="n">Eh</span><span class="o">.</span>
+<span class="n">Recomended</span> <span class="n">ke_cutoff</span><span class="o">/</span><span class="n">mesh</span> <span class="n">are</span> <span class="mf">538.542</span> <span class="o">/</span> <span class="p">[</span><span class="mi">40</span> <span class="mi">40</span> <span class="mi">40</span><span class="p">]</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>In this warning message, <code class="docutils literal notranslate"><span class="pre">Coulomb</span> <span class="pre">integral</span> <span class="pre">error</span></code> is a rough estimation for
+the largest error of the matrix elements of the two-electron Coulomb integrals.
+The overall computational error may be varied by 1 - 2 orders of magnitude.</p>
+</div>
+</div>
+<div class="section" id="aftdf-analytic-fourier-transform-based-density-fitting">
+<h2><span class="section-number">2.12.2.3. </span>AFTDF — Analytic Fourier transform based density fitting<a class="headerlink" href="#aftdf-analytic-fourier-transform-based-density-fitting" title="Permalink to this headline">¶</a></h2>
+<p>The AFTDF method implements the Fourier transform of the orbital pair density
+analytically instead of numerically in the FFTDF case.</p>
+<p>To enable AFTDF in the calculation, <code class="xref py py-class docutils literal notranslate"><span class="pre">AFTDF</span></code> object can be initialized
+and assigned to <code class="xref py py-attr docutils literal notranslate"><span class="pre">with_df</span></code> object of mean-field object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aft</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">aft</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.aft.AFTDF object at 0x7ff8b1893d90&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">aft</span>
+</pre></div>
+</div>
+<p>Generally, AFTDF is slower than FFTDF method.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AFTDF</span></code> class offers the same methods as the <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> class.
+Nuclear and PP integrals, Hartree-Fock J and K matrices, electron repulsion
+integrals and integral transformation can be computed with functions
+<code class="xref py py-func docutils literal notranslate"><span class="pre">AFTDF.get_nuc()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">AFTDF.get_pp()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">AFTDF.get_jk()</span></code>,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">AFTDF.get_eri()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">AFTDF.ao2mo()</span></code> using the same calling APIs as the
+analogy functions in <a class="reference internal" href="#fftdf"><span class="std std-ref">FFTDF — Fast Fourier transform based density fitting</span></a>.</p>
+<div class="section" id="id1">
+<h3><span class="section-number">2.12.2.3.1. </span>Kinetic energy cutoff<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AFTDF</span></code> also makes estimation on the kinetic energy cutoff.  When the
+any values of <code class="xref py py-attr docutils literal notranslate"><span class="pre">AFTDF.mesh</span></code> are too small for required accuracy
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.precision</span></code>, this class also outputs the
+<code class="docutils literal notranslate"><span class="pre">Coulomb</span> <span class="pre">integral</span> <span class="pre">error</span></code> warning message as the <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> class.</p>
+</div>
+</div>
+<div class="section" id="gdf-gaussian-density-fitting">
+<span id="pbc-gdf"></span><h2><span class="section-number">2.12.2.4. </span>GDF — Gaussian density fitting<a class="headerlink" href="#gdf-gaussian-density-fitting" title="Permalink to this headline">¶</a></h2>
+<p>GDF is an analogy of the conventional density fitting method with periodic
+boundary condition.  The auxiliary fitting basis in PBC GDF is periodic Gaussian
+function (To ensure the long range Coulomb integrals converging in the real
+space lattice summation, the multipoles are removed from the auxiliary basis).
+<code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> object can be initialized and enabled in the SCF calculation in two
+ways:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">gdf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using SCF.density_fit method</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.df.GDF object at 0x7fec7722aa10&gt;</span>
+</pre></div>
+</div>
+<p>Similar to the molecular code, <code class="xref py py-func docutils literal notranslate"><span class="pre">SCF.density_fit()</span></code> method returns a
+mean-field object with <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> as the integral engine.</p>
+<p>In the <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> method, the DF-integral tensor is precomputed and stored
+on disk.  <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> method supports both the <span class="math notranslate nohighlight">\(\Gamma\)</span>-point ERIs and
+the ERIs of different k-points.  <code class="xref py py-attr docutils literal notranslate"><span class="pre">GDF.kpts</span></code> should be specified before
+initializing <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> object.  <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> class provides the same APIs as
+the <code class="xref py py-class docutils literal notranslate"><span class="pre">FFTDF</span></code> class to compute nuclear integrals and electron Coulomb
+repulsion integrals:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span><span class="o">.</span><span class="n">get_eri</span><span class="p">([</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>In the mean-field calculation, assigning <code class="xref py py-attr docutils literal notranslate"><span class="pre">kpts</span></code> attribute to mean-field
+object updates the <code class="xref py py-attr docutils literal notranslate"><span class="pre">kpts</span></code> attribute of the underlying DF method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KRHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_eri</span><span class="p">([</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>Once the GDF integral tensor was initialized, the <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> can be only used
+with certain k-points calculations.  An incorrect <code class="xref py py-attr docutils literal notranslate"><span class="pre">kpts</span></code> argument can lead
+to a runtime error:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kpt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span><span class="o">.</span><span class="n">get_eri</span><span class="p">([</span><span class="n">kpt</span><span class="p">,</span><span class="n">kpt</span><span class="p">,</span><span class="n">kpt</span><span class="p">,</span><span class="n">kpt</span><span class="p">])</span>
+<span class="go">RuntimeError: j3c for kpts [[ 0.53135523  0.06389596  0.19441766]</span>
+<span class="go"> [ 0.53135523  0.06389596  0.19441766]] is not initialized.</span>
+<span class="go">You need to update the attribute .kpts then call .build() to initialize j3c.</span>
+</pre></div>
+</div>
+<p>The GDF initialization is very expensive.  To reduce the initialization cost in
+a series of calculations, it would be useful to cache the GDF integral tensor in
+a file then load them into the calculation when needed.  The GDF integral tensor
+can be saved and loaded the same way as we did for the molecular DF method (see
+<a class="reference internal" href="../../../modules/df/#sl-cderi"><span class="std std-ref">Saving/Loading DF integral tensor</span></a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+<span class="n">gdf</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="s1">&#39;df_ints.h5&#39;</span>  <span class="c1"># To save the GDF integrals</span>
+<span class="n">gdf</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KRHF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="s1">&#39;df_ints.h5&#39;</span>   <span class="c1"># To load the GDF integrals</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="auxiliary-gaussian-basis">
+<h3><span class="section-number">2.12.2.4.1. </span>Auxiliary Gaussian basis<a class="headerlink" href="#auxiliary-gaussian-basis" title="Permalink to this headline">¶</a></h3>
+<p>GDF method requires a set of Gaussian functions as the density fitting auxiliary basis.
+See also <a class="reference internal" href="../../../modules/df/#df-auxbasis"><span class="std std-ref">DF auxiliary basis</span></a> and <a class="reference internal" href="../../../modules/df/#df-etb-auxbasis"><span class="std std-ref">Even-tempered auxiliary Gaussian basis</span></a> for the choices of DF auxiliary
+basis in PySCF GDF code.  There are not many optimized auxiliary basis sets available
+for PBC AO basis.  You can use the even-tempered Gaussian functions as the
+auxiliary basis in the PBC GDF method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+<span class="n">gdf</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">aug_etb</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">gdf</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3><span class="section-number">2.12.2.4.2. </span>Kinetic energy cutoff<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>GDF method does not require the specification of kinetic energy cutoff.
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.ke_cutoff</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.mesh</span></code> are ignored in the <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code>
+class.  Internally, a small set of planewaves is used in the GDF method to
+converge the long-range interactions of GDF integrals in the real space lattice
+summation. An estimation of energy cutoff is made for the planewaves.
+The estimated energy cutoff is converted to the planewave mesh and assigned to
+the attribute <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF.mesh</span></code> in the <code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> class.  It is not
+recommended to change this parameter.</p>
+<p>The energy cutoff estimation is briefly documented below. In the GDF method, we
+introduced a smooth Gaussian function <span class="math notranslate nohighlight">\(g(\eta) = \frac{1}{N} r^l e^{-\eta r^2}\)</span>
+to screen the long range Coulomb potential of the auxiliary Gaussian basis.
+The Coulomb interaction between the smooth auxiliary Gaussian and the rest other
+auxiliary Gaussian basis or two-center Gaussian product is calculated in the
+reciprocal space.</p>
+<div class="math notranslate nohighlight">
+\[\sum_{\mathbf{G}} w_\mathbf{G} \frac{4\pi}{G^2}
+\mathrm{FT}(g(\eta)) \rho(\mathbf{G})\]</div>
+<p>FT means Fourier transform.  Considering the leading term of the Fourier
+transform <span class="math notranslate nohighlight">\(\mathrm{FT}(g(\eta))\)</span></p>
+<div class="math notranslate nohighlight">
+\[\int e^{-i\mathbf{G}\cdot\mathbf{r}} \frac{1}{N} r^n e^{-\eta r^2} d\mathbf{r}
+= G^n e^{-\frac{k^2}{4\eta}} + \cdots\]</div>
+<p>the Coulomb integral can be estimated</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}&amp;w \sum_{\mathbf{G}} \frac{4\pi}{G^2} G^n e^{-\frac{G^2}{4\eta}}
+\rho(\mathbf{G})
+\approx \int_{-\infty}^\infty \frac{4\pi}{G^2}
+G^n e^{-\frac{G^2}{4\eta}}\rho(\mathbf{G}) d\mathbf{G} \\
+&amp;\approx (4\pi)^2 \int_0^\infty G^n e^{-\frac{G^2}{4\eta}}\rho(G) dG \\
+&amp;= (4\pi)^2 \int_0^{G_{max}} G^n e^{-\frac{G^2}{4\eta}}\rho(G) dG
++ \varepsilon(G_{max})\end{split}\]</div>
+<p><span class="math notranslate nohighlight">\(\varepsilon(G_{max})\)</span> is the error due to the energy cutoff
+<span class="math notranslate nohighlight">\(G_{max}\)</span>.  The largest error in this integral is the interaction
+between <span class="math notranslate nohighlight">\(g(\eta)\)</span> and a compact density distribution. For the regular
+auxiliary DF basis or atomic orbital basis, the most compact function is s type
+Gaussian function near nuclear core region. For the very compact function which
+is close to the point charge distribution, the Fourier transform form is
+approximately a constant <span class="math notranslate nohighlight">\(\rho(\mathbf{G}) \sim 1\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\varepsilon(G_{max})
+&amp;=(4\pi)^2 \int_{G_{max}}^\infty G^{n} e^{-\frac{G^2}{4\eta}} dG
+\\
+&amp;=(4\pi)^2\Big(2\eta G_{max}^{n-1} e^{-\frac{G_{max}^2}{4\eta}}
++ 2\eta(n-1) \int_{G_{max}}^{\infty} G^{n-2} e^{-\frac{G^2}{4\eta}} dG
++ \cdots\Big)\end{split}\]</div>
+<p>Assuming <span class="math notranslate nohighlight">\(G_{max}^2 \gg 2\eta\)</span>, we can use the leading term to estimate
+the error</p>
+<div class="math notranslate nohighlight">
+\[\varepsilon(G_{max})
+&lt; 32\pi^2 \eta G_{max}^{n-1} e^{-\frac{G_{max}^2}{4\eta}}\]</div>
+<p>For certain precision requirement <span class="math notranslate nohighlight">\(\epsilon\)</span>, the energy cutoff can be
+evaluated</p>
+<div class="math notranslate nohighlight">
+\[E = \frac{1}{2}G_{max}^2
+\geq 2\eta \Big((l_{max}-1)\log(G_{max}) - \log(\frac{\epsilon}{32\pi^2 \eta}) \Big)\]</div>
+</div>
+</div>
+<div class="section" id="mdf-mixed-gaussian-and-plane-wave-density-fitting">
+<span id="pbc-mdf"></span><h2><span class="section-number">2.12.2.5. </span>MDF — Mixed Gaussian and plane-wave density fitting<a class="headerlink" href="#mdf-mixed-gaussian-and-plane-wave-density-fitting" title="Permalink to this headline">¶</a></h2>
+<p>The MDF method combines the AFTDF and GDF methods in the same framework.
+The MDF auxiliary basis is Gaussian and plane-wave mixed basis.
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MDF</span></code> object can be created in two ways:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">,</span> <span class="n">ke_cutoff</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">MDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mdf</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.mdf.MDF object at 0x7f4025120a10&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">mix_density_fit</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span>
+<span class="go">&lt;pyscf.pbc.df.mdf.MDF object at 0x7f7963390a10&gt;</span>
+</pre></div>
+</div>
+<p>The kinetic energy cutoff is specified in this example to constrain the number of
+planewaves.  The number of planewaves can also be controlled through
+attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">MDF.mesh</span></code>.</p>
+<p>In principle, the accuracy of MDF method can be increased by adding
+more plane waves in the auxiliary basis.  In practice, the linear dependency
+between plane waves and Gaussians may lead to numerical stability issue.
+The optimal accuracy (with reasonable computational cost) requires a reasonable
+size of plan wave basis with a reasonable linear dependency threshold.  A
+threshold too large would remove many auxiliary functions while a threshold too
+small would cause numerical instability.
+.. In our preliminary test, <code class="docutils literal notranslate"><span class="pre">ke_cutoff=10</span></code> is able to produce 0.1 mEh accuracy in
+.. total energy.
+The default linear dependency threshold is 1e-10.  The threshold can be adjusted
+through the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">MDF.linear_dep_threshold</span></code>.</p>
+<p>Like the GDF method, it is also very demanding to initialize the 3-center
+Gaussian integrals in the MDF method.  The 3-center Gaussian integral tensor can
+be cached in a file and loaded to <code class="xref py py-class docutils literal notranslate"><span class="pre">MDF</span></code> object at the runtime:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">)</span>
+<span class="n">mdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">MDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+<span class="n">mdf</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="s1">&#39;df_ints.h5&#39;</span>  <span class="c1"># To save the GDF integrals</span>
+<span class="n">mdf</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KRHF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span><span class="o">.</span><span class="n">mix_density_fit</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="s1">&#39;df_ints.h5&#39;</span>   <span class="c1"># To load the GDF integrals</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="all-electron-calculation">
+<h2><span class="section-number">2.12.2.6. </span>All-electron calculation<a class="headerlink" href="#all-electron-calculation" title="Permalink to this headline">¶</a></h2>
+<p>All-electron calculations with FFTDF or AFTDF methods requires high energy cutoff
+for most elements.  It is recommended to use GDF or MDF methods in the
+all-electron calculations.  In fact, GDF and MDF can also be used in PP
+calculations to reduce the number of planewave basis if steep functions are
+existed in the AO basis.</p>
+</div>
+<div class="section" id="low-dimension-system">
+<h2><span class="section-number">2.12.2.7. </span>Low-dimension system<a class="headerlink" href="#low-dimension-system" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AFTDF</span></code> supports the systems with 0D (molecule), 1D and 2D periodic
+boundary conditions.  When computing the integrals of low-dimension systems, an
+infinite vacuum is placed on the free boundary.  You can set the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.dimension</span></code>, to enable the integral algorithms for
+low-dimension systems in <code class="xref py py-class docutils literal notranslate"><span class="pre">AFTDF</span></code> class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">aft</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="n">aft</span><span class="o">.</span><span class="n">get_eri</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">GDF</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">MDF</span></code> all support the integrals of low-dimension system.
+Similar to the usage of AFTDF method, you need to set <code class="xref py py-attr docutils literal notranslate"><span class="pre">cell.dimension</span></code> for
+the low-dimension systems:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="n">gdf</span><span class="o">.</span><span class="n">get_eri</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>See more examples in <code class="docutils literal notranslate"><span class="pre">examples/pbc/31-low_dimensional_pbc.py</span></code></p>
+</div>
+<div class="section" id="interface-to-molecular-df-post-hf-methods">
+<h2><span class="section-number">2.12.2.8. </span>Interface to molecular DF-post-HF methods<a class="headerlink" href="#interface-to-molecular-df-post-hf-methods" title="Permalink to this headline">¶</a></h2>
+<p>PBC DF object is compatible to the molecular DF object.  The
+<span class="math notranslate nohighlight">\(\Gamma\)</span>-point PBC SCF object can be directly passed to molecular DF
+post-HF methods for an electron correlation calculations in PBC:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">cc</span> <span class="k">as</span> <span class="n">mol_cc</span>
+<span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;He 1 1 1&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;3-21g&#39;</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mol_cc</span><span class="o">.</span><span class="n">RCCSD</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+   
+</div>
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="../gto/" title="2.12.1. Crystalline Gaussian-type atomic orbitals"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> Previous </span> <span class="section-number">2.12.1. </span>Crystalline Gaussian-type atomic orbitals </span>
+              </div>
+            </a>
+          
+          
+            <a href="../pp/" title="2.12.3. Pseudopotentials"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> Next </span> <span class="section-number">2.12.3. </span>Pseudopotentials </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2021, James E. T. Smith.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>

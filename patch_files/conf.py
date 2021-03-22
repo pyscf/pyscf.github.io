@@ -8,13 +8,14 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-#import os
-#import sys
-#import ablog
-#import alabaster
+# import os
+# import sys
+# import ablog
+# import alabaster
 
 from pyscf import __version__
 from distutils.version import LooseVersion
+
 lv = LooseVersion(__version__)
 
 
@@ -181,9 +182,9 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
     "sphinx.ext.autodoc",
-    #"alabaster",
-    #"ablog",
-    #"myst_parser", #problematic for me
+    # "alabaster",
+    "ablog",
+    # "myst_parser", #problematic for me
     "sphinx.ext.autosectionlabel",
     # "recommonmark",
     "sphinxcontrib.bibtex",
@@ -197,13 +198,13 @@ myst_update_mathjax = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-#templates_path = ["_templates", ablog.get_html_templates_path()]
+# templates_path = ["_templates", ablog.get_html_templates_path()]
 
 # The suffix(es) of source filenames.
 source_suffix = {
     ".rst": "restructuredtext",
-    #".txt": "markdown",
-    #".md": "markdown",
+    # ".txt": "markdown",
+    # ".md": "markdown",
 }
 
 # The encoding of source files.
@@ -278,13 +279,13 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = "sphinx_material"
-#html_theme = "alabaster"
+# html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    #"github_button": False,
+    # "github_button": False,
     "repo_name": "PySCF",
     "repo_url": "https://github.com/pyscf/pyscf/",
     "nav_title": "PySCF {0}".format(version),
@@ -292,7 +293,7 @@ html_theme_options = {
     "color_accent": "amber",
     "globaltoc_depth": 2,
     "master_doc": False,
-    "heroes": {'index': 'The Python-based Simulations of Chemistry Framework'},
+    "heroes": {"index": "The Python-based Simulations of Chemistry Framework"},
     "nav_links": [
         {"href": "index", "title": "Home", "internal": True},
         {"href": "install", "title": "Install", "internal": True},

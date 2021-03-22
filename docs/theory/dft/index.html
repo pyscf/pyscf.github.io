@@ -1,0 +1,1435 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="../../_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="../../_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="../../_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="../../_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="#3f51b5">
+  <script src="../../_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>2.2. Density functional theory (DFT) &#8212; PySCF 1.7.5 documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/material.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="author" title="About these documents" href="../../about/" />
+    <link rel="index" title="Index" href="../../genindex/" />
+    <link rel="search" title="Search" href="../../search/" />
+    <link rel="next" title="2.3. Møller-Plesset perturbation theory" href="../mp/" />
+    <link rel="prev" title="2.1. Self-consistent field (SCF) methods" href="../scf/" /> 
+  
+   
+  
+<style type="text/css">
+  ul.ablog-archive {
+    list-style: none;
+    overflow: auto;
+    margin-left: 0px;
+  }
+  ul.ablog-archive li {
+    float: left;
+    margin-right: 5px;
+    font-size: 80%;
+  }
+  ul.postlist a {
+    font-style: italic;
+  }
+  ul.postlist-style-disc {
+    list-style-type: disc;
+  }
+  ul.postlist-style-none {
+    list-style-type: none;
+  }
+  ul.postlist-style-circle {
+    list-style-type: circle;
+  }
+</style>
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=indigo data-md-color-accent=yellow>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#theory/dft" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="../../" title="PySCF 1.7.5 documentation"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">PySCF</span>
+          <span class="md-header-nav__topic"> 2.2. Density functional theory (DFT) </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="../../search/" method="GET" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder="Search"
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+      
+  
+  <script src="../../_static/javascripts/version_dropdown.js"></script>
+  <script>
+    var json_loc = "../../"versions.json"",
+        target_loc = "../../../",
+        text = "Versions";
+    $( document ).ready( add_version_dropdown(json_loc, target_loc, text));
+  </script>
+  
+
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="../../" class="md-tabs__link">PySCF 1.7.5 documentation</a></li>
+            
+            <li class="md-tabs__item"><a href="../../install/" class="md-tabs__link">Install</a></li>
+            
+            <li class="md-tabs__item"><a href="../" class="md-tabs__link">User Guide</a></li>
+            
+            <li class="md-tabs__item"><a href="../../modules/" class="md-tabs__link">Developer Guide</a></li>
+            
+            <li class="md-tabs__item"><a href="../../api_docs/modules/" class="md-tabs__link">API Docs</a></li>
+            
+            <li class="md-tabs__item"><a href="../../blog_wrapper/" class="md-tabs__link">Blog</a></li>
+            
+            <li class="md-tabs__item"><a href="../../about/" class="md-tabs__link">About</a></li>
+          <li class="md-tabs__item"><a href="../" class="md-tabs__link"><span class="section-number">2. </span>Theoretical methods</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="../../" title="PySCF 1.7.5 documentation" class="md-nav__button md-logo">
+      
+        <img src="../../_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="../../"
+       title="PySCF 1.7.5 documentation">PySCF</a>
+  </label>
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+    
+      <a href="../../install/" class="md-nav__link">1. Install</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../" class="md-nav__link">2. User Guide</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="../scf/" class="md-nav__link">2.1. Self-consistent field (SCF) methods</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> 2.2. Density functional theory (DFT) </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">2.2. Density functional theory (DFT)</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">Contents</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#theory-dft--page-root" class="md-nav__link">2.2. Density functional theory (DFT)</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#introduction" class="md-nav__link">2.2.1. Introduction</a>
+        </li>
+        <li class="md-nav__item"><a href="#theory" class="md-nav__link">2.2.2. Theory</a>
+        </li>
+        <li class="md-nav__item"><a href="#predefined-xc-functionals-and-functional-aliases" class="md-nav__link">2.2.3. Predefined XC functionals and functional aliases</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#libxc" class="md-nav__link">2.2.3.1. libxc</a>
+        </li>
+        <li class="md-nav__item"><a href="#xcfun" class="md-nav__link">2.2.3.2. xcfun</a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#customizing-xc-functionals" class="md-nav__link">2.2.4. Customizing XC functionals</a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../_sources/theory/dft.rst.txt">Show Source</a> </li>
+
+  </ul>
+</nav>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../mp/" class="md-nav__link">2.3. Møller-Plesset perturbation theory</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../gw/" class="md-nav__link">2.4. GW method</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../ci/" class="md-nav__link">2.5. Configuration interaction (CI)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../cc/" class="md-nav__link">2.6. Coupled cluster (CC)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../adc/" class="md-nav__link">2.7. Algebraic diagrammatic construction (ADC) scheme</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../mcscf/" class="md-nav__link">2.8. Multi-configurational self-consistent field (MCSCF)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../tddft/" class="md-nav__link">2.9. Time-dependent density functional theory (TDDFT)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../rt/" class="md-nav__link">2.10. Real-time time-dependent density functional theory</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../eomcc/" class="md-nav__link">2.11. Equation-of-motion coupled cluster (EOM-CC)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../pbc/" class="md-nav__link">2.12. Periodic boundary conditions</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../modules/" class="md-nav__link">3. Developer Guide</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../blog_wrapper/" class="md-nav__link">4. Blog</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="../../about/" class="md-nav__link">5. About</a>
+      
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+    <label class="md-nav__title" for="__toc">Contents</label>
+  <ul class="md-nav__list" data-md-scrollfix="">
+        <li class="md-nav__item"><a href="#theory-dft--page-root" class="md-nav__link">2.2. Density functional theory (DFT)</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#introduction" class="md-nav__link">2.2.1. Introduction</a>
+        </li>
+        <li class="md-nav__item"><a href="#theory" class="md-nav__link">2.2.2. Theory</a>
+        </li>
+        <li class="md-nav__item"><a href="#predefined-xc-functionals-and-functional-aliases" class="md-nav__link">2.2.3. Predefined XC functionals and functional aliases</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#libxc" class="md-nav__link">2.2.3.1. libxc</a>
+        </li>
+        <li class="md-nav__item"><a href="#xcfun" class="md-nav__link">2.2.3.2. xcfun</a>
+        </li></ul>
+            </nav>
+        </li>
+        <li class="md-nav__item"><a href="#customizing-xc-functionals" class="md-nav__link">2.2.4. Customizing XC functionals</a>
+        </li></ul>
+            </nav>
+        </li>
+    
+<li class="md-nav__item"><a class="md-nav__extra_link" href="../../_sources/theory/dft.rst.txt">Show Source</a> </li>
+
+<li id="searchbox" class="md-nav__item"></li>
+
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+             <div class="section" id="density-functional-theory-dft">
+<span id="theory-dft"></span><h1><span class="section-number">2.2. </span>Density functional theory (DFT)<a class="headerlink" href="#density-functional-theory-dft" title="Permalink to this headline">¶</a></h1>
+<p><em>Modules</em>: <a class="reference internal" href="../../modules/dft/#dft"><span class="std std-ref">dft</span></a>, <a class="reference internal" href="../../modules/pbc/dft/#pbc-dft"><span class="std std-ref">pbc.dft</span></a></p>
+<div class="section" id="introduction">
+<h2><span class="section-number">2.2.1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="theory">
+<h2><span class="section-number">2.2.2. </span>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="predefined-xc-functionals-and-functional-aliases">
+<h2><span class="section-number">2.2.3. </span>Predefined XC functionals and functional aliases<a class="headerlink" href="#predefined-xc-functionals-and-functional-aliases" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of pure exchange-correlation functional and hybrid
+functionals predefined in the package. Some functionals have aliased names. When
+a functional names is assigned to the attribute <code class="xref py py-attr docutils literal notranslate"><span class="pre">xc</span></code>, the DFT code will
+look into the compound functional table (including hybrid functionals and
+aliased pure functionals) and dispatch the functional to exchange and
+correlation parts if the name was found in the table. E.g.  xc = ‘pbe’ leads to
+the compound PBE functional which is equivalent to the assignment xc = ‘pbe,pbe’,
+the PBE exchange plus PBE correlation. If the functional name was not found in
+the compound functional table, the functional will be treated as exchange
+functional. E.g. xc = ‘b86’ leads to B86 exchange only (without correlation).</p>
+<p>Note that in the early PySCF DFT implementations (1.5.0 or earlier), the program
+does not support functional alias. Both exchange and correlation have to be
+explicitly assigned. xc = ‘pbe’ gives only the PBE exchange.</p>
+<div class="section" id="libxc">
+<h3><span class="section-number">2.2.3.1. </span>libxc<a class="headerlink" href="#libxc" title="Permalink to this headline">¶</a></h3>
+<p>The hybrid functionals and predefined compound functionals for libxc (the
+default XC library) are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 85%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional</p></td>
+<td><p>Comments</p></td>
+</tr>
+<tr class="row-even"><td><p>B3PW91</p></td>
+<td><p>The original (ACM) hybrid of Becke</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYP</p></td>
+<td><p>The (in)famous B3LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>B3P86</p></td>
+<td><p>Perdew 86 hybrid similar to B3PW91</p></td>
+</tr>
+<tr class="row-odd"><td><p>O3LYP</p></td>
+<td><p>hybrid using the optx functional</p></td>
+</tr>
+<tr class="row-even"><td><p>PBE0</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>PBE1PBE</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>PBEH</p></td>
+<td><p>aka PBE0 or PBE1PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>X3LYP</p></td>
+<td><p>hybrid by Xu and Goddard</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW3PW</p></td>
+<td><p>mixture with the mPW functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>B1LYP</p></td>
+<td><p>Becke 1-parameter mixture of B88 and LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>B1PW91</p></td>
+<td><p>Becke 1-parameter mixture of B88 and PW91</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW1PW</p></td>
+<td><p>Becke 1-parameter mixture of mPW91 and PW91</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW3LYP</p></td>
+<td><p>mixture of mPW and LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>HSE03</p></td>
+<td><p>the 2003 version of the screened hybrid HSE</p></td>
+</tr>
+<tr class="row-even"><td><p>HSE06</p></td>
+<td><p>the 2006 version of the screened hybrid HSE</p></td>
+</tr>
+<tr class="row-odd"><td><p>CAMB3LYP</p></td>
+<td><p>CAM version of B3LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>BHANDH</p></td>
+<td><p>Becke half-and-half</p></td>
+</tr>
+<tr class="row-odd"><td><p>BHANDHLYP</p></td>
+<td><p>Becke half-and-half with B88 exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>REVB3LYP</p></td>
+<td><p>Revised B3LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>CAMYBLYP</p></td>
+<td><p>BLYP with yukawa screening</p></td>
+</tr>
+<tr class="row-even"><td><p>B3LYPS</p></td>
+<td><p>B3LYP* functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>WB97</p></td>
+<td><p>Chai and Head-Gordon</p></td>
+</tr>
+<tr class="row-even"><td><p>WB97X_V</p></td>
+<td><p>Mardirossian and Head-Gordon</p></td>
+</tr>
+<tr class="row-odd"><td><p>LC_VV10</p></td>
+<td><p>Vydrov and Van Voorhis</p></td>
+</tr>
+<tr class="row-even"><td><p>CAMYB3LYP</p></td>
+<td><p>B3LYP with Yukawa screening</p></td>
+</tr>
+<tr class="row-odd"><td><p>WB97X_D</p></td>
+<td><p>Chai and Head-Gordon</p></td>
+</tr>
+<tr class="row-even"><td><p>LRC_WPBE</p></td>
+<td><p>Long-range corrected functional by Rorhdanz et al</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYP5</p></td>
+<td><p>B3LYP with VWN functional 5 instead of RPA</p></td>
+</tr>
+<tr class="row-even"><td><p>LC_WPBE</p></td>
+<td><p>Long-range corrected functional by Vydrov and Scuseria</p></td>
+</tr>
+<tr class="row-odd"><td><p>HSE12</p></td>
+<td><p>HSE12 by Moussa, Schultz and Chelikowsky</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW1LYP</p></td>
+<td><p>Becke 1-parameter mixture of mPW91 and LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW1PBE</p></td>
+<td><p>Becke 1-parameter mixture of mPW91 and PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>B88B95</p></td>
+<td><p>Mixture of B88 with BC95 (B1B95)</p></td>
+</tr>
+<tr class="row-odd"><td><p>B86B95</p></td>
+<td><p>Mixture of B86 with BC95</p></td>
+</tr>
+<tr class="row-even"><td><p>PW86B95</p></td>
+<td><p>Mixture of PW86 with BC95</p></td>
+</tr>
+<tr class="row-odd"><td><p>M06</p></td>
+<td><p>M06 functional from Minnesota</p></td>
+</tr>
+<tr class="row-even"><td><p>M06_2X</p></td>
+<td><p>M06-2X functional from Minnesota</p></td>
+</tr>
+<tr class="row-odd"><td><p>PW6B95</p></td>
+<td><p>Mixture of PW91 with BC95 from Zhao and Truhlar</p></td>
+</tr>
+<tr class="row-even"><td><p>PWB6K</p></td>
+<td><p>Mixture of PW91 with BC95 from Zhao and Truhlar for kinetics</p></td>
+</tr>
+<tr class="row-odd"><td><p>TPSSH</p></td>
+<td><p>TPSS hybrid</p></td>
+</tr>
+<tr class="row-even"><td><p>REVTPSSH</p></td>
+<td><p>revTPSS hybrid</p></td>
+</tr>
+<tr class="row-odd"><td><p>M11</p></td>
+<td><p>M11 functional from Minnesota</p></td>
+</tr>
+<tr class="row-even"><td><p>WB97M_V</p></td>
+<td><p>Mardirossian and Head-Gordon</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYP</p></td>
+<td><p>aka B3LYP5</p></td>
+</tr>
+<tr class="row-even"><td><p>B3LYP5</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*LYP + .19*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYPG</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*LYP + .19*VWN3</p></td>
+</tr>
+<tr class="row-even"><td><p>B3P86</p></td>
+<td><p>aka B3P865</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3P865</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*P86 + .19*VWN5</p></td>
+</tr>
+<tr class="row-even"><td><p>B3P86G</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*P86 + .19*VWN3</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3PW91</p></td>
+<td><p>aka B3PW915</p></td>
+</tr>
+<tr class="row-even"><td><p>B3PW915</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*PW91 + .19*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3PW91G</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88, .81*PW91 + .19*VWN3</p></td>
+</tr>
+<tr class="row-even"><td><p>O3LYP</p></td>
+<td><p>.1161*HF + 0.071006917*SLATER + .8133*OPTX, .81*LYP + .19*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW3PW</p></td>
+<td><p>aka MPW3PW5</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW3PW5</p></td>
+<td><p>.2*HF + .08*SLATER + .72*MPW91, .81*PW91 + .19*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW3PWG</p></td>
+<td><p>.2*HF + .08*SLATER + .72*MPW91, .81*PW91 + .19*VWN3</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW3LYP</p></td>
+<td><p>aka MPW3LYP5</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW3LYP5</p></td>
+<td><p>.218*HF + .073*SLATER + .709*MPW91, .871*LYP + .129*VWN5</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW3LYPG</p></td>
+<td><p>.218*HF + .073*SLATER + .709*MPW91, .871*LYP + .129*VWN3</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVB3LYP</p></td>
+<td><p>aka REVB3LYP5</p></td>
+</tr>
+<tr class="row-even"><td><p>REVB3LYP5</p></td>
+<td><p>.2*HF + .13*SLATER + .67*B88, .84*LYP + .16*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVB3LYPG</p></td>
+<td><p>.2*HF + .13*SLATER + .67*B88, .84*LYP + .16*VWN3</p></td>
+</tr>
+<tr class="row-even"><td><p>X3LYP</p></td>
+<td><p>aka X3LYP5</p></td>
+</tr>
+<tr class="row-odd"><td><p>X3LYP5</p></td>
+<td><p>.218*HF + .073*SLATER + .542385*B88 + .166615*PW91, .871*LYP + .129*VWN5</p></td>
+</tr>
+<tr class="row-even"><td><p>X3LYPG</p></td>
+<td><p>.218*HF + .073*SLATER + .542385*B88 + .166615*PW91, .871*LYP + .129*VWN3</p></td>
+</tr>
+<tr class="row-odd"><td><p>B5050LYP</p></td>
+<td><p>.5*HF + .08*SLATER + .42*B88, .81*LYP + .19*VWN</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW1LYP</p></td>
+<td><p>.25*HF + .75*MPW91, LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>MPW1PBE</p></td>
+<td><p>.25*HF + .75*MPW91, PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>PBE50</p></td>
+<td><p>.5*HF + .5*PBE, PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVPBE0</p></td>
+<td><p>.25*HF + .75*PBE_R, PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSS0</p></td>
+<td><p>.25*HF + .75*TPSS, TPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>OPTXCORR</p></td>
+<td><p>0.7344536875999693*SLATER - 0.6984752285760186*OPTX</p></td>
+</tr>
+</tbody>
+</table>
+<p>The list above is incomplete. Please refer to libxc manual
+(<a class="reference external" href="https://www.tddft.org/programs/libxc/functionals/">https://www.tddft.org/programs/libxc/functionals/</a>) for complete list of the
+hybrid functionals.</p>
+<p>The (aliased) pure functionals for libxc are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 32%" />
+<col style="width: 36%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional alias</p></td>
+<td><p>exchange part</p></td>
+<td><p>correlation part</p></td>
+</tr>
+<tr class="row-even"><td><p>BLYP</p></td>
+<td><p>B88</p></td>
+<td><p>LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>BP86</p></td>
+<td><p>B88</p></td>
+<td><p>P86</p></td>
+</tr>
+<tr class="row-even"><td><p>PW91</p></td>
+<td><p>PW91</p></td>
+<td><p>PW91</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBE</p></td>
+<td><p>PBE</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>REVPBE</p></td>
+<td><p>PBE_R</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBESOL</p></td>
+<td><p>PBE_SOL</p></td>
+<td><p>PBE_SOL</p></td>
+</tr>
+<tr class="row-even"><td><p>PKZB</p></td>
+<td><p>PKZB</p></td>
+<td><p>PKZB</p></td>
+</tr>
+<tr class="row-odd"><td><p>TPSS</p></td>
+<td><p>TPSS</p></td>
+<td><p>TPSS</p></td>
+</tr>
+<tr class="row-even"><td><p>REVTPSS</p></td>
+<td><p>REVTPSS</p></td>
+<td><p>REVTPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>SCAN</p></td>
+<td><p>SCAN</p></td>
+<td><p>SCAN</p></td>
+</tr>
+<tr class="row-even"><td><p>SOGGA</p></td>
+<td><p>SOGGA</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>BLOC</p></td>
+<td><p>BLOC</p></td>
+<td><p>TPSSLOC</p></td>
+</tr>
+<tr class="row-even"><td><p>OLYP</p></td>
+<td><p>OPTX</p></td>
+<td><p>LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>OPBE</p></td>
+<td><p>OPTX</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>RPBE</p></td>
+<td><p>RPBE</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>BPBE</p></td>
+<td><p>B88</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>MPW91</p></td>
+<td><p>MPW91</p></td>
+<td><p>PW91</p></td>
+</tr>
+<tr class="row-odd"><td><p>HFLYP</p></td>
+<td><p>HF</p></td>
+<td><p>LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>HFPW92</p></td>
+<td><p>HF</p></td>
+<td><p>PW_MOD</p></td>
+</tr>
+<tr class="row-odd"><td><p>SPW92</p></td>
+<td><p>SLATER</p></td>
+<td><p>PW_MOD</p></td>
+</tr>
+<tr class="row-even"><td><p>SVWN</p></td>
+<td><p>SLATER</p></td>
+<td><p>VWN</p></td>
+</tr>
+<tr class="row-odd"><td><p>MS0</p></td>
+<td><p>MS0</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-even"><td><p>MS1</p></td>
+<td><p>MS1</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>MS2</p></td>
+<td><p>MS2</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-even"><td><p>MS2H</p></td>
+<td><p>MS2H</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>MVS</p></td>
+<td><p>MVS</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-even"><td><p>MVSH</p></td>
+<td><p>MVSH</p></td>
+<td><p>REGTPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>SOGGA11</p></td>
+<td><p>SOGGA11</p></td>
+<td><p>SOGGA11</p></td>
+</tr>
+<tr class="row-even"><td><p>SOGGA11-X</p></td>
+<td><p>SOGGA11_X</p></td>
+<td><p>SOGGA11_X</p></td>
+</tr>
+<tr class="row-odd"><td><p>KT1</p></td>
+<td><p>KT1</p></td>
+<td><p>VWN</p></td>
+</tr>
+<tr class="row-even"><td><p>DLDF</p></td>
+<td><p>DLDF</p></td>
+<td><p>DLDF</p></td>
+</tr>
+<tr class="row-odd"><td><p>GAM</p></td>
+<td><p>GAM</p></td>
+<td><p>GAM</p></td>
+</tr>
+<tr class="row-even"><td><p>M06-L</p></td>
+<td><p>M06_L</p></td>
+<td><p>M06_L</p></td>
+</tr>
+<tr class="row-odd"><td><p>M11-L</p></td>
+<td><p>M11_L</p></td>
+<td><p>M11_L</p></td>
+</tr>
+<tr class="row-even"><td><p>MN12-L</p></td>
+<td><p>MN12_L</p></td>
+<td><p>MN12_L</p></td>
+</tr>
+<tr class="row-odd"><td><p>MN15-L</p></td>
+<td><p>MN15_L</p></td>
+<td><p>MN15_L</p></td>
+</tr>
+<tr class="row-even"><td><p>N12</p></td>
+<td><p>N12</p></td>
+<td><p>N12</p></td>
+</tr>
+<tr class="row-odd"><td><p>N12-SX</p></td>
+<td><p>N12_SX</p></td>
+<td><p>N12_SX</p></td>
+</tr>
+<tr class="row-even"><td><p>MN12-SX</p></td>
+<td><p>MN12_SX</p></td>
+<td><p>MN12_SX</p></td>
+</tr>
+<tr class="row-odd"><td><p>MN15</p></td>
+<td><p>MN15</p></td>
+<td><p>MN15</p></td>
+</tr>
+<tr class="row-even"><td><p>MBEEF</p></td>
+<td><p>MBEEF</p></td>
+<td><p>PBE_SOL</p></td>
+</tr>
+<tr class="row-odd"><td><p>SCAN0</p></td>
+<td><p>SCAN0</p></td>
+<td><p>SCAN</p></td>
+</tr>
+<tr class="row-even"><td><p>PBEOP</p></td>
+<td><p>PBE</p></td>
+<td><p>OP_PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>BOP</p></td>
+<td><p>B88</p></td>
+<td><p>OP_B88</p></td>
+</tr>
+<tr class="row-even"><td><p>REVSCAN</p></td>
+<td><p>REVSCAN</p></td>
+<td><p>REVSCAN</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVSCAN_VV10</p></td>
+<td><p>REVSCAN</p></td>
+<td><p>REVSCAN_VV10</p></td>
+</tr>
+<tr class="row-even"><td><p>SCAN_VV10</p></td>
+<td><p>SCAN</p></td>
+<td><p>SCAN_VV10</p></td>
+</tr>
+<tr class="row-odd"><td><p>SCAN_RVV10</p></td>
+<td><p>SCAN</p></td>
+<td><p>SCAN_RVV10</p></td>
+</tr>
+</tbody>
+</table>
+<p>Libxc provides the implementation of individual exchange and correlation
+functionals, such as B86, P88, LYP, VWN, etc.  Please refer to libxc manual
+(<a class="reference external" href="https://www.tddft.org/programs/libxc/functionals/">https://www.tddft.org/programs/libxc/functionals/</a>) for the supported
+functionals.</p>
+</div>
+<div class="section" id="xcfun">
+<h3><span class="section-number">2.2.3.2. </span>xcfun<a class="headerlink" href="#xcfun" title="Permalink to this headline">¶</a></h3>
+<p>Another XC functional library that PySCF supports is xcfun
+(<a class="reference external" href="http://dftlibs.org/xcfun/">http://dftlibs.org/xcfun/</a>). Xcfun library can evaluate arbitrary derivatives of
+XC functionals. The predefined compound functionals in xcfun are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 85%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional</p></td>
+<td><p>Comments</p></td>
+</tr>
+<tr class="row-even"><td><p>PBE0</p></td>
+<td><p>.25*HF + .75*PBEX + PBEC</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBE1PBE</p></td>
+<td><p>aka PBE0</p></td>
+</tr>
+<tr class="row-even"><td><p>PBEH</p></td>
+<td><p>aka PBE0</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3P86</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*P86C + .19*VWN5C</p></td>
+</tr>
+<tr class="row-even"><td><p>B3P86G</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*P86C + .19*VWN3C</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3PW91</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*PW91C + .19*VWN5C</p></td>
+</tr>
+<tr class="row-even"><td><p>B3PW91G</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*PW91C + .19*VWN3C</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYP</p></td>
+<td><p>aka B3LYP5</p></td>
+</tr>
+<tr class="row-even"><td><p>B3LYP5</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*LYP + .19*VWN5C</p></td>
+</tr>
+<tr class="row-odd"><td><p>B3LYPG</p></td>
+<td><p>.2*HF + .08*SLATER + .72*B88 + .81*LYP + .19*VWN3C</p></td>
+</tr>
+<tr class="row-even"><td><p>O3LYP</p></td>
+<td><p>.1161*HF + 0.071006917*SLATER + .8133*OPTX, .81*LYP + .19*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>X3LYP</p></td>
+<td><p>.218*HF + .073*SLATER + 0.542385*B88 + .166615*PW91X + .871*LYP + .129*VWN5C</p></td>
+</tr>
+<tr class="row-even"><td><p>X3LYPG</p></td>
+<td><p>.218*HF + .073*SLATER + 0.542385*B88 + .166615*PW91X + .871*LYP + .129*VWN3C</p></td>
+</tr>
+<tr class="row-odd"><td><p>CAMB3LYP</p></td>
+<td><p>0.19*SR_HF(0.33) + 0.65*LR_HF(0.33) + BECKECAMX + VWN5C*0.19 + LYPC*0.81</p></td>
+</tr>
+<tr class="row-even"><td><p>B97XC</p></td>
+<td><p>B97X + B97C + HF*0.1943</p></td>
+</tr>
+<tr class="row-odd"><td><p>B97_1XC</p></td>
+<td><p>B97_1X + B97_1C + HF*0.21</p></td>
+</tr>
+<tr class="row-even"><td><p>B97_2XC</p></td>
+<td><p>B97_2X + B97_2C + HF*0.21</p></td>
+</tr>
+<tr class="row-odd"><td><p>M05XC</p></td>
+<td><p>.28*HF + .72*M05X + M05C</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSSH</p></td>
+<td><p>0.1*HF + 0.9*TPSSX + TPSSC</p></td>
+</tr>
+<tr class="row-odd"><td><p>OLYP</p></td>
+<td><p>2.4832*SLATER - 1.43169*OPTX + LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>HFLYP</p></td>
+<td><p>HF + LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>KT1</p></td>
+<td><p>Keal-Tozer 1, JCP, 119, 3015
+SLATERX - 0.006*KTX</p></td>
+</tr>
+<tr class="row-even"><td><p>KT2XC</p></td>
+<td><p>Keal-Tozer 2, JCP, 119, 3015
+1.07173*SLATER - .006*KTX + 0.576727*VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>KT3XC</p></td>
+<td><p>Keal-Tozer 3, JCP, 121, 5654
+SLATERX*1.092 + KTX*-0.004 + OPTXCORR*-0.925452 + LYPC*0.864409</p></td>
+</tr>
+</tbody>
+</table>
+<p>The (aliased) pure functionals are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 32%" />
+<col style="width: 36%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional alias</p></td>
+<td><p>exchange part</p></td>
+<td><p>correlation part</p></td>
+</tr>
+<tr class="row-even"><td><p>BPW91</p></td>
+<td><p>B88</p></td>
+<td><p>PW91C</p></td>
+</tr>
+<tr class="row-odd"><td><p>BPW92</p></td>
+<td><p>B88</p></td>
+<td><p>PW92C</p></td>
+</tr>
+<tr class="row-even"><td><p>BLYP</p></td>
+<td><p>B88</p></td>
+<td><p>LYP</p></td>
+</tr>
+<tr class="row-odd"><td><p>BP86</p></td>
+<td><p>B88</p></td>
+<td><p>P86</p></td>
+</tr>
+<tr class="row-even"><td><p>PW91</p></td>
+<td><p>PW91</p></td>
+<td><p>PW91</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBE</p></td>
+<td><p>PBE</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>REVPBE</p></td>
+<td><p>REVPBE</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBESOL</p></td>
+<td><p>PBESOL</p></td>
+<td><p>PBESOL</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSS</p></td>
+<td><p>TPSS</p></td>
+<td><p>TPSS</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVTPSS</p></td>
+<td><p>REVTPSS</p></td>
+<td><p>REVTPSS</p></td>
+</tr>
+<tr class="row-even"><td><p>BLOC</p></td>
+<td><p>BLOC</p></td>
+<td><p>TPSSLOC</p></td>
+</tr>
+<tr class="row-odd"><td><p>OLYP</p></td>
+<td><p>OPTX</p></td>
+<td><p>LYP</p></td>
+</tr>
+<tr class="row-even"><td><p>RPBE</p></td>
+<td><p>RPBE</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-odd"><td><p>BPBE</p></td>
+<td><p>B88</p></td>
+<td><p>PBE</p></td>
+</tr>
+<tr class="row-even"><td><p>SVWN</p></td>
+<td><p>SLATER</p></td>
+<td><p>VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>KT1</p></td>
+<td><p>KT1</p></td>
+<td><p>VWN</p></td>
+</tr>
+<tr class="row-even"><td><p>M06-L</p></td>
+<td><p>M06L</p></td>
+<td><p>M06L</p></td>
+</tr>
+</tbody>
+</table>
+<p>Individual exchange functionals (and kinetic functionals) in xcfun are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional</p></td>
+<td><p>Comments</p></td>
+</tr>
+<tr class="row-even"><td><p>SLATER</p></td>
+<td><p>Slater LDA exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>LDA</p></td>
+<td><p>aka SLATER</p></td>
+</tr>
+<tr class="row-even"><td><p>PW86</p></td>
+<td><p>PW86 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBE</p></td>
+<td><p>PBE Exchange Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>BECKE</p></td>
+<td><p>Becke 88 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>BECKECORR</p></td>
+<td><p>Becke 88 exchange correction</p></td>
+</tr>
+<tr class="row-even"><td><p>B88</p></td>
+<td><p>aka BECKECORRX</p></td>
+</tr>
+<tr class="row-odd"><td><p>BECKESR</p></td>
+<td><p>Short range Becke 88 exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>BECKECAM</p></td>
+<td><p>CAM Becke 88 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>BR</p></td>
+<td><p>Becke-Roussells exchange with jp dependence</p></td>
+</tr>
+<tr class="row-even"><td><p>LDAERF</p></td>
+<td><p>Short-range spin-dependent LDA exchange functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>OPT</p></td>
+<td><p>OPTX Handy &amp; Cohen exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>REVPBE</p></td>
+<td><p>Revised PBE Exchange Functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>RPBE</p></td>
+<td><p>RPBE Exchange Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>KT</p></td>
+<td><p>KT exchange GGA correction</p></td>
+</tr>
+<tr class="row-odd"><td><p>PW91</p></td>
+<td><p>Perdew-Wang 1991 GGA Exchange Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>M05</p></td>
+<td><p>M05 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>M052X</p></td>
+<td><p>M05-2X exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>M06</p></td>
+<td><p>M06 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>M062X</p></td>
+<td><p>M06-2X exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>M06L</p></td>
+<td><p>M06-L exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>M06HF</p></td>
+<td><p>M06-HF exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSS</p></td>
+<td><p>TPSS original exchange functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVTPSS</p></td>
+<td><p>Reviewed TPSS exchange functional</p></td>
+</tr>
+<tr class="row-even"><td><p>B97</p></td>
+<td><p>B97 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>B97_1</p></td>
+<td><p>B97-1 exchange</p></td>
+</tr>
+<tr class="row-even"><td><p>B97_2</p></td>
+<td><p>B97-2 exchange</p></td>
+</tr>
+<tr class="row-odd"><td><p>APBE</p></td>
+<td><p>APBE Exchange Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>BLOC</p></td>
+<td><p>BLOC exchange functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBEINT</p></td>
+<td><p>PBEint Exchange Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>PBESOL</p></td>
+<td><p>PBEsol Exchange Functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>TF</p></td>
+<td><p>Thomas-Fermi Kinetic Energy Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>BT</p></td>
+<td><p>Borgoo-Tozer TS</p></td>
+</tr>
+<tr class="row-odd"><td><p>VW</p></td>
+<td><p>von Weizsaecker kinetic energy</p></td>
+</tr>
+<tr class="row-even"><td><p>TW</p></td>
+<td><p>von Weizsacker Kinetic Energy Functional</p></td>
+</tr>
+</tbody>
+</table>
+<p>Individual correlation functionals in xcfun are</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Functional</p></td>
+<td><p>Comments</p></td>
+</tr>
+<tr class="row-even"><td><p>VWN3</p></td>
+<td><p>VWN3 LDA Correlation functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>VWN5</p></td>
+<td><p>VWN5 LDA Correlation functional</p></td>
+</tr>
+<tr class="row-even"><td><p>VWN</p></td>
+<td><p>aka VWN5</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBE</p></td>
+<td><p>PBE correlation functional</p></td>
+</tr>
+<tr class="row-even"><td><p>BR</p></td>
+<td><p>Becke-Roussells correlation with jp dependence</p></td>
+</tr>
+<tr class="row-odd"><td><p>LDAERF</p></td>
+<td><p>Short-range spin-dependent LDA correlation functional</p></td>
+</tr>
+<tr class="row-even"><td><p>LDAERFC_JT</p></td>
+<td><p>Short-range spin-unpolarized LDA correlation functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>LYP</p></td>
+<td><p>LYP correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>SPBE</p></td>
+<td><p>sPBE correlation functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>VWN_PBE</p></td>
+<td><p>PBE correlation functional using VWN LDA correlation.</p></td>
+</tr>
+<tr class="row-even"><td><p>PW91K</p></td>
+<td><p>PW91 GGA Kinetic Energy Functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>PW92</p></td>
+<td><p>PW92 LDA correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>M052X</p></td>
+<td><p>M05-2X Correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>M05</p></td>
+<td><p>M05 Correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>M06</p></td>
+<td><p>M06 Correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>M06HF</p></td>
+<td><p>M06-HF Correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>M06L</p></td>
+<td><p>M06-L Correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>M062X</p></td>
+<td><p>M06-2X Correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSS</p></td>
+<td><p>TPSS original correlation functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>REVTPSS</p></td>
+<td><p>Revised TPSS correlation functional</p></td>
+</tr>
+<tr class="row-even"><td><p>PZ81</p></td>
+<td><p>PZ81 LDA correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>P86</p></td>
+<td><p>P86C GGA correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>B97</p></td>
+<td><p>B97 correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>B97_1</p></td>
+<td><p>B97-1 correlation</p></td>
+</tr>
+<tr class="row-even"><td><p>B97_2</p></td>
+<td><p>B97-2 correlation</p></td>
+</tr>
+<tr class="row-odd"><td><p>CS</p></td>
+<td><p>Colle-Salvetti correlation functional</p></td>
+</tr>
+<tr class="row-even"><td><p>APBE</p></td>
+<td><p>APBE correlation functional.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ZVPBESOL</p></td>
+<td><p>zvPBEsol correlation Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>PBEINT</p></td>
+<td><p>PBEint correlation Functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>PBELOC</p></td>
+<td><p>PBEloc correlation functional.</p></td>
+</tr>
+<tr class="row-even"><td><p>TPSSLOC</p></td>
+<td><p>TPSSloc correlation functional</p></td>
+</tr>
+<tr class="row-odd"><td><p>ZVPBEINT</p></td>
+<td><p>zvPBEint correlation Functional</p></td>
+</tr>
+<tr class="row-even"><td><p>PW91</p></td>
+<td><p>PW91 Correlation</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="customizing-xc-functionals">
+<h2><span class="section-number">2.2.4. </span>Customizing XC functionals<a class="headerlink" href="#customizing-xc-functionals" title="Permalink to this headline">¶</a></h2>
+<p>XC functionals of DFT methods can be customized. The simplest way to customize
+the XC functional is to assigned a string expression to <code class="xref py py-attr docutils literal notranslate"><span class="pre">mf.xc</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">dft</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H  0  0  0; F  0.9  0  0&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;6-31g&#39;</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">&#39;HF*0.2 + .08*LDA + .72*B88, .81*LYP + .19*VWN&#39;</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">&#39;HF*0.5 + .08*LDA + .42*B88, .81*LYP + .19*VWN&#39;</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">&#39;HF*0.8 + .08*LDA + .12*B88, .81*LYP + .19*VWN&#39;</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">&#39;HF&#39;</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The XC functional string is parsed against the rules, as described below.</p>
+<ul>
+<li><p>The given functional description must be a one-line string.</p></li>
+<li><p>The functional description is case-insensitive.</p></li>
+<li><p>The functional description string has two parts, separated by <code class="docutils literal notranslate"><span class="pre">,</span></code>.  The
+first part describes the exchange functional, the second part sets the
+correlation functional.</p>
+<ul>
+<li><p>If “,” not appeared in string, the entire string is treated as the name of a
+compound functional (containing both the exchange and the correlation
+functional) which was declared in the functional aliases list. See
+the list of predefined XC functionals in the section above.</p>
+<p>If the string was not found in the aliased functional list, it is treated as
+X functional.</p>
+</li>
+<li><p>To input only X functional (without C functional), leave the second part
+blank. E.g. description=’slater,’ means a functional with LDA contribution
+only.</p></li>
+<li><p>To neglect the contribution of X functional (just apply C functional), leave
+blank in the first part, e.g. description=’,vwn’ means a functional with VWN
+only.</p></li>
+<li><p>If compound XC functional is specified, no matter whether it is in the X
+part (the string in front of comma) or the C part (the string behind comma),
+both X and C functionals of the compound XC functional will be used.</p></li>
+</ul>
+</li>
+<li><p>The functional name can be placed in arbitrary order.  Two names need to be
+separated by operators “+” or “-“.  Blank spaces are ignored.  NOTE the parser
+only reads operators “+” “-” “*”.  / is not supported.</p></li>
+<li><p>A functional name can have at most one factor.  If the factor is not given, it
+is set to 1.  Compound functional can be scaled as a unit. For example
+‘0.5*b3lyp’ is equivalent to ‘HF*0.1 + .04*LDA + .36*B88, .405*LYP + .095*VWN’</p></li>
+<li><p>String “HF” stands for exact exchange (HF K matrix).  “HF” can be put in the
+correlation functional part (after comma). Putting “HF” in the correlation
+part is the same to putting “HF” in the exchange part.</p></li>
+<li><p>String “RSH” means range-separated operator. Its format is RSH(alpha; beta;
+omega).  Another way to input RSH is to use keywords SR_HF and LR_HF:
+“SR_HF(0.1) * alpha_plus_beta” and “LR_HF(0.1) * alpha” where the number in
+parenthesis is the value of omega.</p></li>
+<li><p>Be careful with the libxc convention of GGA functional, in which the LDA
+contribution is included.</p></li>
+</ul>
+<p>There is another way to customize XC functionals which uses the <code class="xref py py-meth docutils literal notranslate"><span class="pre">eval_xc()</span></code>
+method of the numerical integral class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0.9 0 0&#39;</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;6-31g&#39;</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">eval_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># A fictitious XC functional to demonstrate the usage</span>
+    <span class="n">rho0</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span> <span class="o">=</span> <span class="n">rho</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">exc</span> <span class="o">=</span> <span class="o">.</span><span class="mi">01</span> <span class="o">*</span> <span class="n">rho0</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="o">.</span><span class="mi">02</span> <span class="o">*</span> <span class="p">(</span><span class="n">gamma</span><span class="o">+.</span><span class="mi">001</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
+    <span class="n">vrho</span> <span class="o">=</span> <span class="o">.</span><span class="mi">01</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">rho0</span>
+    <span class="n">vgamma</span> <span class="o">=</span> <span class="o">.</span><span class="mi">02</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="n">gamma</span><span class="o">+.</span><span class="mi">001</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">vlapl</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">vtau</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">vxc</span> <span class="o">=</span> <span class="p">(</span><span class="n">vrho</span><span class="p">,</span> <span class="n">vgamma</span><span class="p">,</span> <span class="n">vlapl</span><span class="p">,</span> <span class="n">vtau</span><span class="p">)</span>
+    <span class="n">fxc</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># 2nd order functional derivative</span>
+    <span class="n">kxc</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># 3rd order functional derivative</span>
+    <span class="k">return</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span><span class="p">,</span> <span class="n">fxc</span><span class="p">,</span> <span class="n">kxc</span>
+<span class="n">dft</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">define_xc_</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_numint</span><span class="p">,</span> <span class="n">eval_xc</span><span class="p">,</span> <span class="n">xctype</span><span class="o">=</span><span class="s1">&#39;GGA&#39;</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By calling the <code class="xref py py-func docutils literal notranslate"><span class="pre">dft.libxc.define_xc_()</span></code> function, the customized <code class="xref py py-func docutils literal notranslate"><span class="pre">eval_xc()</span></code>
+function is patched to the numerical integration class <code class="xref py py-attr docutils literal notranslate"><span class="pre">mf._numint</span></code>
+dynamically.</p>
+<p>More examples of DFT XC functional customization can be found in
+<a class="reference download internal" download="" href="../../_downloads/a9d1d9427c03f0f049db7ccaaa58f974/24-custom_xc_functional.py"><code class="xref download docutils literal notranslate"><span class="pre">examples/dft/24-custom_xc_functional.py</span></code></a> and
+<a class="reference download internal" download="" href="../../_downloads/658f846c15e3254a83ec8d6564d66251/24-define_xc_functional.py"><code class="xref download docutils literal notranslate"><span class="pre">examples/dft/24-define_xc_functional.py</span></code></a>.</p>
+</div>
+</div>
+
+<div class="section">
+   
+</div>
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="../scf/" title="2.1. Self-consistent field (SCF) methods"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> Previous </span> <span class="section-number">2.1. </span>Self-consistent field (SCF) methods </span>
+              </div>
+            </a>
+          
+          
+            <a href="../mp/" title="2.3. Møller-Plesset perturbation theory"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> Next </span> <span class="section-number">2.3. </span>Møller-Plesset perturbation theory </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2021, James E. T. Smith.
+              
+          </div>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 3.4.3.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="../../_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>
