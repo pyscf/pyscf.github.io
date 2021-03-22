@@ -4,6 +4,9 @@ Quickstart
 
 The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory.
 
+Input Parsing
+=============
+
 Mean-Field Theory
 =================
 
@@ -51,9 +54,35 @@ can turn it on with the ``symmetry`` variable::
   converged SCF energy = -149.628992314169  <S^2> = 2.0326472  2S+1 = 3.0216864
   -149.6289923141695
 
+Kohn-Sham Density Functional Theory
+-----------------------------------
 
-An MP2 calculation
-------------------
+Time-Dependent Mean-Field Theory
+--------------------------------
+
+Spatially Localized Molecular Orbitals
+--------------------------------------
+
+Relativistic Effects
+--------------------
+
+Symmetry Handling
+-----------------
+
+Integrals & Density Fitting Methods
+===================================
+
+1- and 2-Electron Integrals
+---------------------------
+
+Density Fitting
+---------------
+
+Correlated Theory
+=================
+
+Møller-Plesset Perturbation Theory
+----------------------------------
 
 We can compute the correlation energy at the second-order
 Møller-Plesset level of theory with :mod:`mp.mp2`::
@@ -63,16 +92,20 @@ Møller-Plesset level of theory with :mod:`mp.mp2`::
   >>> print('E(MP2) = %.9g' % mp2.kernel()[0])
   E(MP2) = -0.379359288
 
+Coupled Cluster Theory
+----------------------
 
-Coupled-cluster calculations
-----------------------------
+Algebraic Diagrammatic Construction Theory
+------------------------------------------
 
+Full Configuration Interaction Theory
+-------------------------------------
 
-Density functional calculations
--------------------------------
+Multiconfigurational Methods
+============================
 
-CASCI and CASSCF
-----------------
+Complete Active Space Configuration Interaction Theory
+------------------------------------------------------
 
 CASCI and CASSCF calculations can be run with similar inputs::
 
@@ -86,5 +119,38 @@ CASCI and CASSCF calculations can be run with similar inputs::
 
 In this example, the CAS space is (6e, 4o), that is, six electrons in
 four orbitals.
+
+Complete Active Space Self-Consistent Field Theory
+--------------------------------------------------
+
+Density Matrix Renormalization Group Theory
+-------------------------------------------
+
+Full Configuration Interaction Quantum Monte Carlo Theory
+---------------------------------------------------------
+
+Multireference Perturbation Theory
+----------------------------------
+
+Geometry Optimization Techniques
+================================
+
+Solvent Effects
+===============
+
+Polarizable Continuum Methods
+-----------------------------
+
+Quantum Mechanics/Molecular Mechanics Methods
+---------------------------------------------
+
+Semi-Empirical Methods
+======================
+
+Periodic Boundary Conditions
+============================
+
+Miscellaneous Library Tools
+===========================
 
 
