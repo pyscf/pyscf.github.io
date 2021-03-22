@@ -109,6 +109,7 @@ matrix::
 The slow solvent does not have to be corresponding to a particular state. It can
 be even the solvent from a different geometry or an artificial quantum state of
 solute::
+
   import pyscf
   mol = pyscf.M(atom='''
        C  0.    0.      -0.542
@@ -131,7 +132,20 @@ Solvent parameters
 ------------------
 The default solvent in the ddCOSMO module is water. When studying other types of
 solvents, you can consider to modify the dielectric parameter ``eps`` using the
-constants listed below. These parameters are obtained from https://gaussian.com/scrf/.
+constants listed below::
+
+  import pyscf
+  mol = pyscf.M(atom='''
+       C  0.    0.      -0.542
+       O  0.    0.       0.677
+       H  0.    0.935   -1.082
+       H  0.   -0.935   -1.082''',
+                basis='6-31g*', verbose=4)
+  mf = mol.RHF().ddCOSMO()
+  mf.with_solvent.eps = 32.613   # methanol                          
+  mf.run()
+
+These dielectric constants are obtained from https://gaussian.com/scrf/.
 More dataset can be found in Minnesota Solvent Descriptor Database
 (https://comp.chem.umn.edu/solvation)
 
