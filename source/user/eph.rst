@@ -8,7 +8,11 @@ Electron Phonon Matrix
 
 Introduction
 ============
-While the motion of the electrons and nucleus is always coupled in molecules and materials, it is usually assumed that the wave function of the two can be treated separately under the Born-Oppenheimer (BO) approximation. The approximation hugely simplifies the computation of wave function and properties but can break down when the vibronic coupling between the two gets considerable. Traditionally the evaluation of vibronic coupling often involves complex mathematical treatment and is often unrealistic for the large systems. However, if one were to relax the BO approximation and assume that electrons experience the moving nucleus as a perturbation of the potential, one can approximate the full Hamiltonian by Taylor expansion with the adiabatic states at equilibrium and the quantized vibrational modes. This approach is widely used in solid state to compute electron/phonon transport properties (see :cite:`giustino2017eph` for more discussions).
+Because nuclei are much heavier than the electrons, one usually assumes that the Born-Oppenheimer (BO) approximation holds and that the full wave function factorizes in the electronic and the nuclear wave function.
+This approximation hugely simplifies the computation of the full wave function and its properties, but the approximation can break down when there is significant vibronic coupling.
+Traditionally, vibronic coupling is evaluated with complex mathematical machinery, which often yields unrealistic results for large systems.
+However, if one relaxes the BO approximation and assumes that the electrons experience the moving nuclei as a perturbation of the potential, the full Hamiltonian can be approximated by a Taylor expansion with the adiabatic states at equilibrium and the quantized vibrational modes.
+This approach is widely used in solid state calculations for modeling electron/phonon transport properties (see :cite:`giustino2017eph` for more discussions).
 
 PySCF supports first order eph matrix calculation by either Coupled Perturbed Kohn-Sham/Hartree-Fock (CPKS/CPHF) or finite difference. In periodic system, only FFTDF-based Gamma-point calculation is supported with finite difference. In both cases, a geometrically relaxed structure is required, or the structure instability could lead to imaginary vibrational modes.
 
