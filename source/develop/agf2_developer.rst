@@ -33,7 +33,7 @@ The key attributes of the AGF2 classes include
 :attr:`gf`         GreensFunction object
 ================== =====================
 
-The AGF2 calculation is dispatch via the :func:`kernel` function, which
+The AGF2 calculation is dispatched via the :func:`kernel` function, which
 carries out the following steps:
 
  - generate the MO basis integrals -- :func:`ao2mo`
@@ -55,8 +55,7 @@ Auxiliary space objects
 
 The :attr:`se` and :attr:`gf` attributes are both derived from the
 :class:`pyscf.agf2.aux.AuxiliarySpace` object, and are used as
-containers for the frequency-free poles of the Self-Energy and Green's
-function. 
+containers for the poles of the Self-Energy and Green's function. 
 The classes contained in :source:`pyscf/agf2/aux.py` are
 
 ======================================= ================================
@@ -137,7 +136,7 @@ QMOs.
 The occupied QMOs number :math:`n_\mathrm{MO} + n_\mathrm{MO}^\mathrm{occ}`, and
 virtual :math:`n_\mathrm{MO} + n_\mathrm{MO}^\mathrm{vir}`, and so these arrays
 become prohibitively expensive with increasing system size.
-This necessitates the use of density fitting for large systems sizes, which
+This necessitates the use of density fitting for large system sizes, which
 provides lower scaling memory requirements.
 The density fitting implementation still requires the four-centre integrals to
 be built in order to compute the moments of the self-energy, but they may be
