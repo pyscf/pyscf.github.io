@@ -13,6 +13,7 @@ Developer documentation
    develop/tdscf_developer.rst
    develop/fci_developer.rst
    develop/cc_developer.rst
+   develop/agf2_developer.rst
    develop/mcscf_developer.rst
    develop/soscf_developer.rst
    develop/ao2mo_developer.rst  
