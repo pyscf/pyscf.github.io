@@ -1,8 +1,6 @@
--.. _getting_started:
 
-
-Tutorial
-********
+Quickstart
+**********
 
 This tutorial shows simple examples of using PySCF to run quantum
 chemical calculations. An Ipython notebook of user-guide can be found
