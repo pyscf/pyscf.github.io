@@ -7,7 +7,7 @@ The present tutorial is meant to provide a brief introduction to the use of PySC
 Input Parsing
 =============
 
-Molecules (or cells, cf. the `periodic <PBC>` section) are typically loaded in any of two ways:
+Molecules (or cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways:
 
   >>> from pyscf import gto, scf
   >>> mol = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='ccpvdz')
