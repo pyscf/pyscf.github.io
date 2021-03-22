@@ -7,7 +7,7 @@ The present tutorial is meant to provide a brief introduction to the use of PySC
 Input Parsing
 =============
 
-Molecules (or cells, cf. the :ref:`periodic<PBC>` section) are typically loaded in any of two ways:
+Molecules (or cells, cf. the `periodic <PBC>` section) are typically loaded in any of two ways:
 
   >>> from pyscf import gto, scf
   >>> mol = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='ccpvdz')
@@ -27,7 +27,7 @@ Here is an example to run a HF calculation on the hydrogen molecule::
   converged SCF energy = -1.12870009355644
   -1.1287000935564409
 
-The coordinates are given by default in Ångström. One can also define
+The coordinates are given by default in Ångstrøm. One can also define
 the geometry in atomic units with::
 
   >>> from pyscf import gto, scf
@@ -153,6 +153,7 @@ Semi-Empirical Methods
 ======================
 
 .. _PBC:
+
 Periodic Boundary Conditions
 ============================
 
