@@ -47,7 +47,6 @@ A mean-field calculation is now trivially executed upon having initialized a :cl
 
 Besides the final converged ground-state energy, the mean-field object will further store the accompanying MO coefficients, occupations, etc. To illustrate how open-shell, possibly spin-polarized calculations are performed, different Hartree-Fock simulations of the O\ :sub:`2` dimer - with its triplet ground state - are given as (cf. `scf/02-rohf_uhf.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/02-rohf_uhf.py>`_):
 
-  >>> from pyscf import gto, scf
   >>> mol_o2 = gto.M(atom='O 0 0 0; O 0 0 1.2', spin=2) # (n+2 alpha, n beta) electrons
   >>> mf_o2_uhf = scf.UHF(mol_o2)
   >>> mf_o2_uhf.kernel()
@@ -110,10 +109,38 @@ As an alternative to response theory, :math:`\Delta`-SCF with Gill's maximium oc
 Spatially Localized Molecular Orbitals
 --------------------------------------
 
+PySCF offers a number of different standard schemes for localizing MOs, e.g., Pipek-Mezey, Foster-Boys, and Edmiston-Ruedenberg (cf. `local_orb/03-split_localization.py <https://github.com/pyscf/pyscf/blob/master/examples/local_orb/03-split_localization.py>`_):
+
+  >>> from pyscf import lo
+  >>> occ_orbs = mf_h2o_rhf.mo_coeff[:, mf_h2o_rhf.mo_occ > 0.]
+  >>> fb_h2o = lo.Boys(mol_h2o, occ_orbs, mf_h2o_rhf) # Foster-Boys
+  >>> loc_occ_orbs = fb.kernel()
+  >>> virt_orbs = mf_h2o_rhf.mo_coeff[:, mf_h2o_rhf.mo_occ == 0.]
+  >>> pm_h2o = lo.Boys(mol_h2o, virt_orbs, mf_h2o_rhf) # Pipek-Mezey
+  >>> loc_virt_orbs = pm.kernel()
+  
+In addition, Knizia's intrinsic bond orbitals have been implemented (cf. `local_orb/04-ibo_benzene_cubegen.py <https://github.com/pyscf/pyscf/blob/master/examples/local_orb/04-ibo_benzene_cubegen.py>`_):
+
+  >>> iao = lo.iao.iao(mol, occ_orbs)
+  >>> iao = lo.vec_lowdin(iao, mf_h2o_rhf.get_ovlp())
+  >>> ibo = lo.ibo.ibo(mol, occ_orbs, iaos=iao)
+
 .. _REL:
 
 Relativistic Effects
 --------------------
+
+PySCF implements a Dirac-Hartree-Fock solver for including relativistic effects, in possible combination with Breit Gaunt interactions (cf. `scf/05-breit_gaunt.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/05-breit_gaunt.py>`_):
+
+  >>> mf_c2_dhf = scf.DHF(mol_c2)
+  >>> mf_c2_dhf.with_gaunt = True
+  >>> mf_c2_dhf.with_breit = True
+  >>> mf_c2_dhf.kernel()
+
+As a popular alternative, scalar relativistic effects may be applied to a mean-field treatment by decorating the a :class:`SCF` object (either HF or KS-DFT) with the ``.x2c`` method (cf. `scf/21-x2c.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/21-x2c.py>`_), on top of which a correlated calculation may follow:
+
+  >>> mf_o2_x2c = scf.UKS(mol_o2).x2c()
+  >>> mf_o2_x2c.kernel()
 
 .. _SYM:
 
