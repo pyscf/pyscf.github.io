@@ -149,20 +149,63 @@ Symmetry Handling
 
 Wave function symmetry may be explicitly controlled in an SCF calculation on the C\ :sub:`2` geometry of the :ref:`above <INPUT>` section by specifying frozen occupancy through the ``irrep_nelec`` attribute (`scf/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/13-symmetry.py>`_):
 
-  >>> mf_c2 = scf.RHF(mol_c2)
-  >>> mf_c2.irrep_nelec = {'Ag': 4, 'B1u': 4, 'B2u': 2, 'B3u': 2}
-  >>> e_c2 = mf_c2.kernel()
+  >>> mf_c2_rhf = scf.RHF(mol_c2)
+  >>> mf_c2_rhf.irrep_nelec = {'Ag': 4, 'B1u': 4, 'B2u': 2, 'B3u': 2}
+  >>> e_c2 = mf_c2_rhf.kernel()
   
-Likewise, the final orbital symmetries may be probed from the MO coefficients (`symm/32-symmetrize_natural_orbital <https://github.com/pyscf/pyscf/blob/master/examples/symm/32-symmetrize_natural_orbital>`_):
+Likewise, the final orbital symmetries may be probed from the MO coefficients (`symm/32-symmetrize_natural_orbital <https://github.com/pyscf/pyscf/blob/master/examples/symm/32-symmetrize_natural_orbital.py>`_):
 
   >>> from pyscf import symm
-  >>> orbsym = symm.label_orb_symm(mol_c2, mol_c2.irrep_id, mol_c2.symm_orb, mf_c2.mo_coeff)
+  >>> orbsym = symm.label_orb_symm(mol_c2, mol_c2.irrep_id, mol_c2.symm_orb, mf_c2_rhf.mo_coeff)
 
 Integrals & Density Fitting
 ===========================
 
+.. _INT:
+
 1- and 2-Electron Integrals
 ---------------------------
+
+A typical use case of for the integral code in PySCF is the integral transformation for a given set of orbitals to arrive at 1- and 2-electron integrals in a chosen MO basis, with the latter stored as (ij|kl) with 4-fold symmetry (cf. also `ao2mo/00-mo_integrals.py <https://github.com/pyscf/pyscf/blob/master/examples/ao2mo/00-mo_integrals.py>`_):
+
+  >>> import numpy as np
+  >>> from pyscf import ao2mo
+  >>> hcore_ao = mol_h2o.intor_symmetric('int1e_kin') + mol_h2o.intor_symmetric('int1e_nuc')
+  >>> hcore_mo = np.einsum('pi,pq,qj->ij', mf_h2o_rhf.mo_coeff, hcore_ao, mf_h2o_rhf.mo_coeff)
+  >>> eri_4fold_ao = mol_h2o.intor('int2e_sph', aosym=4)
+  >>> eri_4fold_mo = ao2mo.incore.full(eri_4fold_ao, mf_h2o_rhf.mo_coeff)
+  
+If desired, the transformed 2-electron integrals may also be saved to and read from a file in HDF5 format (`ao2mo/01-outcore.py <https://github.com/pyscf/pyscf/blob/master/examples/ao2mo/01-outcore.py>`_):
+
+  >>> import tempfile
+  >>> import h5py
+  >>> ftmp = tempfile.NamedTemporaryFile()
+  >>> ao2mo.kernel(mol_h2o, mf_h2o_rhf.mo_coeff, ftmp.name)
+  >>> with h5py.File(ftmp.name) as f:
+  >>>     eri_4fold = f['eri_mo']
+  
+User-defined Hamiltonians can also be used in PySCF, e.g., as input to a mean-field calculation and subsequent correlated treatment (`mcscf/40-customizing_hamiltonian.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/40-customizing_hamiltonian.py>`_):
+
+  >>> # 1D anti-PBC Hubbard model at half filling
+  >>> mol_hub = gto.M()
+  >>> mol_hub.nelectron = 6
+  >>> mol_hub.incore_anyway = True
+  >>> n = 12
+  >>> h1 = np.zeros([n] * 2, dtype=np.float64)
+  >>> for i in range(n-1):
+  >>>     h1[i, i+1] = h1[i+1, i] = -1.
+  >>> h1[n-1, 0] = h1[0, n-1] = -1.
+  >>> eri = np.zeros([n] * 4, dtype=np.float64)
+  >>> for i in range(n):
+  >>>     eri[i, i, i, i] = 2.
+  >>> mf_hub = scf.RHF(mol_hub)
+  >>> mf_hub.get_hcore = lambda *args: h1
+  >>> mf_hub.get_ovlp = lambda *args: np.eye(n)
+  >>> mf_hub._eri = ao2mo.restore(8, eri, n) # 8-fold symmetry
+  >>> mf_hub.init_guess = '1e'
+  >>> mf_hub.kernel()
+
+.. _DF:
 
 Density Fitting Techniques
 --------------------------
