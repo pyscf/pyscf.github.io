@@ -55,7 +55,7 @@ Auxiliary space objects
 
 The :attr:`se` and :attr:`gf` attributes are both derived from the
 :class:`pyscf.agf2.aux.AuxiliarySpace` object, and are used as
-containers for the poles of the Self-Energy and Green's function. 
+containers for the poles and residues of the Self-Energy and Green's function. 
 The classes contained in :source:`pyscf/agf2/aux.py` are
 
 ======================================= ================================
@@ -102,8 +102,8 @@ Fock loop
 =========
 
 The :func:`fock_loop` function is used to solve the self-consistent
-Hartree--Fock-like renormalization of the density matrix. 
-This step also ensures that there is a correct number of electrons in the
+Hartree--Fock-like iterations on the correlated density matrix. 
+This step also simultaneously ensures that there is a correct number of electrons in the
 physical space.
 The chemical potential is first optimised by minimising the metric (in the 
 restricted case)
