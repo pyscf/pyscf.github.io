@@ -27,7 +27,7 @@ Symmetry may be specified in the ``Mole.symmetry`` attribute as either ``True`` 
 
   >>> mol_c2 = gto.M(atom = 'C 0 0 0.625; O 0 0 -0.625', symmetry = 'd2h')
   
-Numerous other ways of inputting a molecular or crystalline geometry also exist (e.g., by means of Z-matrices or from files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ examples.
+Numerous other ways of inputting a molecular or crystalline geometry also exist (e.g., by means of Z-matrices or reading in .xyz files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ examples.
 
 .. _MF:
 
@@ -224,19 +224,33 @@ For a discussion on how to use density fitting alongside the :ref:`Newton-Raphso
 Correlated Wave Function Theory
 ===============================
 
-Møller-Plesset Perturbation Theory
-----------------------------------
-
-We can compute the correlation energy at the second-order
-Møller-Plesset level of theory with :mod:`mp.mp2`::
-
-  >>> from pyscf import mp
-  >>> mp2 = mp.MP2(m)
-  >>> print('E(MP2) = %.9g' % mp2.kernel()[0])
-  E(MP2) = -0.379359288
-
 Coupled Cluster
 ---------------
+
+PySCF offers both coupled cluster and second-order Møller-Plesset functionalities. The latter of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
+
+  >>> from pyscf import mp
+  >>> mp2_h2o = mp.MP2(mf_c2_rhf)
+  >>> e_mp2 = mp2_h2o.kernel()[0]
+  >>> mp2_h2o_df = mp.MP2(mf_c2_rhf_df)
+  >>> e_mp2_df = mp2_h2o_df.kernel()[0]
+  
+At the coupled cluster level of theory, CCD, CCSD, and CCSD(T) calculation can be performed for both closed- and open-shell systems (cf. `cc/00-simple_ccsd_t.py <https://github.com/pyscf/pyscf/blob/master/examples/cc/00-simple_ccsd_t.py>`_):
+
+  >>> from pyscf import cc
+  >>> ccsd_h2o = cc.CCSD(mf_h2o_rhf)
+  >>> ccsd_h2o.direct = True # AO-direct algorithm to reduce I/O overhead
+  >>> ccsd_h2o.frozen = 1 # frozen core
+  >>> e_ccsd = ccsd_h2o.kernel()[1]
+  >>> e_ccsd_t = e_ccsd + ccsd_h2o.ccsd_t()
+
+As for MP2, this CCSD calculation will employ density fitting depending on the respective settings of ``mf_h2o_rhf``. This is also for subsequent EOM-CCSD calculations (cf. `cc/20-ip_ea_eom_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/cc/20-ip_ea_eom_ccsd.py>`_):
+
+  >>> e_ip_ccsd = ccsd_h2o.ipccsd(nroots=1)[0]
+  >>> e_ea_ccsd = ccsd_h2o.eaccsd(nroots=1)[0]
+  >>> e_ee_ccsd = ccsd_h2o.eeccsd(nroots=1)[0]
+
+Please note that both of the MP and CC codes are written in pure Python and neither of them make use of point group symmetry.
 
 Algebraic Diagrammatic Construction
 -----------------------------------
