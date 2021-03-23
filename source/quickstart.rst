@@ -232,10 +232,10 @@ Perturbation Theory, Coupled Cluster, and Algebraic Diagrammatic Constructions
 PySCF offers both second-order Møller-Plesset, coupled cluster, and algebraic diagrammatic construction functionalities. The former of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
 
   >>> from pyscf import mp
-  >>> mp2_h2o = mp.MP2(mf_c2_rhf)
-  >>> e_mp2 = mp2_h2o.kernel()[0]
-  >>> mp2_h2o_df = mp.MP2(mf_c2_rhf_df)
-  >>> e_mp2_df = mp2_h2o_df.kernel()[0]
+  >>> mp2_c2 = mp.MP2(mf_c2_rhf)
+  >>> e_c2 = mp2_c2.kernel()[0]
+  >>> mp2_c2_df = mp.MP2(mf_c2_rhf_df)
+  >>> e_c2_df = mp2_c2_df.kernel()[0]
   
 At the coupled cluster level of theory, CCD, CCSD, and CCSD(T) calculation can be performed for both closed- and open-shell systems (cf. `cc/00-simple_ccsd_t.py <https://github.com/pyscf/pyscf/blob/master/examples/cc/00-simple_ccsd_t.py>`_):
 
@@ -271,7 +271,26 @@ Please note that all of these codes are written in pure Python (with calls to BL
 Full Configuration Interaction
 ------------------------------
 
-Write me...
+In contrast to the correlation methods discussed :ref:`above <MPCCADC>`, PySCF offer a number of powerful kernels for performing exact diagonalization of all kinds of Hamiltonians and systems of arbitrary spin. For standard cases, in which all electrons of a given systems are correlated among all MOs, the syntax follows that of other correlation methods for closed- and open-shell systems (cf. `fci/00-simple_fci.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/00-simple_fci.py>`_):
+
+  >>> from pyscf import fci
+  >>> fci_h2o = fci.FCI(mf_h2o_rhf)
+  >>> e_fci = fci_h2o.kernel()[0]
+  
+However, the various FCI solvers (tabulated in `pyscf/fci/__init__.py <https://github.com/pyscf/pyscf/blob/master/pyscf/fci/__init__.py>`_) further allow for user-defined 1- and 2-electron Hamiltonians (cf. `fci/01-given_h1e_h2e.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/01-given_h1e_h2e.py>`_):
+
+  >>> fs = fci.direct_spin1.FCI() # direct_spin0 instead for singlet system ground states
+  >>> e, fcivec = fs.kernel(h1, h2, N, 8) # 8 electrons in N orbitals
+  >>> e, fcivec = fs.kernel(h1, h2, N, (5,4))  # (5 alpha, 4 beta) electrons
+  >>> e, fcivec = fs.kernel(h1, h2, N, (3,1))  # (3 alpha, 1 beta) electrons
+  
+The individual solvers can yield more than a single (ground) states by setting ``fs.nroots > 1``, and 1- to 4-electron density matrices, alongside 1- and 2-electron transition density matrices, can be computed at differing cost (cf. `fci/14-density_matrix.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/14-density_matrix.py>`_):
+
+  >>> rdm1 = fs.make_rdm1(fcivec, N, (5, 4)) # spin-traced 1-electron density matrix
+  >>> rdm1a, rdm1b = fs.make_rdm1s(fcivec, norb, (5, 4)) # alpha and beta 1-electron density matrices
+  >>> t_rdm1 = fs.trans_rdm1(fcivec0, fcivec1, N, (5, 4)) # spin-traced 1-electron transition density matrix
+  
+In addition, the FCI code is accompanied by a wealth of library tools for inspecting individual wave function expansions, assigning spin states and :ref:`symmetry <SYM>`, explicitly constructing the full Hamiltonian, etc.
 
 Multiconfigurational Methods
 ============================
