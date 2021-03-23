@@ -271,7 +271,7 @@ Please note that all of these codes are written in pure Python (with calls to BL
 Full Configuration Interaction
 ------------------------------
 
-In contrast to the correlation methods discussed :ref:`above <MPCCADC>`, PySCF offer a number of powerful kernels for performing exact diagonalization of all kinds of Hamiltonians and systems of arbitrary spin. For standard cases, in which all electrons of a given systems are correlated among all MOs, the syntax follows that of other correlation methods for closed- and open-shell systems (cf. `fci/00-simple_fci.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/00-simple_fci.py>`_):
+In contrast to the correlation methods discussed :ref:`above <MPCCADC>`, PySCF offer a number of powerful kernels (written in optimized C) for performing exact diagonalization of all kinds of Hamiltonians and systems of arbitrary spin. For standard cases, in which all electrons of a given systems are correlated among all MOs, the syntax follows that of other correlation methods for closed- and open-shell systems (cf. `fci/00-simple_fci.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/00-simple_fci.py>`_):
 
   >>> from pyscf import fci
   >>> fci_h2o = fci.FCI(mf_h2o_rhf)
