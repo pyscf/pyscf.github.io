@@ -53,7 +53,7 @@ Besides the final converged ground-state energy, the mean-field object will furt
   >>> mf_o2_rohf = scf.ROHF(mol_o2)
   >>> mf_o2_rohf.kernel()
 
-Finally, a second-order SCF method has been implemented, which is also applicable with most XC functionals, cf. :ref:`below <KSDFT>`. This algorithm needs orthonormal orbitals and their corresponding occupancies as an initial guess:
+Finally, a second-order, Newton-Raphson SCF method has been implemented, which is also applicable with most XC functionals, cf. :ref:`below <KSDFT>`. This algorithm needs orthonormal orbitals and their corresponding occupancies as an initial guess:
 
   >>> mf_h2o_rhf = mf_h2o_rhf.newton()
   >>> e_h2o = mf_h2o_rhf.kernel()
@@ -187,17 +187,17 @@ If desired, the transformed 2-electron integrals may also be saved to and read f
 User-defined Hamiltonians can also be used in PySCF, e.g., as input to a mean-field calculation and subsequent correlated treatment (`mcscf/40-customizing_hamiltonian.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/40-customizing_hamiltonian.py>`_):
 
   >>> # 1D anti-PBC Hubbard model at half filling
+  >>> n, u = 12, 2.
   >>> mol_hub = gto.M()
-  >>> mol_hub.nelectron = 6
+  >>> mol_hub.nelectron = n // 2
   >>> mol_hub.incore_anyway = True
-  >>> n = 12
   >>> h1 = np.zeros([n] * 2, dtype=np.float64)
   >>> for i in range(n-1):
   >>>     h1[i, i+1] = h1[i+1, i] = -1.
   >>> h1[n-1, 0] = h1[0, n-1] = -1.
   >>> eri = np.zeros([n] * 4, dtype=np.float64)
   >>> for i in range(n):
-  >>>     eri[i, i, i, i] = 2.
+  >>>     eri[i, i, i, i] = u
   >>> mf_hub = scf.RHF(mol_hub)
   >>> mf_hub.get_hcore = lambda *args: h1
   >>> mf_hub.get_ovlp = lambda *args: np.eye(n)
@@ -209,6 +209,17 @@ User-defined Hamiltonians can also be used in PySCF, e.g., as input to a mean-fi
 
 Density Fitting Techniques
 --------------------------
+
+Density fitting of 2-electron integrals is most conveniently invoked by means of two main channels (cf. `df/00-with_df.py <https://github.com/pyscf/pyscf/blob/master/examples/df/00-with_df.py>`_):
+
+  >>> mf_c2_rhf_df = mf_c2_rhf.density_fit(auxbasis='def2-universal-jfit') # option 1
+  >>> from pyscf import df
+  >>> mf_c2_rhf_df = df.density_fit(scf.RHF(mol_c2), auxbasis='def2-universal-jfit') # option 2
+  
+In the former of these two option, decoration by the ``scf.density_fit`` function generates a new object that works in exactly the
+same way as the regular :class:`SCF` object, but which is entirely independent of the original ``mf_c2_rhf`` object.
+
+For a discussion on how to use density fitting alongside the :ref:`Newton-Raphson SCF algorithm <HF>` and :ref:`scalar relativistic effects <REL>`, please see `scf/23-decorate_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/23-decorate_scf.py>`_.
 
 Correlated Wave Function Theory
 ===============================
@@ -283,6 +294,9 @@ Semi-Empirical Methods
 
 Periodic Boundary Conditions
 ============================
+
+df/00-with_df.py
+pbc/11-gamma_point_all_electron_scf.py
 
 Miscellaneous Library Tools
 ===========================
