@@ -300,7 +300,7 @@ Multiconfigurational Methods
 Complete Active Space Configuration Interaction & Self-Consistent Field
 -----------------------------------------------------------------------
 
-The powerful FCI solvers discussed :ref:`above <FCI>` further act as engines for the various complete active space methods in PySCF, which all share a similar API in common (cf. `mcscf/00-simple_casci.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casci.py>`_ & `mcscf/00-simple_casscf.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casscf.py>`):
+The powerful FCI solvers discussed :ref:`above <FCI>` further act as engines for the various complete active space methods in PySCF, which all share a similar API in common (cf. `mcscf/00-simple_casci.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casci.py>`_ & `mcscf/00-simple_casscf.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casscf.py>`_):
 
   >>> from pyscf import mcscf
   >>> casci_h2o = mcscf.CASCI(mf_h2o_rhf, 6, 8)
