@@ -48,11 +48,16 @@ A mean-field calculation is now trivially executed upon having initialized a :cl
 Besides the final converged ground-state energy, the mean-field object will further store the accompanying MO coefficients, occupations, etc. To illustrate how open-shell, possibly spin-polarized calculations are performed, different Hartree-Fock simulations of the O\ :sub:`2` dimer - with its triplet ground state - are given as (cf. `scf/02-rohf_uhf.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/02-rohf_uhf.py>`_):
 
   >>> from pyscf import gto, scf
-  >>> mol_o2 = gto.M(atom='O 0 0 0; O 0 0 1.2', spin=2) # (n+2,n) electrons of (alpha,beta) spin
+  >>> mol_o2 = gto.M(atom='O 0 0 0; O 0 0 1.2', spin=2) # (n+2 alpha, n beta) electrons
   >>> mf_o2_uhf = scf.UHF(mol_o2)
   >>> mf_o2_uhf.kernel()
   >>> mf_o2_rohf = scf.ROHF(mol_o2)
   >>> mf_o2_rohf.kernel()
+
+Finally, a second-order SCF method has been implemented, which is also applicable with most XC functionals, cf. :ref:`below <KSDFT>`. This algorithm needs orthonormal orbitals and their corresponding occupancies as an initial guess:
+
+  >>> mf_h2o_rhf = mf_h2o_rhf.newton()
+  >>> e_h2o = mf_h2o_rhf.kernel()
 
 .. _KSDFT:
 
@@ -86,6 +91,19 @@ The use of a combination of dense and sparse grids are particularly important wh
 
 Time-Dependent Mean-Field Theory
 --------------------------------
+
+Linear response theory has been implemented for both HF and KS-DFT (cf. `tddft/00-simple_tddft.py <https://github.com/pyscf/pyscf/blob/master/examples/tddft/00-simple_tddft.py>`_):
+
+  >>> from pyscf import tdscf
+  >>> tdmf_h2o = tdscf.TDHF(mf_h2o_rhf) # or tdscf.TDDFT(mf_h2o_rks)
+  >>> tdmf_h2o.nstates = 6
+  >>> tdmf_h2o.kernel()
+
+From a converged time-dependent mean-field calculation, the corresponding natural transition orbitals for a particular excited state may be recovered as (cf. `tddft/01-nto_analysis.py <https://github.com/pyscf/pyscf/blob/master/examples/tddft/01-nto_analysis.py>`_):
+
+  >>> weights, nto = mytd.get_nto(state=2)
+  
+As an alternative to response theory, :math:`\Delta`-SCF with Gill's maximium occupation method has been implemented for calculating specific excited states, cf. `scf/50-mom-deltaSCF.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/50-mom-deltaSCF.py>`_.
 
 .. _LOC:
 
