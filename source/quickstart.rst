@@ -295,33 +295,49 @@ In addition, the FCI code is accompanied by a wealth of library tools for inspec
 Multiconfigurational Methods
 ============================
 
-Complete Active Space Configuration Interaction
------------------------------------------------
+.. _CAS:
 
-CASCI and CASSCF calculations can be run with similar inputs::
+Complete Active Space Configuration Interaction & Self-Consistent Field
+-----------------------------------------------------------------------
+
+The powerful FCI solvers discussed :ref:`above <FCI>` further act as engines for the various complete active space methods in PySCF, which all share a similar API in common (cf. `mcscf/00-simple_casci.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casci.py>`_ & `mcscf/00-simple_casscf.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casscf.py>`):
 
   >>> from pyscf import mcscf
-  >>> mc = mcscf.CASCI(m, 4, 6)
-  >>> print('E(CASCI) = %.9g' % mc.casci()[0])
-  E(CASCI) = -149.601051
-  >>> mc = mcscf.CASSCF(m, 4, 6)
-  >>> print('E(CASSCF) = %.9g' % mc.kernel()[0])
-  E(CASSCF) = -149.613191
+  >>> casci_h2o = mcscf.CASCI(mf_h2o_rhf, 6, 8)
+  >>> e_casci = casci_h2o.kernel()[0]
+  >>> casscf_h2o = mcscf.CASSCF(mf_h2o_rhf, 6, 8)
+  >>> e_casscf = casscf_h2o.kernel()[0]
 
-In this example, the CAS space is (6e, 4o), that is, six electrons in
-four orbitals.
+While CASCI calculations may also be performed using the FCI codes, the API around the CASCI and CASSCF classes allows for easier control over aspects, such as, :ref:`density fitting of 2-electron integrals <DF>` (cf. `mcscf/16-density_fitting.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/16-density_fitting.py>`_) and the standard frozen-core approximation (cf. `mcscf/19-frozen_core.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/19-frozen_core.py>`_):
 
-Complete Active Space Self-Consistent Field
--------------------------------------------
+  >>> casscf_h2o_df = mcscf.DFCASSCF(mf_h2o_rhf, 6, 8, auxbasis='ccpvtzfit')
+  >>> casscf_h2o_df.frozen = 1 # frozen core
+  >>> e_casscf_df = casscf_h2o_df.kernel()[0]
 
-Density Matrix Renormalization Group
-------------------------------------
+In the case of CASSCF calculations, these may be performed in a state-specific or state-averaged manner (cf. `mcscf/41-state_average.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/41-state_average.py>`_):
 
-Full Configuration Interaction Quantum Monte Carlo
---------------------------------------------------
+  >>> casscf_c2 = mcscf.CASSCF(mf_c2_rhf, 8, 8)
+  >>> solver_t = fci.direct_spin1_symm.FCI(mol_c2)
+  >>> solver_t.spin = 2
+  >>> solver_t.nroots = 1
+  >>> solver_t = fci.addons.fix_spin(solver_t, shift=.2, ss=2) # 1 triplet
+  >>> solver_s = fci.direct_spin0_symm.FCI(mol_c2) # 2 singlets
+  >>> solver_s.spin = 0
+  >>> solver_s.nroots = 2
+  >>> mcscf.state_average_mix_(casscf_c2, [solver_t, solver_s], np.ones(3) / 3.)
+  >>> casscf_c2.kernel()
+  
+Finally, additional dynamic correlation may be added by means of second-order perturbation theory in the form of NEVPT2 (cf. `mrpt/02-cr2_nevpt2/cr2-scan.py <https://github.com/pyscf/pyscf/blob/master/examples/mrpt/02-cr2_nevpt2/cr2-scan.py>`_):
 
-Multireference Perturbation Theory
-----------------------------------
+  >>> from pyscf import mrpt
+  >>> e_nevpt2 = mrpt.NEVPT(casscf_h2o).kernel()
+
+.. _EXTFCI:
+
+External Approximate Full Configuration Interaction Solvers
+-----------------------------------------------------------
+
+DMRG, i-FCIQMC, Cornell SHCI
 
 Geometry Optimization Techniques
 ================================
@@ -343,8 +359,7 @@ Semi-Empirical Methods
 Periodic Boundary Conditions
 ============================
 
-df/00-with_df.py
-pbc/11-gamma_point_all_electron_scf.py
+df/00-with_df.py, pbc/11-gamma_point_all_electron_scf.py
 
 Miscellaneous Library Tools
 ===========================
