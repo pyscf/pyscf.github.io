@@ -224,10 +224,12 @@ For a discussion on how to use density fitting alongside the :ref:`Newton-Raphso
 Correlated Wave Function Theory
 ===============================
 
-Coupled Cluster
----------------
+.. _MPCCADC:
 
-PySCF offers both coupled cluster and second-order Møller-Plesset functionalities. The latter of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
+Perturbation Theory, Coupled Cluster, and Algebraic Diagrammatic Constructions
+------------------------------------------------------------------------------
+
+PySCF offers both second-order Møller-Plesset, coupled cluster, and algebraic diagrammatic construction functionalities. The former of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
 
   >>> from pyscf import mp
   >>> mp2_h2o = mp.MP2(mf_c2_rhf)
@@ -249,14 +251,27 @@ As for MP2, this CCSD calculation will employ density fitting depending on the r
   >>> e_ip_ccsd = ccsd_h2o.ipccsd(nroots=1)[0]
   >>> e_ea_ccsd = ccsd_h2o.eaccsd(nroots=1)[0]
   >>> e_ee_ccsd = ccsd_h2o.eeccsd(nroots=1)[0]
+  
+Finally, the ADC(2), ADC(2)-X, and ADC(3) schemes have all been implemented using a similar API (cf. `adc/01-closed_shell.py <https://github.com/pyscf/pyscf/blob/master/examples/adc/01-closed_shell.py>`_):
 
-Please note that both of the MP and CC codes are written in pure Python and neither of them make use of point group symmetry.
+  >>> from pyscf import adc
+  >>> adc_h2o = adc.ADC(mf_h2o_rhf)
+  >>> e_ip_adc2 = adc_h2o.kernel()[0] # IP-ADC(2) for 1 root
+  >>> adc_h2o.method = "adc(2)-x"
+  >>> adc_h2o.method_type = "ea"
+  >>> e_ea_adc2x = adc_h2o.kernel()[0] # EA-ADC(2)-x for 1 root
+  >>> adc_h2o.method = "adc(3)"
+  >>> adc_h2o.method_type = "ea"
+  >>> e_ea_adc3 = adc_h2o.kernel(nroots = 3)[0] # EA-ADC(3) for 3 roots
 
-Algebraic Diagrammatic Construction
------------------------------------
+Please note that all of these codes are written in pure Python (with calls to BLAS) and neither of them make use of point group symmetry.
+
+.. _FCI:
 
 Full Configuration Interaction
 ------------------------------
+
+Write me...
 
 Multiconfigurational Methods
 ============================
