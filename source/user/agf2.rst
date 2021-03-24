@@ -12,11 +12,11 @@ Introduction
 Auxiliary second-order Green's function perturbation theory (AGF2)
 :cite:`Backhouse2020a,Backhouse2020b` is an iterative, :math:`\mathcal{O}[N^5]`
 scaling post-Hartree--Fock method primarily intended for the calculation of
-charged excitation spectra, ionization potentials (IPs) and electron affinities
+charged excitation spectra, ionisation potentials (IPs) and electron affinities
 (EAs), with energetics and single-particle static properties also available.
 It can also be considered loosely as an iterative approximate ADC(2) method.
 One advantage is that the entire spectrum of charged excitations is found
-simultaneously, as the full Green's function is self-consistently optimized.
+simultaneously, as the full Green's function is self-consistently optimised.
 AGF2 calculations can be performed with or without density fitting, and for
 restricted or unrestricted Hartree--Fock references, and is available with 
 hybrid parallelism capabilities.
@@ -83,12 +83,12 @@ The correct number of electrons remain in the physical space throughout this
 process via optimisation of a chemical potential :math:`\mu`. 
 Finally, we note that self-consistency based on higher-order spectral moments of
 either the self-energy or resulting Green's function at each iteration is
-possible, with a limiting behavior to the traditional second-order Green's
+possible, with a limiting behaviour to the traditional second-order Green's
 function method (GF2). 
 However, numerical investigations have shown that this higher-order 
 self-consistency leads to a deterioration of results, and therefore the 
 consistency based on the  first two self-energy spectral moments is the default
-behavior.
+behaviour.
 
 Photoemission spectra
 ====================
