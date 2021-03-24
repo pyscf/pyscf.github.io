@@ -9,6 +9,7 @@ API documentation
    :maxdepth: 1
 
    modules/adc.rst
+   modules/agf2.rst
    modules/ao2mo.rst
    modules/cc.rst
    modules/ccn.rst

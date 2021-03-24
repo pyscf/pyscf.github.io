@@ -20,6 +20,7 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/ci.rst
    user/cc.rst
    user/adc.rst
+   user/agf2.rst
    user/mcscf.rst
    user/tddft.rst
    user/rt.rst
