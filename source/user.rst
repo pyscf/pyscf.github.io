@@ -29,3 +29,4 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/x2c.rst
    user/df.rst
    user/pbc.rst
+   user/eph.rst

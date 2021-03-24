@@ -1,6 +1,6 @@
 .. _develop:
 
-Developer documentation 
+Developer documentation
 ***********************
 
 .. toctree::
@@ -16,7 +16,8 @@ Developer documentation
    develop/agf2_developer.rst
    develop/mcscf_developer.rst
    develop/soscf_developer.rst
-   develop/ao2mo_developer.rst  
+   develop/ao2mo_developer.rst
    develop/df_developer.rst
    develop/pbc_developer.rst
+   develop/eph_developer.rst
    advanced.rst

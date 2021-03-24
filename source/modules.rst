@@ -42,3 +42,4 @@ API documentation
    modules/tdscf.rst
    modules/tools.rst
    modules/x2c.rst
+   modules/eph.rst

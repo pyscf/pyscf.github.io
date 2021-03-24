@@ -1,15 +1,15 @@
 .. _user_gto:
 
-Molecules and crystals
-**********************
+Molecular structure
+*******************
 
-*Modules*: :mod:`gto`, :mod:`pbc.gto`
+*Modules*: :mod:`gto`
 
 Initializing a molecule
 =======================
 
-There are three ways to define and initialize a molecule.  The first is to use
-the keyword arguments of :func:`Mole.build` to initialize a molecule::
+There are three ways to define and initialize a molecule. The first is to use
+the keyword arguments of the :meth:`Mole.build` method to initialize a molecule::
 
   >>> from pyscf import gto
   >>> mol = gto.Mole()
@@ -17,25 +17,31 @@ the keyword arguments of :func:`Mole.build` to initialize a molecule::
   ...     atom = '''O 0 0 0; H  0 1 0; H 0 0 1''',
   ...     basis = 'sto-3g')
 
-The second way is to assign the geometry, basis etc. to :class:`Mole`
-object, then call :meth:`~Mole.build` function to initialize the
-molecule::
+The second way is to assign the geometry, basis etc., to the :class:`Mole`
+object, followed by calling the :meth:`~Mole.build` method::
 
+  >>> from pyscf import gto
   >>> mol = gto.Mole()
   >>> mol.atom = '''O 0 0 0; H  0 1 0; H 0 0 1'''
   >>> mol.basis = 'sto-3g'
   >>> mol.build()
 
-The third way is to use the shortcut function :func:`Mole.M`.  This
-function pass all arguments to :func:`Mole.build`::
+The third way is to use the shortcut functions :func:`pyscf.M` or :func:`Mole.M`.
+These functions pass all the arguments to the :func:`~Mole.build` method::
+
+  >>> import pyscf
+  >>> mol = pyscf.M(
+  ...     atom = '''O 0 0 0; H  0 1 0; H 0 0 1''',
+  ...     basis = 'sto-3g')
 
   >>> from pyscf import gto
   >>> mol = gto.M(
   ...     atom = '''O 0 0 0; H  0 1 0; H 0 0 1''',
   ...     basis = 'sto-3g')
 
-Either way, you may have noticed two keywords ``atom`` and ``basis``.
-They are used to hold the molecular `geometry`_ and `basis sets`_.
+In any of these, you may have noticed two keywords ``atom`` and ``basis``.
+They are used to hold the molecular `geometry`_ and `basis sets`_, which 
+can be defined along with other input options as follows.
 
 .. _geometry:
 
@@ -479,199 +485,16 @@ The first ``0`` prevent :func:`~Mole.build` dumping the input file.
 The second ``0`` prevent :func:`~Mole.build` parsing the command line arguments.
 
 
-Initializing a crystal
-======================
-
-Initialization a crystal unit cell is very similar to the initialization
-of molecular objects. Here, :class:`pyscf.pbc.gto.Cell` class should be used
-instead of the :class:`pyscf.gto.Mole` class::
-
-  >>> from pyscf.pbc import gto
-  >>> cell = gto.Cell()
-  >>> cell.atom = '''H  0 0 0; H 1 1 1'''
-  >>> cell.basis = 'gth-dzvp'
-  >>> cell.pseudo = 'gth-pade'
-  >>> cell.a = numpy.eye(3) * 2
-  >>> cell.build()
-
-The crystal initialization requires an additional parameter :attr:`cell.a` which
-represents the lattice vectors. In the above example, we specified
-:attr:`cell.pseudo` for the pseudo-potential, which is optional.
-The input format of basis set is the same as that for the :class:`Mole` object.
-The other attributes of :class:`Mole` such as :attr:`verbose`,
-:attr:`max_memory`, :attr:`spin`, etc., can also be used for crystalline systems.
-
-Basis set and pseudopotential
------------------------------
-PySCF uses the crystalline Gaussian-type orbitals as the basis functions
-for solid calculations.
-These orbitals are Bloch functions, which have the form
-
-.. math::
-
-   \phi_{\mathbf{k}}(\mathbf{r}) = \sum_{\mathbf{T}} e^{i\mathbf{k}\cdot \mathbf{T}} \chi(\mathbf{r}-\mathbf{T}) \;,
-
-where :math:`\mathbf{T}` is a lattice vector,
-:math:`\mathbf{k}` is a crystal momentum vector,
-and :math:`\chi` is a conventional Gaussian basis function centered within a cell.
-
-The predefined basis sets for solid calculations include 
-the valence basis sets that are optimized for the GTH pseudopotentials (see :source:`pyscf/pbc/gto/pseudo`).
-In addition, the predefined basis sets and ECPs for molecular calculations 
-can be used in solid calculations as well (see :source:`examples/pbc/05-input_pp.py`).
-Finally, custom basis sets can be defined just like that in molecular calculations
-(see :source:`examples/pbc/04-input_basis.py`).
-
-
-1D and 2D systems
------------------
-
-PySCF PBC module supports the low-dimensional PBC systems.  You can initialize
-the attribute :attr:`cell.dimension` to specify the dimension of the system::
-
-  >>> from pyscf.pbc import gto
-  >>> cell = gto.Cell()
-  >>> cell.atom = '''H  0 0 0; H 1 1 0'''
-  >>> cell.basis = 'sto3g'
-  >>> cell.dimension = 2
-  >>> cell.a = numpy.eye(3) * 2
-  >>> cell.build()
-
-When :attr:`cell.dimension` is specified, a vacuum of infinite size will be
-applied on certain dimension(s).  More specifically, when :attr:`cell.dimension`
-is 2, the z-direction will be treated as infinite large and the xy-plane
-constitutes the periodic surface. When :attr:`cell.dimension` is 1, y and z axes
-are treated as vacuum thus wire is placed on the x axis.  When
-:attr:`cell.dimension` is 0, all three directions are vacuum.  The PBC system is
-actually the same to the molecular system.
-
-
 Access AO integrals
 ===================
 
-molecular integrals
--------------------
+PySCF uses `libcint <https://github.com/sunqm/libcint>`_ library as the AO
+integral engine. A simple interface function :func:`Mole.intor` is provided 
+to obtain the one- and two-electron AO integrals::
 
-PySCF uses `Libcint <https://github.com/sunqm/libcint>`_ library as the AO
-integral engine. It provides simple interface function :func:`getints_by_shell`
-to evaluate the integrals. The following example evaluates 3-center 2-electron
-integrals with this function::
+  kin = mol.intor('int1e_kin')
+  vnuc = mol.intor('int1e_nuc')
+  overlap = mol.intor('int1e_ovlp')
+  eri = mol.intor('int2e')
 
-  import numpy
-  from pyscf import gto, scf, df
-  mol = gto.M(atom='O 0 0 0; h 0 -0.757 0.587; h 0 0.757 0.587', basis='cc-pvdz')
-  auxmol = gto.M(atom='O 0 0 0; h 0 -0.757 0.587; h 0 0.757 0.587', basis='weigend')
-  pmol = mol + auxmol
-  nao = mol.nao_nr()
-  naux = auxmol.nao_nr()
-  eri3c = numpy.empty((nao,nao,naux))
-  pi = 0
-  for i in range(mol.nbas):
-      pj = 0
-      for j in range(mol.nbas):
-          pk = 0
-          for k in range(mol.nbas, mol.nbas+auxmol.nbas):
-              shls = (i, j, k)
-              buf = pmol.intor_by_shell('int3c2e_sph', shls)
-              di, dj, dk = buf.shape
-              eri3c[pi:pi+di,pj:pj+dj,pk:pk+dk] = buf
-              pk += dk
-          pj += dj
-      pi += di
-
-Here we load the Weigend density fitting basis to ``auxmol`` and append the
-basis to normal orbital basis which was initialized in ``mol``. In the result
-``pmol`` object, the first ``mol.nbas`` shells are the orbital basis and
-the next ``auxmol.nbas`` are auxiliary basis. The three nested loops run over
-all integrals for the three index integral :math:`(ij|K)`. Similarly, we can compute
-the two center Coulomb integrals::
-
-  eri2c = numpy.empty((naux,naux))
-  pk = 0
-  for k in range(mol.nbas, mol.nbas+auxmol.nbas):
-      pl = 0
-      for l in range(mol.nbas, mol.nbas+auxmol.nbas):
-          shls = (k, l)
-          buf = pmol.intor_by_shell('int2c2e_sph', shls)
-          dk, dl = buf.shape
-          eri2c[pk:pk+dk,pl:pl+dl] = buf
-          pl += dl
-      pk += dk
-
-Now we can use the two-center integrals and three-center integrals to implement
-the density fitting Hartree-Fock code.
-
-.. code:: python
-
-  def get_vhf(mol, dm, *args, **kwargs):
-      naux = eri2c.shape[0]
-      nao = mol.nao_nr()
-      rho = numpy.einsum('ijp,ij->p', eri3c, dm)
-      rho = numpy.linalg.solve(eri2c, rho)
-      jmat = numpy.einsum('p,ijp->ij', rho, eri3c)
-      kpj = numpy.einsum('ijp,jk->ikp', eri3c, dm)
-      pik = numpy.linalg.solve(eri2c, kpj.reshape(-1,naux).T)
-      kmat = numpy.einsum('pik,kjp->ij', pik.reshape(naux,nao,nao), eri3c)
-      return jmat - kmat * .5
-      
-  mf = scf.RHF(mol)
-  mf.verbose = 0
-  mf.get_veff = get_vhf
-  print('E(DF-HF) = %.12f, ref = %.12f' % (mf.kernel(), scf.density_fit(mf).kernel()))
-
-Your screen should output
-
-  | E(DF-HF) = -76.025936299702, ref = -76.025936299702
-
-
-Evaluating the integrals with nested loops and :func:`mol.intor_by_shell` method is
-inefficient. It is preferred to load integrals in bulk and this can be done
-with :func:`mol.intor` method::
-
-  eri2c = auxmol.intor('int2c2e_sph')
-  eri3c = pmol.intor('int3c2e_sph', shls_slice=(0,mol.nbas,0,mol.nbas,mol.nbas,mol.nbas+auxmol.nbas))
-  eri3c = eri3c.reshape(mol.nao_nr(), mol.nao_nr(), -1)
-
-The :func:`mol.intor` method can be used to evaluate one-electron and
-two-electron integrals::
-
-  hcore = mol.intor('int1e_nuc_sph') + mol.intor('int1e_kin_sph')
-  overlap = mol.intor('int1e_ovlp_sph')
-  eri = mol.intor('int2e_sph')
-
-There is a long list of supported AO integrals (see :ref:`gto_moleintor`).
-
-
-PBC AO integrals
-----------------
-
-The :func:`mol.intor` method can only be used to evaluate the integrals with open boundary
-conditions. When the periodic boundary conditions of crystalline systems are
-studied, you need to use the :func:`pbc.Cell.pbc_intor` function to evaluate the
-integrals for short-range operators, such as the overlap and kinetic matrix::
-
-  from pyscf.pbc import gto
-  cell = gto.Cell()
-  cell.atom = 'H 0 0 0; H 1 1 1'
-  cell.a = numpy.eye(3) * 2.
-  cell.build()
-  overlap = cell.pbc_intor('int1e_ovlp_sph')
-
-By default, the :func:`pbc.Cell.pbc_intor` function returns the :math:`\Gamma`-point
-integrals. If k-points are specified, :func:`pbc.Cell.pbc_intor` can
-also evaluate the k-point integrals::
-
-  kpts = cell.make_kpts([2,2,2])  # 8 k-points
-  overlap = cell.pbc_intor('int1e_ovlp_sph', kpts=kpts)
-
-.. note:: :func:`pbc.Cell.pbc_intor` can only be used to evaluate the short-range
-  integrals. PBC density fitting methods have to be used to compute the integrals for
-  long-range operators such as nuclear attraction and Coulomb repulsion.
-
-The two-electron Coulomb integrals can be evaluated with PBC density fitting
-methods::
-
-    from pyscf.pbc import df
-    eri = df.DF(cell).get_eri()
-
-See also :numref:`user_pbc_df` for more details of the PBC density fitting module.
+For a full list of supported AO integrals, see :ref:`gto_moleintor`.
