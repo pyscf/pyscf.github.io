@@ -55,7 +55,7 @@ Auxiliary space objects
 
 The :attr:`se` and :attr:`gf` attributes are both derived from the
 :class:`pyscf.agf2.aux.AuxiliarySpace` object, and are used as
-containers for the poles and residues of the Self-Energy and Green's function. 
+containers for the poles and residues of the self-energy and Green's function. 
 The classes contained in :source:`pyscf/agf2/aux.py` are
 
 ======================================= ================================
