@@ -337,7 +337,26 @@ Finally, additional dynamic correlation may be added by means of second-order pe
 External Approximate Full Configuration Interaction Solvers
 -----------------------------------------------------------
 
-DMRG, i-FCIQMC, Cornell SHCI
+Besides the exact solvers discussed :ref:`earlier <FCI>`, a number of highly efficient approximate solvers for use in CASCI and CASSCF calculations may also be employed via their interfaces in PySCF. For instance, the `StackBlock <https://sanshar.github.io/Block/>`_ code from Sandeep Sharma's group @ University of Colorado Boulder can be used as an optimized DMRG solver to perform parallel DMRGSCF calculations across several processes (cf. `dmrg/01-dmrg_casscf_with_stackblock.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/01-dmrg_casscf_with_stackblock.py>`_):
+
+  >>> from pyscf import dmrgscf
+  >>> import os
+  >>> from pyscf.dmrgscf import settings
+  >>> if 'SLURMD_NODENAME' in os.environ: # slurm system
+  >>>     settings.MPIPREFIX = 'srun'
+  >>> elif 'PBS_NODEFILE' in os.environ: # PBS system
+  >>>     settings.MPIPREFIX = 'mpirun'
+  >>> else: # MPI on single node
+  >>>     settings.MPIPREFIX = 'mpirun -np 4'
+  >>> mc = dmrgscf.DMRGSCF(mf_c2_rhf, 8, 8)
+  >>> mc.state_average_([0.5, 0.5])
+  >>> mc.fcisolver.memory = 4 # in GB
+  >>> mc.fcisolver.num_thrds = 8 # number of threads to spawn on each MPI process
+  >>> e_dmrgscf = mc.kernel()
+  
+The interface to StackBlock can also be used to run DMRG-NEVPT2 calculations for excited states, cf. `dmrg/11-excited_states.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/11-excited_states.py>`_.
+
+Similar interfaces have furthermore been written to enable the execution of i-FCIQMC and SHCI calculations from within PySCF.
 
 Geometry Optimization Techniques
 ================================
