@@ -25,7 +25,7 @@ Calling ``build()`` initializes a bunch of internal control parameters. Whenever
 
 Symmetry may be specified in the ``Mole.symmetry`` attribute as either ``True`` or ``False`` (default is ``False``, i.e., off). Alternatively, a particular subgroup can be specified by a string argument (`gto/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/13-symmetry.py>`_):
 
-  >>> mol_c2 = gto.M(atom = 'C 0 0 0.625; O 0 0 -0.625', symmetry = 'd2h')
+  >>> mol_c2 = gto.M(atom = 'C 0 0 .625; O 0 0 -.625', symmetry = 'd2h')
   
 Numerous other ways of inputting a molecular or crystalline geometry also exist (e.g., by means of Z-matrices or reading in .xyz files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ examples.
 
@@ -337,7 +337,7 @@ Finally, additional dynamic correlation may be added by means of second-order pe
 External Approximate Full Configuration Interaction Solvers
 -----------------------------------------------------------
 
-Besides the exact solvers discussed :ref:`earlier <FCI>`, a number of highly efficient approximate solvers for use in CASCI and CASSCF calculations may also be employed via their interfaces in PySCF. For instance, the `StackBlock <https://sanshar.github.io/Block/>`_ code from Sandeep Sharma's group @ University of Colorado Boulder can be used as an optimized DMRG solver to perform parallel DMRGSCF calculations across several processes (cf. `dmrg/01-dmrg_casscf_with_stackblock.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/01-dmrg_casscf_with_stackblock.py>`_):
+Besides the exact solvers discussed :ref:`earlier <FCI>`, a number of highly efficient approximate solvers for use in CASCI and CASSCF calculations may also be employed via their interfaces in PySCF. For instance, the `StackBlock <https://github.com/sanshar/StackBlock>`_ code can be used as an optimized DMRG solver to perform parallel DMRGSCF calculations across several processes (cf. `dmrg/01-dmrg_casscf_with_stackblock.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/01-dmrg_casscf_with_stackblock.py>`_):
 
   >>> from pyscf import dmrgscf
   >>> import os
@@ -349,14 +349,12 @@ Besides the exact solvers discussed :ref:`earlier <FCI>`, a number of highly eff
   >>> else: # MPI on single node
   >>>     settings.MPIPREFIX = 'mpirun -np 4'
   >>> mc = dmrgscf.DMRGSCF(mf_c2_rhf, 8, 8)
-  >>> mc.state_average_([0.5, 0.5])
+  >>> mc.state_average_([.5] * 2)
   >>> mc.fcisolver.memory = 4 # in GB
   >>> mc.fcisolver.num_thrds = 8 # number of threads to spawn on each MPI process
   >>> e_dmrgscf = mc.kernel()
   
-The interface to StackBlock can also be used to run DMRG-NEVPT2 calculations for excited states, cf. `dmrg/11-excited_states.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/11-excited_states.py>`_.
-
-Similar interfaces have furthermore been written to enable the execution of i-FCIQMC and SHCI calculations from within PySCF.
+Likewise, similar interfaces furthermore exist to enable the execution of i-FCIQMC (using `NECI <https://github.com/ghb24/NECI_STABLE>`_) and SHCI (using either `Dice <https://github.com/sanshar/Dice>`_ or `Arrow <https://github.com/QMC-Cornell/shci>`_) calculations from within PySCF.
 
 Geometry Optimization Techniques
 ================================
