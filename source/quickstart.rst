@@ -431,5 +431,42 @@ Alternatively, a combination of the `PyFraME <https://gitlab.com/FraME-projects/
 Periodic Boundary Conditions
 ============================
 
-df/00-with_df.py, pbc/11-gamma_point_all_electron_scf.py
+Finally, PySCF is equipped with a comprehensive PBC for performing solid-state calculations. As alluded to in the section on :ref:`input parsing <INPUT>`, the API for initializing unit cells is deliberately as close to that for finite-size molecular Hamiltonians as possible (cf. `pbc/00-input_cell.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/00-input_cell.py>`_):
 
+  >>> from pyscf.pbc import gto as pbcgto
+  >>> cell_diamond = pbcgto.M(
+                              atom = '''C     0.      0.      0.
+                                        C     .8917    .8917   .8917
+                                        C     1.7834  1.7834  0.
+                                        C     2.6751  2.6751   .8917
+                                        C     1.7834  0.      1.7834
+                                        C     2.6751   .8917  2.6751
+                                        C     0.      1.7834  1.7834
+                                        C     .8917   2.6751  2.6751''',
+                              basis = 'gth-szv',
+                              pseudo = 'gth-pade',
+                              a = np.eye(3) * 3.5668)
+
+Besides the difference in import of the ``gto`` module, the only new attributes are ``a`` and ``pseudo``. The former of these (``a``) is a matrix for lattice vectors, where each row of a primitive vector, while the latter (``pseudo``) is a crystal pseudo potential (cf. `pyscf/pbc/gto/pseudo/GTH_POTENTIALS <https://github.com/pyscf/pyscf/blob/master/pyscf/pbc/gto/pseudo/GTH_POTENTIALS>`_ for a full list of these), which is allowed to mix with an effective core potential through the ``ecp`` attribute, cf. `pbc/05-input_pp.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/05-input_pp.py>`_.
+
+The closeness in the APIs for molecular and crystalline input parsing holds true for mean-field and correlated calculations as well. For instance, an all-electron calculation with k-point sampling at the KS-DFT level using :ref:`density fitting <DF>` (recommended) and a :ref:`second-order SCF methods <HF>` requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_):
+
+ >>> from pyscf.pbc import dft as pbcdft
+ >>> kpts = cell_diamond.make_kpts([4] * 3) # 4 k-poins for each axis
+ >>> krks_diamond = pbcdft.KRKS(cell_diamond, kpts).density_fit(auxbasis='weigend')
+ >>> krks_diamond.xc = 'bp86'
+ >>> krks_diamond = krks_diamond.newton()
+ >>> krks_diamond.kernel()
+
+Alternative, mixed density fitting (plane waves & Gaussians) is another option for all-electron calculations, this time at the :math:`\Gamma`-point (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+
+ >>> from pyscf.pbc import scf as pbcscf
+ >>> rhf_diamond = pbcscf.RHF(cell_diamond).mix_density_fit()
+ >>> rhf_diamond.with_df.mesh = [10] * 3  # Tune number of PWs for performance/accuracy balance
+ >>> rhf_diamond.kernel()
+
+Following a converged mean-field calculation, dynamic electron correlation may be treated by means of either MP2 or (EOM-)CCSD. These calculations may again performed with k-point sampling (cf. `pbc/22-k_points_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/22-k_points_ccsd.py>`_) or at the :math:`\Gamma`-point, in which case only real integrals are needed and the conventional methods implemented for finite-size systems can be employed as a result without any modification needed (cf. `pbc/12-gamma_point_post_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/12-gamma_point_post_hf.py>`_):
+
+  >>> ccsd_diamond = cc.CCSD(rhf_diamond)
+  >>> ccsd_diamond.kernel()
+  
