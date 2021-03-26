@@ -95,7 +95,7 @@ Time-Dependent Mean-Field Theory
 Linear response theory has been implemented for both HF and KS-DFT (cf. `tddft/00-simple_tddft.py <https://github.com/pyscf/pyscf/blob/master/examples/tddft/00-simple_tddft.py>`_):
 
   >>> from pyscf import tdscf
-  >>> tdhf_h2o = tdscf.TDHF(rhf_h2o) # also known as RPA
+  >>> tdhf_h2o = tdscf.TDHF(rhf_h2o)
   >>> tdhf_h2o.nstates = 6
   >>> tdhf_h2o.kernel()
   >>> tddft_h2o = tdscf.TDA(rks_h2o) # TDDFT with Tamm-Dankoff approximation
@@ -384,8 +384,31 @@ For :ref:`multiconfigurational methods <CAS>`, the geometry of an excited state 
 Solvent Effects
 ===============
 
-Polarizable Continuum Methods
------------------------------
+.. _PCMCOSMO:
+
+Polarizable Continuum & COSMO Methods
+-------------------------------------
+
+PySCF offers the inclusion of solvent effects into most types of calculations, as implemented by either PCM or COSMO (both in their `domain-decomposed <https://www.ddpcm.org/>`_ formulations to allow for a fast discretization of the polarization equations). For instance, :ref:`geometry optimizations <GEOMOPT>` can be performed for ground and excited states in the presence of a solvent (cf. `solvent/21-tddft_geomopt.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/21-tddft_geomopt.py>`_):
+
+  >>> rhf_h2o_pcm = mol_h2o.RHF().ddPCM()
+  >>> rhf_h2o_pcm.kernel()
+  >>> tdhf_h2o_pcm = rhf_h2o_pcm.TDA().ddPCM()
+  >>> tdhf_h2o_pcm.with_solvent.equilibrium_solvation = True
+  >>> mol_h2o_tdhf_pcm_2nd_ex = tdhf_h2o_pcm.nuc_grad_method().as_scanner(state=2).optimizer().kernel()
+  
+Similarly, correlation methods, e.g., CCSD, may be performed in the presence of a solvent by means of either a relaxed or unrelaxed (mean-field) potential (cf. `solvent/03-ccsd_with_ddcosmo.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/03-ccsd_with_ddcosmo.py>`_):
+
+  >>> from pyscf import solvent
+  >>> rhf_h2o_cosmo = mol_h2o.RHF().ddCOSMO()
+  >>> ccsd_h2o_cosmo_rel = solvent.ddCOSMO(cc.CCSD(rhf_h2o)) # relaxed
+  >>> ccsd_h2o_cosmo_rel.kernel()
+  >>> ccsd_h2o_cosmo_unrel = solvent.ddCOSMO(cc.CCSD(rhf_h2o_cosmo), dm=rhf_h2o_cosmo.make_rdm1()) # unrelaxed
+  >>> ccsd_h2o_cosmo_unrel.kernel()
+  
+Different solvents are chosen upon by setting the ``with_solvent`` attribute.
+
+.. _QMMM:
 
 Quantum Mechanics/Molecular Mechanics Methods
 ---------------------------------------------
