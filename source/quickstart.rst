@@ -2,14 +2,14 @@
 Quickstart
 **********
 
-The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical calculations. Starting with input parsing and uncorrelated Hartree-Fock theory, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. Please also note that the cells below often share objects in-between one another.
+The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical simulations. Starting with input parsing and uncorrelated Hartree-Fock theory for chemical Hamiltonians, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. For brevity and so as to not repeat a number of function calls, please also note that the cells below often share objects in-between one another.
 
 .. _INPUT:
 
 Input Parsing
 =============
 
-Molecules (or cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways (`gto/00-input_mole.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/00-input_mole.py>`_):
+Molecules (or unit cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways (`gto/00-input_mole.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/00-input_mole.py>`_):
 
   >>> from pyscf import gto
   >>> mol_h2o = gto.Mole()
@@ -27,7 +27,7 @@ Symmetry may be specified in the ``Mole.symmetry`` attribute as either ``True`` 
 
   >>> mol_c2 = gto.M(atom = 'C 0 0 .625; O 0 0 -.625', symmetry = 'd2h')
   
-Numerous other ways of inputting a molecular or crystalline geometry also exist (e.g., by means of Z-matrices or reading in .xyz files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ examples.
+Numerous other ways of inputting a molecular or crystalline geometry also exist (e.g., by means of Z-matrices or reading in .xyz files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ and `pbc <https://github.com/pyscf/pyscf/blob/master/examples/pbc>`_ examples.
 
 .. _MF:
 
@@ -53,7 +53,7 @@ Besides the final converged ground-state energy, the mean-field object will furt
   >>> rohf_o2 = scf.ROHF(mol_o2)
   >>> rohf_o2.kernel()
 
-Finally, a second-order, Newton-Raphson SCF method has been implemented, which is also applicable with most XC functionals, cf. :ref:`below <KSDFT>`. This algorithm needs orthonormal orbitals and their corresponding occupancies as an initial guess:
+Finally, a second-order, Newton-Raphson SCF method has been implemented, which is also applicable with most XC functionals, cf. :ref:`below <KSDFT>`. This algorithm needs orthonormal orbitals and their corresponding occupancies as initial guesses. These are automatically generated if none are provided (cf. `scf/22-newton.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/22-newton.py>`_):
 
   >>> rhf_h2o = rhf_h2o.newton()
   >>> e_h2o = rhf_h2o.kernel()
@@ -69,15 +69,15 @@ Running a KS-DFT calculation is every bit as straightforward as what we discusse
   >>> rks_h2o = dft.RKS(mol) # likewise for UKS and ROKS
   >>> rks_h2o.xc = 'b3lyp'
   
-Besides the use of predefined XC functionals (cf. `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_ for the complete list of
-available functionals), these can also be fully defined by the user (`dft/24-custom_xc_functional.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/24-custom_xc_functional.py>`_), as can the angular and radial grids (`dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_):
+Besides the use of predefined XC functionals (cf. `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_ for the complete lists of
+available functionals), these can also be fully defined by the user (`dft/24-custom_xc_functional.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/24-custom_xc_functional.py>`_), as can the angular and radial grids to be used in the calculation (`dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_):
 
   >>> rks_h2o.xc = '.2 * HF + .08 * LDA + .72 * B88, .81 * LYP + .19 * VWN' # B3LYP
   >>> rks_h2o.grids.atom_grid = (100, 770)
   >>> rks_h2o.grids.prune = None
   >>> e_rks = rks_h2o.kernel()
   
-The use of a combination of dense and sparse grids are particularly important whenever XC functionals with non-local correlation calculation are employed (cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_):
+The use of a combination of dense and sparse grids are particularly important whenever XC functionals with non-local dispersion (van der Waals) corrections are employed (cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_):
 
   >>> rks_c2 = dft.RKS(mol_c2)
   >>> rks_c2.xc = 'wb97m_v'
@@ -134,14 +134,14 @@ In addition, Knizia's intrinsic bond orbitals have been implemented (cf. `local_
 Relativistic Effects
 --------------------
 
-PySCF implements a Dirac-Hartree-Fock solver for including relativistic effects, in possible combination with Breit Gaunt interactions (cf. `scf/05-breit_gaunt.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/05-breit_gaunt.py>`_):
+PySCF implements a Dirac-Hartree-Fock solver for including relativistic effects, in possible combination with Breit and Gaunt interactions (cf. `scf/05-breit_gaunt.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/05-breit_gaunt.py>`_):
 
   >>> dhf_c2 = scf.DHF(mol_c2)
   >>> dhf_c2.with_gaunt = True
   >>> dhf_c2.with_breit = True
   >>> dhf_c2.kernel()
 
-As a popular alternative, scalar relativistic effects may be applied to a mean-field treatment by decorating the a :class:`SCF` object (either HF or KS-DFT) with the ``.x2c`` method (cf. `scf/21-x2c.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/21-x2c.py>`_), on top of which a correlated calculation may follow:
+As a popular alternative, scalar relativistic effects may be applied to a mean-field treatment by decorating the a :class:`SCF` object (either HF or KS-DFT) with the ``.x2c()`` method (cf. `scf/21-x2c.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/21-x2c.py>`_), on top of which a correlated calculation may follow:
 
   >>> uks_o2_x2c = scf.UKS(mol_o2).x2c()
   >>> uks_o2_x2c.kernel()
@@ -151,7 +151,7 @@ As a popular alternative, scalar relativistic effects may be applied to a mean-f
 Symmetry Handling
 -----------------
 
-Wave function symmetry may be explicitly controlled in an SCF calculation on the C\ :sub:`2` geometry of the :ref:`above <INPUT>` section by specifying frozen occupancy through the ``irrep_nelec`` attribute (`scf/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/13-symmetry.py>`_):
+Wave function symmetry may be explicitly controlled in an SCF calculation on the C\ :sub:`2` geometry of the :ref:`above <INPUT>` section by specifying frozen occupancy through the ``SCF.irrep_nelec`` attribute (`scf/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/13-symmetry.py>`_):
 
   >>> rhf_c2 = scf.RHF(mol_c2)
   >>> rhf_c2.irrep_nelec = {'Ag': 4, 'B1u': 4, 'B2u': 2, 'B3u': 2}
@@ -170,12 +170,12 @@ Integrals & Density Fitting
 1- and 2-Electron Integrals
 ---------------------------
 
-A typical use case of for the integral code in PySCF is the integral transformation for a given set of orbitals to arrive at 1- and 2-electron integrals in a chosen MO basis, with the latter stored as (ij|kl) with 4-fold symmetry (cf. also `ao2mo/00-mo_integrals.py <https://github.com/pyscf/pyscf/blob/master/examples/ao2mo/00-mo_integrals.py>`_):
+A typical use case for the integral code in PySCF is the integral transformation for a given set of orbitals to arrive at 1- and 2-electron integrals in a chosen MO basis, with the latter stored as (ij|kl) with 4-fold symmetry (cf. also `ao2mo/00-mo_integrals.py <https://github.com/pyscf/pyscf/blob/master/examples/ao2mo/00-mo_integrals.py>`_):
 
   >>> import numpy as np
   >>> from pyscf import ao2mo
   >>> hcore_ao = mol_h2o.intor_symmetric('int1e_kin') + mol_h2o.intor_symmetric('int1e_nuc')
-  >>> hcore_mo = np.einsum('pi,pq,qj->ij', mf_h2o_rhf.mo_coeff, hcore_ao, rhf_h2o.mo_coeff)
+  >>> hcore_mo = np.einsum('pi,pq,qj->ij', rhf_h2o.mo_coeff, hcore_ao, rhf_h2o.mo_coeff)
   >>> eri_4fold_ao = mol_h2o.intor('int2e_sph', aosym=4)
   >>> eri_4fold_mo = ao2mo.incore.full(eri_4fold_ao, rhf_h2o.mo_coeff)
   
@@ -233,7 +233,7 @@ Correlated Wave Function Theory
 Perturbation Theory, Coupled Cluster, and Algebraic Diagrammatic Constructions
 ------------------------------------------------------------------------------
 
-PySCF offers both second-order Møller-Plesset, coupled cluster, and algebraic diagrammatic construction functionalities. The former of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
+PySCF offers both second-order Møller-Plesset, coupled cluster, and algebraic diagrammatic construction functionalities. The former of these are are implemented both with and without :ref:`density fitting <DF>`, again depending on the ``SCF.with_df`` attribute of the underlying mean-field object (cf. `mp/00-simple_mp2.py <https://github.com/pyscf/pyscf/blob/master/examples/mp/00-simple_mp2.py>`_):
 
   >>> from pyscf import mp
   >>> mp2_c2 = mp.MP2(rhf_c2)
@@ -250,7 +250,7 @@ At the coupled cluster level of theory, CCD, CCSD, and CCSD(T) calculation can b
   >>> e_ccsd = ccsd_h2o.kernel()[1]
   >>> e_ccsd_t = e_ccsd + ccsd_h2o.ccsd_t()
 
-As for MP2, this CCSD calculation will employ density fitting depending on the respective settings of ``rhf_h2o``. This is also for subsequent EOM-CCSD calculations (cf. `cc/20-ip_ea_eom_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/cc/20-ip_ea_eom_ccsd.py>`_):
+As for MP2, this CCSD calculation will employ density fitting depending on the respective settings of ``rhf_h2o``. Having converged the CCSD equations, subsequent EOM-CCSD results are trivial to arrive at (cf. `cc/20-ip_ea_eom_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/cc/20-ip_ea_eom_ccsd.py>`_):
 
   >>> e_ip_ccsd = ccsd_h2o.ipccsd(nroots=1)[0]
   >>> e_ea_ccsd = ccsd_h2o.eaccsd(nroots=1)[0]
@@ -268,27 +268,27 @@ Finally, the ADC(2), ADC(2)-X, and ADC(3) schemes have all been implemented usin
   >>> adc_h2o.method_type = "ea"
   >>> e_ea_adc3 = adc_h2o.kernel(nroots = 3)[0] # EA-ADC(3) for 3 roots
 
-Please note that all of these codes are written in pure Python (with calls to BLAS) and neither of them make use of point group symmetry.
+Please note that all of these codes are written in pure Python (with calls to BLAS) and neither of them make use of point group symmetry for the time being.
 
 .. _FCI:
 
 Full Configuration Interaction
 ------------------------------
 
-In contrast to the correlation methods discussed :ref:`above <MPCCADC>`, PySCF offer a number of powerful kernels (written in optimized C) for performing exact diagonalization of all kinds of Hamiltonians and systems of arbitrary spin. For standard cases, in which all electrons of a given systems are correlated among all MOs, the syntax follows that of other correlation methods for closed- and open-shell systems (cf. `fci/00-simple_fci.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/00-simple_fci.py>`_):
+In contrast to the correlation methods discussed :ref:`above <MPCCADC>`, PySCF offers a number of powerful kernels (written in optimized C) for performing exact diagonalization of all kinds of Hamiltonians and systems of arbitrary spin. For standard cases, in which all electrons of a given systems are correlated among all MOs, the syntax follows that of other correlation methods for closed- and open-shell systems (cf. `fci/00-simple_fci.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/00-simple_fci.py>`_):
 
   >>> from pyscf import fci
   >>> fci_h2o = fci.FCI(rhf_h2o)
   >>> e_fci = fci_h2o.kernel()[0]
   
-However, the various FCI solvers (tabulated in `pyscf/fci/__init__.py <https://github.com/pyscf/pyscf/blob/master/pyscf/fci/__init__.py>`_) further allow for user-defined 1- and 2-electron Hamiltonians (cf. `fci/01-given_h1e_h2e.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/01-given_h1e_h2e.py>`_):
+However, the various FCI solvers (tabulated in `pyscf/fci/__init__.py <https://github.com/pyscf/pyscf/blob/master/pyscf/fci/__init__.py>`_) further allow for user-defined 1- and 2-electron (``h1e,h2e``) Hamiltonians (cf. `fci/01-given_h1e_h2e.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/01-given_h1e_h2e.py>`_):
 
   >>> fs = fci.direct_spin1.FCI() # direct_spin0 instead for singlet system ground states
-  >>> e, fcivec = fs.kernel(h1, h2, N, 8) # 8 electrons in N orbitals
-  >>> e, fcivec = fs.kernel(h1, h2, N, (5,4))  # (5 alpha, 4 beta) electrons
-  >>> e, fcivec = fs.kernel(h1, h2, N, (3,1))  # (3 alpha, 1 beta) electrons
+  >>> e, fcivec = fs.kernel(h1e, h2e, N, 8) # 8 electrons in N orbitals
+  >>> e, fcivec = fs.kernel(h1e, h2e, N, (5,4))  # (5 alpha, 4 beta) electrons
+  >>> e, fcivec = fs.kernel(h1e, h2e, N, (3,1))  # (3 alpha, 1 beta) electrons
   
-The individual solvers can yield more than a single (ground) states by setting ``fs.nroots > 1``, and 1- to 4-electron density matrices, alongside 1- and 2-electron transition density matrices, can be computed at differing cost (cf. `fci/14-density_matrix.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/14-density_matrix.py>`_):
+The individual solvers can yield more than a single (ground) states by setting ``FCI.nroots > 1``, and 1- to 4-electron density matrices, alongside 1- and 2-electron transition density matrices, can be computed at differing cost (cf. `fci/14-density_matrix.py <https://github.com/pyscf/pyscf/blob/master/examples/fci/14-density_matrix.py>`_):
 
   >>> rdm1 = fs.make_rdm1(fcivec, N, (5, 4)) # spin-traced 1-electron density matrix
   >>> rdm1a, rdm1b = fs.make_rdm1s(fcivec, norb, (5, 4)) # alpha and beta 1-electron density matrices
@@ -304,7 +304,7 @@ Multiconfigurational Methods
 Complete Active Space Configuration Interaction & Self-Consistent Field
 -----------------------------------------------------------------------
 
-The powerful FCI solvers discussed :ref:`above <FCI>` further act as engines for the various complete active space methods in PySCF, which all share a similar API in common (cf. `mcscf/00-simple_casci.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casci.py>`_ & `mcscf/00-simple_casscf.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casscf.py>`_):
+The powerful FCI solvers discussed :ref:`above <FCI>` further act as engines for the various complete active space methods in PySCF, all of which share a similar API in common (cf. `mcscf/00-simple_casci.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casci.py>`_ & `mcscf/00-simple_casscf.py <https://github.com/pyscf/pyscf/blob/master/examples/mcscf/00-simple_casscf.py>`_):
 
   >>> from pyscf import mcscf
   >>> casci_h2o = mcscf.CASCI(rhf_h2o, 6, 8)
@@ -367,17 +367,17 @@ Geometry Optimization Techniques
 
 In PySCF, geometry optimizations can be performed using both of the `geomeTRIC <https://github.com/leeping/geomeTRIC>`_ or `PyBerny <https://github.com/jhrmnn/pyberny>`_ libraries (cf. `geomopt/01-geomeTRIC.py <https://github.com/pyscf/pyscf/blob/master/examples/geomopt/01-geomeTRIC.py>`_ and `geomopt/01-pyberny.py <https://github.com/pyscf/pyscf/blob/master/examples/geomopt/01-pyberny.py>`_, respectively):
 
-  >>> from pyscf.geomopt.geometric_solver import optimize
-  >>> mol_h2o_rhf_eq = optimize(rhf_h2o)
-  >>> from pyscf.geomopt.berny_solver import optimize
-  >>> mol_h2o_casscf_eq = optimize(casscf_h2o)
+  >>> from pyscf.geomopt.geometric_solver import optimize as geometric_opt
+  >>> mol_h2o_rhf_eq = geometric_opt(rhf_h2o)
+  >>> from pyscf.geomopt.berny_solver import optimize as pyberny_opt
+  >>> mol_h2o_casscf_eq = pyberny_opt(casscf_h2o)
 
 For :ref:`multiconfigurational methods <CAS>`, the geometry of an excited state can be optimized in either a state-specific or state-averaged manner (cf. `geomopt/12-mcscf_excited_states.py <https://github.com/pyscf/pyscf/blob/master/examples/geomopt/12-mcscf_excited_states.py>`_):
 
   >>> casci_h2o.state_specific_(2) # state-specific opt
   >>> casci_grad = casci_h2o.nuc_grad_method().as_scanner()
   >>> mol_h2o_casci_2nd_ex = casci_grad.optimizer().kernel()
-  >>> casscf_h2o.state_average_([.25] * 4)
+  >>> casscf_h2o.state_average_([.25] * 4) # state-averaged opt
   >>> casscf_grad = casscf_h2o.nuc_grad_method().as_scanner()
   >>> mol_h2o_sa_casscf = casscf_grad.optimizer().kernel()
 
@@ -389,7 +389,7 @@ Solvent Effects
 Polarizable Continuum & COSMO Methods
 -------------------------------------
 
-PySCF offers the inclusion of solvent effects into most types of calculations, as implemented by either PCM or COSMO (both in their `domain-decomposed <https://www.ddpcm.org/>`_ formulations to allow for a fast discretization of the polarization equations). For instance, :ref:`geometry optimizations <GEOMOPT>` can be performed for ground and excited states in the presence of a solvent (cf. `solvent/21-tddft_geomopt.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/21-tddft_geomopt.py>`_):
+PySCF offers the inclusion of solvent effects into most types of calculations, as implemented by either PCM or COSMO (both in their `domain-decomposed formulations <https://www.ddpcm.org/>`_ to allow for a fast discretization of the polarization equations). For instance, :ref:`geometry optimizations <GEOMOPT>` can be performed for ground and excited states in the presence of a solvent (cf. `solvent/21-tddft_geomopt.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/21-tddft_geomopt.py>`_):
 
   >>> rhf_h2o_pcm = mol_h2o.RHF().ddPCM()
   >>> rhf_h2o_pcm.kernel()
@@ -407,19 +407,19 @@ Similarly, correlation methods, e.g., CCSD, may be performed in the presence of 
   >>> ccsd_h2o_cosmo_unrel = solvent.ddCOSMO(cc.CCSD(rhf_h2o_cosmo), dm=rhf_h2o_cosmo.make_rdm1())
   >>> ccsd_h2o_cosmo_unrel.kernel()
   
-Different solvents are chosen upon by setting the ``with_solvent.eps`` attribute.
+Different solvents are chosen upon by setting the ``SCF.with_solvent.eps`` attribute.
 
 .. _QMMM:
 
 Quantum Mechanics/Molecular Mechanics Methods
 ---------------------------------------------
 
-Explicit solvents effects via QM/MM calculations can be performed by either of two different methods in PySCF. Standard point charges can be included in most calculations, be these mean-field or correlated. In the latter case, background charges are most conveniently patched to the underlying SCF calculation (cf. `qmmm/03-ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/qmmm/03-ccsd.py>`_):
+Explicit solvent effects via QM/MM calculations can be performed by either of two different methods in PySCF. Standard point charges can be included in most calculations, be these mean-field or correlated. In the latter case, background charges are most conveniently patched to the underlying SCF calculation (cf. `qmmm/03-ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/qmmm/03-ccsd.py>`_):
 
   >>> from pyscf import qmmm
   >>> coords = np.random.random((5, 3)) * 10.
   >>> charges = (np.arange(5.) + 1.) * -.1
-  >>> rhf_h2o_qmmm = qmmm.mm_charge(scf.RHF(mol_h2o), coords, charges)
+  >>> rhf_h2o_qmmm = qmmm.mm_charge(rhf_h2o, coords, charges)
   >>> rhf_h2o_qmmm.kernel()
   >>> ccsd_h2o_qmmm = cc.CCSD(rhf_h2o_qmmm)
   >>> e_ccsd = ccsd_h2o_qmmm.kernel()[1]
@@ -431,11 +431,10 @@ Alternatively, a combination of the `PyFraME <https://gitlab.com/FraME-projects/
 Periodic Boundary Conditions
 ============================
 
-Finally, PySCF is equipped with a comprehensive PBC for performing solid-state calculations. As alluded to in the section on :ref:`input parsing <INPUT>`, the API for initializing unit cells is deliberately as close to that for finite-size molecular Hamiltonians as possible (cf. `pbc/00-input_cell.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/00-input_cell.py>`_):
+Finally, PySCF is equipped with a comprehensive PBC code for performing solid-state calculations. As alluded to in the section on :ref:`input parsing <INPUT>`, the API for initializing unit cells is deliberately as close to that for finite-size molecular Hamiltonians as possible (cf. `pbc/00-input_cell.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/00-input_cell.py>`_):
 
   >>> from pyscf.pbc import gto as pbcgto
-  >>> cell_diamond = pbcgto.M(
-                              atom = '''C     0.      0.      0.
+  >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
                                         C     .8917    .8917   .8917
                                         C     1.7834  1.7834  0.
                                         C     2.6751  2.6751   .8917
@@ -447,9 +446,9 @@ Finally, PySCF is equipped with a comprehensive PBC for performing solid-state c
                               pseudo = 'gth-pade',
                               a = np.eye(3) * 3.5668)
 
-Besides the difference in import of the ``gto`` module, the only new attributes are ``a`` and ``pseudo``. The former of these (``a``) is a matrix for lattice vectors, where each row of a primitive vector, while the latter (``pseudo``) is a crystal pseudo potential (cf. `pyscf/pbc/gto/pseudo/GTH_POTENTIALS <https://github.com/pyscf/pyscf/blob/master/pyscf/pbc/gto/pseudo/GTH_POTENTIALS>`_ for a full list of these), which is allowed to mix with an effective core potential through the ``ecp`` attribute, cf. `pbc/05-input_pp.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/05-input_pp.py>`_.
+Besides the difference in import of the ``gto`` module, the only new attributes are ``Cell.a`` and ``Cell.pseudo``. The former of these (``a``) is a matrix of lattice vectors, where each row denotes a primitive vector, while the latter (``pseudo``) is a crystal pseudo potential (cf. `pyscf/pbc/gto/pseudo/GTH_POTENTIALS <https://github.com/pyscf/pyscf/blob/master/pyscf/pbc/gto/pseudo/GTH_POTENTIALS>`_ for a full list of these), which is allowed to mix with an effective core potential through the ``Cell.ecp`` attribute, cf. `pbc/05-input_pp.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/05-input_pp.py>`_.
 
-The closeness in the APIs for molecular and crystalline input parsing holds true for mean-field and correlated calculations as well. For instance, an all-electron calculation with k-point sampling at the KS-DFT level using :ref:`density fitting <DF>` (recommended) and a :ref:`second-order SCF methods <HF>` requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_):
+The closeness in the APIs for molecular and crystalline input parsing holds true for mean-field and correlated calculations as well. For instance, an all-electron calculation with k-point sampling at the KS-DFT level using :ref:`density fitting <DF>` (recommended) and a :ref:`second-order SCF algorithm <HF>` requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_):
 
  >>> from pyscf.pbc import dft as pbcdft
  >>> kpts = cell_diamond.make_kpts([4] * 3) # 4 k-poins for each axis
@@ -458,15 +457,21 @@ The closeness in the APIs for molecular and crystalline input parsing holds true
  >>> krks_diamond = krks_diamond.newton()
  >>> krks_diamond.kernel()
 
-Alternative, mixed density fitting (plane waves & Gaussians) is another option for all-electron calculations, this time at the :math:`\Gamma`-point (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+Alternatively, mixed density fitting (plane waves & Gaussians) is another option for all-electron calculations, this time at the :math:`\Gamma`-point (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
 
  >>> from pyscf.pbc import scf as pbcscf
  >>> rhf_diamond = pbcscf.RHF(cell_diamond).mix_density_fit()
  >>> rhf_diamond.with_df.mesh = [10] * 3  # Tune number of PWs for performance/accuracy balance
  >>> rhf_diamond.kernel()
 
-Following a converged mean-field calculation, dynamic electron correlation may be treated by means of either MP2 or (EOM-)CCSD. These calculations may again performed with k-point sampling (cf. `pbc/22-k_points_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/22-k_points_ccsd.py>`_) or at the :math:`\Gamma`-point, in which case only real integrals are needed and the conventional methods implemented for finite-size systems can be employed as a result without any modification needed (cf. `pbc/12-gamma_point_post_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/12-gamma_point_post_hf.py>`_):
+Following on from a converged mean-field calculation, dynamic electron correlation may be treated by means of either MP2 or (EOM-)CCSD. These calculations can again be performed with k-point sampling (cf. `pbc/22-k_points_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/22-k_points_ccsd.py>`_) or at the :math:`\Gamma`-point, in which case only real integrals are needed and the conventional methods implemented for finite-size systems can be employed without any further modifications needed (cf. `pbc/12-gamma_point_post_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/12-gamma_point_post_hf.py>`_):
 
   >>> ccsd_diamond = cc.CCSD(rhf_diamond)
   >>> ccsd_diamond.kernel()
   
+Summary
+=======
+
+In closing, PySCF may be viewed as serving a number of distinct purposes. As its formulation in Python allows for the interactive manipulation of all intermediate parts of a quantum chemical simulation, and thus not only the final results, this enhanced exposure to the mathematical objects in which theoretical concepts are spanned may support the overall learning of chemical theory. In addition, the uniform API used throughout the code, with or without PBCs enabled, makes PySCF suitable as a playground for developing new methods or as an engine, upon which one may write completely separate programs with full consideration to the Apache license that PySCF is distributed under. Finally, the full suite of methods offered by PySCF continues to increase in scope and efficacy, making for competitive implementations of many of the components of the modern-day quantum chemistry toolbox.
+
+We sincerely hope you'll enjoy the code. For bug reports and feature requests, please submit tickets on the `issues <https://github.com/pyscf/pyscf/issues>`_ page.
