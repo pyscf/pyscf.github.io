@@ -29,7 +29,7 @@ If ``erifile`` is specified, the integrals will be stored in a HDF5 file, otherw
     eri = ao2mo.kernel(mol, orb)
 
     ftmp = tempfile.NamedTemporaryFile()
-    # the integrals are stored in file ftmp
+    # saves the two-electron integrals in the file ftmp.name
     ao2mo.kernel(mol, orb, ftmp.name)
     
 
@@ -124,4 +124,3 @@ Listed are the symmetry label that this function takes. It can be either ``str``
 's2ij', '2ij'  2-fold symmetry between kl indices.
 's1', '1', 1   1-fold symmetry or no symmetry.
 ============== ====
-
