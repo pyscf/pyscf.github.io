@@ -401,22 +401,30 @@ Similarly, correlation methods, e.g., CCSD, may be performed in the presence of 
 
   >>> from pyscf import solvent
   >>> rhf_h2o_cosmo = mol_h2o.RHF().ddCOSMO()
-  >>> ccsd_h2o_cosmo_rel = solvent.ddCOSMO(cc.CCSD(rhf_h2o)) # relaxed
+  >>> rhf_h2o_cosmo.kernel()
+  >>> ccsd_h2o_cosmo_rel = solvent.ddCOSMO(cc.CCSD(rhf_h2o))
   >>> ccsd_h2o_cosmo_rel.kernel()
-  >>> ccsd_h2o_cosmo_unrel = solvent.ddCOSMO(cc.CCSD(rhf_h2o_cosmo), dm=rhf_h2o_cosmo.make_rdm1()) # unrelaxed
+  >>> ccsd_h2o_cosmo_unrel = solvent.ddCOSMO(cc.CCSD(rhf_h2o_cosmo), dm=rhf_h2o_cosmo.make_rdm1())
   >>> ccsd_h2o_cosmo_unrel.kernel()
   
-Different solvents are chosen upon by setting the ``with_solvent`` attribute.
+Different solvents are chosen upon by setting the ``with_solvent.eps`` attribute.
 
 .. _QMMM:
 
 Quantum Mechanics/Molecular Mechanics Methods
 ---------------------------------------------
 
-geomopt/10-with_qmmm.py, geomopt/15-tddft_with_solvent.py
+Explicit solvents effects via QM/MM calculations can be performed by either of two different methods in PySCF. Standard point charges can be included in most calculations, be these mean-field or correlated. In the latter case, background charges are most conveniently patched to the underlying SCF calculation (cf. `qmmm/03-ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/qmmm/03-ccsd.py>`_):
 
-Semi-Empirical Methods
-======================
+  >>> from pyscf import qmmm
+  >>> coords = np.random.random((5, 3)) * 10.
+  >>> charges = (np.arange(5.) + 1.) * -.1
+  >>> rhf_h2o_qmmm = qmmm.mm_charge(scf.RHF(mol_h2o), coords, charges)
+  >>> rhf_h2o_qmmm.kernel()
+  >>> ccsd_h2o_qmmm = cc.CCSD(rhf_h2o_qmmm)
+  >>> e_ccsd = ccsd_h2o_qmmm.kernel()[1]
+
+Alternatively, a combination of the `PyFraME <https://gitlab.com/FraME-projects/PyFraME>`_ framework and `CPPE <https://github.com/maxscheurer/cppe>`_ library can be used to prepare and run polarizable embedding calculations from within PySCF, cf. `solvent/04-pe_potfile_from_pyframe.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/04-pe_potfile_from_pyframe.py>`_ and `solvent/04-scf_with_pe.py <https://github.com/pyscf/pyscf/blob/master/examples/solvent/04-scf_with_pe.py>`_.
 
 .. _PBC:
 
@@ -424,8 +432,4 @@ Periodic Boundary Conditions
 ============================
 
 df/00-with_df.py, pbc/11-gamma_point_all_electron_scf.py
-
-Miscellaneous Library Tools
-===========================
-
 
