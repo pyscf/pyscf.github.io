@@ -342,7 +342,14 @@ z-1,2-DiChloroEthene               9.2
 Polarizable embedding
 =====================
 To use polarizable embedding model for mean-field calculations, one would need
-to first generate potential data for the input of CPPE library.
+to first generate potential data for the input of CPPE library. The best way to
+generate potential files is with `PyFraME <https://gitlab.com/FraME-projects/PyFraME>`_.
+You can directly throw in a pdb file, select the QM region and how to parametrize
+different parts of the environment (with either pre-defined potentials, or with LoProp).
+Some guidance is also provided in the Tutorial Review paper about PE, section 4:
+https://onlinelibrary.wiley.com/doi/full/10.1002/qua.25717
+Therein, the format of the potential file is also explained (it’s the same
+format as used in the original Dalton pelib implementation).
 
 With the generated potential file, one can carry out the polarizable embedding
 calculations::
