@@ -2,7 +2,7 @@
 Quickstart
 **********
 
-The present quickstart is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical simulations, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. For brevity, and so as to not repeat a number of function calls, please note that the cells below often share objects in-between one another. Additional details on the various modules and their functionalities in general are presented in the accompanying user guide (LINK???).
+The present quickstart is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical simulations, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. For brevity, and so as to not repeat a number of function calls, please note that the cells below often share objects in-between one another. Additional details on the various modules and their functionalities in general are presented in the accompanying user guide.
 
 .. _INPUT:
 
