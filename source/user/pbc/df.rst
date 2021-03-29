@@ -8,21 +8,21 @@ Density fitting for crystalline calculations
 Introduction
 ============
 
-Like for molecular calculations, density fitting (DF) is useful to reduce the computational cost of manipulating the electron repulsion integrals (ERIs) in periodic calculations. Currently, PySCF provides three periodic DF methods that are different in the auxiliary basis functions being used.
+In addition to molecular calculations, density fitting (DF) is also useful in periodic calculations, as it reduces the computational cost of manipulating the electron repulsion integrals (ERIs). Currently, PySCF provides three periodic DF methods that differ in their definition for their auxiliary basis functions.
 
-* The fast Fourier transform density fitting (:class:`FFTDF`) uses plane waves (PWs) as the auxiliary basis functions. FFTDF is also known as the Gaussian and plane wave (GPW) approach in literature and other software packages. :cite:`VandeVondele05CPC,Kuhne20JCP`
+* The **Gaussian density fitting** (:class:`GDF`) uses Gaussian-type orbitals (GTOs) as the auxiliary basis functions. :cite:`Sun17JCP` This parallels the molecular :class:`DF` class.
 
-* The Gaussian density fitting (:class:`GDF`) uses Gaussian-type orbitals (GTOs) as the auxiliary basis functions. :cite:`Sun17JCP`
+* The **fast Fourier transform density fitting** (:class:`FFTDF`) uses plane waves (PWs) as the auxiliary basis functions. FFTDF is also known as the Gaussian and plane wave (GPW) approach in literature and other software packages. :cite:`VandeVondele05CPC,Kuhne20JCP`
 
-* The mixed density fitting (:class:`MDF`) uses both PWs and GTOs as the auxiliary basis functions. :cite:`Sun17JCP`
+* The **mixed density fitting** (:class:`MDF`) uses both PWs and GTOs as the auxiliary basis functions. :cite:`Sun17JCP`
 
-This section of the user document covers the basic usage of these DF methods in periodic calculations. The recommended choice of DF methods for different applications is also provided. See :ref:`theory_df` for the use of DF in molecular calculations.
+This section of the user document covers the basic usage of these DF methods in periodic calculations. The recommended choice of DF methods for different applications is also provided. See :ref:`user_df` for the use of DF in molecular calculations.
 
 
 Using DF in periodic calculations
 =================================
 
-Unlike for molecular calculations, DF is used by default in periodic SCF calculations. For example, initialize a KRHF object uses FFTDF by default::
+Unlike for molecular calculations, DF is used by default in periodic SCF calculations. For example, initializing a :class:`KRHF` (i.e., RHF with :math:`k`-point sampling) object uses :class:`FFTDF` by default::
 
     import numpy as np
     from pyscf.pbc import gto, scf
@@ -31,21 +31,21 @@ Unlike for molecular calculations, DF is used by default in periodic SCF calcula
     mf = scf.KRHF(cell, kpts)
     print(mf.with_df)  # <pyscf.pbc.df.fft.FFTDF at 0x7feb78373c88>
 
-The periodic SCF class also provides methods for using GDF::
+The periodic SCF classes also provide methods for using :class:`GDF`::
 
     mf = scf.KRHF(cell, kpts).density_fit()
 
-and MDF::
+and :class:`MDF`::
 
     mf = scf.KRHF(cell, kpts).mix_density_fit()
 
-In addition to using the APIs above, the user can also initialize a DF method first and overwrite the attribute :attr:`with_df` of the SCF object. For example::
+In addition to using the APIs above, the user can also initialize a DF object first and overwrite the attribute :attr:`with_df` of the SCF object. For example::
 
     >>> from pyscf.pbc import df
     >>> mydf = df.GDF(cell, kpts).build()
     >>> mf.with_df = mydf
 
-Once the periodic mean-field calculation is done, the subsequent correlated calculations will automatically use the same DF method to handle ERIs. For example, a MP2 calculation using GDF can be performed as follows::
+Once the periodic mean-field calculation using DF finishes, the subsequent correlated calculations will automatically use the same DF method to handle ERIs. For example, a MP2 calculation using GDF can be performed as follows::
 
     >>> ... # initialize cell and kpts
     >>> from pyscf.pbc import scf, mp
@@ -108,7 +108,7 @@ MDF uses mixed GTOs and PWs as the fitting basis. The GTO part of the auxiliary 
 Saving and reusing DF integrals
 ===============================
 
-While FFTDF is implemented in the so-called integral-direct manner and needs no "initialization", both GDF and MDF pre-compute required integrals and dump them to disk for later use. The APIs for saving and reusing GDF/MDF integrals are the same as in the molecular :mod:`df` module; we guide the user to :ref:`save_reuse_df_integrals` for a detailed description. An example is provided in :source:`examples/pbc/35-gaussian_density_fit.py`.
+While FFTDF is implemented in the so-called integral-direct manner and needs no "initialization", both GDF and MDF pre-compute the 3-index Cholesky decomposed electron repulsion integrals (CDERIs) and dump them to disk for later use. The APIs for saving and reusing the CDERIs in GDF and MDF are the same as in the molecular :mod:`df` module; we guide the user to :ref:`save_reuse_df_integrals` for a detailed description. An example is provided in :source:`examples/pbc/35-gaussian_density_fit.py`.
 
 
 Choice of DF methods
@@ -119,11 +119,19 @@ The choice of DF methods depends on the type of applications, the required accur
 Type of calculations
 --------------------
 
-* For **all-electron** calculations, only GDF and MDF can be used, while FFTDF would require an impractically large PW basis to describe the core orbitals accurately (hydrogen and helium are two exceptions since they don't have core orbitals).
+* **All-electron versus pseudopotential**:
 
-* For **pseudopotential (PP)**-based calculations, all three DF methods can be used.
+    * For **all-electron** calculations, only GDF and MDF can be used, while FFTDF would require an impractically large PW basis to describe the core orbitals accurately (hydrogen and helium are two exceptions since they don't have core orbitals).
 
-* For calculations on **low-dimension** systems (0D, 1D, and 2D), only GDF and MDF can be used. The user needs to specify the dimension by setting :attr:`Cell.dimension`.
+    * For **pseudopotential (PP)**-based calculations, all three DF methods can be used.
+
+* **Dimensionality**:
+
+    * For calculations on **low-dimension** systems (0D, 1D, and 2D), only GDF and MDF can be used. The user needs to specify the dimension by setting :attr:`Cell.dimension`.
+
+* **Treatment of exact exchange**:
+
+    * For HF or DFT calculations using a hybrid functional, the exact exchange integral has a divergence in reciprocal space that needs special treatment. :cite:`McClain17JCTC` Different treatments can be used by setting the :attr:`exxdiv` attribute upon initializing a periodic SCF object. Currently, GDF and MDF only support ``exxdiv = None`` and ``exxdiv = "ewald"``, while FFTDF also supports ``exxdiv = "vcut_sph"`` and ``exxdiv = "vcut_ws"``.
 
 Required accuracy
 -----------------
@@ -137,7 +145,7 @@ Required accuracy
 Computational resources
 -----------------------
 
-* GDF requires **enough disk space** to hold the pre-computed DF integrals. The size of these integrals grows quickly with the system size and scales as :math:`O(N_k^2 n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, where :math:`N_k` is the number of k-points, :math:`n_{\mathrm{AO}}` is the number of AOs per unit cell, and :math:`n_{\mathrm{aux}}` is the number of auxiliary basis functions per unit cell. Note that for DFT calculations using pure exchange-correlation functionals (LDA and GGA), the storage requirement reduces to :math:`O(N_k n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, which is much more modest.
+* GDF requires **enough disk space** to hold the pre-computed CDERIs. The size of these integrals grows quickly with the system size and scales as :math:`O(N_k^2 n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, where :math:`N_k` is the number of k-points, :math:`n_{\mathrm{AO}}` is the number of AOs per unit cell, and :math:`n_{\mathrm{aux}}` is the number of auxiliary basis functions per unit cell. Note that for DFT calculations using pure exchange-correlation functionals (LDA and GGA), the storage requirement reduces to :math:`O(N_k n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, which is much more modest.
 
 * FFTDF uses very little disk space but requires :math:`O(N_k n_{\mathrm{AO}}^2 N_{\mathrm{PW}})` **memory**, where :math:`N_{\mathrm{PW}}` is the size of the PW basis. Despite the modest, linear dependence on :math:`N_k`, the memory requirement could be high for systems that require a relatively large PW basis.
 
