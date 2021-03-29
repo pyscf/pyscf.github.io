@@ -2,26 +2,18 @@
 Quickstart
 **********
 
-The present tutorial is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical simulations. Starting with input parsing and uncorrelated Hartree-Fock theory for chemical Hamiltonians, we'll incrementally touch upon how to use the majority of methods and features offered by PySCF through a number of simple examples, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. For brevity and so as to not repeat a number of function calls, please also note that the cells below often share objects in-between one another.
+The present quickstart is meant to provide a brief introduction to the use of PySCF to run a multitude of quantum chemical simulations, which all make reference to specific use cases within the dedicated `examples <https://github.com/pyscf/pyscf/tree/master/examples>`_ directory. For brevity, and so as to not repeat a number of function calls, please note that the cells below often share objects in-between one another. Additional details on the various modules and their functionalities in general are presented in the accompanying user guide (LINK???).
 
 .. _INPUT:
 
 Input Parsing
 =============
 
-Molecules (or unit cells, cf. the :ref:`periodic <PBC>` section) are typically loaded in any of two ways (`gto/00-input_mole.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/00-input_mole.py>`_):
-
-  >>> from pyscf import gto
-  >>> mol_h2o = gto.Mole()
-  >>> mol_h2o.atom = '''O 0 0 0; H 0 1 0; H 0 0 1'''
-  >>> mol_h2o.basis = 'ccpvdz'
-  >>> mol_h2o.build()
-
-or - using the convenient shortcut function - as  
+Molecules (or unit cells, cf. the :ref:`periodic <PBC>` section) are typically loaded using the convenient shortcut function ``Mole.build()`` as (`gto/00-input_mole.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/00-input_mole.py>`_):
 
   >>> mol_h2o = gto.M(atom = 'O 0 0 0; H 0 1 0; H 0 0 1', basis = 'ccpvdz')
 
-Calling ``build()`` initializes a bunch of internal control parameters. Whenever you change the value of the attributes of :class:`Mole`, you need to call this function again to refresh the internal data of the object.
+Whenever you change the value of the attributes of :class:`Mole`, you'll need to call ``build()`` again to refresh the internal data of the object.
 
 Symmetry may be specified in the ``Mole.symmetry`` attribute as either ``True`` or ``False`` (default is ``False``, i.e., off). Alternatively, a particular subgroup can be specified by a string argument (`gto/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/13-symmetry.py>`_):
 
@@ -39,7 +31,7 @@ Mean-Field Theory
 Hartree-Fock
 ------------
 
-A mean-field calculation is now trivially executed upon having initialized a :class:`Mole` object. For instance, a simple Hartree-Fock calculation on the H\ :sub:`2`\ O geometry of the :ref:`above <INPUT>` section will read (cf. `scf/00-simple_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/00-simple_hf.py>`_):
+A mean-field (e.g., Hartree-Fock) calculation on the H\ :sub:`2`\ O geometry of the :ref:`above <INPUT>` section now reads (cf. `scf/00-simple_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/scf/00-simple_hf.py>`_):
 
   >>> from pyscf import scf
   >>> rhf_h2o = scf.RHF(mol_h2o)
@@ -120,7 +112,7 @@ PySCF offers a number of different standard schemes for localizing MOs, e.g., Pi
   >>> fb_h2o = lo.Boys(mol_h2o, occ_orbs, rhf_h2o) # Foster-Boys
   >>> loc_occ_orbs = fb.kernel()
   >>> virt_orbs = rhf_h2o.mo_coeff[:, rhf_h2o.mo_occ == 0.]
-  >>> pm_h2o = lo.Boys(mol_h2o, virt_orbs, rhf_h2o) # Pipek-Mezey
+  >>> pm_h2o = lo.PM(mol_h2o, virt_orbs, rhf_h2o) # Pipek-Mezey
   >>> loc_virt_orbs = pm.kernel()
   
 In addition, Knizia's intrinsic bond orbitals have been implemented (cf. `local_orb/04-ibo_benzene_cubegen.py <https://github.com/pyscf/pyscf/blob/master/examples/local_orb/04-ibo_benzene_cubegen.py>`_):
@@ -267,8 +259,6 @@ Finally, the ADC(2), ADC(2)-X, and ADC(3) schemes have all been implemented usin
   >>> adc_h2o.method = "adc(3)"
   >>> adc_h2o.method_type = "ea"
   >>> e_ea_adc3 = adc_h2o.kernel(nroots = 3)[0] # EA-ADC(3) for 3 roots
-
-Please note that all of these codes are written in pure Python (with calls to BLAS) and neither of them make use of point group symmetry for the time being.
 
 .. _FCI:
 
@@ -457,15 +447,11 @@ The closeness in the APIs for molecular and crystalline input parsing holds true
  >>> krks_diamond = krks_diamond.newton()
  >>> krks_diamond.kernel()
 
-Alternatively, mixed density fitting (plane waves & Gaussians) is another option for all-electron calculations, this time at the :math:`\Gamma`-point (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
-
- >>> from pyscf.pbc import scf as pbcscf
- >>> rhf_diamond = pbcscf.RHF(cell_diamond).mix_density_fit()
- >>> rhf_diamond.with_df.mesh = [10] * 3  # Tune number of PWs for performance/accuracy balance
- >>> rhf_diamond.kernel()
-
 Following on from a converged mean-field calculation, dynamic electron correlation may be treated by means of either MP2 or (EOM-)CCSD. These calculations can again be performed with k-point sampling (cf. `pbc/22-k_points_ccsd.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/22-k_points_ccsd.py>`_) or at the :math:`\Gamma`-point, in which case only real integrals are needed and the conventional methods implemented for finite-size systems can be employed without any further modifications needed (cf. `pbc/12-gamma_point_post_hf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/12-gamma_point_post_hf.py>`_):
 
+  >>> from pyscf.pbc import scf as pbcscf
+  >>> rhf_diamond = pbcscf.RHF(cell_diamond).density_fit()
+  >>> rhf_diamond.kernel()
   >>> ccsd_diamond = cc.CCSD(rhf_diamond)
   >>> ccsd_diamond.kernel()
   
