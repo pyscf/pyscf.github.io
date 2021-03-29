@@ -12,7 +12,7 @@ Density fitting
 Introduction
 ============
 
-Density fitting (DF), sometimes also called the resolution of identity (RI) approximation, is a method to approximate the four-index electron repulsion integrals (ERIs) by two- and three-index tensors. :cite:`Dunlap00PCCP` It achieves so by expanding the atomic orbital (AO) pair density in a second, auxiliary Gaussian basis set. PySCF has extensive supports for using DF in both molecular and crystalline calculations. This section of the user document covers the basic usage of DF in molecular applications. See :ref:`theory_pbc_df` for the use of DF in periodic calculations.
+Density fitting (DF), sometimes also called the resolution of identity (RI) approximation, is a method to approximate the four-index electron repulsion integrals (ERIs) by two- and three-index tensors. :cite:`Dunlap00PCCP` It achieves so by expanding the atomic orbital (AO) pair density in a second, auxiliary Gaussian basis set. PySCF has extensive supports for using DF in both molecular and crystalline calculations. This section of the user document covers the basic usage of DF in molecular applications. See :ref:`user_pbc_df` for the use of DF in periodic calculations.
 
 
 Using DF in calculations
