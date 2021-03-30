@@ -1,4 +1,4 @@
-.. _user_eph:
+.. _user_lo:
 
 **********************
 Localized Orbitals
@@ -9,7 +9,7 @@ Localized Orbitals
 Introduction
 ============
 A molecular orbital is usually delocalized, i.e. its spatial distribution is
-all over the whole molecular rather localized around several atoms or bonds.
+all over the whole molecular rather than localized around several atoms or bonds.
 However, one can choose a proper unitary rotation :math:`U`
 
 .. math::
@@ -20,7 +20,7 @@ such that the resulting
 orbitals :math:`\phi` are as local as possible. This is typically achieved by two kinds of
 methods: One is by projection onto a pre-defined local orbital set
 (e.g., AO, pseudopotential orbitals); The other is by numerical optimization on
-a cost function :math:`f`, which can be choosen as different localization
+a cost function :math:`f`, which can be chosen as different localization
 criterion, e.g., in Boys localization, the dipole (spread) of a molecule,
 
 .. math::
