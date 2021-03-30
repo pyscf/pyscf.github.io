@@ -8,8 +8,7 @@ Localized Orbitals
 
 Introduction
 ============
-A molecular orbital is usually delocalized, i.e. its spatial distribution is
-all over the whole molecular rather than localized around several atoms or bonds.
+A molecular orbital is usually delocal, i.e. it has non-negligible amplitude all over the whole system rather than only around a specific region localized around some atom(s) or bond(s).
 However, one can choose a proper unitary rotation :math:`U`
 
 .. math::
