@@ -130,6 +130,24 @@ More details about k-point sampling for each method can be found in the correspo
 
 Other parameters
 ----------------
+The attribute :attr:`precision` of the :class:`Cell` object determines the integral accuracy.
+The default value is ``1e-8`` hartree. Some other parameters are set automatically 
+based on the value of :attr:`precision`, which include:
+
+  * :attr:`mesh` -- length-3 list or 1x3 array of int
+
+    - The numbers of grid points in the FFT-mesh in each direction.
+
+  * :attr:`ke_cutoff` -- float
+
+    - Kinetic energy cutoff of the plane waves in FFT-DF
+
+  * :attr:`rcut` -- float
+
+    - Cutoff radius (in Bohr) of the lattice summation in the integral evaluation
+
+The parameters above can also be set manually by the user.
+
 The other attributes of the :class:`Mole` class such as :attr:`verbose`,
 :attr:`max_memory`, :attr:`spin`, etc., have the same meanings in the :class:`Cell` class.
 

@@ -9,6 +9,7 @@ Developer documentation
    code-rule.rst
    design.rst
    contributing.rst
+   develop/gto_developer.rst
    develop/scf_developer.rst
    develop/dft_developer.rst
    develop/tdscf_developer.rst

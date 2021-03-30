@@ -1,3 +1,4 @@
+.. _gto:
 
 :mod:`gto` --- Molecular structure and GTO basis
 ************************************************
@@ -59,7 +60,7 @@ manipulate the libcint arguments.
 .. automodule:: pyscf.gto.mole
    :members:
 
-.. autoclass:: Mole
+.. autoclass:: pyscf.gto.Mole
    :members:
 
 
