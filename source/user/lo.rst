@@ -25,7 +25,7 @@ Foster-Boys localization minimizes the spread of the orbital
 
 .. math::
 
-    f(U) = \langle\psi|r^2|\psi\rangle - \langle\psi|r|\psi\rangle^2
+    f(U) = \sum_{i} \langle\psi_i|r^2|\psi_i\rangle - \langle\psi_i|r|\psi_i\rangle^2
 
 
 The :mod:`lo` module implements various orbital localizations, including:
