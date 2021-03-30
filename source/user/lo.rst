@@ -17,10 +17,11 @@ However, one can choose a proper unitary rotation :math:`U`
 
 such that the resulting
 orbitals :math:`\phi` are as spatially localized as possible. This is typically achieved by one of two classes of
-methods: One is by projection onto a pre-defined local orbital set
-(e.g., AO, pseudopotential orbitals); The other is by numerical optimization on
-a cost function :math:`f`, which can be chosen as different localization
-criterion, e.g., in Boys localization, the dipole (spread) of a molecule,
+methods. 
+The first is to project the orbitals onto a predefined local set of orbitals, which can be e.g. real atomic orbitals or pseudo-atomic orbitals.
+The second is to optimize a cost function :math:`f`, which measures the locality of the molecular orbitals.
+Because there is no unambiguous choice for the localization criterion, several criteria have been suggested.
+Foster-Boys localization minimizes the spread of the orbital
 
 .. math::
 
