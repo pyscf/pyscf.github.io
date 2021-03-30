@@ -21,18 +21,38 @@ methods.
 The first is to project the orbitals onto a predefined local set of orbitals, which can be e.g. real atomic orbitals or pseudo-atomic orbitals.
 The second is to optimize a cost function :math:`f`, which measures the locality of the molecular orbitals.
 Because there is no unambiguous choice for the localization criterion, several criteria have been suggested.
-Foster-Boys localization minimizes the spread of the orbital
+Boys localization minimizes the spread of the orbital
 
 .. math::
 
     f(U) = \sum_{i} \langle\psi_i|r^2|\psi_i\rangle - \langle\psi_i|r|\psi_i\rangle^2
 
+Boys localization :cite:`Foster60` in periodic systems is typically terms as maximally localized
+wannier orbitals :cite:`Marzari97`.
+
+Pipek-Mezey (PM) localization :cite:`Pipek98` maximizes the orbital charges on the atoms
+
+.. math::
+
+    f(U) = \sum^{\mathrm{atoms}}_{I} \sum_{i} \left|q^{I}_{i} \right|^2
+
+Note that the PM localization depends on the choice of orbitals used for
+population analysis. Several choices of populations are available, e.g. 
+Mulliken, (meta-) L\"owdin orbitals. See Ref. :cite:`Lehtola14PM` for a summary
+of choices of orbitals. PM localization has a good feature that enables the
+distinguishment of :math:`\sigma` and :math:`\pi` orbitals.
+
+Edmiston-Ruedenberg (ER) localization :cite:`Edmiston63` maximizes the summation of orbital coloumb integrals,
+
+.. math::
+
+    f(U) = \sum_{i} (ii|ii)
 
 The :mod:`lo` module implements various orbital localizations, including:
 
 =========================== ============== ==================== ======== =====
 Method                       optimization   cost function        PBC     ref
-(meta-) Lowdin                   No            -                 yes     :cite:`Lowdin50,Sun14qmmm`
+(meta-) L\"owdin                   No            -                 yes     :cite:`Lowdin50,Sun14qmmm`
 Natural atomic orbitals          No            -                 no      :cite:`Reed85` 
 Intrinsic Atomic orbitals        No            -                 yes     :cite:`Knizia13IAO`
 Intrinsic Bond orbitals          yes         IAO charges         gamma   :cite:`Knizia13IAO`
