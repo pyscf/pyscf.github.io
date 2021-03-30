@@ -34,7 +34,7 @@ How to make an extension
   $ cd new-project
   $ make new-project
 
-2. Check whether files like README.md, setup.py, __init__.py are correctly updated.
+2. Check whether files like `README.md`, `setup.py`, `__init__.py` are correctly updated.
 
 3. In the new project folder, initialize git repo::
 
