@@ -32,14 +32,14 @@ The :mod:`lo` module implements various orbital localizations, including:
 
 =========================== ============== ==================== ======== =====
 Method                       optimization   cost function        PBC     ref
-(meta-) Lowdin                   No            -                 yes     :cite:`Lowdin50, Sun14qmmm`
+(meta-) Lowdin                   No            -                 yes     :cite:`Lowdin50,Sun14qmmm`
 Natural atomic orbitals          No            -                 no      :cite:`Reed85` 
 Intrinsic Atomic orbitals        No            -                 yes     :cite:`Knizia13IAO`
 Intrinsic Bond orbitals          yes         IAO charges         gamma   :cite:`Knizia13IAO`
 Boys                             yes         dipole              no      :cite:`Foster60`
 Pipek-Mezey                      yes         local charges       gamma   :cite:`Pipek98`
 Edmiston-Ruedenberg              yes         coloumb integral    gamma   :cite:`Edmiston63`
-=========================== ============== ==================== ========
+=========================== ============== ==================== ======== =====
 
 For example, to obtain the natural atomic orbital coefficients (in terms
 of the original atomic orbitals)::
