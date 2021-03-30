@@ -6,81 +6,55 @@ Density functional theory (DFT)
 
 *Modules*: :mod:`dft`, :mod:`pbc.dft`
 
+.. _user_dft_intro:
+
 Introduction
 ============
-Kohn-Sham density functional theory (KS-DFT) is implemented through derived 
-classes of the :class:`pyscf.scf.hf.SCF` class, thus, the methods and capabilities introduced in 
-:numref:`user_scf` also apply to the :mod:`dft` module.
 
-A minimal example of using the :mod:`dft` module is as follows. ::
+Kohn-Sham density functional theory (KS-DFT) has been implemented through derived classes of the :class:`pyscf.scf.hf.SCF` parent class. As such, the methods and capabilities introduced in :numref:`user_scf` are also available to the :mod:`dft` module.
 
-    from pyscf import gto, scf
-    mol = gto.M(
-        atom = 'H 0 0 0; F 0 0 1.1',  # in Angstrom
-        basis = 'ccpvdz',
-        symmetry = True,
-    )
-    mf = scf.RKS(mol)
-    mf.xc = 'lda,vwn' #default functional
-    mf.kernel()
+A minimal example of using the :mod:`dft` module reads:
 
-This will run a restricted closed-shell Kohn-Sham DFT calculation with the default LDA functional.
+  >>> from pyscf import gto, dft
+  >>> mol = gto.M(atom = 'H 0 0 0; F 0 0 1.1', basis = 'ccpvdz', symmetry = True)
+  >>> mf = dft.RKS(mol)
+  >>> mf.xc = 'lda,vwn' # default
+  >>> mf.kernel()
+
+This will run a restricted, closed-shell Kohn-Sham DFT calculation with the default LDA functional.
+
+.. _user_dft_theory:
 
 Theory
 ======
-KS-DFT, first proposed by Kohn and Sham :cite:`KohSha1965`,
-uses the electron density of a reference noninteracting system
-to represent the density of the true interacting system. 
-As a result, the computational formulation of KS-DFT resembles that of Hartree-Fock (HF) theory.
-KS-DFT defines the total electronic energy as follows
+
+In KS-DFT, as first proposed by Kohn and Sham :cite:`KohSha1965`, the electron density of a reference noninteracting system is used to represent the density of the true interacting system. As a result, the computational formulation of KS-DFT resembles that of Hartree-Fock (HF) theory, but with a different effective Fock potential. In KS-DFT, the total electronic energy is defined as follows:
 
 .. math::
 
-    E = T_s + E_{\rm ext} + E_J + E_{\rm xc} \;,
+    E = T_s + E_{\rm ext} + E_J + E_{\rm xc} \ .
 
-where :math:`T_s` is the noninteracting kinetic energy,
-:math:`E_{\rm ext}` is the energy due to the external potential,
-:math:`E_J` is the Coulomb energy, and
-:math:`E_{\rm xc}` is the exchange-correlation (XC) energy.
-In practice :math:`E_{\rm xc}` is approximated by a density functional approximation. These
-may be divided into several classes, such as
+Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is the energy due to the external potential, :math:`E_J` is the Coulomb energy, and
+:math:`E_{\rm xc}` is the exchange-correlation (*xc*) energy. In practice, :math:`E_{\rm xc}` is approximated by a density functional approximation, which themselves may be divided into several classes along different rungs of Jacob's ladder :cite:`perdew_jacobs_ladder_aip_conf_proc_2001`:
 
-- local density approximations (e.g. LDA; XC energy depends only on the electron density :math:`\rho`), 
-- generalized gradient approximations (GGA; XC energy also depends on the density gradient :math:`|\nabla\rho|`), 
-- meta-GGAs (XC energy also depends on the kinetic energy density and Laplacian :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
-- non-local correlation functionals (XC energy involves a double integral)
+- local density approximations (e.g. LDA; *xc* energy depends only on the electron density, :math:`\rho`), 
+- generalized gradient approximations (GGA; *xc* energy also depends on the density gradient, :math:`|\nabla\rho|`), 
+- meta-GGAs (*xc* energy also depends on the kinetic energy density and Laplacian, :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
+- non-local correlation functionals (*xc* energy involves a double integral)
 - hybrid density functionals (a fraction of exact exchange is used), and
 - long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
 
-Variationally minimizing the total energy with respect to the density leads to the KS equations
-for the non-interacting reference orbitals. These have the same form as the Fock equations in :numref:`theory_scf`,
-but with exact exchange :math:`\hat{K}` replaced by the XC potential :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`.
-For hybrid and meta-GGa calculations, PySCF uses the generalized KS formalism :cite:`GKS` where the
-generalized KS equations minimize the total energy with respect to the orbitals themselves. 
+Variationally minimizing the total energy with respect to the density yields the KS equations for obtaining the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves. 
 
+.. _user_dft_predef_func:
 
-Predefined XC functionals and functional aliases
-================================================
-The XC functional is assigned via the attribute :attr:`xc`. This
-is a comma separated string (precise grammar discussed below [LINK]) e.g.
-xc = 'pbe,pbe' denotes PBE exchange plus PBE correlation. 
-In common usage, a single name is often used to refer to the combination of a particular
-exchange and correlation approximation.
-To support this, PySCF will first examine a lookup table
-to see if :attr:`xc` corresponds to a common compound name. 
-If so,  the implementation  dispatches to the
-appropriate exchange and correlation forms, e.g.  xc = 'pbe' translates to 
-xc = 'pbe,pbe'. If the name is not found in
-the compound functional table and only a single string is found, it will be treated as an exchange
-functional only, e.g. xc = 'b86' leads to B86 exchange only (without correlation).
-Note that  earlier PySCF versions (1.5.0 or earlier)
-did not support compound functional aliases, and both exchange and correlation always had to be
-explicitly assigned.
+Predefined *xc* Functionals and Functional Aliases
+==================================================
 
-See examples in 
-:source:`examples/dft/00-simple_dft.py`,
-:source:`examples/dft/32-xcfun_as_default.py`, and
-:source:`examples/dft/33-nlc_functionals.py`.
+The choice of *xc* functional is assigned via the attribute :attr:`DFT.xc`. This is a comma separated string (precise grammar discussed :ref:`below <user_dft_custom_func>`, e.g., ``xc = 'pbe,pbe'`` denotes PBE exchange plus PBE correlation. In common usage, a single name (alias) is often used to refer to the combination of a particular exchange and correlation approximation instead. To support this, PySCF will first examine a lookup table to see if :attr:`DFT.xc` corresponds to a common compound name, and if so, the implementation dispatches to the appropriate exchange and correlation forms, e.g., ``xc = 'pbe'`` directly translates to ``xc = 'pbe,pbe'``. However, if the name is not found in the compound functional table, and only a single string is given, it will be treated as an exchange functional only, e.g., ``xc = 'b86'`` leads to B86 exchange only (without correlation). Please note that earlier PySCF versions (1.5.0 or earlier)
+did not support compound functional aliases, and both exchange and correlation always had to be explicitly assigned. 
+
+PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``mf._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively.
 
 libxc
 -----
@@ -385,6 +359,7 @@ ZVPBEINT       zvPBEint correlation Functional
 PW91           PW91 Correlation
 =============  ========================================
 
+.. _user_dft_custom_func:
 
 Customizing XC functionals
 ==========================
