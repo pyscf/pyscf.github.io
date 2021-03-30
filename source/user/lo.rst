@@ -16,7 +16,7 @@ However, one can choose a proper unitary rotation :math:`U`
     \phi = \psi U
 
 such that the resulting
-orbitals :math:`\phi` are as local as possible. This is typically achieved by two kinds of
+orbitals :math:`\phi` are as spatially localized as possible. This is typically achieved by one of two classes of
 methods: One is by projection onto a pre-defined local orbital set
 (e.g., AO, pseudopotential orbitals); The other is by numerical optimization on
 a cost function :math:`f`, which can be chosen as different localization
