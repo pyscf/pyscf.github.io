@@ -11,14 +11,15 @@ Density functional theory (DFT)
 Introduction
 ============
 
-Kohn-Sham density functional theory (KS-DFT) has been implemented through derived classes of the :class:`pyscf.scf.hf.SCF` parent class. As such, the methods and capabilities introduced in :numref:`user_scf` are also available to the :mod:`dft` module.
+Kohn-Sham density functional theory (KS-DFT) has been implemented through derived classes of the :class:`pyscf.scf.hf.SCF` parent class. As such, the methods and capabilities introduced in :numref:`user_scf` are also available to the :mod:`dft` module, e.g., the efficient second-order Newton-Raphson algorithm.
 
-A minimal example of using the :mod:`dft` module reads:
+A minimal example of using the :mod:`dft` module reads, cf. `dft/22-newton.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/22-newton.py>`_:
 
   >>> from pyscf import gto, dft
   >>> mol_hf = gto.M(atom = 'H 0 0 0; F 0 0 1.1', basis = 'ccpvdz', symmetry = True)
   >>> mf_hf = dft.RKS(mol_hf)
   >>> mf_hf.xc = 'lda,vwn' # default
+  >>> mf_hf = mf_hf.newton() # second-order algortihm
   >>> mf_hf.kernel()
 
 This will run a restricted, closed-shell Kohn-Sham DFT calculation with the default LDA functional.
@@ -182,11 +183,11 @@ Two main ways exist for adding dispersion (van der Waals) corrections to KS-DFT 
   
 Alternatively, non-local correlation may be added through the VV10 functional :cite:`vydrov_voorhis_vv10_functional_jcp_2010`, cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_:
 
-  >>> mf_hf.xc='wb97m_v'
-  >>> mf_hf.nlc='vv10'
-  >>> mf_hf.grids.atom_grid = {'H': (99, 590),'F': (99, 590)}
+  >>> mf_hf.xc = 'wb97m_v'
+  >>> mf_hf.nlc = 'vv10'
+  >>> mf_hf.grids.atom_grid = {'H': (99, 590), 'F': (99, 590)}
   >>> mf_hf.grids.prune = None
-  >>> mf_hf.nlcgrids.atom_grid = {'H': (50, 194),'F': (50, 194)}
+  >>> mf_hf.nlcgrids.atom_grid = {'H': (50, 194), 'F': (50, 194)}
   >>> mf_hf.nlcgrids.prune = dft.gen_grid.sg1_prune
   >>> mf_hf.kernel()
   
@@ -196,6 +197,36 @@ It's important to keep in mind that the evaluation of the VV10 functional involv
 
 Periodic Boundary Conditions
 ============================
+
+Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron calculation at the :math:`\Gamma`-point at the KS-DFT level using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+
+  >>> from pyscf.pbc import gto as pbcgto
+  >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
+                                        C     .8917    .8917   .8917
+                                        C     1.7834  1.7834  0.
+                                        C     2.6751  2.6751   .8917
+                                        C     1.7834  0.      1.7834
+                                        C     2.6751   .8917  2.6751
+                                        C     0.      1.7834  1.7834
+                                        C     .8917   2.6751  2.6751''',
+                              basis = 'gth-szv',
+                              pseudo = 'gth-pade',
+                              a = np.eye(3) * 3.5668)
+  >>> rks_diamond = dft.RKS(cell_diamond).density_fit(auxbasis='weigend')
+  >>> rks_diamond.xc = 'bp86'
+  >>> rks_diamond = rks_diamond.newton()
+  >>> rks_diamond.kernel()
+
+Alternatively, the corresponding calculation with k-point sampling reads, `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_:
+
+  >>> from pyscf.pbc import dft as pbcdft
+  >>> kpts = cell_diamond.make_kpts([4] * 3) # 4 k-poins for each axis
+  >>> krks_diamond = pbcdft.KRKS(cell_diamond, kpts).density_fit(auxbasis='weigend')
+  >>> krks_diamond.xc = 'bp86'
+  >>> krks_diamond = krks_diamond.newton()
+  >>> krks_diamond.kernel()
+
+Finally, AO values on a chosen grid may be readily obtained, either for a single *k*-point or all, cf. `pbc/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/30-ao_value_on_grid.py>`_.
 
 References
 ==========
