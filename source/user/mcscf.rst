@@ -214,7 +214,7 @@ Initial guess orbitals for the CASSCF calculation may be passed to the ``kernel`
   mycas.kernel(my_custom_mos)
 
 
-CI coefficient from previous or related calculations can also be passed as an initial guess to expedite a calculation:
+CI coefficients from a previous calculation can also be passed as an initial guess to expedite the calculation:
 
 .. code-block:: python
   mycas = mcscf.CASSCF(myhf, 8, 8)
