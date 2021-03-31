@@ -131,7 +131,7 @@ Frozen Core MCSCF
 
 To reduce to computational expense of CASSCF calculations, users can "freeze" orbitals thereby excluding them from optimization.
 
-Users can specify a number to free the N lowest orbitals:
+Users can specify the number of lowest orbitals to freeze:
 
 .. code-block:: python
 
