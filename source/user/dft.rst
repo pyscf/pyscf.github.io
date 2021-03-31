@@ -16,10 +16,10 @@ Kohn-Sham density functional theory (KS-DFT) has been implemented through derive
 A minimal example of using the :mod:`dft` module reads:
 
   >>> from pyscf import gto, dft
-  >>> mol = gto.M(atom = 'H 0 0 0; F 0 0 1.1', basis = 'ccpvdz', symmetry = True)
-  >>> mf = dft.RKS(mol)
-  >>> mf.xc = 'lda,vwn' # default
-  >>> mf.kernel()
+  >>> mol_hf = gto.M(atom = 'H 0 0 0; F 0 0 1.1', basis = 'ccpvdz', symmetry = True)
+  >>> mf_hf = dft.RKS(mol_hf)
+  >>> mf_hf.xc = 'lda,vwn' # default
+  >>> mf_hf.kernel()
 
 This will run a restricted, closed-shell Kohn-Sham DFT calculation with the default LDA functional.
 
@@ -37,12 +37,12 @@ In KS-DFT, as first proposed by Kohn and Sham :cite:`KohSha1965`, the electron d
 Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is the energy due to the external potential, :math:`E_J` is the Coulomb energy, and
 :math:`E_{\rm xc}` is the exchange-correlation (*xc*) energy. In practice, :math:`E_{\rm xc}` is approximated by a density functional approximation, which themselves may be divided into several classes along different rungs of Jacob's ladder :cite:`perdew_jacobs_ladder_aip_conf_proc_2001`:
 
-- local density approximations (e.g. LDA; *xc* energy depends only on the electron density, :math:`\rho`), 
-- generalized gradient approximations (GGA; *xc* energy also depends on the density gradient, :math:`|\nabla\rho|`), 
-- meta-GGAs (*xc* energy also depends on the kinetic energy density and Laplacian, :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
-- non-local correlation functionals (*xc* energy involves a double integral)
-- hybrid density functionals (a fraction of exact exchange is used), and
-- long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
+* local density approximations (e.g. LDA; *xc* energy depends only on the electron density, :math:`\rho`), 
+* generalized gradient approximations (GGA; *xc* energy also depends on the density gradient, :math:`|\nabla\rho|`), 
+* meta-GGAs (*xc* energy also depends on the kinetic energy density and Laplacian, :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
+* non-local correlation functionals (*xc* energy involves a double integral)
+* hybrid density functionals (a fraction of exact exchange is used), and
+* long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
 
 Variationally minimizing the total energy with respect to the density yields the KS equations for obtaining the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves. 
 
@@ -54,107 +54,75 @@ Predefined *xc* Functionals and Functional Aliases
 The choice of *xc* functional is assigned via the attribute :attr:`DFT.xc`. This is a comma separated string (precise grammar discussed :ref:`below <user_dft_custom_func>`, e.g., ``xc = 'pbe,pbe'`` denotes PBE exchange plus PBE correlation. In common usage, a single name (alias) is often used to refer to the combination of a particular exchange and correlation approximation instead. To support this, PySCF will first examine a lookup table to see if :attr:`DFT.xc` corresponds to a common compound name, and if so, the implementation dispatches to the appropriate exchange and correlation forms, e.g., ``xc = 'pbe'`` directly translates to ``xc = 'pbe,pbe'``. However, if the name is not found in the compound functional table, and only a single string is given, it will be treated as an exchange functional only, e.g., ``xc = 'b86'`` leads to B86 exchange only (without correlation). Please note that earlier PySCF versions (1.5.0 or earlier)
 did not support compound functional aliases, and both exchange and correlation always had to be explicitly assigned. 
 
-PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``mf._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively.
+PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``mf._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. For instance, the two libraries may be switched between in order to leverage features that are exclusive to one of them. The example on `dft/12-camb3lyp.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/12-camb3lyp.py>`_ showcases one such use case for range-separated *xc* functionals (e.g., CAM-B3LYP), as Libxc only supports the energy and nuclear gradients for this functional, but not nuclear Hessians and TD-DFT gradients, for which the XCFun library is needed.
 
 .. _user_dft_custom_func:
 
-Customizing XC functionals
-==========================
+Customizing *xc* functionals
+============================
 
-XC functionals of DFT methods can be customized. The simplest way to customize
-the XC functional is to assign a string expression to :attr:`mf.xc`::
+The *xc* functional of choice can be customized. The simplest way to customize to achieve this is to assign a string expression to the ``DFT.xc`` attribute:
 
-    from pyscf import gto, dft
-    mol = gto.M(atom='H  0  0  0; F  0.9  0  0', basis='6-31g')
-    mf = dft.RKS(mol)
-    mf.xc = 'HF*0.2 + .08*LDA + .72*B88, .81*LYP + .19*VWN'
-    mf.kernel()
-    mf.xc = 'HF*0.5 + .08*LDA + .42*B88, .81*LYP + .19*VWN'
-    mf.kernel()
-    mf.xc = 'HF*0.8 + .08*LDA + .12*B88, .81*LYP + .19*VWN'
-    mf.kernel()
-    mf.xc = 'HF'
-    mf.kernel()
+  >>> HF_X, LDA_X = .6, .08
+  >>> B88_X = 1. - HF_X - LDA_X
+  >>> LYP_C = .81
+  >>> VWN_C = 1. - LYP_C
+  >>> mf_hf.xc = f'{HF_X:} * HF + {LDA_X:} * LDA + {B88_X:} * B88, {LYP_C:} * LYP + {VWN_C:} * VWN'
+  >>> mf_hf.kernel()
+  >>> mf_hf.xc = 'hf'
+  >>> mf_hf.kernel()
 
-The XC functional string is parsed against the rules, as described below.
+The XC functional string is parsed against a set of rules, as described below.
 
-* The given functional description must be a one-line string.
+* The given functional description must be a one-line string
 
-* The functional description is case-insensitive.
+* The functional description is case-insensitive
 
-* The functional description string has two parts, separated by ``,``.  The
-  first part describes the exchange functional, the second part sets the
-  correlation functional.
+* The functional description string has two parts, separated by a ``,``.  The first part describes the exchange functional, the second part sets the correlation functional (as for :ref:`aliases <user_dft_predef_func>`) 
 
-  - If "," does not appear in the string, the entire string is treated as the name of a
-    compound functional (containing both the exchange and the correlation
-    functional) which should be in the functional aliases list. See
-    the list of predefined XC functionals in the section above.
+  - If a ``","`` does not appear in the string, the entire string is treated as the name of a compound functional (containing both the exchange and the correlation
+    functional) which should be in the list of functional aliases. Again, if the string is not found in the aliased functional list, it is treated as an exchange functional
 
-    If the string is not found in the aliased functional list, it is treated as
-    an X functional.
+  - To input only an exchange functional (without a correlation functional), one should leave the second part blank. E.g., ``slater,`` implies a functional with the LDA contribution only
 
-  - To input only an X functional (without a C functional), leave the second part
-    blank. E.g. description='slater,' means a functional with the LDA contribution
-    only.
+  - Correspondingly, to neglect the contribution of the exchange functional (i.e. to just use a correlation functional), one should leave the first part blank, e.g., ``',vwn'`` means a functional with VWN only
 
-  - To neglect the contribution of the X functional (i.e. to just use a C functional), leave
-    the first part blank, e.g. description=',vwn' means a functional with VWN
-    only.
+  - If a compound *xc* functional is specified, no matter whether it is in the exchange part (the string in front of the comma) or the correlation part (the string behind the comma), both exchange and correlation functionals of the compound *xc* functional will be used
 
-  - If compound XC functional is specified, no matter whether it is in the X
-    part (the string in front of the comma) or the C part (the string behind the comma),
-    both X and C functionals of the compound XC functional will be used.
+* The functional name can be placed in an arbitrary order.  Two names need be separated by operators ``+`` or ``-``.  Blank spaces are ignored.  NOTE the parser
+  only reads the operators ``+, -, *``, while ``/`` is not supported
 
-* The functional name can be placed in an arbitrary order.  Two names need to be
-  separated by operators "+" or "-".  Blank spaces are ignored.  NOTE the parser
-  only reads operators "+" "-" "*".  / is not supported.
+* A functional name can have at most one factor.  If a factor is not given, it is set to ``1``.  Compound functionals can be scaled as a unit. For example, ``.5 * b3lyp`` is equivalent to ``.1 * HF + .04 * LDA + .36 * B88, .405 * LYP + .095 * VWN``
 
-* A functional name can have at most one factor.  If the factor is not given, it
-  is set to 1.  Compound functionals can be scaled as a unit. For example
-  '0.5*b3lyp' is equivalent to 'HF*0.1 + .04*LDA + .36*B88, .405*LYP + .095*VWN'
+* The string ``HF`` stands for exact exchange (HF K matrix). ``HF`` can be put in the correlation functional part (after the comma). Putting ``HF`` in the correlation part is the same as putting ``HF`` in the exchange part
 
-* String "HF" stands for exact exchange (HF K matrix).  "HF" can be put in the
-  correlation functional part (after the comma). Putting "HF" in the correlation
-  part is the same as putting "HF" in the exchange part.
+* The special string ``RSH`` means a range-separated operator. Its format is ``RSH(alpha; beta; omega)``. Another way to input range separation is to use keywords ``SR_HF`` and ``LR_HF``, e.g., ``SR_HF(.1) * alpha_plus_beta`` and ``LR_HF(.1) * alpha`` where the number in the parenthesis is the value of ``omega``
 
-* String "RSH" means range-separated operator. Its format is RSH(alpha; beta;
-  omega).  Another way to input RSH is to use keywords SR_HF and LR_HF:
-  "SR_HF(0.1) * alpha_plus_beta" and "LR_HF(0.1) * alpha" where the number in
-  parenthesis is the value of omega.
+* One need in general be careful with the Libxc convention of GGA functionals, in which the LDA contribution is included
 
-* Be careful with the libxc convention of GGA functionals, in which the LDA
-  contribution is included.
+For completeness, it's worth mentioning that yet another way to customize *xc* functionals exists, which uses the :py:meth:`eval_xc` method of the numerical integral class:
 
+  >>> def eval_xc(xc_code, rho, spin=0, relativity=0, deriv=1, verbose=None):
+  >>>     # A fictitious functional to demonstrate the usage
+  >>>     rho0, dx, dy, dz = rho
+  >>>     gamma = (dx ** 2 + dy ** 2 + dz ** 2)
+  >>>     exc = .01 * rho0 ** 2 + .02 * (gamma + .001) ** .5
+  >>>     vrho = .01 * 2 * rho0
+  >>>     vgamma = .02 * .5 * (gamma + .001) ** (-.5)
+  >>>     vlapl = None
+  >>>     vtau = None
+  >>>     vxc = (vrho, vgamma, vlapl, vtau)
+  >>>     fxc = None # 2nd-order functional derivative
+  >>>     kxc = None # 3rd-order functional derivative
+  >>> return exc, vxc, fxc, kxc
+  >>> dft.libxc.define_xc_(mf_hf._numint, eval_xc, xctype='GGA')
+  >>> mf_hf.kernel()
 
-There is also another way to customize XC functionals which uses the :py:meth:`eval_xc`
-method of the numerical integral class::
+By calling the :func:`dft.libxc.define_xc_` function, the customized :func:`eval_xc` function is patched to the numerical integration class ``DFT._numint`` dynamically.
 
-    mol = gto.M(atom='H 0 0 0; F 0.9 0 0', basis = '6-31g')
-    mf = dft.RKS(mol)
-    def eval_xc(xc_code, rho, spin=0, relativity=0, deriv=1, verbose=None):
-        # A fictitious XC functional to demonstrate the usage
-        rho0, dx, dy, dz = rho
-        gamma = (dx**2 + dy**2 + dz**2)
-        exc = .01 * rho0**2 + .02 * (gamma+.001)**.5
-        vrho = .01 * 2 * rho0
-        vgamma = .02 * .5 * (gamma+.001)**(-.5)
-        vlapl = None
-        vtau = None
-        vxc = (vrho, vgamma, vlapl, vtau)
-        fxc = None  # 2nd order functional derivative
-        kxc = None  # 3rd order functional derivative
-        return exc, vxc, fxc, kxc
-    dft.libxc.define_xc_(mf._numint, eval_xc, xctype='GGA')
-    mf.kernel()
+For more examples of DFT *xc* functional customization, cf. `dft/24-custom_xc_functional.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/24-custom_xc_functional.py>`_ and `dft/24-define_xc_functional.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/24-define_xc_functional.py>`_.
 
-By calling the :func:`dft.libxc.define_xc_` function, the customized :func:`eval_xc`
-function is patched to the numerical integration class :attr:`mf._numint`
-dynamically.
-
-More examples of DFT XC functional customization can be found in
-:source:`examples/dft/24-custom_xc_functional.py` and
-:source:`examples/dft/24-define_xc_functional.py`.
+.. _user_dft_numint:
 
 Numerical integration grids
 ===========================
