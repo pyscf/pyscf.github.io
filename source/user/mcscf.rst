@@ -75,7 +75,7 @@ There are four strategies and all require that you specify the number of electro
 
 
 2) Specifying the molecular orbital (MO) index of the active space orbitals you want. 
-  The user can "manually" selects the MO orbital indices (in a 1-based indexing scheme) and passes them to the ``sort_mo`` function.
+The user can "manually" select the MO orbital indices (in a 1-based indexing scheme) and pass them to the ``sort_mo`` function.
   See :source:`examples/mcscf/10-define_cas_space.py` for more details.
 
 .. code-block:: python
