@@ -55,7 +55,7 @@ Predefined *xc* Functionals and Functional Aliases
 The choice of *xc* functional is assigned via the attribute :attr:`DFT.xc`. This is a comma separated string (precise grammar discussed :ref:`below <user_dft_custom_func>`, e.g., ``xc = 'pbe,pbe'`` denotes PBE exchange plus PBE correlation. In common usage, a single name (alias) is often used to refer to the combination of a particular exchange and correlation approximation instead. To support this, PySCF will first examine a lookup table to see if :attr:`DFT.xc` corresponds to a common compound name, and if so, the implementation dispatches to the appropriate exchange and correlation forms, e.g., ``xc = 'pbe'`` directly translates to ``xc = 'pbe,pbe'``. However, if the name is not found in the compound functional table, and only a single string is given, it will be treated as an exchange functional only, e.g., ``xc = 'b86'`` leads to B86 exchange only (without correlation). Please note that earlier PySCF versions (1.5.0 or earlier)
 did not support compound functional aliases, and both exchange and correlation always had to be explicitly assigned. 
 
-PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``mf._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. For instance, the two libraries may be switched between in order to leverage features that are exclusive to one of them. The example on `dft/12-camb3lyp.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/12-camb3lyp.py>`_ showcases one such use case for range-separated *xc* functionals (e.g., CAM-B3LYP), as Libxc only supports the energy and nuclear gradients for this functional, but not nuclear Hessians and TD-DFT gradients, for which the XCFun library is needed.
+PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``DFT._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. For instance, the two libraries may be switched between in order to leverage features that are exclusive to one of them. The example on `dft/12-camb3lyp.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/12-camb3lyp.py>`_ showcases one such use case for range-separated *xc* functionals (e.g., CAM-B3LYP), as Libxc only supports the energy and nuclear gradients for this functional, but not nuclear Hessians and TD-DFT gradients, for which the XCFun library is needed.
 
 .. _user_dft_custom_func:
 
@@ -137,10 +137,10 @@ PySCF implements several numerical integration grids, which can be tuned in KS-D
 In addition, these grids can be used for the general numerical evaluation of basis functions, electron densities, and integrals. Some examples of these functionalities can be found in `dft/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/30-ao_value_on_grid.py>`_ and `dft/31-xc_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/31-xc_value_on_grid.py>`_. For instance, the electron density may be readily obtained:
 
   >>> mf_hf.xc = 'b3lyp'
-  >>> coords = mf.grids.coords
-  >>> weights = mf.grids.weights
-  >>> ao_value = numint.eval_ao(mol, coords, deriv=1) # AO value and its gradients
-  >>> rho = numint.eval_rho(mol, ao_value, dm, xctype='GGA') # density & density gradients
+  >>> coords = mf_hf.grids.coords
+  >>> weights = mf_hf.grids.weights
+  >>> ao_value = numint.eval_ao(mol_hf, coords, deriv=1) # AO value and its gradients
+  >>> rho = numint.eval_rho(mol_hf, ao_value, dm, xctype='GGA') # density & density gradients
   
 From ``rho``, the energy density and *xc* potential can be computed by calling into :func:`dft.libxc.eval_xc`.
 
@@ -157,7 +157,7 @@ A more specialized example is the following on computing the kinetic energy from
 In PySCF, the code boils down to:
 
   >>> import numpy as np
-  >>> occ_orbs = mf_hf.mo_coeff[:, mf.mo_occ > 0.]
+  >>> occ_orbs = mf_hf.mo_coeff[:, mf_hf.mo_occ > 0.]
   >>> grids = dft.gen_grid.Grids(mol_hf)
   >>> grids.build(with_non0tab=True)
   >>> weights = grids.weights
@@ -226,7 +226,7 @@ Alternatively, the corresponding calculation with k-point sampling reads, `pbc/2
   >>> krks_diamond = krks_diamond.newton()
   >>> krks_diamond.kernel()
 
-Finally, AO values on a chosen grid may be readily obtained, either for a single *k*-point or all, cf. `pbc/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/30-ao_value_on_grid.py>`_.
+Finally, AO values on a chosen grid may be readily obtained, either for a single k-point or all, cf. `pbc/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/30-ao_value_on_grid.py>`_.
 
 References
 ==========
