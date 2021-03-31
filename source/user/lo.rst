@@ -40,7 +40,7 @@ Note that the PM localization depends on the choice of orbitals used for
 population analysis. Several choices of populations are available, e.g. 
 Mulliken, (meta-) L\"owdin orbitals. 
 Intrinsic bond orbitals (IBOs) can be viewed as a special case of PM
-localization using Intrinsic atomic orbitals (IAOs) as population method.
+localization using intrinsic atomic orbitals (IAOs) as population method.
 See Ref. :cite:`Lehtola14PM` for a summary of choices of orbitals. 
 PM localization has a good feature that enables the
 distinguishment of :math:`\sigma` and :math:`\pi` orbitals.
@@ -59,7 +59,7 @@ The :mod:`lo` module implements various orbital localizations, including:
 =========================== ============== ==================== ======== =====
 Method                       optimization   cost function        PBC     ref
 (meta-) L\"owdin                 No            -                 yes     :cite:`Lowdin50,Sun14qmmm`
-Natural atomic orbitals          No            -                 no      :cite:`Reed85` 
+Natural atomic orbitals          No            -                 gamma   :cite:`Reed85` 
 Intrinsic atomic orbitals        No            -                 yes     :cite:`Knizia13IAO`
 Boys                             yes         dipole              no      :cite:`Foster60`
 Pipek-Mezey                      yes         local charges       gamma   :cite:`Pipek98`
