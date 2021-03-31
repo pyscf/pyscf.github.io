@@ -198,7 +198,7 @@ It's important to keep in mind that the evaluation of the VV10 functional involv
 Periodic Boundary Conditions
 ============================
 
-Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron calculation at the :math:`\Gamma`-point at the KS-DFT level using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
 
   >>> from pyscf.pbc import gto as pbcgto
   >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
@@ -217,7 +217,7 @@ Besides finite-sized systems, PySCF further supports KS-DFT calculations with PB
   >>> rks_diamond = rks_diamond.newton()
   >>> rks_diamond.kernel()
 
-Alternatively, the corresponding calculation with k-point sampling reads, `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_:
+Alternatively, instead of using the molecular KS_DFT code in :mod:`dft`, the corresponding calculation with k-point sampling using the PBC code in :mod:`pbc.dft` reads, `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_:
 
   >>> from pyscf.pbc import dft as pbcdft
   >>> kpts = cell_diamond.make_kpts([4] * 3) # 4 k-poins for each axis
