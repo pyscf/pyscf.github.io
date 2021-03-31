@@ -174,11 +174,31 @@ or - as an alternative - the same may be achieved in the following way:
 Dispersion corrections
 ======================
 
-Grimme's "D3" dispersion correction :cite:`DFTD3` can be added with
-an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_.
-See :mod:`dftd3`.
+Two main ways exist for adding dispersion (van der Waals) corrections to KS-DFT calculations. One is to augment mean-field results by Grimme's D3 corrections :cite:`DFTD3`, which can be added through an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_, cf. `dftd3/00-hf_with_dftd3.py <https://github.com/pyscf/pyscf/blob/master/examples/dftd3/00-hf_with_dftd3.py>`_:
+
+  >>> from pyscf import dftd3
+  >>> mf_hf_d3 = dftd3.dftd3(dft.RKS(mol_hf))
+  >>> mf_hf_d3.kernel()
+  
+Alternatively, non-local correlation may be added through the VV10 functional :cite:`vydrov_voorhis_vv10_functional_jcp_2010`, cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_:
+
+  >>> mf_hf.xc='wb97m_v'
+  >>> mf_hf.nlc='vv10'
+  >>> mf_hf.grids.atom_grid = {'H': (99, 590),'F': (99, 590)}
+  >>> mf_hf.grids.prune = None
+  >>> mf_hf.nlcgrids.atom_grid = {'H': (50, 194),'F': (50, 194)}
+  >>> mf_hf.nlcgrids.prune = dft.gen_grid.sg1_prune
+  >>> mf_hf.kernel()
+  
+It's important to keep in mind that the evaluation of the VV10 functional involves a double grid integration, so differences in grid size can make an enormous difference in time.
+
+.. _user_dft_pbc:
+
+Periodic Boundary Conditions
+============================
 
 References
 ==========
+
 .. bibliography:: ref_dft.bib
    :style: unsrt
