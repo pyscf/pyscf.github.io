@@ -44,8 +44,9 @@ Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is t
 * non-local correlation functionals (*xc* energy involves a double integral)
 * hybrid density functionals (a fraction of exact exchange is used), and
 * long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
+* *xc* functionals that depend on the Laplacian density are, however, not implemented in PySCF
 
-Variationally minimizing the total energy with respect to the density yields the KS equations for obtaining the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves. 
+Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
 
 .. _user_dft_predef_func:
 
@@ -55,7 +56,7 @@ Predefined *xc* Functionals and Functional Aliases
 The choice of *xc* functional is assigned via the attribute :attr:`DFT.xc`. This is a comma separated string (precise grammar discussed :ref:`below <user_dft_custom_func>`, e.g., ``xc = 'pbe,pbe'`` denotes PBE exchange plus PBE correlation. In common usage, a single name (alias) is often used to refer to the combination of a particular exchange and correlation approximation instead. To support this, PySCF will first examine a lookup table to see if :attr:`DFT.xc` corresponds to a common compound name, and if so, the implementation dispatches to the appropriate exchange and correlation forms, e.g., ``xc = 'pbe'`` directly translates to ``xc = 'pbe,pbe'``. However, if the name is not found in the compound functional table, and only a single string is given, it will be treated as an exchange functional only, e.g., ``xc = 'b86'`` leads to B86 exchange only (without correlation). Please note that earlier PySCF versions (1.5.0 or earlier)
 did not support compound functional aliases, and both exchange and correlation always had to be explicitly assigned. 
 
-PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``DFT._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. For instance, the two libraries may be switched between in order to leverage features that are exclusive to one of them. The example on `dft/12-camb3lyp.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/12-camb3lyp.py>`_ showcases one such use case for range-separated *xc* functionals (e.g., CAM-B3LYP), as Libxc only supports the energy and nuclear gradients for this functional, but not nuclear Hessians and TD-DFT gradients, for which the XCFun library is needed.
+PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. The former of these is the default, but the latter may be chosen upon by setting ``DFT._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_. For complete lists of available functionals, the user is referred to the ``XC_CODES`` dictionaries in `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. For instance, the two libraries may be switched between in order to leverage features that are exclusive to one of them.
 
 .. _user_dft_custom_func:
 
@@ -99,6 +100,8 @@ The XC functional string is parsed against a set of rules, as described below.
 
 * The special string ``RSH`` means a range-separated operator. Its format is ``RSH(alpha; beta; omega)``. Another way to input range separation is to use keywords ``SR_HF`` and ``LR_HF``, e.g., ``SR_HF(.1) * alpha_plus_beta`` and ``LR_HF(.1) * alpha`` where the number in the parenthesis is the value of ``omega``
 
+* The ``RSH`` kernel in PySCF is based on the error function kernel; Yukawa kernels are not supported at present
+
 * One need in general be careful with the Libxc convention of GGA functionals, in which the LDA contribution is included
 
 For completeness, it's worth mentioning that yet another way to customize *xc* functionals exists, which uses the :py:meth:`eval_xc` method of the numerical integral class:
@@ -128,7 +131,7 @@ For more examples of DFT *xc* functional customization, cf. `dft/24-custom_xc_fu
 Numerical integration grids
 ===========================
 
-PySCF implements several numerical integration grids, which can be tuned in KS-DFT calculations following the examples in `dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_. For instance, predefined grid may be set by using levels from ``0`` (very sparse) to ``9`` (very dense), with a default values of ``3``, cf. `pyscf/dft/gen_grid.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/gen_grid.py>`_ for more details. Likewise, the default integration grids use Bragg radii for atoms, Treutler-Ahlrichs radial grids, Becke partitioning for grid weights, the pruning scheme of NWChem, and mesh grids, which are all setting that may be overwritten:
+PySCF implements several numerical integration grids, which can be tuned in KS-DFT calculations following the examples in `dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_. For instance, predefined grids (identical to those used in `TURBOMOLE <https://www.turbomole.org/>`_) may be set by using levels from ``0`` (very sparse) to ``9`` (very dense), with a default values of ``3``, cf. `pyscf/dft/gen_grid.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/gen_grid.py>`_ for more details. Likewise, the default integration grids use Bragg radii for atoms, Treutler-Ahlrichs radial grids, Becke partitioning for grid weights, the pruning scheme of NWChem, and mesh grids, which are all setting that may be overwritten:
 
   >>> mf_hf.grids.level = 5
   >>> mf_hf.radi_method = dft.gauss_chebeshev
@@ -198,7 +201,7 @@ It's important to keep in mind that the evaluation of the VV10 functional involv
 Periodic Boundary Conditions
 ============================
 
-Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation for a chemical Hamiltonian (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
 
   >>> from pyscf.pbc import gto as pbcgto
   >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
