@@ -201,35 +201,7 @@ It's important to keep in mind that the evaluation of the VV10 functional involv
 Periodic Boundary Conditions
 ============================
 
-Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard molecular KS-DFT calculation (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
-
-  >>> from pyscf.pbc import gto as pbcgto
-  >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
-                                        C     .8917    .8917   .8917
-                                        C     1.7834  1.7834  0.
-                                        C     2.6751  2.6751   .8917
-                                        C     1.7834  0.      1.7834
-                                        C     2.6751   .8917  2.6751
-                                        C     0.      1.7834  1.7834
-                                        C     .8917   2.6751  2.6751''',
-                              basis = 'gth-szv',
-                              pseudo = 'gth-pade',
-                              a = np.eye(3) * 3.5668)
-  >>> rks_diamond = dft.RKS(cell_diamond).density_fit(auxbasis='weigend')
-  >>> rks_diamond.xc = 'bp86'
-  >>> rks_diamond = rks_diamond.newton()
-  >>> rks_diamond.kernel()
-
-Alternatively, instead of using the molecular KS_DFT code in :mod:`dft`, the corresponding calculation with k-point sampling using the PBC code in :mod:`pbc.dft` reads, `pbc/21-k_points_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/21-k_points_all_electron_scf.py>`_:
-
-  >>> from pyscf.pbc import dft as pbcdft
-  >>> kpts = cell_diamond.make_kpts([4] * 3) # 4 k-poins for each axis
-  >>> krks_diamond = pbcdft.KRKS(cell_diamond, kpts).density_fit(auxbasis='weigend')
-  >>> krks_diamond.xc = 'bp86'
-  >>> krks_diamond = krks_diamond.newton()
-  >>> krks_diamond.kernel()
-
-Finally, AO values on a chosen grid may be readily obtained, either for a single k-point or all, cf. `pbc/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/30-ao_value_on_grid.py>`_.
+Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline KS-DFT calculations have deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation for an initialized ``Cell`` object at either the :math:`\Gamma`-point or with k-point sampling may be run through :mod:`dft` and :mod:`pbc.dft`, respectively. For more details on PBC functionalities, please see the dedicated sections on :ref:`PBC-KS-DFT <user_pbc>`.
 
 References
 ==========
