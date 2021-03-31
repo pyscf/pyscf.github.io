@@ -126,16 +126,24 @@ For more examples of DFT *xc* functional customization, cf. `dft/24-custom_xc_fu
 
 Numerical integration grids
 ===========================
-PySCF implements several numerical integration grids,
-which can be tuned in DFT calculations following the examples in 
-:source:`examples/dft/11-grid_scheme.py`.
-In addition, these grids can be used for the general numerical evaluation of
-basis functions, electron densities, and integrals.
-Some examples can be found in 
-:source:`examples/dft/30-ao_value_on_grid.py`, and
-:source:`examples/dft/31-xc_value_on_grid.py`.
-The following is an example that computes the kinetic energy from the 
-nonnegative kinetic energy density
+
+PySCF implements several numerical integration grids, which can be tuned in KS-DFT calculations following the examples in `dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_. For instance, predefined grid may be set by using levels from ``0`` (very sparse) to ``9`` (very dense), with a default values of ``3``, cf. `pyscf/dft/gen_grid.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/gen_grid.py>`_ for more details. Likewise, the default integration grids use Bragg radii for atoms, Treutler-Ahlrichs radial grids, Becke partitioning for grid weights, the pruning scheme of NWChem, and mesh grids, which are all setting that may be overwritten:
+
+  >>> mf_hf.grids.level = 5
+  >>> mf_hf.radi_method = dft.gauss_chebeshev
+  >>> mf_hf.grids.prune = None # disabling pruning of grids near core regions
+
+In addition, these grids can be used for the general numerical evaluation of basis functions, electron densities, and integrals. Some examples of these functionalities can be found in `dft/30-ao_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/30-ao_value_on_grid.py>`_ and `dft/31-xc_value_on_grid.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/31-xc_value_on_grid.py>`_. For instance, the electron density may be readily obtained:
+
+  >>> mf_hf.xc = 'b3lyp'
+  >>> coords = mf.grids.coords
+  >>> weights = mf.grids.weights
+  >>> ao_value = numint.eval_ao(mol, coords, deriv=1) # AO value and its gradients
+  >>> rho = numint.eval_rho(mol, ao_value, dm, xctype='GGA') # density & density gradients
+  
+From ``rho``, the energy density and *xc* potential can be computed by calling into :func:`dft.libxc.eval_xc`.
+
+A more specialized example is the following on computing the kinetic energy from the nonnegative kinetic energy density according to the formulas:
 
 .. math::
 
@@ -145,23 +153,27 @@ nonnegative kinetic energy density
 
     T_s = \int d\mathbf{r} t_s(\mathbf{r}) \;.
 
-.. code-block:: python
+In PySCF, the code boils down to:
 
-    from pyscf.dft import gen_grid, numint
-    orbo = mf.mo_coeff[:,mf.mo_occ>0]
-    grids = gen_grid.Grids(mol)
-    grids.build(with_non0tab=True)
-    weights = grids.weights
-    ao1 = numint.eval_ao(mol, grids.coords, deriv=1, non0tab=grids.non0tab)
-    ts = 0.5 * numpy.einsum('xgp,pi,xgq,qi->g', ao1[1:], orbo, ao1[1:], orbo)
-    Ts = numpy.einsum('g,g->', weights, ts)
+  >>> import numpy as np
+  >>> occ_orbs = mf_hf.mo_coeff[:, mf.mo_occ > 0.]
+  >>> grids = dft.gen_grid.Grids(mol_hf)
+  >>> grids.build(with_non0tab=True)
+  >>> weights = grids.weights
+  >>> ao1 = dft.numint.eval_ao(mol_hf, grids.coords, deriv=1, non0tab=grids.non0tab)
+  >>> ts = 0.5 * np.einsum('xgp,pi,xgq,qi->g', ao1[1:], occ_orbs, ao1[1:], occ_orbs)
+  >>> Ts = np.einsum('g,g->', weights, ts)
 
-    Ts_ao = mol.intor("int1e_kin")
-    Ts_anal = np.einsum("ui,uv,vi->", orbo, Ts_ao, orbo)
-    print(asb(Ts - Ts_anal))
+or - as an alternative - the same may be achieved in the following way:
+
+  >>> Ts_ao = mol_hf.intor('int1e_kin')
+  >>> Ts_analyt = np.einsum('ui,uv,vi->', occ_orbs, Ts_ao, occ_orbs)
+
+.. _user_dft_disp_corr:
 
 Dispersion corrections
 ======================
+
 Grimme's "D3" dispersion correction :cite:`DFTD3` can be added with
 an interface to the external library `libdftd3 <https://github.com/cuanto/libdftd3>`_.
 See :mod:`dftd3`.
