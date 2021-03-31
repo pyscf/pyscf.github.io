@@ -201,7 +201,7 @@ It's important to keep in mind that the evaluation of the VV10 functional involv
 Periodic Boundary Conditions
 ============================
 
-Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard KS-DFT calculation (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
+Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline input parsing has deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation at the :math:`\Gamma`-point using density fitting (recommended) and a second-order SCF algorithm, requires input on par with a standard molecular KS-DFT calculation (cf. `pbc/11-gamma_point_all_electron_scf.py <https://github.com/pyscf/pyscf/blob/master/examples/pbc/11-gamma_point_all_electron_scf.py>`_):
 
   >>> from pyscf.pbc import gto as pbcgto
   >>> cell_diamond = pbcgto.M(atom = '''C     0.      0.      0.
