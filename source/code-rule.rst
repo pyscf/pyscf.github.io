@@ -76,7 +76,7 @@ API convention
     We need to assume the attributes for results
     will be used as default inputs or environments for other objects in the rest
     parts of the program.
-    The results attributes should be are immutable,  once they were generated
+    The results attributes should be immutable, once they were generated
     and stored (after calling the :func:`kernel()` method) in a particular object.
 
   - In __init__ function, initialize/define the problem size.  The
