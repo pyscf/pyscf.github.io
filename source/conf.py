@@ -31,8 +31,8 @@ sys.path.append(os.path.abspath("./tools/extensions"))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    #'sphinx.ext.autosectionlabel',
-    #'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     #'sphinxtogithub',

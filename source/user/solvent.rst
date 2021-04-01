@@ -1,4 +1,5 @@
 
+.. _user_solvent:
 
 Solvation models
 ****************
