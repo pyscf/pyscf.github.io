@@ -201,7 +201,7 @@ More examples can be found
 
 .. literalinclude:: ../../examples/pbc/27-multigrid.py
 
-Multi-grid algorithm does not support exact exchange.
+The multi-grid algorithm does not support exact exchange.
 
 .. _user_pbc_rsjk:
 Range-separation integration
