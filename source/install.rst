@@ -108,6 +108,7 @@ shell::
 
 
 .. _compile_c_extensions:
+
 Compiling from source code
 ==========================
 
@@ -180,14 +181,14 @@ directory can be used to fix this problem::
 Environment variables and global configures
 ===========================================
 
------------------------ ---------------------------------------------------------
+======================= =========================================================
 Env variable            Comments
 ----------------------- ---------------------------------------------------------
 `PYSCF_MAX_MEMORY`      Maximum memory to use in MB
 `PYSCF_TMPDIR`          Directory for temporary files
 `PYSCF_CONFIG_FILE`     File where various PySCF default settings are stored
 `PYSCF_EXT_PATH`        Path for finding external extensions
------------------------ ---------------------------------------------------------
+======================= =========================================================
 
 `PYSCF_MAX_MEMORY` sets the default maximum memory in MB when creating
 `Mole` (or `Cell`) object. It corresponds to the attribute
@@ -216,6 +217,7 @@ packages. This is documented in detail in :ref:`installing_extproj`.
 
 
 .. _installing_wo_network:
+
 Installation without network
 ============================
 
@@ -270,6 +272,7 @@ that the Python interpreter can find your installation of PySCF.
 
 
 .. _installing_blas:
+
 Using optimized BLAS
 ====================
 
@@ -334,6 +337,7 @@ You can also hardcode the libraries you want to use in
 
 
 .. _installing_qcint:
+
 Using optimized integral library
 ================================
 
@@ -373,13 +377,14 @@ directory ``pyscf/lib/cmake_arch_config``.
 
 
 .. _installing_extproj:
+
 Extension modules
 =================
 
 As of PySCF-2.0, some modules have been moved from the main code trunk
 to extension projects hosted at https://github.com/pyscf.
 
-------------------- ---------------------------------------------------------
+=================== =========================================================
 Project             URL
 ------------------- ---------------------------------------------------------
 cornell_shci        https://github.com/pyscf/cornell_shci
@@ -396,7 +401,7 @@ semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
 tblis               https://github.com/pyscf/pyscf-tblis
-------------------- ---------------------------------------------------------
+=================== =========================================================
 
 Based on the technique of namespace packages specified in `PEP 420
 <https://www.python.org/dev/peps/pep-0420/>`, PySCF has developed a

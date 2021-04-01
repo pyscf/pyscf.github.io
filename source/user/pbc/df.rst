@@ -16,7 +16,7 @@ Like for molecular calculations, density fitting (DF) is useful to reduce the co
 
 * The mixed density fitting (:class:`MDF`) uses both PWs and GTOs as the auxiliary basis functions. :cite:`Sun17JCP`
 
-This section of the user document covers the basic usage of these DF methods in periodic calculations. The recommended choice of DF methods for different applications is also provided. See :ref:`theory_df` for the use of DF in molecular calculations.
+This section of the user document covers the basic usage of these DF methods in periodic calculations. The recommended choice of DF methods for different applications is also provided. See :ref:`user_df` for the use of DF in molecular calculations.
 
 
 Using DF in periodic calculations
