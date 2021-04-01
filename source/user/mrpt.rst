@@ -19,7 +19,6 @@ A simple example (see :source:`examples/mrpt/03-dmrg_nevpt2.py`) of running
 SC-NEVPT2 calculations with FCI and DMRG solvers is 
 
 .. literalinclude:: ../../examples/mrpt/03-dmrg_nevpt2.py
-
 which outputs
 
 .. code::
@@ -36,7 +35,7 @@ Compressed Perturber Functions
 The bottleneck in SC-NEVPT2 is the evaluation of the energies of the perturber functions,
 where up to the 4-particle reduced density matrix (4-RDM) appears.
 In DMRG-SC-NEVPT2, this evaluation is done with the compressed bond dimension (M') which is smaller than 
-the bond dimension (M) in the DMRG energy optimization as
+the bond dimension in the DMRG energy optimization as
 ``mrpt.NEVPT(mc,root=Root_ID).compress_approx(maxM=M')``
 
 More information can be found in Reference :cite:`Guo2016` 
