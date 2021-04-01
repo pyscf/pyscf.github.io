@@ -8,7 +8,7 @@ AO to MO transformation
 
 Overview
 ========
-The :mod:`ao2mo` module exposes users with :func:`kernel`, :class:`load`, :func:`resture` to handle 4-index AO to MO transformation.
+The :mod:`ao2mo` module exposes users with :func:`kernel`, :class:`load`, :func:`restore` to handle 4-index AO to MO transformation.
 The function :func:`kernel` takes in :class:`Mole` object or the ao integrals stored in a :class:`numpy.ndarray` and a set of mo coefficients
 If ``erifile`` is specified, the integrals will be stored in a HDF5 file, otherwise it will be stored in a numpy array.
 ::
@@ -67,7 +67,7 @@ The kernel function
     :keyword str intor: the name of the integral you want to evaluate. More details can be found at :mod:`gto`.
     :keyword int comp: the component of the integral to be evaluated. It is closely related to ``intor``, more details can also be found at :mod:`gto`.
 
-    :keyword aosym: 
+    :keyword aosym: It specifies to what level can the :meth:`ao2mo` utilizes symmetry in ao integrals. Supported symmetry labels are the same as those in :func:`restore`. For more details see :ref:`Transform integrals between symmetries` section below. Default aosym is 's4'. 
     :type aosym: int or str
 
     :keyword bool compact: When it is ``True``, the returned MO integrals has (up to 4-fold) permutation symmetry. When it is ``False``, the function will abandon any permutation symmetry, and return the "plain" MO integrals without any permutation symmetry.
@@ -124,3 +124,8 @@ Listed are the symmetry label that this function takes. It can be either ``str``
 's2ij', '2ij'  2-fold symmetry between kl indices.
 's1', '1', 1   1-fold symmetry or no symmetry.
 ============== ====
+
+Note
+====
+The examples in this document can be found as a single python script in :source:`examples/ao2mo/02-ao2mo_doc.py`,
+more examples can also be found at :source:`examples/ao2mo/02-ao2mo_doc.py` directory.
