@@ -31,7 +31,7 @@ See :ref:`installing_plugin`.
 
    overview.rst
    install.rst
-   tutorial.rst
+   quickstart.rst
    user.rst
    develop.rst
    modules.rst

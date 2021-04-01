@@ -10,6 +10,10 @@ Program reference
 
 Cell class
 ----------
+
+.. automodule:: pyscf.pbc.gto.cell
+   :members:
+
 .. autoclass:: pyscf.pbc.gto.Cell
    :members:
 

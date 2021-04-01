@@ -20,6 +20,7 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/ci.rst
    user/cc.rst
    user/adc.rst
+   user/agf2.rst
    user/mcscf.rst
    user/tddft.rst
    user/rt.rst
@@ -28,3 +29,6 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/x2c.rst
    user/df.rst
    user/pbc.rst
+   user/eph.rst
+   user/lo.rst
+   user/sgx.rst
