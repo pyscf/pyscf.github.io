@@ -25,7 +25,7 @@ If ``erifile`` is specified, the integrals will be stored in a HDF5 file, otherw
     mf.kernel()
 
     orb = mf.mo_coeff
-    # eri is a numpy array
+    # get the two-electron integrals as a numpy array
     eri = ao2mo.kernel(mol, orb)
 
     ftmp = tempfile.NamedTemporaryFile()
