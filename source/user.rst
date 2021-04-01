@@ -30,3 +30,4 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/df.rst
    user/pbc.rst
    user/eph.rst
+   user/sgx.rst
