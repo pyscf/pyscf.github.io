@@ -7,7 +7,6 @@ Developer documentation
    :maxdepth: 1
 
    code-rule.rst
-   design.rst
    contributing.rst
    develop/scf_developer.rst
    develop/dft_developer.rst
