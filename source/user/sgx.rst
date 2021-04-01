@@ -10,7 +10,11 @@ The SGX module implements seminumerical computation of the exchange matrix.
 Introduction
 ============
 
-Direct computation of the Hartree-Fock Exchange matrix in the atomic orbital basis scales poorly with system size. To achieve better scaling, one coordinate of the two-electron integrals is computed analytically, while the other is evaluated on a real-space grid, as proposed by Friesner :cite:`Friesner1985`. The PySCF implementation most closely resembles the chain-of-spheres (COSX) algorithm of Neese et al. :cite:`Neese2009`, but with more conservative grids and without P-junction screening. Overlap fitting is used to reduce aliasing errors :cite:`Izsak2011`. SGX scales as :math:`O(N^2)` with system size, as opposed to the :math:`O(N^4)` scaling of analytical exchange :cite:`Neese2009`.
+Direct computation of the Hartree-Fock exchange matrix in the atomic orbital basis scales poorly with system size.
+To achieve better scaling, one three-dimensional integral in the 6-dimensional two-electron integrals can be computed analytically, while the other can be evaluated on a real-space grid, as proposed by Friesner :cite:`Friesner1985`.
+The PySCF implementation resembles the chain-of-spheres (COSX) algorithm of Neese et al. :cite:`Neese2009`, but uses more conservative grids and does not implement P-junction screening.
+Overlap fitting is used to reduce aliasing errors :cite:`Izsak2011`.
+SGX scales as :math:`O(N^2)` with system size, as opposed to the :math:`O(N^4)` scaling of analytical exchange :cite:`Neese2009`.
 
 Usage and Example
 =================
