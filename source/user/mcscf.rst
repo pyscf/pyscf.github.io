@@ -95,9 +95,9 @@ Below is a list of several general strategies one could employ to pick active sp
 
 2) Specifying the molecular orbital (MO) index of the active space orbitals you want. 
   This is often useful after selecting (and typically visualizing) localized orbitals.
-  The user can "manually" selects the MO orbital indices (in a 1-based indexing scheme) and passes them to the ``sort_mo`` function.
+  The user can "manually" select the MO orbital indices (in a 1-based indexing scheme) and pass them to the ``sort_mo`` function.
   See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.
-
+  
 .. code-block:: python
 
   mycas = mcscf.CASSCF(myhf, 4, 4)
@@ -151,7 +151,7 @@ Frozen Core MCSCF
 
 To reduce to computational expense of CASSCF calculations, users can "freeze" orbitals thereby excluding them from optimization.
 
-Users can specify a number to free the N lowest orbitals:
+Users can specify the number of lowest orbitals to freeze:
 
 .. code-block:: python
 
@@ -235,7 +235,7 @@ Initial guess orbitals for the CASSCF calculation (starting orbitals) may be pas
   mycas.kernel(my_custom_mos)
 
 
-CI coefficient from previous or related calculations can also be passed as an initial guess to expedite a calculation:
+CI coefficients from a previous calculation can also be passed as an initial guess to expedite the calculation:
 
 .. code-block:: python
   mycas = mcscf.CASSCF(myhf, 8, 8)
