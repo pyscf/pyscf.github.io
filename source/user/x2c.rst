@@ -1,5 +1,3 @@
-.. _user_x2c:
-
 Relativistic calculations
 *************************
 

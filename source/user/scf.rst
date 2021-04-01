@@ -425,6 +425,8 @@ orthonormalization technique
 shown to work reliably even in the presence of such truly pathological
 linear dependencies.
   
+.. _user_x2c: 
+
 Scalar relativistic correction
 ==============================
 

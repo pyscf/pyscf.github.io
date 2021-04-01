@@ -10,13 +10,15 @@ Introduction
 ------------
 
 Multiconfigurational self-consistent field (MCSCF) methods extend Hartree-Fock (HF) theory by describing the wave function as a linear combination of determinants. 
-Unlike full configuration interaction (FCI), described in :numref:`theory_ci`, complete active space (CAS) methods perform the FCI procedure on a subset of the molecular orbitals, referred to as the "active space." 
+While there are a large variety of MCSCF methods, PySCF focuses on the complete active space (CAS) family of methods.
+Unlike full configuration interaction (FCI), described in :numref:`theory_ci`, CAS methods perform the FCI procedure on a subset of the molecular orbitals, referred to as the "active space." 
 These methods are crucial for systems that exhibit strong electron correlation, such as transition metal complexes.
-For a detailed discussion of MCSCF methods, we direct the reader to :cite:`Helgaker2013` and :cite:`esqc`.
+For a detailed discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`.
 
 The MCSCF module has two main flavors: CASCI and CASSCF. 
-CASCI uses the single reference orbitals from a HF calculation and solves the CI eigenvalue problem once.
-CASSCF calculations optimize the orbitals for the set of determinants and require solving the CI eigenvalue multiple (and possibly many) times.
+CASCI expands the wave function as a linear combination of slater determinants and variationally solves for the coefficients of this expansion.
+CASSCF calculations optimize the orbitals for the set of determinants and the coefficients of their expansion.
+This means performing multiple (and possibly many) CASCI step.
 
 Minimal examples for each type of calculations are shown below.
 
@@ -24,14 +26,18 @@ CASCI
 """""
 .. code-block:: python
 
-  import pyscf
-  mol = pyscf.M(
+  from pyscf import gto, mp, mcscf
+  mol = gto.M(
       atom = 'O 0 0 0; O 0 0 1.2',
       basis = 'ccpvdz',
       spin = 2)
   myhf = mol.RHF().run()
+  mymp = mp.UMP2(myhf).run()
+
+  noons, natorbs = mcscf.addons.make_natural_orbitals(mymp)
   ncas, nelecas = (6,8)
-  mycas = myhf.CASCI(ncas, nelecas).run()
+  mycas = mcscf.CASCI(myhf, ncas, nelecas)
+  mycas.kernel(natorbs)
 
 
 CASSCF
@@ -44,29 +50,42 @@ CASSCF
       basis = 'ccpvdz',
       spin = 2)
   myhf = mol.RHF().run()
-  ncas, nelecas = (6,8)
+  ncas, nelecas = (6,(5,3))
   mycas = myhf.CASSCF(ncas, nelecas).run()
 
 Like many other modules in PySCF, :mod:`mcscf` works with density-fitting (:numref:`user_df`) and x2c (:numref:`user_x2c`).
 It can also be used in its unrestricted formulation, please see :source:`examples/mcscf/60-uhf_based_ucasscf.py` for an example.
 An important feature of :mod:`mcscf` is that it can interface with external CI solver such as DMRG, FCIQMC, or selected CI methods, see the external projects for more details.
-
+You can even use MP2 or CC methods as solvers!
+Check out :source:`/examples/cc/42-as_casci_fcisolver.py` for a working example.
 
 
 Picking an Active Space
 -----------------------
 In general, selecting an active space can be cumbersome and PySCF offers severals ways to facilitate this process.
-There are four strategies and all require that you specify the number of electrons and orbitals in the active space.
+There are several strategies and they all contain two main components:
 
-.. warning::
+* Specify the number of electrons and orbitals in the active space.
+* (Optional) Specify the which orbitals are "active" 
+
+.. 
+  warning::
+  The total set orbitals (core, active, and virtual) used in active space methods can be specified or selected in a variety of ways, giving users substantial flexibility for CAS-type calculations.
+  But users should note, "with great power comes great responsibility."
+  Active space calculations are notoriously difficult and just because a calculation completes without error does not guarantee that the results will be chemically/physically meaningful so we urge users to select their active space orbitals with thought and care.
+
+.. note::
   We always advise users to visualize their chosen active orbitals before starting large/expensive calculations.
   This involves dumping the MO coefficients to a ``molden`` file (see example :source:`examples/tools/02-molden.py`) and visualizing with your chosen program.
   While there are many great softwares available to visualize orbitals, `JMol <http://jmol.sourceforge.net/>`_ is one of the easiest to use and is recommended for less experienced users.
 
 
+Below is a list of several general strategies one could employ to pick active space orbitals:
+
 1) (Default) Specifying no additional information.
-  This is the most minimal strategy for selecting an active space and chooses orbitals (and electrons) around the fermi-level that match the number of orbitals and electrons specified by the user.
+  This is the most minimal strategy for selecting an active space and chooses orbitals (and electrons) around the Fermi level that match the number of orbitals and electrons specified by the user.
   In most circumstances, this is not an ideal strategy and will lead to poor convergence or none at all.
+
   For example:
 .. code-block:: python
 
@@ -75,8 +94,9 @@ There are four strategies and all require that you specify the number of electro
 
 
 2) Specifying the molecular orbital (MO) index of the active space orbitals you want. 
+  This is often useful after selecting (and typically visualizing) localized orbitals.
   The user can "manually" selects the MO orbital indices (in a 1-based indexing scheme) and passes them to the ``sort_mo`` function.
-  See :source:`examples/mcscf/10-define_cas_space.py` for more details.
+  See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.
 
 .. code-block:: python
 
@@ -154,9 +174,10 @@ See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 State-Averaged Calculations
 ---------------------------
 
-When dealing with states that are close in energy, it can be helpful to perform state average calculations where the multireference orbitals are optimized for multiple states.
+When dealing with states that are close in energy, it can be helpful to perform state average calculations where the orbitals are optimized for multiple states.
 The ``state_average_`` function (note the hanging underscore) is a member function of ``CASCI``/``CASSCF`` objects and takes the weights of the states as input.
-The weights can be any normalized and non-negative array of values.
+The weights can be any normalized and non-negative array of values, but typically they are all the same.
+See Section 12.7.2 in Ref. :cite:`Helgaker2013` for more details.
 
 .. code-block:: python
 
@@ -192,7 +213,7 @@ Job Control
 Optimization Settings
 """""""""""""""""""""
 
-For CASSCF calculations, users may want to modify several of the convergence tolerances such as the energy tolerance (``conv_tol``), the orbital gradient tolerance (``conv_tol_grad``), and the maximum number of MCSCF iteration (``max_cycle_macro``).
+For CASSCF calculations, users may want to modify several of the convergence thresholds such as the energy (``conv_tol``), the orbital gradient (``conv_tol_grad``), and the maximum number of MCSCF iterations (``max_cycle_macro``).
 
 .. code-block:: python
 
@@ -206,7 +227,7 @@ For CASSCF calculations, users may want to modify several of the convergence tol
 Initial Guess
 """""""""""""
 
-Initial guess orbitals for the CASSCF calculation may be passed to the ``kernel`` member function of an MCSCF object.
+Initial guess orbitals for the CASSCF calculation (starting orbitals) may be passed to the ``kernel`` member function of an MCSCF object.
 
 .. code-block:: python
 
@@ -253,6 +274,9 @@ Much like :mod:`scf`, if a job is interrupted, users can restart the MCSCF calcu
 
 See :source:`examples/mcscf/13-restart.py` for a complete example.
 
+Restarting calculations can be also be useful when using results from a smaller active space to speed up calculations on a larger one.
+
+
 Observables and Properties
 --------------------------
 
@@ -279,7 +303,10 @@ The ``analyze`` member functions of MCSCF objects prints many useful properties 
 Natural Orbitals
 """"""""""""""""
 
-Users can request that the converged MCSCF orbitals be transformed with the member attribute ``natorb``
+Energy of CAS state is invariant under orbital rotation within inactive, active, and virtual sectors.
+Inactive and virtual orbitals are by default canonicalized, i.e. they transformed such that Fock matrices within virtual and inactive sectors are diagonal, and orbital energy can be assigned to these orbitals.
+By default active orbitals are kept untouched after orbital optimization and strictly speaking no energy or electron occupation can be assigned to them.
+Users can request that active orbitals be transformed to the so-called natural representation, such that the one-body density matrix is diagonal and electron occupation can be assigned to them.
 
 .. warning::
   When ``mycas.natorb`` is set, the natural orbitals may NOT be sorted by the active space occupancy.
