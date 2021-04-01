@@ -57,7 +57,7 @@ In the above example, the coordinates (in the same unit as ``mol.unit``) and
 charges of the point charges in the MM region are given by ``coords`` and ``charges``,
 respectively.
 
-Analytical nuclear gradients will be calculated with the background charges. ::
+Analytical nuclear gradients are calculated with the background charges. ::
 
     >>> mf.nuc_grad_method().run()
     --------------- QMMM gradients ---------------
