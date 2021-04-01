@@ -36,7 +36,7 @@ In this case, the error of SGX compared to analytical exchange is about 0.06 mEh
 
     mf.with_df.dfj = True
 
-specifies to compute the Coulomb matrix using Density Fitting (DF) while using SGX for the Exchange matrix.
+specifies to compute the Coulomb matrix using density fitting (DF-J) while using SGX for the exchange matrix.
 
 Adjustable Parameters
 =====================
