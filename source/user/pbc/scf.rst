@@ -34,11 +34,18 @@ which can be easily achieved using the ``Cell.make_kpts()`` method::
 See :ref:`user_pbc_gto` and :ref:`user_pbc` for more details about
 the :class:`Cell` object and Brillouin zone sampling.
 
+Various integral schemes have been developed for periodic calculations in PySCF.
+A regular periodic calculation can be started with some type of density fitting.
+For large systems, multi-grid algorithm (see :ref:`user_pbc_multigrid`) or
+range-separation (RS) integral algorithm (see :ref:`user_pbc_rsjk`) can be
+considered to reduce the cost of Fock build.
+See :ref:`user_pbc_df_comparison` for the comparison of different integral
+schemes in periodic calculations.
+
 Density fitting
 ===============
 
-All periodic calculations in PySCF must be done with some type of density
-fitting.  The default behavior is to use plane-wave density fitting (FFTDF).
+The default behavior is to use plane-wave density fitting (FFTDF).
 The number of plane-waves used as an auxiliary basis is controlled by kinetic
 energy cutoff, which is specified by the :attr:`Cell.ke_cutoff` parameter.  The
 default value of this parameter is chosen to provide many digits of precision in
@@ -70,14 +77,14 @@ Finite-size effects
 The long-ranged nature of the Coulomb interaction is responsible for a number of
 divergent contributions to the energy.  For charge-neutral unit cells, the
 divergence of the nuclear repulsion energy, the electron-nuclear attraction
-energy, and the electronic Hartree energy cancel one another.  
+energy, and the electronic Hartree energy cancel one another.
 
 The nonlocal exact exchange energy exhibits an integrable divergence at
 :math:`G=0` that is responsible for the leading-order finite-size error of HF
 and hybrid DFT calculations :cite:`Paier2005,Broqvist2009,Sundararaman2013`.  In
 PySCF, this exchange divergence can be addressed in a number of ways using the
 :attr:`exxdiv` keyword argument to the mean-field class, with the following
-possible values. 
+possible values.
 
 * ``'ewald'`` (default)
 
@@ -134,7 +141,7 @@ Add-ons
 =======
 
 All molecular SCF add-ons are also available for periodic SCF but
-must be accessed through the molecular :mod:`pyscf.scf.addons` module.  
+must be accessed through the molecular :mod:`pyscf.scf.addons` module.
 Here we highlight a few of the most useful add-ons.
 
 Linear dependencies
@@ -178,6 +185,98 @@ Periodic SCF solutions can be checked with stability analysis::
     kmf = scf.KRHF(cell).run()
     kmf.stability()
 
+.. _user_pbc_multigrid:
+Multigrid
+---------
+For pure DFT calculations, multi-grid algorithm becomes efficient if the size of
+unit cell is relatively large (e.g. more than 10 atoms) or the kinetic energy
+cutoff is relatively high (e.g. more than 100k plan-ewaves). This algorithm is
+implemented in the :mod:`pyscf.pbc.dft.multigrid` module::
+
+  from pyscf.pbc.dft import multigrid
+  mf = multigrid.multigrid(dft.KRKS(cell))
+  mf.run()
+
+More examples can be found
+
+.. literalinclude:: ../../examples/pbc/27-multigrid.py
+
+Multi-grid algorithm does not support exact exchange.
+
+.. _user_pbc_rsjk:
+Range-separation integration
+----------------------------
+This algorithm computes most of four-center integrals in real space. For small
+systems, it is less efficient than most density fitting algorithms. When you
+need to handle a huge unit cell, or to compute exact exchange for many k points,
+or to use all-electron basis sets, you can consider to invoke this algorithm.
+For periodic SCF models, you can call the method `jk_method`::
+
+  kmf = scf.KRHF(cell, kpts).jk_method('RS')
+  kmf.kernel()
+
+This algorithm has much smaller memory footprint than density fitting algorithm.
+It is also a good choice if your computer does not have enough memory to call
+density fitting methods.
+
+.. note:: The implementation in current release does not support band structure calculations
+
+
+.. _user_pbc_df_comparison:
+How to choose integral scheme
+=============================
+
+In the tables below, we provide a very rough estimation of the capability and
+characters for each integral algorithm in typical periodic mean-field
+calculations.
+
+1. Number of basis functions for Gamma point calculations
+
+============= ================ ================
+Scheme        Pure DFT         hybrid DFT
+============= ================ ================
+FFTDF         < 5000           < 300
+GDF           < 5000           < 5000
+MDF           < 5000           < 2000
+Multi-grid    100 - 100000     N/A
+RS            100 - 10000      100 - 10000
+============= ================ ================
+
+2. Assuming 100 AOs per unit cell, the number of k-points
+
+============= ================ ================
+Scheme        Pure DFT         hybrid DFT
+============= ================ ================
+FFTDF         < 2000           < 10
+GDF           < 2000           < 100
+MDF           < 2000           < 50
+Multi-grid    5000             N/A
+RS            1000             1000
+============= ================ ================
+
+3. Relative performance for systems of 100 AOs per unit cell, 10 k-points
+
+============= ================ ================
+Scheme        Pure DFT         hybrid DFT
+============= ================ ================
+FFTDF         1x               1000x
+GDF           10x              100x
+MDF           30x              300x
+Multi-grid    1x               N/A
+RS            100x             100x
+============= ================ ================
+
+4. Other metrics
+
+============= ================ ============== ========== =============== ============
+Scheme        All-electron     Warm-up cost   Accuracy   Memory cost     IO cost
+============= ================ ============== ========== =============== ============
+FFTDF         Extremely slow   Low            High       Extremely high  None
+GDF           Well supported   High           Low        Moderate        Huge
+MDF           Well supported   High           Medium     Moderate        Huge
+Multi-grid    Limited cases    Low            High       High            None
+RS            Well supported   Low            High       Low             None
+============= ================ ============== ========== =============== ============
 
 References
 ==========
