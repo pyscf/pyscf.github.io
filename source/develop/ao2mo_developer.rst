@@ -68,7 +68,7 @@ The kernel function
     :keyword str intor: the name of the integral you want to evaluate. More details can be found in :mod:`gto`.
     :keyword int comp: the component of the integral to be evaluated. It is closely related to ``intor``, more details can also be found in :mod:`gto`.
 
-    :keyword aosym: 
+    :keyword aosym: It specifies to what level will the :meth:`ao2mo` utilize symmetry in ao integrals. Supported symmetry labels are the same as those in :func:`restore`. For more details see :ref:`Transform integrals between symmetries` section below. Default aosym is 's4'.
     :type aosym: int or str
 
     :keyword bool compact: When this is ``True``, the returned MO integrals have (up to 4-fold) permutation symmetry. When this is ``False``, the function will abandon any permutation symmetry, and return the "plain" MO integrals without any permutation symmetry.
@@ -125,3 +125,8 @@ Listed are the symmetry labels that can be used, whichcan be either be a ``str``
 's2ij', '2ij'  2-fold symmetry between kl indices.
 's1', '1', 1   1-fold symmetry or no symmetry.
 ============== ====
+
+Note
+====
+The examples in this document can be found as a single python script in :source:`examples/ao2mo/02-ao2mo_doc.py`,
+more examples can also be found at :source:`examples/ao2mo/02-ao2mo_doc.py` directory.
