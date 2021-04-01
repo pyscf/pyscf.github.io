@@ -45,7 +45,7 @@ Calling the :attr:`sgx_fit` function on an :attr:`scf.hf.SCF` object returns an 
 
 * :attr:`grids_level_i`: The grid level to use for initial SCF iterations.
 * :attr:`grids_level_f`: The grid level to use for final SCF iterations.
-* :attr:`grids_thrd`: The grid points at which all atomic orbitals have a value below this threshold are removed from the integration grid.
+* :attr:`grids_thrd`: The grid points where no atomic orbital is significant (has a value greater than this threshold) are removed from consideration.
 * :attr:`grids_switch_thrd`: The threshold for the magnitude of the change in the density matrix that triggers the switch from the initial grid specified by :attr:`grids_level_i` to the final grid specified by :attr:`grids_level_f`.
 * :attr:`blockdim`: The maximum number of grid points to loop over at once. The number of grid points per batch is the minimum of :attr:`blockmin` and the maximum number of points allowed by the memory available for the calculation. The maximum memory can be adjusted by setting the :attr:`max_memory` attribute, which is initially set to :attr:`mol.max_memory`, the max memory setting for the Mole object.
 
