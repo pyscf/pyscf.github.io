@@ -40,11 +40,10 @@ Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is t
 
 * local density approximations (e.g. LDA; *xc* energy depends only on the electron density, :math:`\rho`), 
 * generalized gradient approximations (GGA; *xc* energy also depends on the density gradient, :math:`|\nabla\rho|`), 
-* meta-GGAs (*xc* energy also depends on the kinetic energy density and Laplacian, :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`),
+* meta-GGAs (*xc* energy also depends on the kinetic energy density and/or the density Laplacian, :math:`\sum_i |\nabla \psi_i|^2`, :math:`\nabla^2\rho`; the latter is not supported in PySCF at the moment),
 * non-local correlation functionals (*xc* energy involves a double integral)
 * hybrid density functionals (a fraction of exact exchange is used), and
 * long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
-* *xc* functionals that depend on the Laplacian density are, however, not implemented in PySCF
 
 Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
 
