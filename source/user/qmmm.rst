@@ -11,7 +11,7 @@ Introduction
 
 In the Quantum Mechanics - Molecular Mechanics (QM/MM) method,
 the system is divided into a QM region and an MM region.
-Different QM/MM models mainly differ in the treatment of the interaction
+QM/MM models mainly differ in the treatment of the interaction
 between QM and MM regions.
 
 The :mod:`qmmm` module implements the electronic embedding model,
