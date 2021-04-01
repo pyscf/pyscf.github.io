@@ -19,7 +19,7 @@ SGX scales as :math:`O(N^2)` with system size, as opposed to the :math:`O(N^4)` 
 Usage and Example
 =================
 
-Any :attr:`scf.hf.SCF` object :attr:`mf` can be converted to an equivalent object that computes the Coulomb and Exchange matrices with SGX instead of analytical integration by calling :code:`sgx.sgx_fit(mf)`.
+Any :attr:`scf.hf.SCF` object :attr:`mf` can be converted to an equivalent object that computes the Coulomb and exchange matrices with SGX instead of analytical integration by calling :code:`sgx.sgx_fit(mf)`.
 
 * :source:`examples/sgx/00-simple_sgx.py`
 
