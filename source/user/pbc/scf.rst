@@ -190,7 +190,7 @@ Multigrid
 ---------
 For pure DFT calculations, multi-grid algorithm becomes efficient if the size of
 unit cell is relatively large (e.g. more than 10 atoms) or the kinetic energy
-cutoff is relatively high (e.g. more than 100k plan-ewaves). This algorithm is
+cutoff is relatively high (e.g. more than 100k plane waves). This algorithm is
 implemented in the :mod:`pyscf.pbc.dft.multigrid` module::
 
   from pyscf.pbc.dft import multigrid
