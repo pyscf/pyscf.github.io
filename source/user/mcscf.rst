@@ -97,7 +97,7 @@ Below is a list of several general strategies one could employ to pick active sp
   This is often useful after selecting (and typically visualizing) localized orbitals.
   The user can "manually" select the MO orbital indices (in a 1-based indexing scheme) and pass them to the ``sort_mo`` function.
   See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.
-  
+
 .. code-block:: python
 
   mycas = mcscf.CASSCF(myhf, 4, 4)
@@ -295,6 +295,7 @@ The ``analyze`` member functions of MCSCF objects prints many useful properties 
 8) Atomic spin densities (if applicable)
 
 .. code-block:: python
+
   mycas = myhf.CASCI(6, 8).run()
   mycas.verbose = 4
   mycas.analyze()
