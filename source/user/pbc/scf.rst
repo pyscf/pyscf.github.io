@@ -206,7 +206,7 @@ The multi-grid algorithm does not support exact exchange.
 .. _user_pbc_rsjk:
 Range-separation integration
 ----------------------------
-This algorithm computes most of four-center integrals in real space. For small
+ This algorithm computes most of the four-center integrals in real space. For small
 systems, it is less efficient than most density fitting algorithms. When you
 need to handle a huge unit cell, or to compute exact exchange for many k points,
 or to use all-electron basis sets, you can consider to invoke this algorithm.
