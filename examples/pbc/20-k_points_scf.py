@@ -28,6 +28,10 @@ cell = gto.M(
 nk = [4,4,4]  # 4 k-points for each axis, 4^3=64 kpts in total
 kpts = cell.make_kpts(nk)
 
+# Note: the default JK builder calls FFTDF scheme which is quite slow for KHF
+# calculations. The gaussian density fitting (GDF) or range-separation
+# integration (rsjk builder) methods are more efficient (see example
+# 21-k_points_all_electron_scf.py)
 kmf = scf.KRHF(cell, kpts)
 kmf.kernel()
 
