@@ -52,6 +52,21 @@ Edmiston-Ruedenberg (ER) localization :cite:`Edmiston63` maximizes the orbital C
 
 ER localization, however, is computationally more expensive than the Boys or PM approaches.
 
+Localized orbitals can be calculated via the pivoted Cholesky factorization of a density-like
+matrix :math:`\mathbf{D} = \mathbf{C} \mathbf{C}^\dagger`. :cite:`Aquilante06` Since :math:`\mathbf{C}` is 
+generally a rectangular matrix containing only the subset of :math:`N` orbitals intended for localization,
+the matrix :math:`\mathbf{D}` is positive-semidefinite. It can be factored using a Cholesky decomposition
+with full column pivoting,
+
+.. math::
+    \mathbf{P}^\dagger \mathbf{D} \mathbf{P} = \mathbf{L} \mathbf{L}^\dagger ,
+
+where :math:`\mathbf{L}` is a lower triangular matrix and :math:`\mathbf{P}` is a permutation matrix.
+In the end, the :math:`N` leftmost columns of :math:`\mathbf{P L}` are taken as the localized orbitals.
+While Cholesky orbitals are usually not as localized as, for example, PM or Boys orbitals, the procedure
+is non-iterative and produces unique result, except possibly for the impact of degeneracies.
+Cholesky orbitals can serve as an excellent guess for iterative localization procedures.
+
 
 A summary of the functionality of the :mod:`lo` module is given below:
 
@@ -60,6 +75,7 @@ Method                       optimization   cost function        PBC     ref
 (meta-) L\"owdin                 No            -                 yes     :cite:`Lowdin50,Sun14qmmm`
 Natural atomic orbitals          No            -                 gamma   :cite:`Reed85` 
 Intrinsic atomic orbitals        No            -                 yes     :cite:`Knizia13IAO`
+Cholesky orbitals                No            -                 no      :cite:`Aquilante06`
 Boys                             yes         dipole              no      :cite:`Foster60`
 Pipek-Mezey                      yes         local charges       gamma   :cite:`Pipek98`
 Intrinsic bond orbitals          yes         IAO charges         gamma   :cite:`Knizia13IAO`

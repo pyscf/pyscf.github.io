@@ -36,6 +36,7 @@ Examples
 * :source:`examples/local_orb/05-ibo_periodic_diamond_cubegen.py`
 * :source:`examples/local_orb/06-vvo_livvo_water_cubegen.py`
 * :source:`examples/local_orb/07-pipek_mezey.py`
+* :source:`examples/local_orb/08-cholesky.py`
 * :source:`examples/local_orb/10-modify_valence_space_for_meta_lowdin.py`
 * :source:`examples/local_orb/40-hubbard_model_PM_localization.py`
 * :source:`examples/local_orb/nlocal.py`
@@ -83,4 +84,10 @@ Intrinsic Bond Orbitals
 =========================
 
 .. automodule:: pyscf.lo.ibo
+   :members:
+
+Cholesky orbitals
+=================
+
+.. automodule:: pyscf.lo.cholesky
    :members:
