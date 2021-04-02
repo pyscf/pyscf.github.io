@@ -15,8 +15,7 @@ SC-NEVPT2 can be applied to CASCI/CASSCF wave functions produced by the FCI or D
 The number of the CI root needs to be specified for state-specific NEVPT2 calculations with ``mrpt.NEVPT(mc,root=Root_ID)``.
 By default, the NEVPT2 calculation is performed for the lowest root, `Root_ID=0`.
 
-A simple example (see :source:`examples/mrpt/03-dmrg_nevpt2.py`) of running
-SC-NEVPT2 calculations with FCI and DMRG solvers is 
+A simple example of SC-NEVPT2 calculations with the FCI and DMRG solvers is given in :source:`examples/mrpt/03-dmrg_nevpt2.py`:: 
 
 .. literalinclude:: ../../examples/mrpt/03-dmrg_nevpt2.py
 which outputs
