@@ -126,7 +126,7 @@ This strategy is often helpful when the system has a high degree of symmetry, or
   mo = mcscf.sort_mo_by_irrep(mycas, mf.mo_coeff, ncas, ncore)
   mycas.kernel(mo)
 
-A similar approach where we specify the electron occupations by irreducible representation is also possible by setting ``mycas.fcisolver.irrep_nelec``.
+A similar approach where we specify the number of electrons in each irreducible representation is also possible by setting ``mycas.fcisolver.irrep_nelec``.
 
 .. code-block:: python
 
