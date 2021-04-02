@@ -42,6 +42,7 @@ cd source
 If you want to show the latest version of the docs on GitHub pages, build using then instructions above. Then from `pyscf-doc/source` run the following:
 
 ```bash
+rm -r ../docs
 mv _website ../docs
 touch ../docs/.nojekyll
 ```

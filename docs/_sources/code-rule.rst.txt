@@ -3,21 +3,18 @@
 Code standard
 *************
 
-* Code at least should work under python-2.7, gcc-4.8.
-
 * 90/10 functional/OOP, unless performance critical, functions are pure.
 
 * 90/10 Python/C, only computational hot spots were written in C.
 
-* To extend python function with C/Fortran:
+* To extend python function with C:
 
-  - Following C89 (gnu89) standard for C code.  (complex? variable length array?)
+  - Except complex numbers and variable length array, following C89 (gnu89) standard for C code.
     http://flash-gordon.me.uk/ansi.c.txt
 
-  - Following Fortran 95 standard for Fortran code.
-    http://j3-fortran.org/doc/standing/archive/007/97-007r2/pdf/97-007r2.pdf
+  - Following C89 (gnu89) standard for C code;
 
-  - Do **not** use other program languages (to keep the package light-weight).
+  - Using ctypes to call C functions
 
 * Conservative on advanced language feature.
 
@@ -26,19 +23,11 @@ Code standard
   - Minimal requirements on 3rd party program or libraries.
 
   - Loose-coupling between modules so that the failure of one module can
-    have minimal effects on the other modules.
-
-* Not enforced but recommended
-
-  - Compatible with Python 3.5, 3.6, 3.7, 3.8, 3.9;
-
-  - Following C89 (gnu89) standard for C code;
-
-  - Using ctypes to bridge C/python functions
+    have minimal effects on other modules.
 
 
 Name convention
----------------
+===============
 
 * The prefix or suffix underscore in the function names have special meanings
 
@@ -46,26 +35,26 @@ Name convention
     They are typically not documented, and not recommended to use.
 
   - functions with suffix-underscore like ``fn_`` means that they have side
-    effects.  The side effects include the change of the input argument,
+    effects.  The side effects include the change of the input arguments,
     the runtime modification of the class definitions (attributes or
     members), or module definitions (global variables or functions) etc.
 
   - regular (pure) functions do not have underscore as the prefix or suffix.
 
 API convention
---------------
+==============
 
-* :class:`gto.Mole` holds all global parameters, like the log level, the
-  max memory usage etc.  They are used as the default value for all
-  other classes.
+* :class:`gto.Mole` (or :class:`gto.Cell` for PBC calculations) holds all global
+  parameters, like the log level, the max memory usage etc.  They are used as
+  the default values for all other classes.
 
-* Method class.
+* Class for quantum chemistry models or algorithms
 
-  - Most QC method classes (like HF, CASSCF, FCI, ...) directly take
-    three attributes ``verbose``, ``stdout`` and ``max_memory`` from
-    :class:`gto.Mole`.  Overwriting them only affects the behavior of the
+  - Most QC method classes (like HF, CASSCF, FCI, ...) have three attributes
+    ``verbose``, ``stdout`` and ``max_memory`` which are copied directly from
+    :class:`gto.Mole` (or :class:`gto.Cell`.  Overwriting these attributes only affects the behavior of the
     local instance for that method class.  In the following example,
-    ``mf.verbose`` mutes the noises produced by :class:`RHF`
+    ``mf.verbose`` mutes all messages produced by :class:`RHF`
     method, and the output of :class:`MP2` is written in the log file
     ``example.log``::
 
@@ -80,37 +69,32 @@ API convention
 
   - Method class are only to hold the options or environments (like
     convergence threshold, max iterations, ...) to control the
-    behavior/convergence of the method.  The intermediate status are
-    **not** supposed to be saved in the method class (during the
-    computation).  However, the final results or solutions are kept in
-    the method object for convenience.  Once the results are stored in
-    the particular method class, they are assumed to be read only, since
-    many class member functions take them as the default arguments if the
-    caller didn't provide enough parameters.
+    behavior/convergence of the method. Intermediate status at runtime are
+    **not** supposed to be saved in the method class (in contrast to the object
+    oriented paradigm).  However, the final results or outputs can be kept in
+    the method object so that they can be easily accessed in the subsequent steps.
+    We need to assume the attributes for results
+    will be used as default inputs or environments for other objects in the rest
+    parts of the program.
+    The results attributes should be immutable, once they were generated
+    and stored (after calling the :func:`kernel()` method) in a particular object.
 
   - In __init__ function, initialize/define the problem size.  The
     problem size parameters (like num_orbitals etc) can be considered as
-    environments.  They are not supposed to be changed by other functions.
+    environments.  They should be immutable.
 
-  - Kernel functions
-    Although the method classes have various entrance/main function, many
-    of them provide an entrance function called ``kernel``.  You can
-    simply call the ``kernel`` function and it will guide the program
-    flow to the right main function.
-
-  - Default value of class methods' arguments.  Many class methods
-    can take the results of the calculations which were held in the class as the
-    default arguments.
+  - Kernel functions:
+    Classes for QC models should provide a method :func:`kernel` as the entrance/main function.
+    The :func:`kernel` function then call other code to finish the calculation.
+    Although not required, it is recommended to let the kernel function return certain key results.
+    If your class is inherited from the :class:`pyscf.lib.StreamObject`,
+    the class has a method :func:`run` which will call the :func:`kernel`
+    function and return the object itself. One can simply call the
+    :func:`kernel` method or :func:`run` method to start the flow of a QC method.
 
 * Function arguments
 
-  - First argument is handler.  The handler is one of :class:`gto.Mole`
+  - The first argument is a handler.  The handler is one of :class:`gto.Mole`
     object, a mean-field object, or a post-Hartree-Fock object.
 
-..  - When any of the three parmeters ``mo_energy``, ``mo_coeff`` and
-      ``mo_occ`` are appeared in the argument lists,  they are always put
-      in this order: ``mo_energy, mo_coeff, mo_occ``.
-
-  - xxx_slice
-    Taking the elements of object xxx between xxx_slice = (start, end)
-    (start <= elem < end)
+.. include:: design.rst
