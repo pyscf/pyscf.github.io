@@ -132,7 +132,11 @@ A similar approach where we specify the number of electrons in each irreducible 
 
   mycas = mcscf.CASSCF(myhf, 8, 8)
   mycas.fcisolver.irrep_nelec = {"A1g": (2, 1), "A1u": (1, 1), "E1ux": (1, 1), "E1uy": (1, 0)}
-
+.. note::
+  This strategy is often combined with calculations at a lower level of theory.
+  For instance, MP2 or CISD natural orbitals and their occupation numbers can be used determine the suitable active space in each symmetry block.
+  Natural orbitals with occupations close to 2 are strongly occupied, and can be frozen in the CAS calculation.
+  Natural orbitals with small occupation numbers can likewise be omitted from the active space.
 4) Use automated strategies (``avas`` and ``dmet_cas``) to pick an active space based on AO orbitals you're targeting.
 For more details, see :source:`examples/mcscf/43-avas.py` and :source:`examples/mcscf/43-dmet_cas.py`.
 
