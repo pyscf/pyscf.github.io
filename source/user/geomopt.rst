@@ -3,13 +3,15 @@
 Geometry optimization
 *********************
 
+*Modules*: :mod:`geomopt`
+
 Basics
 ------
 
 PySCF implements the geometry optimization via
 interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_
 and `PyBerny <https://github.com/jhrmnn/pyberny>`_ (see :numref:`installing`
-for instructions of installing these libraries).
+for instructions of installation).
 
 There are two ways to invoke geometry optimizations.
 The first is to import the :func:`optimize` function 
