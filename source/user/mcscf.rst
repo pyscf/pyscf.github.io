@@ -321,10 +321,11 @@ The ``analyze`` member functions of MCSCF objects prints many useful properties 
 Natural Orbitals
 """"""""""""""""
 
-Energy of CAS state is invariant under orbital rotation within inactive, active, and virtual sectors.
-Inactive and virtual orbitals are by default canonicalized, i.e. they transformed such that Fock matrices within virtual and inactive sectors are diagonal, and orbital energy can be assigned to these orbitals.
-By default active orbitals are kept untouched after orbital optimization and strictly speaking no energy or electron occupation can be assigned to them.
-Users can request that active orbitals be transformed to the so-called natural representation, such that the one-body density matrix is diagonal and electron occupation can be assigned to them.
+The CAS wave function is invariant under orbital rotation within the inactive core, active, and inactive virtual spaces.
+The inactive core and virtual orbitals are by default canonicalized, i.e., they are transformed by block-diagonalizing the generalized Fock matrix within the inactive core and virtual subblocks.
+This also yields energy eigenvalues for the inactive core and virtual orbitals.
+In contrast, no energy or electron occupation can be assigned to the active orbitals, strictly speaking.
+The user may request the active orbitals to be transformed to the so-called natural representation, in which the reduced one-body density matrix is diagonal, and the formal natural orbital occupation numbers can be found on its diagonal.
 
 .. warning::
   When ``mycas.natorb`` is set, the natural orbitals may NOT be sorted by the active space occupancy.
