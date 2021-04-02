@@ -33,6 +33,7 @@ CASCI
       basis = 'ccpvdz',
       spin = 2)
   myhf = mol.RHF().run()
+  # Use MP2 natural orbitals to define the active space for the single-point CAS-CI calculation
   mymp = mp.UMP2(myhf).run()
 
   noons, natorbs = mcscf.addons.make_natural_orbitals(mymp)
