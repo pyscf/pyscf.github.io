@@ -161,7 +161,8 @@ For more details, see :source:`examples/mcscf/43-avas.py` and :source:`examples/
 Frozen-orbital MCSCF
 -----------------
 
-To reduce to computational expense of CASSCF calculations, users can "freeze" orbitals thereby excluding them from optimization.
+Orbitals can be frozen in the orbital optimization to e.g. reduce the computational effort of CASSCF calculations.
+The orbitals will remain fixed throughout the optimization.
 
 Users can specify the number of lowest orbitals to freeze:
 
