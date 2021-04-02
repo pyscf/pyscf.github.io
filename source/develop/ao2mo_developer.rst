@@ -11,7 +11,7 @@ Overview
 The :mod:`ao2mo` module exposes important functionality for transforming 2-electron integrals, i.e. the 4-index transformation from atomic orbitals (AOs) to molecular orbitals (MOs).
 The most important functions are :func:`kernel`, :class:`load`, :func:`restore`. 
 The function :func:`kernel` takes in a :class:`Mole` object or the AO integrals stored in a :class:`numpy.ndarray` and a set of MO coefficients.
-If ``erifile`` is specified, the integrals will be stored in a HDF5 file, otherwise it will be returned as a numpy array.
+If ``erifile`` is specified, the integrals will be stored in a HDF5 file with the given name, otherwise the integrals are returned as a numpy array.
 ::
     from pyscf import gto, scf, ao2mo
     import tempfile
