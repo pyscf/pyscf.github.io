@@ -8,7 +8,7 @@ Multi-Reference Perturbation Theory (MRPT)
 Introduction
 ============
 
-The second-order perturbative energy correction can be added on top of the multireference wave function.
+A second-order perturbative energy correction can be added on top of a multireference wave function.
 The MRPT module in PySCF supports the second-order N-electron valence state perturbation theory (NEVPT2) :cite:`Angeli2001NEVPT`  
 using the strongly contracted (SC) internal contraction scheme, :cite:`Angeli2001SCNEVPT,Angeli2002` which is an intruder-state-free MRPT.
 SC-NEVPT2 can be applied to the CASCI/CASSCF wave function optimized by FCI and DMRG solvers. :cite:`Guo2016`
