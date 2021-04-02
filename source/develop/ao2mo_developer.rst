@@ -103,7 +103,7 @@ Transform integrals between symmetries
 The function :func:`restore` can transform 2e integrals or any 4-index quantity (e.g. 2rdm) between different permutation symmetries.
 It takes a symmetry label, a ``numpy.ndarray`` as the 4-index quantity and the dimension ``norb`` of this quantity (the four indices
 must have the same dimension).
-The symmetry label specifies the outpu symmetry the user desires, while
+The symmetry label specifies the output symmetry the user desires, while
 the symmetry of the input array is determined by its shape.
 The relation between different symmetries and shape is described below.
 
