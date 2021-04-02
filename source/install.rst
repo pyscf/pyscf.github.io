@@ -178,10 +178,9 @@ directory can be used to fix this problem::
 
 CMake options and compiling flags
 ---------------------------------
-A complete build by default may take long time to finish compilation. In certain
-old operation systems, the build may fail to build `XCFun` if the system does
-not have a proper c++ compiler. To speed up compilation or bypass failed
-compilation, CMake options listed below can be used.
+A full build of PySCF may take a long time to finish.
+`XCFun` may fail to build a proper C++ compiler is not available, such as on certain old operating systems.
+The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
 
 ================= ======= ==============================================================
 Flags             Default Comments
