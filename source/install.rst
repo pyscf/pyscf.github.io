@@ -193,7 +193,7 @@ Flags             Default Comments
                           still calls `LibXC` library by default. The dft module will be
                           linked against the `LibXC` library from an earlier build.
 `BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
-                          will be linked against the `XCFun` library from early build.
+                          will be linked against the `XCFun` library from an earlier build.
 `BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
                           library from early build will be used.
 `WITH_F12`        ON      Whether or not to compile the F12 relevant integrals.
