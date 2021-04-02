@@ -63,22 +63,23 @@ in Cartesian coordinate, with the same unit as the input :attr:`atom` parameter.
 Basis set and pseudopotential
 -----------------------------
 
-PySCF uses the crystalline Gaussian-type orbitals as the basis functions
-for solid calculations. The predefined such basis sets include 
-the valence basis sets that are optimized for the GTH pseudopotentials 
+PySCF uses crystalline Gaussian-type orbitals as basis functions
+for solid calculations. 
+The predefined basis sets and ECPs for molecular calculations 
+can be used in solid calculations as well.
+In addition, the predefined basis sets include 
+valence basis sets that are optimized for the GTH pseudopotentials 
 (a whole list can be found in :source:`pyscf/pbc/gto/basis` and :source:`pyscf/pbc/gto/pseudo`).
-The input format of `basis sets`_ for the :class:`Cell` object is the same 
+The input format of :ref:`basis sets` for the :class:`Cell` object is the same
 as that for the :class:`Mole` object.
-In addition, the predefined basis sets and ECPs for molecular calculations 
-can be used in solid calculations as well
 
 .. literalinclude:: /../examples/pbc/05-input_pp.py
 
-Finally, custom basis sets can be defined just like that in molecular calculations
+Finally, custom basis sets can be defined just like in molecular calculations
 
 .. literalinclude:: /../examples/pbc/04-input_basis.py
 
-Low-dimentional systems
+Low-dimensional systems
 -----------------------
 
 The PySCF  :mod:`pbc` module also supports low-dimensional periodic systems. You can initialize
@@ -91,8 +92,8 @@ the attribute :attr:`Cell.dimension` to specify the dimension of the system::
 When :attr:`~Cell.dimension` is smaller than 3, a vacuum of infinite size will be
 applied in certain direction(s).  For example, when :attr:`~Cell.dimension`
 is 2, the z-direction will be treated as infinitely large and the xy-plane
-constitutes the periodic surface. When :attr:`~Cell.dimension` is 1, y and z axes
-are treated as vacuum thus wire is placed in the x direction. 
+constitutes the periodic surface. When :attr:`~Cell.dimension` is 1, the y and z axes
+are treated as vacuum and thus the system is a wire in the x direction. 
 When :attr:`~Cell.dimension` is 0, all three directions are treated as vacuum, and this is
 equivalent to a molecular system.
 
@@ -100,23 +101,23 @@ K-points
 --------
 
 The k-points used in solid calculations can be obtained through the 
-:meth:`Cell.make_kpts` method. The minial input is to specify the number of k-points
+:meth:`Cell.make_kpts` method. The minimal input is to specify the number of k-points
 in each lattice vector direction::
     
     >>> kpts = cell.make_kpts([1,2,2])
     >>> print(kpts.shape)
     (4,3)
 
-By default, this will return the shifted Monkhorst-pack mesh which is centered at 
-the :math:`Gamma`-point. To get non-shifted Monkhorst-pack mesh, one can call::
+By default, this will return the shifted Monkhorst-Pack mesh which is centered at 
+the :math:`Gamma`-point. To get the non-shifted Monkhorst-Pack mesh, one can call::
 
     >>> kpts = cell.make_kpts([1,2,2], with_gamma_point=False)
 
-To get shifted Monkhorst-pack mesh centered at a specific point, one can call::
+To get a shifted Monkhorst-pack mesh centered at a specific point, one can call::
 
     >>> kpts = cell.make_kpts([1,2,2], scaled_center=[0.,0.25,0.25])
 
-where ``scaled_center`` is defined in the units of lattce vectors.
+where ``scaled_center`` is defined in the units of lattice vectors.
 
 The obtained k-points are used as input for crystalline electronic structure calculations.
 For example, k-point sampled RHF can be invoked as follows::
@@ -126,7 +127,7 @@ For example, k-point sampled RHF can be invoked as follows::
     >>> kmf = scf.KRHF(cell, kpts = kpts)
     >>> kmf.kernel()
 
-More details about k-point sampling for each method can be found in the corresponding chapter.
+More details about k-point sampling for each method can be found in the corresponding chapters.
 
 Other parameters
 ----------------
@@ -156,9 +157,9 @@ The other attributes of the :class:`Mole` class such as :attr:`verbose`,
 Accessing AO integrals
 ======================
 
-The :func:`Mole.intor` method can only be used to evaluate the integrals with open boundary
+The :func:`Mole.intor` method can only be used to evaluate integrals with open boundary
 conditions. When the periodic boundary conditions of crystalline systems are
-studied, one needs to use the :func:`pbc.Cell.pbc_intor` function to evaluate the
+used, one needs to use the :func:`pbc.Cell.pbc_intor` function to evaluate the
 integrals for short-range operators, such as the overlap and kinetic matrix::
 
   overlap = cell.pbc_intor('int1e_ovlp')

@@ -129,7 +129,7 @@ format::
 
   >>> mol.atom = (('O',numpy.zeros(3)), ['H', 0, 1, 0], ['H',[0, 0, 1]])
 
-No matter which format or symbols were used in the input, :func:`Mole.build`
+No matter which format or symbols are used in the input, :func:`Mole.build`
 will convert :attr:`Mole.atom` to the internal format::
 
   >>> mol.atom = '''
@@ -155,7 +155,7 @@ This function returns a (N,3) array for the coordinates of each atom::
 
 .. _basis sets:
 
-Ghost atoms can also be specified when inputing the geometry.
+Ghost atoms can also be specified when inputting the geometry.
 See :source:`examples/gto/03-ghost_atom.py` for examples.
 
 Basis set
@@ -204,7 +204,7 @@ The basis parser also supports ghost atoms::
 More examples of ghost atoms can be found in
 :source:`examples/gto/03-ghost_atom.py`.
 
-Like the requirements of geometry input, you can use atomic symbols
+Like the requirements for geometry input, you can use atomic symbols
 (case-insensitive) or atomic nuclear charges as the keyword of the
 :attr:`~Mole.basis` dictionary. Prefix and suffix of numbers and special
 characters are allowed. If the decorated atomic symbol is appeared in
@@ -270,10 +270,10 @@ crenbs
 ============ ========================
 
 .. note::
-  Be careful with the SO-ECP conventions when inputing them directly in the
+  Be careful with the SO-ECP conventions when inputting them directly in the
   input script. SO-ECP parameters may take different conventions in different
   packages. More particularly, the treatment of the factor 2/(2l+1).  PySCF
-  assumes that this factor was multiplied in the SOC parameters. See also
+  assumes that this factor has been multiplied into the SOC parameters. See also
   relevant discussions in `Dirac doc
   <http://www.diracprogram.org/doc/master/molecule_and_basis/molecule_with_ecp.html>`_
   and `NWChem doc <https://nwchemgit.github.io/ECP.html>`_.
@@ -298,7 +298,7 @@ and the supported subgroup is saved in :attr:`Mole.groupname`::
     >>> print(mol.groupname)
     Cs
 
-Currently, PySCF supports the linear molecular symmetries
+Currently, PySCF supports linear molecular symmetries
 :math:`D_{\infty h}` (labelled as ``Dooh`` in the program) and :math:`C_{\infty v}`
 (labelled as ``Coov``), the :math:`D_{2h}` group and its subgroups.
 Sometimes it is necessary to use a lower symmetry instead of the detected
@@ -389,7 +389,7 @@ and we can check the occupancy of the MOs in each irreducible representation::
 
 To label the irreducible representation of given orbitals,
 :func:`symm.label_orb_symm` needs the information of the point group
-symmetry which are initialized in the :class:`Mole` object, including the IDs of
+symmetry which is initialized in the :class:`Mole` object, including the IDs of
 irreducible representations (:attr:`Mole.irrep_id`) and the symmetry
 adapted basis :attr:`Mole.symm_orb`. For each :attr:`~Mole.irrep_id`,
 :attr:`Mole.irrep_name` gives the associated irrep symbol (A1, B1 ...).
