@@ -1,0 +1,53 @@
+pyscf.ao2mo package
+===================
+
+Submodules
+----------
+
+pyscf.ao2mo.addons module
+-------------------------
+
+.. automodule:: pyscf.ao2mo.addons
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.ao2mo.incore module
+-------------------------
+
+.. automodule:: pyscf.ao2mo.incore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.ao2mo.outcore module
+--------------------------
+
+.. automodule:: pyscf.ao2mo.outcore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.ao2mo.r\_outcore module
+-----------------------------
+
+.. automodule:: pyscf.ao2mo.r_outcore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.ao2mo.semi\_incore module
+-------------------------------
+
+.. automodule:: pyscf.ao2mo.semi_incore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.ao2mo
+   :members:
+   :undoc-members:
+   :show-inheritance:

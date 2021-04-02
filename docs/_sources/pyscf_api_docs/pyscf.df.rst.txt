@@ -1,0 +1,70 @@
+pyscf.df package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pyscf.df.grad
+   pyscf.df.hessian
+
+Submodules
+----------
+
+pyscf.df.addons module
+----------------------
+
+.. automodule:: pyscf.df.addons
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.df.df module
+------------------
+
+.. automodule:: pyscf.df.df
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.df.df\_jk module
+----------------------
+
+.. automodule:: pyscf.df.df_jk
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.df.incore module
+----------------------
+
+.. automodule:: pyscf.df.incore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.df.outcore module
+-----------------------
+
+.. automodule:: pyscf.df.outcore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.df.r\_incore module
+-------------------------
+
+.. automodule:: pyscf.df.r_incore
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.df
+   :members:
+   :undoc-members:
+   :show-inheritance:

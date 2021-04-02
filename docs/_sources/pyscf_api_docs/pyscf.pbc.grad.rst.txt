@@ -1,0 +1,45 @@
+pyscf.pbc.grad package
+======================
+
+Submodules
+----------
+
+pyscf.pbc.grad.krhf module
+--------------------------
+
+.. automodule:: pyscf.pbc.grad.krhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.pbc.grad.krks module
+--------------------------
+
+.. automodule:: pyscf.pbc.grad.krks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.pbc.grad.kuhf module
+--------------------------
+
+.. automodule:: pyscf.pbc.grad.kuhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.pbc.grad.kuks module
+--------------------------
+
+.. automodule:: pyscf.pbc.grad.kuks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.pbc.grad
+   :members:
+   :undoc-members:
+   :show-inheritance:
