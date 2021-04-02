@@ -22,6 +22,7 @@ This chapter introduces the basic theories of these methods and some of their mo
    user/adc.rst
    user/agf2.rst
    user/mcscf.rst
+   user/mrpt.rst
    user/tddft.rst
    user/rt.rst
    user/solvent.rst
