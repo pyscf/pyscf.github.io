@@ -16,9 +16,10 @@ The use of MCSCF methods is crucial for reliable modeling of systems that exhibi
 For a detailed discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`.
 
 The MCSCF module has two main flavors: CASCI and CASSCF. 
-CASCI expands the wave function as a linear combination of slater determinants and variationally solves for the coefficients of this expansion.
-CASSCF calculations optimize the orbitals for the set of determinants and the coefficients of their expansion.
-This means performing multiple (and possibly many) CASCI step.
+In CASCI, the wave function is written as a linear combination of Slater determinants, and the expansion coefficients are solved in a variational procedure.
+The orbitals are fixed in a CASCI calculation.
+In contrast, in a CASSCF calculation, the orbitals are relaxed to minimize the resulting CASCI energy.
+This means performing multiple CASCI steps followed by updates to the molecular orbitals, in analogy to Hartree-Fock calculations which also relies on iterative algorithms to minimize the HF energy with respect to the orbitals.
 
 Minimal examples for each type of calculations are shown below.
 
