@@ -111,7 +111,7 @@ The relation between different symmetries and shape is described below.
 If a pair of indices have permutation symmetry, then only the triangular index is used and the shape is (npair, npair) with npair = norb*(norb+1)/2.
 Thus integrals with 's2ij' and 's2kl' symmetries have a shape of (npair, norb, norb) or (norb, norb, npair) respectively.
 If the integrals have 's4' symmetry, then there is permutation symmetry between both ij indices and kl indices and the shape will be (npair, npair).
-If the integral have 's8' symmetry, then permutation symmetry also exists between the ij pair and kl pair.
+If the integrals have 's8' symmetry, then permutation symmetry also exists between the ij pair and kl pair.
 This will yield a one-dimensional array with length npair*(npair+1)/2.
 :func:`restore` determines the symmetry of the input array based on the above rules, and the shape of the output is also determined in this way.
 If the input does not correspond to any of the above shapes, PySCF will throw an error.
