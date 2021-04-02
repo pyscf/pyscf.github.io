@@ -75,7 +75,9 @@ There are several strategies and they all contain two main components:
   warning::
   The total set orbitals (core, active, and virtual) used in active space methods can be specified or selected in a variety of ways, giving users substantial flexibility for CAS-type calculations.
   But users should note, "with great power comes great responsibility."
-  Active space calculations are notoriously difficult and just because a calculation completes without error does not guarantee that the results will be chemically/physically meaningful so we urge users to select their active space orbitals with thought and care.
+  Active space calculations are notoriously difficult and just because a calculation completes without error does not guarantee that the results will be chemically/physically meaningful.
+  We urge users to select their active space orbitals with thought and care.
+  You should always try out several choices for the active space!
 
 .. note::
   We always advise users to visualize their chosen active orbitals before starting large/expensive calculations.
