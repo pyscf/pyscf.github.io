@@ -10,8 +10,8 @@ Introduction
 ------------
 
 Multiconfigurational self-consistent field (MCSCF) methods go beyond the single-determinant Hartree-Fock (HF) method by allowing the wave function to become a linear combination of multiple determinants.
-While there are a large variety of MCSCF methods, PySCF focuses on the complete active space (CAS) family of methods.
-Unlike full configuration interaction (FCI), described in :numref:`theory_ci`, CAS methods perform the FCI procedure on a subset of the molecular orbitals, referred to as the "active space." 
+While the configurations i.e. determinants can in principle be chosen in an arbitrary number of ways, PySCF focuses on the complete active space (CAS) family of methods, where the set of electron configurations is defined in terms of a given set of active orbitals, also known as the "active space".
+The CAS method generates all possible electron configurations that can be formed from the set of the active orbitals, and is therefore equivalent to an FCI procedure on a subset of the molecular orbitals; please see :numref:`theory_ci` for a discussion on the FCI method.
 These methods are crucial for systems that exhibit strong electron correlation, such as transition metal complexes.
 For a detailed discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`.
 
