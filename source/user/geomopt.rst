@@ -8,12 +8,12 @@ Geometry optimization
 Basics
 ------
 
-PySCF implements the geometry optimization via
+PySCF implements geometry optimization via
 interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_
 and `PyBerny <https://github.com/jhrmnn/pyberny>`_ (see :numref:`installing`
-for instructions of installation).
+for installation instructions).
 
-There are two ways to invoke geometry optimizations.
+There are two ways to invoke geometry optimization.
 The first is to import the :func:`optimize` function 
 from the respective modules, i.e., :mod:`pyscf.geomopt.geometric_solver` 
 and :mod:`pyscf.geomopt.berny_solver`::
@@ -32,7 +32,7 @@ and :mod:`pyscf.geomopt.berny_solver`::
     mol_eq = optimize(mf, maxsteps=100)
     print(mol_eq.atom_coords())
 
-The second way is to create the :func:`optimizer` from the :class:`Gradients` class::
+The second way is to create an :func:`optimizer` from the :class:`Gradients` class::
 
     # geometric
     mol_eq = mf.Gradients().optimizer(solver='geomeTRIC').kernel()
@@ -72,9 +72,9 @@ Constraints
 -----------
 
 ``geomeTRIC`` supports user defined constraints. The constraints can 
-be specified in a text file with the format demonstrated in
+be specified in a text file with the format described
 `here <https://github.com/leeping/geomeTRIC/blob/master/examples/constraints.txt>`_.
-And one needs to pass the name of this file to PySCF::
+One needs to pass the name of this file to PySCF::
 
     params = {"constraints": "constraints.txt",}
     mol_eq = optimize(mf, **params)
@@ -92,7 +92,7 @@ needs to be specified in the respective :class:`Gradients` objects:
 
 .. literalinclude:: /../examples/geomopt/12-excited_states.py
 
-For examples of state-specific and state-averaged CASSCF calculations,
+For examples of state-specific and state-averaged CASSCF geometry optimizations,
 see :source:`examples/geomopt/12-mcscf_excited_states.py`.
 
 Callback
