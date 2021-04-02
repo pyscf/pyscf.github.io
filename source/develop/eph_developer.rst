@@ -16,7 +16,7 @@ All EPH classes in :mod:`pyscf.eph` are implemented as derived class of the base
 :class:`pyscf.eph.uhf.EPH`           UHF
 :class:`pyscf.eph.rks.EPH`           RKS
 :class:`pyscf.eph.uks.EPH`           UKS
-=================================== ======
+=================================== =====
 
 The key attributes of the EPH class include
 

@@ -67,7 +67,7 @@ PySCF uses the crystalline Gaussian-type orbitals as the basis functions
 for solid calculations. The predefined such basis sets include 
 the valence basis sets that are optimized for the GTH pseudopotentials 
 (a whole list can be found in :source:`pyscf/pbc/gto/basis` and :source:`pyscf/pbc/gto/pseudo`).
-The input format of `basis sets`_ for the :class:`Cell` object is the same 
+The input format of :ref:`basis sets` for the :class:`Cell` object is the same
 as that for the :class:`Mole` object.
 In addition, the predefined basis sets and ECPs for molecular calculations 
 can be used in solid calculations as well
