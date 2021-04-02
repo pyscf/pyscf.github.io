@@ -146,7 +146,7 @@ Wavefunction overlap
 The following example shows how to evaluate the overlap of two different
 CISD wavefunctions.
 
-.. literalinclude:: ../../examples/fci/32-wfn_overlap.py
+.. literalinclude:: ../../examples/ci/32-wfn_overlap.py
 
 
 Full configuration interaction (FCI)
