@@ -181,6 +181,7 @@ CMake options and compiling flags
 A full build of PySCF may take a long time to finish.
 `XCFun` may fail to build a proper C++ compiler is not available, such as on certain old operating systems.
 The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
+Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
 
 ================= ======= ==============================================================
 Flags             Default Comments
