@@ -115,7 +115,7 @@ Below is a list of several general strategies one could employ to pick active sp
 
 
 3) Specifying the number of orbitals in each symmetry group. 
-This strategy can occasionally be helpful when the initial guess orbitals are not easily identifiable.
+This strategy is often helpful when the system has a high degree of symmetry, or when there is no physically evident best choise for the active orbitals.
 
 .. code-block:: python
 
