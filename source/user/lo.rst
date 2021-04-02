@@ -63,7 +63,7 @@ with full column pivoting,
 
 where :math:`\mathbf{L}` is a lower triangular matrix and :math:`\mathbf{P}` is a permutation matrix.
 In the end, the :math:`N` leftmost columns of :math:`\mathbf{P L}` are taken as the localized orbitals.
-While Cholesky orbitals are usually less well localized than, for example, PM or Boys orbitals, the procedure
+While Cholesky orbitals are usually not as localized as, for example, PM or Boys orbitals, the procedure
 is non-iterative and produces unique result, except possibly for the impact of degeneracies.
 Cholesky orbitals can serve as an excellent guess for iterative localization procedures.
 
