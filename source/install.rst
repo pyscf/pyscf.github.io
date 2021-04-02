@@ -177,13 +177,58 @@ directory can be used to fix this problem::
   ``pyscf/lib`` and ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
 
 
+CMake options and compiling flags
+---------------------------------
+A full build of PySCF may take a long time to finish.
+`XCFun` may fail to build a proper C++ compiler is not available, such as on certain old operating systems.
+The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
+Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
+
+================= ======= ==============================================================
+Flags             Default Comments
+================= ======= ==============================================================
+`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
+                          is appended to cmake command, `LibXC` will not be compiled.
+`ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
+                          is appended to cmake command, `XCFun` will not be compiled.
+`BUILD_LIBXC`     ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
+                          still calls `LibXC` library by default. The dft module will be
+                          linked against the `LibXC` library from an earlier build.
+`BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
+                          will be linked against the `XCFun` library from an earlier build.
+`BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
+                          library from an earlier build will be used.
+`WITH_F12`        ON      Whether to compile the F12 integrals.
+`DISABLE_DFT`     OFF     Set this flag to skip the entire dft module. Neither `LibXC`
+                          nor `XCFun` will be compiled.
+----------------- ------- --------------------------------------------------------------
+
+CMake config file
+-----------------
+
+CMake options can be saved in a configuration file
+``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
+automatically loaded and overwrite the default CMake options during
+compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
+to include advanced compiler optimization flags::
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
+
+Other settings, variables, and flags can also be set in this file::
+
+  set(ENABLE_XCFUN Off)
+  set(WITH_F12 Off)
+
+Some examples of platform-specific configurations can be found in
+directory ``pyscf/lib/cmake_user_inc_examples``.
+
 
 Environment variables and global configures
 ===========================================
 
 ======================= =========================================================
 Env variable            Comments
------------------------ ---------------------------------------------------------
+======================= =========================================================
 `PYSCF_MAX_MEMORY`      Maximum memory to use in MB
 `PYSCF_TMPDIR`          Directory for temporary files
 `PYSCF_CONFIG_FILE`     File where various PySCF default settings are stored
@@ -356,26 +401,6 @@ URL of the integral library in lib/CMakeLists.txt file::
      ...
 
 
-Cmake config file
-=================
-
-CMake options can be saved in a configuration file
-``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
-automatically loaded and overwrite the default CMake options during
-compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
-to include advanced compiler optimization flags::
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
-
-Other settings, variables, and flags can also be set in this file::
-
-  set(ENABLE_XCFUN Off)
-  set(WITH_F12 Off)
-
-Some examples of platform-specific configurations can be found in
-directory ``pyscf/lib/cmake_arch_config``.
-
-
 .. _installing_extproj:
 
 Extension modules
@@ -386,7 +411,7 @@ to extension projects hosted at https://github.com/pyscf.
 
 =================== =========================================================
 Project             URL
-------------------- ---------------------------------------------------------
+=================== =========================================================
 cornell_shci        https://github.com/pyscf/cornell_shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
