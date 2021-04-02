@@ -97,6 +97,9 @@ Below is a list of several general strategies one could employ to pick active sp
   ncas, nelecas = (6,8)
   mycas = myhf.CASSCF(ncas, nelecas)
 
+.. note::
+  Hartree-Fock orbitals are often poor for systems with significant static correlation.
+  In such cases, orbitals from density functional calculations often yield better starting points for CAS calculations.
 
 2) Specifying the molecular orbital (MO) index of the active space orbitals you want. 
   This is often useful after selecting (and typically visualizing) localized orbitals.
