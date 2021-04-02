@@ -102,7 +102,7 @@ Below is a list of several general strategies one could employ to pick active sp
   In such cases, orbitals from density functional calculations often yield better starting points for CAS calculations.
 
  2) Specifying the active space orbitals as a list of molecular orbital (MO) indices. 
-  This is often useful after selecting (and typically visualizing) localized orbitals.
+   This is often useful combined with a visual analysis of localized orbitals (see the section on localized orbitals).
   The user can "manually" select the MO orbital indices (in a 1-based indexing scheme) and pass them to the ``sort_mo`` function.
   See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.
 
