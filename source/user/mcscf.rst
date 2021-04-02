@@ -158,7 +158,7 @@ For more details, see :source:`examples/mcscf/43-avas.py` and :source:`examples/
   mycas.kernel(mo)
 
 
- Frozen-orbital MCSCF
+Frozen-orbital MCSCF
 -----------------
 
 To reduce to computational expense of CASSCF calculations, users can "freeze" orbitals thereby excluding them from optimization.
