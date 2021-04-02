@@ -8,13 +8,14 @@ PySCF has separate molecular implementations for configuration
 interaction singles and doubles (CISD) (:mod:`ci`) and full
 configuration interaction (FCI) (:mod:`fci`). The functionalities of the
 CISD implementation are similar to the functionalities of MP2
-(:ref:`user_mp2`) and CCSD (:ref:`user_cc`) in PySCF.
+(:numref:`user_mp2`) and CCSD (:numref:`user_cc`) in PySCF.
 
 
 Introduction
 ============
 
-Configuration interaction is a post-Hartree--Fock method, diagonalising
+Configuration interaction (see e.g. :cite:`Knowles1984,SzaOst2012ci,Helgaker2000ci`)
+is a post-Hartree--Fock method, diagonalising
 the many-electron Hamiltonian matrix. FCI includes all Slater determinants of
 appropriate symmetry in the eigenvector basis. CISD includes only those
 that differ from the Hartree--Fock determinant by at most two occupied
@@ -146,6 +147,38 @@ The following example shows how to evaluate the overlap of two different
 CISD wavefunctions.
 
 .. literalinclude:: ../../examples/ci/32-wfn_overlap.py
+
+
+Full configuration interaction (FCI)
+====================================
+
+A simple example (see :source:`examples/fci/00-simple-fci.py`) of running
+a restricted and an unrestricted FCI calculation is:
+
+.. literalinclude:: ../../examples/fci/00-simple_fci.py
+
+The second and third FCI calculation in the example show two different ways of
+running unrestricted FCI calculations.
+
+
+Setting Spin and Symmetry of Wavefunction
+-----------------------------------------
+
+The following example discusses how to set the spin for an FCI calculations:
+
+.. literalinclude:: ../../examples/fci/10-spin.py
+
+and the next example how to set symmetry:
+
+.. literalinclude:: ../../examples/fci/13-wfn_symmetry.py
+
+
+Properties
+----------
+
+Reduced density matrices can be evaluated, see the following example:
+
+.. literalinclude:: ../../examples/fci/14-density_matrix.py
 
 
 References
