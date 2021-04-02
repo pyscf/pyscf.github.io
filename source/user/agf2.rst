@@ -91,7 +91,7 @@ consistency based on the  first two self-energy spectral moments is the default
 behaviour.
 
 Photoemission spectra
-====================
+=====================
 
 The compression of the effective dynamics performed in AGF2 permits the 
 calculation of the full spectrum of charged excitations, as no additional 

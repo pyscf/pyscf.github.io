@@ -16,7 +16,7 @@ else
 fi
 
 # Run sphinx
-DESTINATION=api_docs
+DESTINATION=pyscf_api_docs
 mkdir -p $DESTINATION
 echo -e "Output directory for API docs: \n\t$(pwd)/${DESTINATION}"
 sphinx-apidoc -o $DESTINATION $PYSCF_PATH
