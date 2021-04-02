@@ -9,7 +9,7 @@ Multi-configuration self-consistent field (MCSCF)
 Introduction
 ------------
 
-Multiconfigurational self-consistent field (MCSCF) methods extend Hartree-Fock (HF) theory by describing the wave function as a linear combination of determinants. 
+Multiconfigurational self-consistent field (MCSCF) methods go beyond the single-determinant Hartree-Fock (HF) method by allowing the wave function to become a linear combination of multiple determinants.
 While there are a large variety of MCSCF methods, PySCF focuses on the complete active space (CAS) family of methods.
 Unlike full configuration interaction (FCI), described in :numref:`theory_ci`, CAS methods perform the FCI procedure on a subset of the molecular orbitals, referred to as the "active space." 
 These methods are crucial for systems that exhibit strong electron correlation, such as transition metal complexes.
