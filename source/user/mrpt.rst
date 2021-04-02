@@ -12,8 +12,8 @@ A second-order perturbative energy correction can be added on top of a multirefe
 The MRPT module in PySCF supports the second-order N-electron valence state perturbation theory (NEVPT2) :cite:`Angeli2001NEVPT`  
 using the strongly contracted (SC) internal contraction scheme, :cite:`Angeli2001SCNEVPT,Angeli2002` which is an intruder-state-free MRPT.
 SC-NEVPT2 can be applied to CASCI/CASSCF wave functions produced by the FCI or DMRG solvers. :cite:`Guo2016`
-Root_ID needs to be specified for the state-specific NEVPT2 calculation as ``mrpt.NEVPT(mc,root=Root_ID)``.
-(by default Root_ID=0 for the lowest root)
+The number of the CI root needs to be specified for state-specific NEVPT2 calculations with ``mrpt.NEVPT(mc,root=Root_ID)``.
+By default, the NEVPT2 calculation is performed for the lowest root, `Root_ID=0`.
 
 A simple example (see :source:`examples/mrpt/03-dmrg_nevpt2.py`) of running
 SC-NEVPT2 calculations with FCI and DMRG solvers is 
