@@ -190,7 +190,8 @@ See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 State-Averaged Calculations
 ---------------------------
 
-When dealing with states that are close in energy, it can be helpful to perform state average calculations where the orbitals are optimized for multiple states.
+When your system has states that are close-by in energy, their ordering may change during the orbital optimization and result in non-convergence of the CASSCF optimization.
+In such cases it is often helpful to optimize the orbitals for a state average.
 The ``state_average_`` function (note the hanging underscore) is a member function of ``CASCI``/``CASSCF`` objects and takes the weights of the states as input.
 The weights can be any normalized and non-negative array of values, but typically they are all the same.
 See Section 12.7.2 in Ref. :cite:`Helgaker2013` for more details.
