@@ -183,6 +183,9 @@ These may be occupied, virtual, or active orbitals.
 
 See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 
+.. note::
+  The `frozen` keyword of the CASSCF optimizer should not be confused with the `frozen` keyword of the FCI solver, which controls the number of orbitals that are constrained to be doubly occupied.
+
 
 State-Averaged Calculations
 ---------------------------
