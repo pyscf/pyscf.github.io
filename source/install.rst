@@ -185,7 +185,7 @@ The CMake options listed below can be used to speed up compilation or omit exten
 ================= ======= ==============================================================
 Flags             Default Comments
 ================= ======= ==============================================================
-`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_XCFUN=OFF`
+`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
                           is appended to cmake command, `LibXC` will not be compiled.
 `ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If both
                           `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set,
