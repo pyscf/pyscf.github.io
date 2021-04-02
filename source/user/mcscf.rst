@@ -53,7 +53,8 @@ CASSCF
       spin = 2)
   myhf = mol.RHF().run()
   ncas, nelecas = (6,(5,3))
-  mycas = myhf.CASSCF(ncas, nelecas).run()
+   # We can also run CAS calculations starting from the Hartree-Fock orbitals.
+   mycas = myhf.CASSCF(ncas, nelecas).run()
 
 Like many other modules in PySCF, :mod:`mcscf` works with density-fitting (:numref:`user_df`) and x2c (:numref:`user_x2c`).
 It can also be used in its unrestricted formulation, please see :source:`examples/mcscf/60-uhf_based_ucasscf.py` for an example.
