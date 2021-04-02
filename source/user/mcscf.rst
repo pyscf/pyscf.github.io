@@ -103,7 +103,7 @@ Below is a list of several general strategies one could employ to pick active sp
 
  2) Specifying the active space orbitals as a list of molecular orbital (MO) indices. 
    This is often useful combined with a visual analysis of localized orbitals (see the section on localized orbitals).
-  The user can "manually" select the MO orbital indices (in a 1-based indexing scheme) and pass them to the ``sort_mo`` function.
+  The user can select the MO orbital indices "manually" and pass them to the ``sort_mo`` function. NB! The orbitals are numbered from 1, not 0.
   See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.
 
 .. code-block:: python
