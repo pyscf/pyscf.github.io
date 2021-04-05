@@ -6,14 +6,12 @@ Code standard
 General considerations
 ======================
 
-PySCF program code base is designed to provide an environment convenient for
-method developing, quick testing and calculations for systems of moderate size. We emphasize first the
-simplicity, next the generality, finally the efficiency. We favor the
-implementations which have clear structure with optimization at Python level.
-When Python performance becomes a major bottleneck, C code can be implemented to
-improve efficiency. The following is a set of
-guidelines for contributing to package. These are just guidelines, not rules.
-Feel free to propose changes.
+The PySCF code base is designed to provide a convenient environment for the development of new computational methods, ranging from proof-of-concept implementations to calculations on moderate size systems.
+Our emphasis is first on simplicity, next on generality, and last on efficiency.
+We favor implementations that have clear structure, with optimization only at Python level.
+If Python performance becomes a major bottleneck, parts of the implementation can be written in C to improve efficiency.
+The following guidelines (not strict rules!) have been followed in the development of PySCF.
+Please refer to them when suggesting new contributions.
 
 * 90/10 functional/OOP, unless performance critical, functions are pure.
 
@@ -37,25 +35,19 @@ Feel free to propose changes.
   - Loose-coupling between modules so that the failure of one module can
     have minimal effects on other modules.
 
-  - For 3rd party Python library, implementing either a back up plan or
-    an error/exception handler to avoid breaking the import chain
+  - Third party Python library imports need either back-up implementations or error/exception handling to avoid breaking the import chain
 
-* External C/Fortran libraries. These are libraries to be compiled and linked in
-  the PySCF C extensions. Their compiling/linking flags are resolved in the cmake config system.
+* Guidelines for use of external C and Fortran libraries within C extensions to PySCF. The extensions are compiled and linked into PySCF, with compile/link flags resolved by CMake.
   - BLAS, FFTW: Yes.
-  - LAPACK: Yes but not recommended.  These libraries can be used in the
-    PySCF C level library. But we recommend to restructure your code and move
-    the relevant linear algebra and sparse matrix operations to Python code.
-  - MPI and other parallel libraries: No.
-    The MPI communications should be implemented at python level through MPI4py
-    library.
+  - LAPACK: Yes, but not recommended. LAPACK can be used in the PySCF C-level library. However, we recommend restructuring your code by moving all linear algebra and sparse matrix operations to NumPy operations in pure Python.
+  - MPI and other parallel libraries: No. MPI communications should be implemented in Python through the MPI4py library.
 
 * Code format.
-  It is recommended to write code compliance with the [PEP8](https://www.python.org/dev/peps/pep-0008/) style.
+  Code should comply with the [PEP8](https://www.python.org/dev/peps/pep-0008/) style.
 
 
-Name conventions
-================
+Naming conventions
+==================
 
 * The prefix or suffix underscore in the function names have special meanings
 
@@ -134,10 +126,9 @@ API conventions
 Unit Tests and Example Scripts
 ==============================
 
-* Examples to run modules should be placed in the appropriate directory inside
-  the /examples directory.  While the examples should be easy enough to run on a
-  modest personal computer; however, should not be trivial and instead showcase
-  the functionality of the module.  The format for naming examples is::
+* Examples for modules should be placed in the appropriate directory inside the /examples directory.
+  While the examples should be light enough to run on a modest personal computer, the examples should not be trivial. 
+  Instead, the point of the examples is to showcase the functionality of the module. The format for naming examples is::
 
     /examples/name_of_module/XX-function_name.py
 
