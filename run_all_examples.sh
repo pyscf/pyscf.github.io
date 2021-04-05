@@ -11,3 +11,5 @@ do
     OMP_NUM_THREADS=2 python $i
   fi
 done
+
+echo done
