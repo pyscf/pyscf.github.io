@@ -15,16 +15,16 @@ ecosystem of plugins and external modules that, for example, provide
 MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
 See :ref:`installing_extproj`.
 
-..
-   COMMENTED OUT FOR NOW
-   Install <install.rst>
-   User Guide <user.rst>
-   Developer Guide <develop.rst>
-   API Docs <api_docs/pyscf.rst>
-   Blog <blog_wrapper.rst>
-   Modules <modules.rst>
-   about.md
-   Developer Guide <develop.rst>
+
+.. COMMENTED OUT FOR NOW
+.. Install <install.rst>
+.. User Guide <user.rst>
+.. Developer Guide <develop.rst>
+.. API Docs <api_docs/pyscf.rst>
+.. Blog <blog_wrapper.rst>
+.. Modules <modules.rst>
+.. about.md
+.. Developer Guide <develop.rst>
 
 
 .. toctree::

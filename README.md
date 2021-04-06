@@ -13,7 +13,6 @@ Pip install the following packages:
 
 - pyscf
 - sphinx
-- ablog
 - sphinx-material
 - sphinxcontrib-bibtex
 - nbsphinx
@@ -23,28 +22,60 @@ Pip install the following packages:
 If you have multiple versions of PySCF on your machine and you would like so use a specific version, set `PYTHONPATH` to include the specific PySCF source directory you want; otherwise, uncomment `sys.path.append(os.path.abspath('path_to_pyscf'))` in [source/conf.py](source/conf.py).
 
 ### Building and Serving
-All sphinx related sources files (i.e. `.rst` and `.md`) are contained in `pyscf-doc/source`.
+All sphinx related sources files (i.e. `.rst` and `.md`) are contained in `source` and all webpage files (once they're generated) live in the `build`.
+
+To generate the website (without the API docs) run the following from the main project directory.
 
 ```bash
-cd source
-../scripts/generate_api_docs.sh
-ablog build
-ablog serve # this will open a tab in your default browser
+make html
 ```
 
-> :warning: :warning: :warning: PySCF must be accessible in your current Python environment when you run `../scripts/generate_api_docs.sh`.
+> If you are running on Linux, and you want to build faster you can use `make html_parallel`.
 
-> :warning: :warning: :warning: Running `ablog build` will be slow after you've generated the API docs. There are two hack-y strategies to speed these up: 1) Follow the instructions above and after running `ablog build` you can delete `source/api_docs`. The HTML files will still exist in `source/_website` so they'll still show up when you serve the website, but `sphinx` will no longer need to generate them every time. 2) You can skip the `../scripts/generate_api_docs.sh` command above and deal with the broken link.
+To generate the complete website (including the API docs) run the following from the main project directory.
+Since the API docs are large, this build will noticeable slower than just generating the website with `make html`.
 
+```bash
+make html_full
+```
+
+> :warning: PySCF must be accessible in your current Python environment when you run `make api_docs` or `make html_full`.
+
+Finally to server the website, you can run either of the options below:
+
+```bash
+open build/html/index.html
+```
+
+or
+
+```bash
+ python -m http.server --directory build/html
+```
+
+To see more of the options you can use with `make`, just use `make help`, see the truncated output below:
+
+```
+make help
+Please use 'make <target>' where <target> is one of
+Common Commands
+===============
+  html            to make standalone HTML files
+  api_docs        to make source files for the API docs section of the website
+  html_parallel   to make standalone HTML files in parallel (doesn't work for MacOS)
+  html_full       to make source files for API docs (AND) the standalone HTML files
+  gh_pages_setup  to make move the constructed website to the docs directory, where it will be rendered by GitHub pages after commit
+  ...
+  ...
+  ...
+```
 
 ### Adding content to GitHub Pages
 
 If you want to show the latest version of the docs on GitHub pages, build using then instructions above. Then from `pyscf-doc/source` run the following:
 
 ```bash
-rm -r ../docs
-mv _website ../docs
-touch ../docs/.nojekyll
+make gh_pages_setup
 ```
 
 ## How to contribute

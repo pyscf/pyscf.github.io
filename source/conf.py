@@ -1,23 +1,14 @@
 #!/usr/bin/env python
 
-
-# PySCF build configuration file, created by
-# `ablog start` on Mon Feb  8 20:10:55 2021.
-#
-# Note that not all possible configuration values are present in this file.
-# All configuration values have a default; values that are commented out
-# serve to show the default.
-
 # import os
 import sys
 
 # import ablog
-# import alabaster
 
 from pyscf import __version__
 from distutils.version import LooseVersion
 
-sys.path.append("./tools/extensions")
+sys.path.append("./source/tools/extensions")
 
 lv = LooseVersion(__version__)
 
@@ -278,7 +269,6 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = "sphinx_material"
-# html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
