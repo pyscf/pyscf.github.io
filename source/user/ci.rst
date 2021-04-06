@@ -8,7 +8,7 @@ PySCF has separate molecular implementations for configuration
 interaction singles and doubles (CISD) (:mod:`ci`) and full
 configuration interaction (FCI) (:mod:`fci`). The functionalities of the
 CISD implementation are similar to the functionalities of MP2
-(:numref:`user_mp2`) and CCSD (:numref:`user_cc`) in PySCF.
+(:ref:`user_mp2`) and CCSD (:ref:`user_cc`) in PySCF.
 
 
 Introduction

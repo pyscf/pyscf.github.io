@@ -6,7 +6,7 @@ Second-order Møller–Plesset perturbation theory (MP2)
 *Modules*: :mod:`mp`, :mod:`pbc.mp`
 
 The MP2 and coupled-cluster functionalities of PySCF are similar.  See
-also :numref:`user_cc`.
+also :ref:`user_cc`.
 
 Introduction
 ============

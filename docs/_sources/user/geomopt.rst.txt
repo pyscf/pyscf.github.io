@@ -10,7 +10,7 @@ Basics
 
 PySCF implements geometry optimization via
 interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_
-and `PyBerny <https://github.com/jhrmnn/pyberny>`_ (see :numref:`installing`
+and `PyBerny <https://github.com/jhrmnn/pyberny>`_ (see :ref:`installing`
 for installation instructions).
 
 There are two ways to invoke geometry optimization.

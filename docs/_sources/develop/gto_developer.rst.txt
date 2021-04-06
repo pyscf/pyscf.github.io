@@ -158,7 +158,7 @@ Crystal unit cell
 
 The :class:`~pyscf.pbc.gto.Cell` class is defined as an extension of the
 :class:`~pyscf.gto.Mole` class. They share most of the data structures and methods.
-This gives the freedom to mix finite-size and PBC calculations (see :numref:`mix_mol`).
+This gives the freedom to mix finite-size and PBC calculations (see :ref:`mix_mol`).
 
 .. note::
 

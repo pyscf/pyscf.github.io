@@ -21,7 +21,7 @@ one uses the :class:`pbc.gto.Cell` class to define a cell::
   >>> cell.build()
 
 The other two equivalent ways to initialize a molecule 
-introduced in :numref:`user_gto` also apply here::
+introduced in :ref:`user_gto` also apply here::
 
   >>> from pyscf.pbc import gto
   >>> cell = gto.Cell()
@@ -181,4 +181,4 @@ methods::
     from pyscf.pbc import df
     eri = df.DF(cell).get_eri()
 
-See :numref:`user_pbc_df` for more details of the PBC density fitting methods.
+See :ref:`user_pbc_df` for more details of the PBC density fitting methods.

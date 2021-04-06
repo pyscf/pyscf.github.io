@@ -11,7 +11,7 @@ Density functional theory (DFT)
 Introduction
 ============
 
-Kohn-Sham density functional theory (KS-DFT) has been implemented through derived classes of the :class:`pyscf.scf.hf.SCF` parent class. As such, the methods and capabilities introduced in :numref:`user_scf` are also available to the :mod:`dft` module, e.g., the efficient second-order Newton-Raphson algorithm.
+Kohn-Sham density functional theory (KS-DFT) has been implemented through derived classes of the :class:`pyscf.scf.hf.SCF` parent class. As such, the methods and capabilities introduced in :ref:`user_scf` are also available to the :mod:`dft` module, e.g., the efficient second-order Newton-Raphson algorithm.
 
 A minimal example of using the :mod:`dft` module reads, cf. `dft/22-newton.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/22-newton.py>`_:
 
@@ -45,7 +45,7 @@ Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is t
 * hybrid density functionals (a fraction of exact exchange is used), and
 * long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
 
-Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :numref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
+Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :ref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
 
 .. _user_dft_predef_func:
 

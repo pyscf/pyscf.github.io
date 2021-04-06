@@ -58,7 +58,7 @@ one obtains the non-Hermitian TDHF or TDDFT equations for the excitation energie
     \end{array}\!\!\right) \;,
     
 where :math:`\mathbf{A}` and :math:`\mathbf{B}` are the orbital
-hessians which also appear in the stability analysis for reference states (see :numref:`stability_analysis`),
+hessians which also appear in the stability analysis for reference states (see :ref:`stability_analysis`),
 :math:`\omega` is the excitation energy, and 
 :math:`\mathbf{X}` and :math:`\mathbf{Y}` represent the response of the density matrix.
 In cases where the system possesses
