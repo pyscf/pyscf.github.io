@@ -37,7 +37,7 @@ make html
 ```
 
 To generate the complete website (including the API docs) run the following from the main project directory.
-Since the API docs are large, this build will noticeable slower than just generating the website with `make html`.
+Since the API docs are large, this build is noticeably slower than just generating the website with `make html`.
 :warning: PySCF must be accessible in your current Python environment when you run `make api_docs` or `make html_full`.
 
 ```bash
