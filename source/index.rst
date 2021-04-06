@@ -1,13 +1,10 @@
 
-.. PySCF index file, created by `ablog start` on Mon Feb  8 20:10:55 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. PySCF
 
 Welcome to the PySCF Website!
 =================================
 
-The Python-based Simulations of Chemistry Framework
-PySCF is an open-source collection of electronic structure modules powered by Python. The package aims to provide a simple, lightweight, and efficient platform for quantum chemistry calculations and methodology development.
+The Python-based Simulations of Chemistry Framework (PySCF) is an open-source collection of electronic structure modules powered by Python. The package aims to provide a simple, lightweight, and efficient platform for quantum chemistry calculations and methodology development.
 
 
 In addition to the core libraries, PySCF supports a rich
