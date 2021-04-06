@@ -1,3 +1,0 @@
-
-Periodic boundary conditions
-****************************
