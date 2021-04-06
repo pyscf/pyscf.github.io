@@ -5,6 +5,11 @@
 PySCF Documentation
 ===================
 
+## Overview
+
+The PySCF documentation uses `sphinx-doc` and several associated extensions to generate static `html` files for the website.
+To simplify the command line work, we use `make` to manage all building here, see [the Building section](#building) below or just run `make help` for more details.
+
 ## Building the Docs Locally
 
 ### Requirements
@@ -21,54 +26,34 @@ Pip install the following packages:
 
 If you have multiple versions of PySCF on your machine and you would like so use a specific version, set `PYTHONPATH` to include the specific PySCF source directory you want; otherwise, uncomment `sys.path.append(os.path.abspath('path_to_pyscf'))` in [source/conf.py](source/conf.py).
 
-### Building and Serving
+### Building
 All sphinx related sources files (i.e. `.rst` and `.md`) are contained in `source` and all webpage files (once they're generated) live in the `build`.
 
 To generate the website (without the API docs) run the following from the main project directory.
+If you are running on Linux, and you want to build faster you can use `make html_parallel`.
 
 ```bash
 make html
 ```
 
-> If you are running on Linux, and you want to build faster you can use `make html_parallel`.
-
 To generate the complete website (including the API docs) run the following from the main project directory.
 Since the API docs are large, this build will noticeable slower than just generating the website with `make html`.
+:warning: PySCF must be accessible in your current Python environment when you run `make api_docs` or `make html_full`.
 
 ```bash
 make html_full
 ```
 
-> :warning: PySCF must be accessible in your current Python environment when you run `make api_docs` or `make html_full`.
+To see more of the options you can use with `make`, just use `make help`.
 
-Finally to server the website, you can run either of the options below:
 
-```bash
-open build/html/index.html
-```
-
-or
+### Serving
+Finally to serve the website, you can run:
 
 ```bash
  python -m http.server --directory build/html
 ```
 
-To see more of the options you can use with `make`, just use `make help`, see the truncated output below:
-
-```
-make help
-Please use 'make <target>' where <target> is one of
-Common Commands
-===============
-  html            to make standalone HTML files
-  api_docs        to make source files for the API docs section of the website
-  html_parallel   to make standalone HTML files in parallel (doesn't work for MacOS)
-  html_full       to make source files for API docs (AND) the standalone HTML files
-  gh_pages_setup  to make move the constructed website to the docs directory, where it will be rendered by GitHub pages after commit
-  ...
-  ...
-  ...
-```
 
 ### Adding content to GitHub Pages
 
@@ -111,8 +96,3 @@ If you want to write a post in `.rst` that's fine too! Just use the following in
 :category: Manual
 :language: English
 ``` -->
-
-
-## To-do in final PySCF rst docs
-
-- [ ] Remove :numbered: from index.rst toctree
