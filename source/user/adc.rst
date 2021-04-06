@@ -1,8 +1,8 @@
 .. _user_adc:
 
-************************************************
-Algebraic diagrammatic construction (ADC) scheme
-************************************************
+*****************************************
+Algebraic diagrammatic construction (ADC) 
+*****************************************
 
 *Modules*: :mod:`adc`
 

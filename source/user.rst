@@ -1,12 +1,12 @@
 .. _theory:
 
-User guide
+User Guide
 **********
 
-A variety of electronic structure methods are implemented in the PySCF package, 
-including mean-field theories, many-body perturbation theories, and coupled-cluster theory, *etc*.
-Many of them also support solid-state calculations with periodic boundary conditions considered. 
-This chapter introduces the basic theories of these methods and some of their most common input parameters.
+A variety of electronic structure methods are implemented in the PySCF package.
+Many of them can also be used for solid-state calculations with periodic boundary conditions.
+This User Guide introduces the basic theories of these methods and demonstrates their main
+functionalities.
 
 
 .. toctree::
