@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about/" />
     <link rel="index" title="Index" href="../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -323,18 +298,19 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.tools.cubegen</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-tools-cubegen--page-root">Source code for pyscf.tools.cubegen</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -344,7 +320,7 @@
 <span class="c1">#         Paul J. Robinson &lt;pjrobinson@ucla.edu&gt;</span>
 <span class="c1">#</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">Gaussian cube file format.  Reference:</span>
 <span class="sd">http://paulbourke.net/dataformats/cube/</span>
 <span class="sd">https://h5cube-spec.readthedocs.io/en/latest/cubeformat.html</span>
@@ -362,7 +338,7 @@
 <span class="sd">...                     # ...</span>
 <span class="sd">AtomN ZN x y z          # ...</span>
 <span class="sd">Data on grids           # (N1*N2) lines of records, each line has N3 elements</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
@@ -373,17 +349,17 @@
 <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">numint</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
-<span class="n">RESOLUTION</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;cubegen_resolution&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<span class="n">BOX_MARGIN</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;cubegen_box_margin&#39;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
-<span class="n">ORIGIN</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;cubegen_box_origin&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">RESOLUTION</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'cubegen_resolution'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">BOX_MARGIN</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'cubegen_box_margin'</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+<span class="n">ORIGIN</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'cubegen_box_origin'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 <span class="c1"># If given, EXTENT should be a 3-element ndarray/list/tuple to represent the</span>
 <span class="c1"># extension in x, y, z</span>
-<span class="n">EXTENT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;cubegen_box_extent&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">EXTENT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'cubegen_box_extent'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="density"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.density">[docs]</a><span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">nz</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">RESOLUTION</span><span class="p">,</span>
             <span class="n">margin</span><span class="o">=</span><span class="n">BOX_MARGIN</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculates electron density and write out in cube format.</span>
+    <span class="sd">"""Calculates electron density and write out in cube format.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mol : Mole</span>
@@ -396,7 +372,7 @@
 <span class="sd">    Kwargs:</span>
 <span class="sd">        nx : int</span>
 <span class="sd">            Number of grid point divisions in x direction.</span>
-<span class="sd">            Note this is function of the molecule&#39;s size; a larger molecule</span>
+<span class="sd">            Note this is function of the molecule's size; a larger molecule</span>
 <span class="sd">            will have a coarser representation than a smaller one for the</span>
 <span class="sd">            same value. Conflicts to keyword resolution.</span>
 <span class="sd">        ny : int</span>
@@ -408,13 +384,13 @@
 <span class="sd">            given in the input, the input nx/ny/nz have no effects.  The value</span>
 <span class="sd">            of nx/ny/nz will be determined by the resolution and the cube box</span>
 <span class="sd">            size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">pyscf.pbc.gto</span> <span class="kn">import</span> <span class="n">Cell</span>
     <span class="n">cc</span> <span class="o">=</span> <span class="n">Cube</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
 
-    <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">&#39;GTOval&#39;</span>
+    <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">'GTOval'</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">Cell</span><span class="p">):</span>
-        <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">&#39;PBC&#39;</span> <span class="o">+</span> <span class="n">GTOval</span>
+        <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">'PBC'</span> <span class="o">+</span> <span class="n">GTOval</span>
 
     <span class="c1"># Compute density on the .cube grid</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">get_coords</span><span class="p">()</span>
@@ -427,13 +403,13 @@
     <span class="n">rho</span> <span class="o">=</span> <span class="n">rho</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">nz</span><span class="p">)</span>
 
     <span class="c1"># Write out density to the .cube file</span>
-    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;Electron density in real space (e/Bohr^3)&#39;</span><span class="p">)</span>
+    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">'Electron density in real space (e/Bohr^3)'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rho</span></div>
 
 
 <div class="viewcode-block" id="orbital"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.orbital">[docs]</a><span class="k">def</span> <span class="nf">orbital</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">coeff</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">nz</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">RESOLUTION</span><span class="p">,</span>
             <span class="n">margin</span><span class="o">=</span><span class="n">BOX_MARGIN</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculate orbital value on real space grid and write out in cube format.</span>
+    <span class="sd">"""Calculate orbital value on real space grid and write out in cube format.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mol : Mole</span>
@@ -446,7 +422,7 @@
 <span class="sd">    Kwargs:</span>
 <span class="sd">        nx : int</span>
 <span class="sd">            Number of grid point divisions in x direction.</span>
-<span class="sd">            Note this is function of the molecule&#39;s size; a larger molecule</span>
+<span class="sd">            Note this is function of the molecule's size; a larger molecule</span>
 <span class="sd">            will have a coarser representation than a smaller one for the</span>
 <span class="sd">            same value. Conflicts to keyword resolution.</span>
 <span class="sd">        ny : int</span>
@@ -458,13 +434,13 @@
 <span class="sd">            given in the input, the input nx/ny/nz have no effects.  The value</span>
 <span class="sd">            of nx/ny/nz will be determined by the resolution and the cube box</span>
 <span class="sd">            size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span> <span class="nn">pyscf.pbc.gto</span> <span class="kn">import</span> <span class="n">Cell</span>
     <span class="n">cc</span> <span class="o">=</span> <span class="n">Cube</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
 
-    <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">&#39;GTOval&#39;</span>
+    <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">'GTOval'</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">Cell</span><span class="p">):</span>
-        <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">&#39;PBC&#39;</span> <span class="o">+</span> <span class="n">GTOval</span>
+        <span class="n">GTOval</span> <span class="o">=</span> <span class="s1">'PBC'</span> <span class="o">+</span> <span class="n">GTOval</span>
 
     <span class="c1"># Compute density on the .cube grid</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">get_coords</span><span class="p">()</span>
@@ -477,13 +453,13 @@
     <span class="n">orb_on_grid</span> <span class="o">=</span> <span class="n">orb_on_grid</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">nz</span><span class="p">)</span>
 
     <span class="c1"># Write out orbital to the .cube file</span>
-    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">orb_on_grid</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;Orbital value in real space (1/Bohr^3)&#39;</span><span class="p">)</span>
+    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">orb_on_grid</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">'Orbital value in real space (1/Bohr^3)'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">orb_on_grid</span></div>
 
 
 <div class="viewcode-block" id="mep"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.mep">[docs]</a><span class="k">def</span> <span class="nf">mep</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">nz</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">RESOLUTION</span><span class="p">,</span>
         <span class="n">margin</span><span class="o">=</span><span class="n">BOX_MARGIN</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calculates the molecular electrostatic potential (MEP) and write out in</span>
+    <span class="sd">"""Calculates the molecular electrostatic potential (MEP) and write out in</span>
 <span class="sd">    cube format.</span>
 
 <span class="sd">    Args:</span>
@@ -497,7 +473,7 @@
 <span class="sd">    Kwargs:</span>
 <span class="sd">        nx : int</span>
 <span class="sd">            Number of grid point divisions in x direction.</span>
-<span class="sd">            Note this is function of the molecule&#39;s size; a larger molecule</span>
+<span class="sd">            Note this is function of the molecule's size; a larger molecule</span>
 <span class="sd">            will have a coarser representation than a smaller one for the</span>
 <span class="sd">            same value. Conflicts to keyword resolution.</span>
 <span class="sd">        ny : int</span>
@@ -509,7 +485,7 @@
 <span class="sd">            given in the input, the input nx/ny/nz have no effects.  The value</span>
 <span class="sd">            of nx/ny/nz will be determined by the resolution and the cube box</span>
 <span class="sd">            size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cc</span> <span class="o">=</span> <span class="n">Cube</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">,</span> <span class="n">resolution</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
 
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">get_coords</span><span class="p">()</span>
@@ -520,30 +496,30 @@
         <span class="n">r</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">Z</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">rp</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">coords</span>
-        <span class="n">Vnuc</span> <span class="o">+=</span> <span class="n">Z</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,xi-&gt;x&#39;</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">rp</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
+        <span class="n">Vnuc</span> <span class="o">+=</span> <span class="n">Z</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xi-&gt;x'</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">rp</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
 
     <span class="c1"># Potential of electron density</span>
     <span class="n">Vele</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">Vnuc</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Vele</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">600</span><span class="p">):</span>
         <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
         <span class="n">ints</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">)</span>
-        <span class="n">Vele</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ijp,ij-&gt;p&#39;</span><span class="p">,</span> <span class="n">ints</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">Vele</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijp,ij-&gt;p'</span><span class="p">,</span> <span class="n">ints</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
 
     <span class="n">MEP</span> <span class="o">=</span> <span class="n">Vnuc</span> <span class="o">-</span> <span class="n">Vele</span>     <span class="c1"># MEP at each point</span>
     <span class="n">MEP</span> <span class="o">=</span> <span class="n">MEP</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">nz</span><span class="p">)</span>
 
     <span class="c1"># Write the potential</span>
-    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">MEP</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="s1">&#39;Molecular electrostatic potential in real space&#39;</span><span class="p">)</span>
+    <span class="n">cc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">MEP</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="s1">'Molecular electrostatic potential in real space'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">MEP</span></div>
 
 
 <div class="viewcode-block" id="Cube"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.Cube">[docs]</a><span class="k">class</span> <span class="nc">Cube</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;  Read-write of the Gaussian CUBE files</span>
+    <span class="sd">'''  Read-write of the Gaussian CUBE files</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        nx : int</span>
 <span class="sd">            Number of grid point divisions in x direction.</span>
-<span class="sd">            Note this is function of the molecule&#39;s size; a larger molecule</span>
+<span class="sd">            Note this is function of the molecule's size; a larger molecule</span>
 <span class="sd">            will have a coarser representation than a smaller one for the</span>
 <span class="sd">            same value. Conflicts to keyword resolution.</span>
 <span class="sd">        ny : int</span>
@@ -555,7 +531,7 @@
 <span class="sd">            given in the input, the input nx/ny/nz have no effects.  The value</span>
 <span class="sd">            of nx/ny/nz will be determined by the resolution and the cube box</span>
 <span class="sd">            size. The unit is Bohr.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">nz</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">RESOLUTION</span><span class="p">,</span>
                  <span class="n">margin</span><span class="o">=</span><span class="n">BOX_MARGIN</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">ORIGIN</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">EXTENT</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.pbc.gto</span> <span class="kn">import</span> <span class="n">Cell</span>
@@ -599,11 +575,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">zs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nz</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">nz</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
 
 <div class="viewcode-block" id="Cube.get_coords"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.Cube.get_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;  Result: set of coordinates to compute a field which is to be stored</span>
+        <span class="sd">"""  Result: set of coordinates to compute a field which is to be stored</span>
 <span class="sd">        in the file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">cartesian_prod</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">zs</span><span class="p">])</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">boxorig</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">boxorig</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">coords</span></div>
 
 <div class="viewcode-block" id="Cube.get_ngrids"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.Cube.get_ngrids">[docs]</a>    <span class="k">def</span> <span class="nf">get_ngrids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -613,35 +589,35 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">zs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="Cube.write"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.Cube.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;  Result: .cube file with the field in the file fname.  &quot;&quot;&quot;</span>
+        <span class="sd">"""  Result: .cube file with the field in the file fname.  """</span>
         <span class="k">assert</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span>
         <span class="k">assert</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nz</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">comment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Generic field? Supply the optional argument &quot;comment&quot; to define this line&#39;</span>
+            <span class="n">comment</span> <span class="o">=</span> <span class="s1">'Generic field? Supply the optional argument "comment" to define this line'</span>
 
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">coord</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">comment</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;PySCF Version: </span><span class="si">%s</span><span class="s1">  Date: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pyscf</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">ctime</span><span class="p">()))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%5d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxorig</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">comment</span><span class="o">+</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'PySCF Version: </span><span class="si">%s</span><span class="s1">  Date: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">pyscf</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">ctime</span><span class="p">()))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%5d</span><span class="s1">'</span> <span class="o">%</span> <span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boxorig</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%5d%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zs</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
                 <span class="n">atmsymb</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="n">ia</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%5d%12.6f</span><span class="s1">&#39;</span><span class="o">%</span> <span class="p">(</span><span class="n">gto</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="n">atmsymb</span><span class="p">),</span> <span class="mf">0.</span><span class="p">))</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">coord</span><span class="p">[</span><span class="n">ia</span><span class="p">]))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%5d%12.6f</span><span class="s1">'</span><span class="o">%</span> <span class="p">(</span><span class="n">gto</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="n">atmsymb</span><span class="p">),</span> <span class="mf">0.</span><span class="p">))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%12.6f%12.6f%12.6f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">coord</span><span class="p">[</span><span class="n">ia</span><span class="p">]))</span>
 
             <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">):</span>
                     <span class="k">for</span> <span class="n">iz0</span><span class="p">,</span> <span class="n">iz1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nz</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
-                        <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%13.5E</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">iz1</span><span class="o">-</span><span class="n">iz0</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                        <span class="n">fmt</span> <span class="o">=</span> <span class="s1">'</span><span class="si">%13.5E</span><span class="s1">'</span> <span class="o">*</span> <span class="p">(</span><span class="n">iz1</span><span class="o">-</span><span class="n">iz0</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span>
                         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fmt</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="n">ix</span><span class="p">,</span><span class="n">iy</span><span class="p">,</span><span class="n">iz0</span><span class="p">:</span><span class="n">iz1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="Cube.read"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.tools/#pyscf.tools.cubegen.Cube.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cube_file</span><span class="p">):</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cube_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cube_file</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
@@ -657,27 +633,24 @@
             <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natm</span><span class="p">):</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">:]]])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;Bohr&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="n">atoms</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'Bohr'</span><span class="p">)</span>
 
             <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
         <span class="n">cube_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">()])</span>
         <span class="k">return</span> <span class="n">cube_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nz</span><span class="p">])</span></div></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf.tools</span> <span class="kn">import</span> <span class="n">cubegen</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;O 0.00000000,  0.000000,  0.000000</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">'''O 0.00000000,  0.000000,  0.000000</span>
 <span class="s1">                H 0.761561, 0.478993, 0.00000000</span>
-<span class="s1">                H -0.761561, 0.478993, 0.00000000&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;6-31g*&#39;</span><span class="p">)</span>
+<span class="s1">                H -0.761561, 0.478993, 0.00000000'''</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">'6-31g*'</span><span class="p">)</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-    <span class="n">cubegen</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;h2o_den.cube&#39;</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">())</span> <span class="c1">#makes total density</span>
-    <span class="n">cubegen</span><span class="o">.</span><span class="n">mep</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;h2o_pot.cube&#39;</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">())</span>
-    <span class="n">cubegen</span><span class="o">.</span><span class="n">orbital</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;h2o_mo1.cube&#39;</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">cubegen</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'h2o_den.cube'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">())</span> <span class="c1">#makes total density</span>
+    <span class="n">cubegen</span><span class="o">.</span><span class="n">mep</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'h2o_pot.cube'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">())</span>
+    <span class="n">cubegen</span><span class="o">.</span><span class="n">orbital</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'h2o_mo1.cube'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../../about/" />
     <link rel="index" title="Index" href="../../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -323,18 +298,19 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.pbc.df.fft_jk</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-pbc-df-fft-jk--page-root">Source code for pyscf.pbc.df.fft_jk</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -342,9 +318,9 @@
 <span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">JK with discrete Fourier transformation</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -356,7 +332,7 @@
 
 
 <div class="viewcode-block" id="get_j_kpts"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_j_kpts">[docs]</a><span class="k">def</span> <span class="nf">get_j_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Get the Coulomb (J) AO matrix at sampled k-points.</span>
+    <span class="sd">'''Get the Coulomb (J) AO matrix at sampled k-points.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm_kpts : (nkpts, nao, nao) ndarray or a list of (nkpts,nao,nao) ndarray</span>
@@ -367,18 +343,18 @@
 
 <span class="sd">    Kwargs:</span>
 <span class="sd">        kpts_band : (3,) ndarray or (*,3) ndarray</span>
-<span class="sd">            A list of arbitrary &quot;band&quot; k-points at which to evalute the matrix.</span>
+<span class="sd">            A list of arbitrary "band" k-points at which to evalute the matrix.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        vj : (nkpts, nao, nao) ndarray</span>
 <span class="sd">        or list of vj if the input dm_kpts is a list of DMs</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
 
     <span class="n">ni</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span>
     <span class="n">make_rho</span><span class="p">,</span> <span class="n">nset</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="p">)</span>
-    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">nset</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 
@@ -390,7 +366,7 @@
         <span class="k">for</span> <span class="n">ao_ks_etc</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">aoR_loop</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
             <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">make_rho</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="s1">&#39;LDA&#39;</span><span class="p">)</span>
+                <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">make_rho</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="s1">'LDA'</span><span class="p">)</span>
             <span class="n">ao</span> <span class="o">=</span> <span class="n">ao_ks</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
@@ -405,7 +381,7 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao_ks</span><span class="p">):</span>
                     <span class="n">ao_dm</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
-                    <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,xi-&gt;x&#39;</span><span class="p">,</span> <span class="n">ao_dm</span><span class="p">,</span> <span class="n">ao</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
+                    <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xi-&gt;x'</span><span class="p">,</span> <span class="n">ao_dm</span><span class="p">,</span> <span class="n">ao</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
         <span class="n">rhoR</span> <span class="o">*=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">nkpts</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
@@ -426,23 +402,23 @@
         <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
             <span class="c1"># ni.eval_mat can handle real vR only</span>
-            <span class="c1"># vj_kpts[i] += ni.eval_mat(cell, ao_ks, 1., None, vR[i,p0:p1], mask, &#39;LDA&#39;)</span>
+            <span class="c1"># vj_kpts[i] += ni.eval_mat(cell, ao_ks, 1., None, vR[i,p0:p1], mask, 'LDA')</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao_ks</span><span class="p">):</span>
-                <span class="n">aow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,x-&gt;xi&#39;</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">vR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
+                <span class="n">aow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,x-&gt;xi'</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">vR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
                 <span class="n">vj_kpts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">aow</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_format_jks</span><span class="p">(</span><span class="n">vj_kpts</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">input_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="get_j_e1_kpts"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_j_e1_kpts">[docs]</a><span class="k">def</span> <span class="nf">get_j_e1_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Derivatives of Coulomb (J) AO matrix at sampled k-points.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="sd">'''Derivatives of Coulomb (J) AO matrix at sampled k-points.</span>
+<span class="sd">    '''</span>
 
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
 
     <span class="n">ni</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span>
     <span class="n">make_rho</span><span class="p">,</span> <span class="n">nset</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">nset</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 
@@ -454,7 +430,7 @@
         <span class="k">for</span> <span class="n">ao_ks_etc</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">aoR_loop</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
             <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">make_rho</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="s1">&#39;LDA&#39;</span><span class="p">)</span>
+                <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">make_rho</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="s1">'LDA'</span><span class="p">)</span>
             <span class="n">ao</span> <span class="o">=</span> <span class="n">ao_ks</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
@@ -469,7 +445,7 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao_ks</span><span class="p">):</span>
                     <span class="n">ao_dm</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">])</span>
-                    <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,xi-&gt;x&#39;</span><span class="p">,</span> <span class="n">ao_dm</span><span class="p">,</span> <span class="n">ao</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
+                    <span class="n">rhoR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xi-&gt;x'</span><span class="p">,</span> <span class="n">ao_dm</span><span class="p">,</span> <span class="n">ao</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
         <span class="n">rhoR</span> <span class="o">*=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">nkpts</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
@@ -490,10 +466,10 @@
         <span class="n">ao_ks</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ao_ks_etc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
             <span class="c1"># ni.eval_mat can handle real vR only</span>
-            <span class="c1"># vj_kpts[i] += ni.eval_mat(cell, ao_ks, 1., None, vR[i,p0:p1], mask, &#39;LDA&#39;)</span>
+            <span class="c1"># vj_kpts[i] += ni.eval_mat(cell, ao_ks, 1., None, vR[i,p0:p1], mask, 'LDA')</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao_ks</span><span class="p">):</span>
-                <span class="n">aow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,x-&gt;xi&#39;</span><span class="p">,</span> <span class="n">ao</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
-                <span class="n">vj_kpts</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;axi,xj-&gt;aij&#39;</span><span class="p">,</span> <span class="n">ao</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">aow</span><span class="p">)</span>
+                <span class="n">aow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,x-&gt;xi'</span><span class="p">,</span> <span class="n">ao</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
+                <span class="n">vj_kpts</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'axi,xj-&gt;aij'</span><span class="p">,</span> <span class="n">ao</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">aow</span><span class="p">)</span>
 
     <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">_format_jks</span><span class="p">(</span><span class="n">vj</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">input_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span> <span class="k">for</span> <span class="n">vj</span> <span class="ow">in</span> <span class="n">vj_kpts</span><span class="p">])</span>
 
@@ -501,7 +477,7 @@
 
 <div class="viewcode-block" id="get_k_kpts"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_k_kpts">[docs]</a><span class="k">def</span> <span class="nf">get_k_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Get the Coulomb (J) and exchange (K) AO matrices at sampled k-points.</span>
+    <span class="sd">'''Get the Coulomb (J) and exchange (K) AO matrices at sampled k-points.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm_kpts : (nkpts, nao, nao) ndarray</span>
@@ -516,26 +492,26 @@
 <span class="sd">            | 1 : hermitian</span>
 
 <span class="sd">        kpts_band : (3,) ndarray or (*,3) ndarray</span>
-<span class="sd">            A list of arbitrary &quot;band&quot; k-points at which to evalute the matrix.</span>
+<span class="sd">            A list of arbitrary "band" k-points at which to evalute the matrix.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        vj : (nkpts, nao, nao) ndarray</span>
 <span class="sd">        vk : (nkpts, nao, nao) ndarray</span>
 <span class="sd">        or list of vj and vk if the input dm_kpts is a list of DMs</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">gen_uniform_grids</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">ngrids</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">mo_coeff</span>
         <span class="n">mo_occ</span>   <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">mo_occ</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">nset</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 
@@ -550,12 +526,12 @@
         <span class="n">vk_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
 
     <span class="n">coords</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">ao</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)]</span>
     <span class="k">if</span> <span class="n">input_band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="n">ao2_kpts</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">ao</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)]</span>
     <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">nset</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="p">[</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span><span class="n">occ</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">occ</span><span class="p">[</span><span class="n">occ</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
@@ -565,7 +541,7 @@
     <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">mem_now</span>
     <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">max_memory</span><span class="o">-</span><span class="n">mem_now</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="mi">4</span><span class="o">/</span><span class="n">ngrids</span><span class="o">/</span><span class="n">nao</span><span class="p">)))</span>
-    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">&#39;fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
                       <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
     <span class="c1">#ao1_dtype = np.result_type(*ao1_kpts)</span>
     <span class="c1">#ao2_dtype = np.result_type(*ao2_kpts)</span>
@@ -590,7 +566,7 @@
             <span class="c1"># end of the function to bypass any discretization errors</span>
             <span class="c1"># that arise from the FFT.</span>
             <span class="n">mydf</span><span class="o">.</span><span class="n">exxdiv</span> <span class="o">=</span> <span class="n">exxdiv</span>
-            <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span> <span class="ow">or</span> <span class="n">exxdiv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">'ewald'</span> <span class="ow">or</span> <span class="n">exxdiv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mydf</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mydf</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
@@ -600,7 +576,7 @@
                 <span class="n">expmikr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">))</span>
 
             <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                <span class="n">rho1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ig,jg-&gt;ijg&#39;</span><span class="p">,</span> <span class="n">ao1T</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">*</span><span class="n">expmikr</span><span class="p">,</span> <span class="n">ao2T</span><span class="p">)</span>
+                <span class="n">rho1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ig,jg-&gt;ijg'</span><span class="p">,</span> <span class="n">ao1T</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">*</span><span class="n">expmikr</span><span class="p">,</span> <span class="n">ao2T</span><span class="p">)</span>
                 <span class="n">vG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">rho1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">mesh</span><span class="p">)</span>
                 <span class="n">rho1</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">vG</span> <span class="o">*=</span> <span class="n">coulG</span>
@@ -609,42 +585,42 @@
                 <span class="k">if</span> <span class="n">vR_dm</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">:</span>
                     <span class="n">vR</span> <span class="o">=</span> <span class="n">vR</span><span class="o">.</span><span class="n">real</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ijg,jg-&gt;ig&#39;</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">ao_dms</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">vR_dm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijg,jg-&gt;ig'</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">ao_dms</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">vR_dm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
                 <span class="n">vR</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">vR_dm</span> <span class="o">*=</span> <span class="n">expmikr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">vk_kpts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vR_dm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ao1T</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">&#39;get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)&#39;</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="c1"># Function _ewald_exxdiv_for_G0 to add back in the G=0 component to vk_kpts</span>
     <span class="c1"># Note in the _ewald_exxdiv_for_G0 implementation, the G=0 treatments are</span>
     <span class="c1"># different for 1D/2D and 3D systems.  The special treatments for 1D and 2D</span>
     <span class="c1"># can only be used with AFTDF/GDF/MDF method.  In the FFTDF method, 1D, 2D</span>
     <span class="c1"># and 3D should use the ewald probe charge correction.</span>
-    <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">'ewald'</span><span class="p">:</span>
         <span class="n">_ewald_exxdiv_for_G0</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">vk_kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_format_jks</span><span class="p">(</span><span class="n">vk_kpts</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">input_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="get_k_e1_kpts"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_k_e1_kpts">[docs]</a><span class="k">def</span> <span class="nf">get_k_e1_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Derivatives of exchange (K) AO matrix at sampled k-points.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="sd">'''Derivatives of exchange (K) AO matrix at sampled k-points.</span>
+<span class="sd">    '''</span>
 
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">gen_uniform_grids</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">ngrids</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">mo_coeff</span>
         <span class="n">mo_occ</span>   <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">mo_occ</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">nset</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 
@@ -661,14 +637,14 @@
     <span class="n">coords</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">coords</span>
 
     <span class="k">if</span> <span class="n">input_band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">ao</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
         <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="n">ao2_kpts</span>
         <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">ao2_kpt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ao2_kpt</span> <span class="ow">in</span> <span class="n">ao2_kpts</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="n">ao2_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">ao</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)]</span>
-        <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+        <span class="n">ao1_kpts</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">ao</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
 
     <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">nset</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -679,7 +655,7 @@
     <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">mem_now</span>
     <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">max_memory</span><span class="o">-</span><span class="n">mem_now</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">ngrids</span><span class="o">/</span><span class="n">nao</span><span class="p">)))</span>
-    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">&#39;fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
                       <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
 
     <span class="n">vR_dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">nset</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">vk_kpts</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -703,7 +679,7 @@
             <span class="c1"># end of the function to bypass any discretization errors</span>
             <span class="c1"># that arise from the FFT.</span>
             <span class="n">mydf</span><span class="o">.</span><span class="n">exxdiv</span> <span class="o">=</span> <span class="n">exxdiv</span>
-            <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span> <span class="ow">or</span> <span class="n">exxdiv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">'ewald'</span> <span class="ow">or</span> <span class="n">exxdiv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mydf</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mydf</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
@@ -713,7 +689,7 @@
                 <span class="n">expmikr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">kpt2</span><span class="o">-</span><span class="n">kpt1</span><span class="p">))</span>
 
             <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                <span class="n">rho1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;aig,jg-&gt;aijg&#39;</span><span class="p">,</span> <span class="n">ao1T</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">*</span><span class="n">expmikr</span><span class="p">,</span> <span class="n">ao2T</span><span class="p">)</span>
+                <span class="n">rho1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'aig,jg-&gt;aijg'</span><span class="p">,</span> <span class="n">ao1T</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">*</span><span class="n">expmikr</span><span class="p">,</span> <span class="n">ao2T</span><span class="p">)</span>
                 <span class="n">vG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">rho1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">mesh</span><span class="p">)</span>
                 <span class="n">rho1</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">vG</span> <span class="o">*=</span> <span class="n">coulG</span>
@@ -722,25 +698,25 @@
                 <span class="k">if</span> <span class="n">vR_dm</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">:</span>
                     <span class="n">vR</span> <span class="o">=</span> <span class="n">vR</span><span class="o">.</span><span class="n">real</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;aijg,jg-&gt;aig&#39;</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">ao_dms</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">vR_dm</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'aijg,jg-&gt;aig'</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">ao_dms</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">vR_dm</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
                 <span class="n">vR</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">vR_dm</span> <span class="o">*=</span> <span class="n">expmikr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                <span class="n">vk_kpts</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">k1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;aig,jg-&gt;aij&#39;</span><span class="p">,</span> <span class="n">vR_dm</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">ao1T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">&#39;get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)&#39;</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+                <span class="n">vk_kpts</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">k1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'aig,jg-&gt;aij'</span><span class="p">,</span> <span class="n">vR_dm</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">ao1T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="c1"># Ewald correction has no contribution to nuclear gradient unless range separted Coulomb is used</span>
     <span class="c1"># The gradient correction part is not added in the vk matrix</span>
-    <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Range Separated Coulomb&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">'ewald'</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Range Separated Coulomb"</span><span class="p">)</span>
         <span class="c1"># when cell.omega !=0: madelung constant will have a non-zero derivative</span>
     <span class="n">vk_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">_format_jks</span><span class="p">(</span><span class="n">vk</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">input_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span> <span class="k">for</span> <span class="n">vk</span> <span class="ow">in</span> <span class="n">vk_kpts</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">vk_kpts</span></div>
 
 <div class="viewcode-block" id="get_jk"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_jk">[docs]</a><span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Get the Coulomb (J) and exchange (K) AO matrices for the given density matrix.</span>
+    <span class="sd">'''Get the Coulomb (J) and exchange (K) AO matrices for the given density matrix.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm : ndarray or list of ndarrays</span>
@@ -753,16 +729,16 @@
 <span class="sd">            | 1 : hermitian</span>
 <span class="sd">            | 2 : anti-hermitian</span>
 <span class="sd">        kpt : (3,) ndarray</span>
-<span class="sd">            The &quot;inner&quot; dummy k-point at which the DM was evaluated (or</span>
+<span class="sd">            The "inner" dummy k-point at which the DM was evaluated (or</span>
 <span class="sd">            sampled).</span>
 <span class="sd">        kpts_band : (3,) ndarray or (*,3) ndarray</span>
-<span class="sd">            The &quot;outer&quot; primary k-point at which J and K are evaluated.</span>
+<span class="sd">            The "outer" primary k-point at which J and K are evaluated.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The function returns one J and one K matrix, corresponding to the input</span>
 <span class="sd">        density matrix (both order and shape).</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="sd">    '''</span>
+    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">vj</span> <span class="o">=</span> <span class="n">vk</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
         <span class="n">vj</span> <span class="o">=</span> <span class="n">get_j</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">)</span>
@@ -771,7 +747,7 @@
     <span class="k">return</span> <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span></div>
 
 <div class="viewcode-block" id="get_j"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_j">[docs]</a><span class="k">def</span> <span class="nf">get_j</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Get the Coulomb (J) AO matrix for the given density matrix.</span>
+    <span class="sd">'''Get the Coulomb (J) AO matrix for the given density matrix.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm : ndarray or list of ndarrays</span>
@@ -784,16 +760,16 @@
 <span class="sd">            | 1 : hermitian</span>
 <span class="sd">            | 2 : anti-hermitian</span>
 <span class="sd">        kpt : (3,) ndarray</span>
-<span class="sd">            The &quot;inner&quot; dummy k-point at which the DM was evaluated (or</span>
+<span class="sd">            The "inner" dummy k-point at which the DM was evaluated (or</span>
 <span class="sd">            sampled).</span>
 <span class="sd">        kpts_band : (3,) ndarray or (*,3) ndarray</span>
-<span class="sd">            The &quot;outer&quot; primary k-point at which J and K are evaluated.</span>
+<span class="sd">            The "outer" primary k-point at which J and K are evaluated.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The function returns one J matrix, corresponding to the input</span>
 <span class="sd">        density matrix (both order and shape).</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="sd">    '''</span>
+    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
     <span class="n">vj</span> <span class="o">=</span> <span class="n">get_j_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpt</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">kpts_band</span><span class="p">)</span>
@@ -805,7 +781,7 @@
 
 
 <div class="viewcode-block" id="get_k"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.pbc.df/#pyscf.pbc.df.fft_jk.get_k">[docs]</a><span class="k">def</span> <span class="nf">get_k</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Get the Coulomb (J) and exchange (K) AO matrices for the given density matrix.</span>
+    <span class="sd">'''Get the Coulomb (J) and exchange (K) AO matrices for the given density matrix.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm : ndarray or list of ndarrays</span>
@@ -818,16 +794,16 @@
 <span class="sd">            | 1 : hermitian</span>
 <span class="sd">            | 2 : anti-hermitian</span>
 <span class="sd">        kpt : (3,) ndarray</span>
-<span class="sd">            The &quot;inner&quot; dummy k-point at which the DM was evaluated (or</span>
+<span class="sd">            The "inner" dummy k-point at which the DM was evaluated (or</span>
 <span class="sd">            sampled).</span>
 <span class="sd">        kpts_band : (3,) ndarray or (*,3) ndarray</span>
-<span class="sd">            The &quot;outer&quot; primary k-point at which J and K are evaluated.</span>
+<span class="sd">            The "outer" primary k-point at which J and K are evaluated.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The function returns one J and one K matrix, corresponding to the input</span>
 <span class="sd">        density matrix (both order and shape).</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="sd">    '''</span>
+    <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
     <span class="n">vk</span> <span class="o">=</span> <span class="n">get_k_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpt</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">exxdiv</span><span class="p">)</span>
@@ -837,9 +813,6 @@
         <span class="n">vk</span> <span class="o">=</span> <span class="n">vk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">vk</span></div>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

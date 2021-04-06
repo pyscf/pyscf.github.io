@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about/" />
     <link rel="index" title="Index" href="../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -324,25 +299,26 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.mp.dfmp2</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-mp-dfmp2--page-root">Source code for pyscf.mp.dfmp2</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">density fitting MP2,  3-center integrals incore.</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
@@ -353,7 +329,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.mp.mp2</span> <span class="kn">import</span> <span class="n">make_rdm1</span><span class="p">,</span> <span class="n">make_rdm2</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
-<span class="n">WITH_T2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;mp_dfmp2_with_t2&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">WITH_T2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'mp_dfmp2_with_t2'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="kernel"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.dfmp2.kernel">[docs]</a><span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_t2</span><span class="o">=</span><span class="n">WITH_T2</span><span class="p">,</span>
@@ -380,7 +356,7 @@
     <span class="n">Lov</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">naux</span><span class="p">,</span> <span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">))</span>
     <span class="n">p1</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">istep</span><span class="p">,</span> <span class="n">qov</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">loop_ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">nocc</span><span class="p">)):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="s1">&#39;Load cderi step </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">istep</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="s1">'Load cderi step </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="n">istep</span><span class="p">)</span>
         <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">qov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">Lov</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">qov</span>
 
@@ -391,9 +367,9 @@
                         <span class="n">Lov</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nvir</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
         <span class="n">gi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">gi</span> <span class="o">=</span> <span class="n">gi</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nvir</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">t2i</span> <span class="o">=</span> <span class="n">gi</span><span class="o">/</span><span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">&#39;jb+a-&gt;jba&#39;</span><span class="p">,</span> <span class="n">eia</span><span class="p">,</span> <span class="n">eia</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">emp2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;jab,jab&#39;</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">emp2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;jab,jba&#39;</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
+        <span class="n">t2i</span> <span class="o">=</span> <span class="n">gi</span><span class="o">/</span><span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">'jb+a-&gt;jba'</span><span class="p">,</span> <span class="n">eia</span><span class="p">,</span> <span class="n">eia</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">emp2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jab'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">emp2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jba'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">with_t2</span><span class="p">:</span>
             <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t2i</span>
 
@@ -403,19 +379,19 @@
 <div class="viewcode-block" id="DFMP2"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.dfmp2.DFMP2">[docs]</a><span class="k">class</span> <span class="nc">DFMP2</span><span class="p">(</span><span class="n">mp2</span><span class="o">.</span><span class="n">MP2</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">mp2</span><span class="o">.</span><span class="n">MP2</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_df&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'with_df'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">make_auxbasis</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mp2fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s1">&#39;with_df&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s1">'with_df'</span><span class="p">])</span>
 
 <div class="viewcode-block" id="DFMP2.reset"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.dfmp2.DFMP2.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mp2</span><span class="o">.</span><span class="n">MP2</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DFMP2.loop_ao2mo"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.dfmp2.DFMP2.loop_ao2mo">[docs]</a>    <span class="k">def</span> <span class="nf">loop_ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">nocc</span><span class="p">):</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
         <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">ijslice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">nmo</span><span class="p">)</span>
         <span class="n">Lov</span> <span class="o">=</span> <span class="kc">None</span>
@@ -428,7 +404,7 @@
         <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">naux</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">with_df</span><span class="o">.</span><span class="n">blockdim</span><span class="p">,</span>
                                     <span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">-</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">))))</span>
         <span class="k">for</span> <span class="n">eri1</span> <span class="ow">in</span> <span class="n">with_df</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">blksize</span><span class="o">=</span><span class="n">blksize</span><span class="p">):</span>
-            <span class="n">Lov</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span><span class="n">eri1</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">ijslice</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">&#39;s2&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">Lov</span><span class="p">)</span>
+            <span class="n">Lov</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span><span class="n">eri1</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">ijslice</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">Lov</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">Lov</span></div>
 
 <div class="viewcode-block" id="DFMP2.ao2mo"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.dfmp2.DFMP2.ao2mo">[docs]</a>    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -469,7 +445,7 @@
 <span class="k">del</span><span class="p">(</span><span class="n">WITH_T2</span><span class="p">)</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
@@ -479,7 +455,7 @@
         <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.757</span> <span class="p">,</span> <span class="mf">0.587</span><span class="p">)],</span>
         <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.757</span>  <span class="p">,</span> <span class="mf">0.587</span><span class="p">)]]</span>
 
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;cc-pvdz&#39;</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'cc-pvdz'</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="n">pt</span> <span class="o">=</span> <span class="n">DFMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
@@ -487,11 +463,11 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.204004830285</span><span class="p">)</span>
 
     <span class="n">pt</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-    <span class="n">pt</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="s1">&#39;weigend&#39;</span>
+    <span class="n">pt</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="s1">'weigend'</span>
     <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.204254500453</span><span class="p">)</span>
 
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span> <span class="s1">&#39;weigend&#39;</span><span class="p">)</span>
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span> <span class="s1">'weigend'</span><span class="p">)</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="n">pt</span> <span class="o">=</span> <span class="n">DFMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
@@ -506,9 +482,6 @@
     <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.14433975122418313</span><span class="p">)</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

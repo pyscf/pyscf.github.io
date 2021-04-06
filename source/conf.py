@@ -189,7 +189,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "nbsphinx",
     "pyscfdocext",
-    "ablog",
+    # "ablog",
 ]
 bibtex_bibfiles = []
 myst_update_mathjax = False
@@ -304,6 +304,7 @@ html_theme_options = {
         # {"href": "blog_wrapper", "title": "Blog", "internal": True},
         {"href": "about", "title": "About", "internal": True},
     ],
+    "table_classes": ["simple"],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -389,4 +390,3 @@ html_static_path = ["_static"]
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "PySCFdoc"
-

@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about/" />
     <link rel="index" title="Index" href="../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -323,18 +298,19 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.gto.eval_gto</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-gto-eval-gto--page-root">Source code for pyscf.gto.eval_gto</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2018 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -350,11 +326,11 @@
 
 <span class="n">BLKSIZE</span> <span class="o">=</span> <span class="mi">128</span> <span class="c1"># needs to be the same to lib/gto/grid_ao_drv.c</span>
 
-<span class="n">libcgto</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">&#39;libcgto&#39;</span><span class="p">)</span>
+<span class="n">libcgto</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libcgto'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="eval_gto"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto/#pyscf.gto.mole.eval_gto">[docs]</a><span class="k">def</span> <span class="nf">eval_gto</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span>
              <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">non0tab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ao_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&#39;&#39;&#39;Evaluate AO function value on the given grids,</span>
+    <span class="sa">r</span><span class="sd">'''Evaluate AO function value on the given grids,</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        eval_name : str</span>
@@ -362,19 +338,19 @@
 <span class="sd">            ====================  ======  =======================</span>
 <span class="sd">            Function              comp    Expression</span>
 <span class="sd">            ====================  ======  =======================</span>
-<span class="sd">            &quot;GTOval_sph&quot;          1       |AO&gt;</span>
-<span class="sd">            &quot;GTOval_ip_sph&quot;       3       nabla |AO&gt;</span>
-<span class="sd">            &quot;GTOval_ig_sph&quot;       3       (#C(0 1) g) |AO&gt;</span>
-<span class="sd">            &quot;GTOval_ipig_sph&quot;     9       (#C(0 1) nabla g) |AO&gt;</span>
-<span class="sd">            &quot;GTOval_cart&quot;         1       |AO&gt;</span>
-<span class="sd">            &quot;GTOval_ip_cart&quot;      3       nabla |AO&gt;</span>
-<span class="sd">            &quot;GTOval_ig_cart&quot;      3       (#C(0 1) g)|AO&gt;</span>
-<span class="sd">            &quot;GTOval_sph_deriv1&quot;   4       GTO value and 1st order GTO values</span>
-<span class="sd">            &quot;GTOval_sph_deriv2&quot;   10      All derivatives up to 2nd order</span>
-<span class="sd">            &quot;GTOval_sph_deriv3&quot;   20      All derivatives up to 3rd order</span>
-<span class="sd">            &quot;GTOval_sph_deriv4&quot;   35      All derivatives up to 4th order</span>
-<span class="sd">            &quot;GTOval_sp_spinor&quot;    1       sigma dot p |AO&gt; (spinor basis)</span>
-<span class="sd">            &quot;GTOval_ipsp_spinor&quot;  3       nabla sigma dot p |AO&gt; (spinor basis)</span>
+<span class="sd">            "GTOval_sph"          1       |AO&gt;</span>
+<span class="sd">            "GTOval_ip_sph"       3       nabla |AO&gt;</span>
+<span class="sd">            "GTOval_ig_sph"       3       (#C(0 1) g) |AO&gt;</span>
+<span class="sd">            "GTOval_ipig_sph"     9       (#C(0 1) nabla g) |AO&gt;</span>
+<span class="sd">            "GTOval_cart"         1       |AO&gt;</span>
+<span class="sd">            "GTOval_ip_cart"      3       nabla |AO&gt;</span>
+<span class="sd">            "GTOval_ig_cart"      3       (#C(0 1) g)|AO&gt;</span>
+<span class="sd">            "GTOval_sph_deriv1"   4       GTO value and 1st order GTO values</span>
+<span class="sd">            "GTOval_sph_deriv2"   10      All derivatives up to 2nd order</span>
+<span class="sd">            "GTOval_sph_deriv3"   20      All derivatives up to 3rd order</span>
+<span class="sd">            "GTOval_sph_deriv4"   35      All derivatives up to 4th order</span>
+<span class="sd">            "GTOval_sp_spinor"    1       sigma dot p |AO&gt; (spinor basis)</span>
+<span class="sd">            "GTOval_ipsp_spinor"  3       nabla sigma dot p |AO&gt; (spinor basis)</span>
 <span class="sd">            ====================  ======  =======================</span>
 
 <span class="sd">        atm : int32 ndarray</span>
@@ -406,21 +382,21 @@
 
 <span class="sd">    Examples:</span>
 
-<span class="sd">    &gt;&gt;&gt; mol = gto.M(atom=&#39;O 0 0 0; H 0 0 1; H 0 1 0&#39;, basis=&#39;ccpvdz&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; mol = gto.M(atom='O 0 0 0; H 0 0 1; H 0 1 0', basis='ccpvdz')</span>
 <span class="sd">    &gt;&gt;&gt; coords = numpy.random.random((100,3))  # 100 random points</span>
-<span class="sd">    &gt;&gt;&gt; ao_value = mol.eval_gto(&quot;GTOval_sph&quot;, coords)</span>
+<span class="sd">    &gt;&gt;&gt; ao_value = mol.eval_gto("GTOval_sph", coords)</span>
 <span class="sd">    &gt;&gt;&gt; print(ao_value.shape)</span>
 <span class="sd">    (100, 24)</span>
-<span class="sd">    &gt;&gt;&gt; ao_value = mol.eval_gto(&quot;GTOval_ig_sph&quot;, coords)</span>
+<span class="sd">    &gt;&gt;&gt; ao_value = mol.eval_gto("GTOval_ig_sph", coords)</span>
 <span class="sd">    &gt;&gt;&gt; print(ao_value.shape)</span>
 <span class="sd">    (3, 100, 24)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">eval_name</span><span class="p">,</span> <span class="n">comp</span> <span class="o">=</span> <span class="n">_get_intor_and_comp</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
 
-    <span class="n">atm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
-    <span class="n">bas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
-    <span class="n">env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+    <span class="n">atm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="n">bas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
     <span class="n">natm</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">nbas</span> <span class="o">=</span> <span class="n">bas</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ngrids</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -432,7 +408,7 @@
         <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbas</span><span class="p">)</span>
     <span class="n">sh0</span><span class="p">,</span> <span class="n">sh1</span> <span class="o">=</span> <span class="n">shls_slice</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">sh1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">sh0</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s1">&#39;spinor&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">'spinor'</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
         <span class="n">ao</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="n">comp</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ao</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="n">comp</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">buffer</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
@@ -453,58 +429,55 @@
 
     <span class="n">ao</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">ao</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">comp</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">&#39;spinor&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">'spinor'</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
             <span class="n">ao</span> <span class="o">=</span> <span class="n">ao</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ao</span> <span class="o">=</span> <span class="n">ao</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">ao</span></div>
 
 <span class="k">def</span> <span class="nf">_get_intor_and_comp</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;_sph&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span> <span class="ow">or</span> <span class="s1">&#39;_cart&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span> <span class="ow">or</span>
-            <span class="s1">&#39;_spinor&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">'_sph'</span> <span class="ow">in</span> <span class="n">eval_name</span> <span class="ow">or</span> <span class="s1">'_cart'</span> <span class="ow">in</span> <span class="n">eval_name</span> <span class="ow">or</span>
+            <span class="s1">'_spinor'</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
-            <span class="n">eval_name</span> <span class="o">=</span> <span class="n">eval_name</span> <span class="o">+</span> <span class="s1">&#39;_cart&#39;</span>
+            <span class="n">eval_name</span> <span class="o">=</span> <span class="n">eval_name</span> <span class="o">+</span> <span class="s1">'_cart'</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">eval_name</span> <span class="o">=</span> <span class="n">eval_name</span> <span class="o">+</span> <span class="s1">&#39;_sph&#39;</span>
+            <span class="n">eval_name</span> <span class="o">=</span> <span class="n">eval_name</span> <span class="o">+</span> <span class="s1">'_sph'</span>
 
     <span class="k">if</span> <span class="n">comp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s1">&#39;_spinor&#39;</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">eval_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_spinor&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'_spinor'</span> <span class="ow">in</span> <span class="n">eval_name</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">eval_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_spinor'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
             <span class="n">comp</span> <span class="o">=</span> <span class="n">_GTO_EVAL_FUNCTIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">eval_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_sph&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">eval_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_sph'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_cart'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
             <span class="n">comp</span> <span class="o">=</span> <span class="n">_GTO_EVAL_FUNCTIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">comp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Function </span><span class="si">%s</span><span class="s1"> not found.  Set its comp to 1&#39;</span> <span class="o">%</span> <span class="n">eval_name</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'Function </span><span class="si">%s</span><span class="s1"> not found.  Set its comp to 1'</span> <span class="o">%</span> <span class="n">eval_name</span><span class="p">)</span>
             <span class="n">comp</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">comp</span>
 
 <span class="n">_GTO_EVAL_FUNCTIONS</span> <span class="o">=</span> <span class="p">{</span>
 <span class="c1">#   Functiona name          : (comp-for-scalar, comp-for-spinor)</span>
-    <span class="s1">&#39;GTOval&#39;</span>                <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_ip&#39;</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_ig&#39;</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_ipig&#39;</span>           <span class="p">:</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_deriv0&#39;</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_deriv1&#39;</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_deriv2&#39;</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
-    <span class="s1">&#39;GTOval_deriv3&#39;</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span>
-    <span class="s1">&#39;GTOval_deriv4&#39;</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span><span class="mi">35</span><span class="p">),</span>
-    <span class="s1">&#39;GTOval_sp&#39;</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
-    <span class="s1">&#39;GTOval_ipsp&#39;</span>           <span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">3</span> <span class="p">),</span>
+    <span class="s1">'GTOval'</span>                <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
+    <span class="s1">'GTOval_ip'</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="p">),</span>
+    <span class="s1">'GTOval_ig'</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="p">),</span>
+    <span class="s1">'GTOval_ipig'</span>           <span class="p">:</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span> <span class="p">),</span>
+    <span class="s1">'GTOval_deriv0'</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
+    <span class="s1">'GTOval_deriv1'</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span> <span class="p">),</span>
+    <span class="s1">'GTOval_deriv2'</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
+    <span class="s1">'GTOval_deriv3'</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span>
+    <span class="s1">'GTOval_deriv4'</span>         <span class="p">:</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span><span class="mi">35</span><span class="p">),</span>
+    <span class="s1">'GTOval_sp'</span>             <span class="p">:</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span>
+    <span class="s1">'GTOval_ipsp'</span>           <span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">3</span> <span class="p">),</span>
 <span class="p">}</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;O 0 0 0; H 0 0 1; H 0 1 0&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;ccpvdz&#39;</span><span class="p">)</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">'O 0 0 0; H 0 0 1; H 0 1 0'</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">'ccpvdz'</span><span class="p">)</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-    <span class="n">ao_value</span> <span class="o">=</span> <span class="n">eval_gto</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s2">&quot;GTOval_sph&quot;</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+    <span class="n">ao_value</span> <span class="o">=</span> <span class="n">eval_gto</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s2">"GTOval_sph"</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ao_value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

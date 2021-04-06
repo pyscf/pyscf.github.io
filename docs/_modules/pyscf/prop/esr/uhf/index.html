@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../../about/" />
     <link rel="index" title="Index" href="../../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -323,27 +298,28 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.prop.esr.uhf</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-prop-esr-uhf--page-root">Source code for pyscf.prop.esr.uhf</h1><div class="highlight"><pre>
 <span></span><span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="c1">#</span>
 <span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">Non-relativistic unrestricted Hartree-Fock electron spin-rotation coupling</span>
 <span class="sd">(In testing)</span>
 
 <span class="sd">Refs:</span>
 <span class="sd">    J. Phys. Chem. A. 114, 9246, 2010</span>
 <span class="sd">    Mole. Phys. 9, 6, 585, 1964</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
@@ -358,7 +334,7 @@
 
 
 <div class="viewcode-block" id="dia"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.esr/#pyscf.prop.esr.uhf.dia">[docs]</a><span class="k">def</span> <span class="nf">dia</span><span class="p">(</span><span class="n">gobj</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Note the side effects of set_common_origin&#39;&#39;&#39;</span>
+    <span class="sd">'''Note the side effects of set_common_origin'''</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dm0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dm0</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="c1"># RHF DM</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
@@ -385,14 +361,14 @@
         <span class="n">Z</span> <span class="o">=</span> <span class="n">koseki_charge</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">ia</span><span class="p">))</span>
         <span class="n">R</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">ia</span><span class="p">)</span> <span class="o">-</span> <span class="n">mass_center</span>
         <span class="k">with</span> <span class="n">mol</span><span class="o">.</span><span class="n">with_rinv_origin</span><span class="p">(</span><span class="n">R</span><span class="p">):</span>
-            <span class="n">h11</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_drinv&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="o">*</span> <span class="n">Z</span> <span class="c1"># * mol.atom_charge(ia)</span>
-            <span class="n">t1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xij,ij-&gt;x&#39;</span><span class="p">,</span> <span class="n">h11</span><span class="p">,</span> <span class="n">spindm</span><span class="p">)</span>
+            <span class="n">h11</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_drinv'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="o">*</span> <span class="n">Z</span> <span class="c1"># * mol.atom_charge(ia)</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xij,ij-&gt;x'</span><span class="p">,</span> <span class="n">h11</span><span class="p">,</span> <span class="n">spindm</span><span class="p">)</span>
             <span class="n">e11</span> <span class="o">+=</span>  <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">t1</span><span class="p">)</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span>  <span class="n">numpy</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">t1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 
         <span class="c1">#GIAO part of dia-magnetic constribution</span>
-        <span class="c1">#print(&#39;kron&#39;, numpy.kron(R, t1).reshape(3,3))</span>
-            <span class="c1">#h22 =  mol.intor(&#39;int1e_a01gp&#39;, comp=9)</span>
-            <span class="c1">#e11 -=  Z * numpy.einsum(&#39;xij,ij-&gt;x&#39;, h22, spindm).reshape(3,3)</span>
+        <span class="c1">#print('kron', numpy.kron(R, t1).reshape(3,3))</span>
+            <span class="c1">#h22 =  mol.intor('int1e_a01gp', comp=9)</span>
+            <span class="c1">#e11 -=  Z * numpy.einsum('xij,ij-&gt;x', h22, spindm).reshape(3,3)</span>
     <span class="n">gdia</span> <span class="o">=</span> <span class="n">e11</span> <span class="o">*</span> <span class="n">alpha2</span> <span class="o">/</span> <span class="n">effspin</span> <span class="o">/</span>  <span class="mf">4.</span>
     <span class="k">return</span> <span class="n">gdia</span></div>
 
@@ -411,14 +387,14 @@
     <span class="n">dm10b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span><span class="o">-</span><span class="n">x</span><span class="o">.</span><span class="n">T</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dm10b</span><span class="p">])</span>
 
     <span class="n">hso1e</span> <span class="o">=</span> <span class="n">make_h01_soc1e</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">qed_fac</span><span class="p">)</span>
-    <span class="n">para1e</span> <span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xji,yij-&gt;xy&#39;</span><span class="p">,</span> <span class="n">dm10a</span><span class="p">,</span> <span class="n">hso1e</span><span class="p">)</span>
-    <span class="n">para1e</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xji,yij-&gt;xy&#39;</span><span class="p">,</span> <span class="n">dm10b</span><span class="p">,</span> <span class="n">hso1e</span><span class="p">)</span>
+    <span class="n">para1e</span> <span class="o">=-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xji,yij-&gt;xy'</span><span class="p">,</span> <span class="n">dm10a</span><span class="p">,</span> <span class="n">hso1e</span><span class="p">)</span>
+    <span class="n">para1e</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xji,yij-&gt;xy'</span><span class="p">,</span> <span class="n">dm10b</span><span class="p">,</span> <span class="n">hso1e</span><span class="p">)</span>
     <span class="n">para1e</span> <span class="o">*=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">effspin</span> <span class="o">/</span> <span class="n">muB</span>
     <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
-        <span class="n">_write</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">para1e</span><span class="p">,</span> <span class="s1">&#39;SOC(1e)/OZ&#39;</span><span class="p">)</span> <span class="c1"># Jia, different than in g tensor, not sure about consequence</span>
+        <span class="n">_write</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">para1e</span><span class="p">,</span> <span class="s1">'SOC(1e)/OZ'</span><span class="p">)</span> <span class="c1"># Jia, different than in g tensor, not sure about consequence</span>
 
     <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">para_soc2e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;para_soc2e = </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">obj</span><span class="o">.</span><span class="n">para_soc2e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'para_soc2e = </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">obj</span><span class="o">.</span><span class="n">para_soc2e</span><span class="p">)</span>
 
     <span class="n">para</span> <span class="o">=</span> <span class="n">para1e</span> <span class="c1">#+ gpara2e # Jia</span>
     <span class="k">return</span> <span class="n">para</span></div>
@@ -433,17 +409,17 @@
         <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
             <span class="n">Z</span> <span class="o">=</span> <span class="n">koseki_charge</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">ia</span><span class="p">))</span>
             <span class="n">mol</span><span class="o">.</span><span class="n">set_rinv_origin</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">ia</span><span class="p">))</span>
-            <span class="n">hso1e</span> <span class="o">+=</span> <span class="o">-</span><span class="n">Z</span> <span class="o">*</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_asymmetric</span><span class="p">(</span><span class="s1">&#39;int1e_prinvxp&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">hso1e</span> <span class="o">+=</span> <span class="o">-</span><span class="n">Z</span> <span class="o">*</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_asymmetric</span><span class="p">(</span><span class="s1">'int1e_prinvxp'</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">hso1e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_asymmetric</span><span class="p">(</span><span class="s1">&#39;int1e_pnucxp&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">hso1e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_asymmetric</span><span class="p">(</span><span class="s1">'int1e_pnucxp'</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">hso1e</span> <span class="o">*=</span> <span class="n">qed_fac</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha2</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">hso1e</span></div>
 
 
 <div class="viewcode-block" id="align"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.esr/#pyscf.prop.esr.uhf.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Transform the orientation of g-tensor.</span>
+    <span class="sd">'''Transform the orientation of g-tensor.</span>
 <span class="sd">    The new orientations are the eigenvector of G matrix (G=g.gT)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
     <span class="n">idxmax</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">v</span><span class="p">[:,</span><span class="n">v</span><span class="p">[</span><span class="n">idxmax</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># format phase</span>
@@ -455,19 +431,19 @@
     <span class="k">return</span> <span class="n">g2</span><span class="p">,</span> <span class="n">v</span></div>
 
 <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
-    <span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span>
-    <span class="n">rhf_nmr</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">&#39; tensor&#39;</span><span class="p">)</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span>
+    <span class="n">rhf_nmr</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">title</span><span class="o">+</span><span class="s1">' tensor'</span><span class="p">)</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
-    <span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;eigenvalues: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'eigenvalues: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="n">w</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ESR"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.esr/#pyscf.prop.esr.uhf.ESR">[docs]</a><span class="k">class</span> <span class="nc">ESR</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; dE = S dot ESR_tensor dot J</span>
+    <span class="sd">''' dE = S dot ESR_tensor dot J</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        koseki_charge : bool</span>
 <span class="sd">        Whether to use Koseki effective SOC charge in 1-electron</span>
 <span class="sd">        diamagnetic term and paramagnetic term.  Default is False.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
@@ -494,40 +470,40 @@
         <span class="c1">#self.dump_flags()</span>
 
         <span class="n">dm0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
-        <span class="c1">#print(&#39;dm0 from kernel&#39;, dm0.shape)</span>
+        <span class="c1">#print('dm0 from kernel', dm0.shape)</span>
         <span class="c1">#dm0 = dm0[0] - dm0[1]</span>
         <span class="n">tt_dia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dia</span><span class="p">(</span> <span class="n">dm0</span>  <span class="p">)</span>
         <span class="n">tt_para</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">para</span><span class="p">(</span><span class="n">mo1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">)</span>
 
         <span class="n">im</span><span class="p">,</span> <span class="n">mass_center</span> <span class="o">=</span> <span class="n">rhf_rotg</span><span class="o">.</span><span class="n">inertia_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
         <span class="n">im_inv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
-        <span class="c1">#print(&#39;im&#39;, im)</span>
-        <span class="c1">#print(&#39;im_inv&#39;, im_inv)</span>
+        <span class="c1">#print('im', im)</span>
+        <span class="c1">#print('im_inv', im_inv)</span>
         <span class="n">To_MHz</span> <span class="o">=</span> <span class="mf">1804742.77343363</span>
-        <span class="n">esr_para</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;ik&#39;</span><span class="p">,</span> <span class="n">im_inv</span><span class="p">,</span> <span class="n">tt_para</span><span class="p">)</span> <span class="o">*</span> <span class="n">To_MHz</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">esr_dia</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,jk-&gt;ik&#39;</span><span class="p">,</span> <span class="n">im_inv</span><span class="p">,</span> <span class="n">tt_dia</span><span class="p">)</span> <span class="o">*</span> <span class="n">To_MHz</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;esr_dia&#39;</span><span class="p">,</span> <span class="n">esr_dia</span><span class="p">)</span>
+        <span class="n">esr_para</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,jk-&gt;ik'</span><span class="p">,</span> <span class="n">im_inv</span><span class="p">,</span> <span class="n">tt_para</span><span class="p">)</span> <span class="o">*</span> <span class="n">To_MHz</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">esr_dia</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,jk-&gt;ik'</span><span class="p">,</span> <span class="n">im_inv</span><span class="p">,</span> <span class="n">tt_dia</span><span class="p">)</span> <span class="o">*</span> <span class="n">To_MHz</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'esr_dia'</span><span class="p">,</span> <span class="n">esr_dia</span><span class="p">)</span>
         <span class="n">esr_tensor</span> <span class="o">=</span> <span class="n">esr_para</span>  <span class="o">+</span> <span class="n">esr_dia</span>
 
-        <span class="c1">#print(&#39;esr_para&#39;, esr_para) for debug</span>
-        <span class="c1">#print(&#39;esr_dia&#39;, esr_dia)</span>
-        <span class="c1">#print(&#39;esr_tot&#39;, esr_tot)</span>
+        <span class="c1">#print('esr_para', esr_para) for debug</span>
+        <span class="c1">#print('esr_dia', esr_dia)</span>
+        <span class="c1">#print('esr_tot', esr_tot)</span>
 
         <span class="n">esr_tot</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">esr_tensor</span><span class="p">)</span>
         <span class="n">esr_dia</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">esr_dia</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
         <span class="n">esr_para</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">esr_para</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
-        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_dia</span><span class="p">,</span> <span class="s1">&#39;esr-tensor diamagnetic terms (in MHz)&#39;</span><span class="p">)</span>
-        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_para</span><span class="p">,</span> <span class="s1">&#39;esr-tensor paramagnetic terms (in MHz)&#39;</span><span class="p">)</span>
-        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_tot</span><span class="p">,</span> <span class="s1">&#39;esr-tensor total (in MHz)&#39;</span><span class="p">)</span>
+        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_dia</span><span class="p">,</span> <span class="s1">'esr-tensor diamagnetic terms (in MHz)'</span><span class="p">)</span>
+        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_para</span><span class="p">,</span> <span class="s1">'esr-tensor paramagnetic terms (in MHz)'</span><span class="p">)</span>
+        <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">esr_tot</span><span class="p">,</span> <span class="s1">'esr-tensor total (in MHz)'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">esr_tot</span></div>
 
 <div class="viewcode-block" id="ESR.dia"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.esr/#pyscf.prop.esr.uhf.ESR.dia">[docs]</a>    <span class="k">def</span> <span class="nf">dia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">gauge_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">gauge_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauge_orig</span>
-        <span class="c1">#print(&#39;gauge_orig&#39;, gauge_orig)  Jia</span>
+        <span class="c1">#print('gauge_orig', gauge_orig)  Jia</span>
         <span class="c1">#if not (isinstance(dm0, numpy.ndarray) and dm0.ndim == 2):</span>
         <span class="c1">#    dm0 = dm0[0] + dm0[1]</span>
-        <span class="c1">#print(&#39;gauge_orig&#39;, gauge_orig)</span>
-        <span class="c1">#print(&#39;dm0&#39;, dm0)</span>
+        <span class="c1">#print('gauge_orig', gauge_orig)</span>
+        <span class="c1">#print('dm0', dm0)</span>
         <span class="c1">#if dm0 == None: dm0 = self._scf.makr_rdm1()</span>
         <span class="k">return</span> <span class="n">dia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">)</span></div>
 
@@ -551,7 +527,7 @@
         <span class="k">return</span> <span class="n">align</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span></div></div>
 
 <span class="c1">#====================================================</span>
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf.prop</span> <span class="kn">import</span> <span class="n">esr</span>
@@ -561,9 +537,9 @@
 
     <span class="n">mol</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
         <span class="p">[</span><span class="mi">1</span>   <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span> <span class="p">,</span> <span class="o">.</span><span class="mi">917</span><span class="p">)],</span>
-        <span class="p">[</span><span class="s1">&#39;F&#39;</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span> <span class="p">])</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="s1">&#39;6-31g&#39;</span><span class="p">,</span>
-                 <span class="s1">&#39;F&#39;</span><span class="p">:</span> <span class="s1">&#39;6-31g&#39;</span><span class="p">,}</span>
+        <span class="p">[</span><span class="s1">'F'</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span> <span class="p">])</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'H'</span><span class="p">:</span> <span class="s1">'6-31g'</span><span class="p">,</span>
+                 <span class="s1">'F'</span><span class="p">:</span> <span class="s1">'6-31g'</span><span class="p">,}</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -573,9 +549,6 @@
     <span class="n">esr</span><span class="o">.</span><span class="n">gauge_orig</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">esr</span><span class="o">.</span><span class="n">kernel</span><span class="p">())</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

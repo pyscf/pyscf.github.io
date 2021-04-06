@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../../about/" />
     <link rel="index" title="Index" href="../../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -323,18 +298,19 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.prop.magnetizability.rhf</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-prop-magnetizability-rhf--page-root">Source code for pyscf.prop.magnetizability.rhf</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2019 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -342,7 +318,7 @@
 <span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">Non-relativistic magnetizability tensor for RHF</span>
 <span class="sd">(In testing)</span>
 
@@ -350,7 +326,7 @@
 <span class="sd">[1] R. Cammi, J. Chem. Phys., 109, 3185 (1998)</span>
 <span class="sd">[2] Todd A. Keith, Chem. Phys., 213, 123 (1996)</span>
 <span class="sd">[3] S. Sauer et al., Mol. Phys., 76, 445 (1991)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 
 <span class="kn">import</span> <span class="nn">time</span>
@@ -365,10 +341,10 @@
 
 <span class="c1">#TODO: Eq (102) of TCA, 90, 421 to partition the dia- and para-magnetic terms</span>
 <div class="viewcode-block" id="dia"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.magnetizability/#pyscf.prop.magnetizability.rhf.dia">[docs]</a><span class="k">def</span> <span class="nf">dia</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Diamagnetic term of magnetizability.</span>
+    <span class="sd">'''Diamagnetic term of magnetizability.</span>
 
 <span class="sd">    See also J. Olsen et al., Theor. Chem. Acc., 90, 421 (1995)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">magobj</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">magobj</span><span class="o">.</span><span class="n">_scf</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
@@ -385,33 +361,33 @@
     <span class="k">if</span> <span class="n">gauge_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">e2</span> <span class="o">=</span> <span class="n">e2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="c1"># + 1/2 Tr[(J^{[20]} - K^{[20]}), DM]</span>
-        <span class="c1"># Symmetry between &#39;ijkl,ji-&gt;s2kl&#39; and &#39;ijkl,lk-&gt;s2ij&#39; can be used.</span>
-        <span class="c1">#vs = jk.get_jk(mol, [dm0]*4, [&#39;ijkl,ji-&gt;s2kl&#39;,</span>
-        <span class="c1">#                              &#39;ijkl,lk-&gt;s2ij&#39;,</span>
-        <span class="c1">#                              &#39;ijkl,jk-&gt;s1il&#39;,</span>
-        <span class="c1">#                              &#39;ijkl,li-&gt;s1kj&#39;],</span>
-        <span class="c1">#               &#39;int2e_gg1&#39;, &#39;s4&#39;, 9, hermi=1)</span>
-        <span class="c1">#e2 += numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[0], dm0) * .5</span>
-        <span class="c1">#e2 += numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[1], dm0) * .5</span>
-        <span class="c1">#e2 -= numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[2], dm0) * .25</span>
-        <span class="c1">#e2 -= numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[3], dm0) * .25</span>
-        <span class="n">vs</span> <span class="o">=</span> <span class="n">jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="p">[</span><span class="n">dm0</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;ijkl,ji-&gt;s2kl&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;ijkl,jk-&gt;s1il&#39;</span><span class="p">,</span>
-                                      <span class="s1">&#39;ijkl,li-&gt;s1kj&#39;</span><span class="p">],</span>
-                       <span class="s1">&#39;int2e_gg1&#39;</span><span class="p">,</span> <span class="s1">&#39;s4&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qp-&gt;x&#39;</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span>
-        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qp-&gt;x&#39;</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">25</span>
-        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qp-&gt;x&#39;</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">25</span>
+        <span class="c1"># Symmetry between 'ijkl,ji-&gt;s2kl' and 'ijkl,lk-&gt;s2ij' can be used.</span>
+        <span class="c1">#vs = jk.get_jk(mol, [dm0]*4, ['ijkl,ji-&gt;s2kl',</span>
+        <span class="c1">#                              'ijkl,lk-&gt;s2ij',</span>
+        <span class="c1">#                              'ijkl,jk-&gt;s1il',</span>
+        <span class="c1">#                              'ijkl,li-&gt;s1kj'],</span>
+        <span class="c1">#               'int2e_gg1', 's4', 9, hermi=1)</span>
+        <span class="c1">#e2 += numpy.einsum('xpq,qp-&gt;x', vs[0], dm0) * .5</span>
+        <span class="c1">#e2 += numpy.einsum('xpq,qp-&gt;x', vs[1], dm0) * .5</span>
+        <span class="c1">#e2 -= numpy.einsum('xpq,qp-&gt;x', vs[2], dm0) * .25</span>
+        <span class="c1">#e2 -= numpy.einsum('xpq,qp-&gt;x', vs[3], dm0) * .25</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="n">jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="p">[</span><span class="n">dm0</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="s1">'ijkl,ji-&gt;s2kl'</span><span class="p">,</span>
+                                      <span class="s1">'ijkl,jk-&gt;s1il'</span><span class="p">,</span>
+                                      <span class="s1">'ijkl,li-&gt;s1kj'</span><span class="p">],</span>
+                       <span class="s1">'int2e_gg1'</span><span class="p">,</span> <span class="s1">'s4'</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qp-&gt;x'</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span>
+        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qp-&gt;x'</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">25</span>
+        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qp-&gt;x'</span><span class="p">,</span> <span class="n">vs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">25</span>
 
         <span class="c1"># J does not have contribution because integrals are anti-symmetric</span>
-        <span class="c1">#vs = jk.get_jk(mol, [dm0]*2, [&#39;ijkl,ji-&gt;s2kl&#39;,</span>
-        <span class="c1">#                              &#39;ijkl,jk-&gt;s1il&#39;],</span>
-        <span class="c1">#               &#39;int2e_g1g2&#39;, &#39;aa4&#39;, 9, hermi=0)</span>
-        <span class="c1">#e2 += numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[0], dm0)</span>
-        <span class="c1">#e2 -= numpy.einsum(&#39;xpq,qp-&gt;x&#39;, vs[1], dm0) * .5</span>
-        <span class="n">vk</span> <span class="o">=</span> <span class="n">jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="s1">&#39;ijkl,jk-&gt;s1il&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;int2e_g1g2&#39;</span><span class="p">,</span> <span class="s1">&#39;aa4&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qp-&gt;x&#39;</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
+        <span class="c1">#vs = jk.get_jk(mol, [dm0]*2, ['ijkl,ji-&gt;s2kl',</span>
+        <span class="c1">#                              'ijkl,jk-&gt;s1il'],</span>
+        <span class="c1">#               'int2e_g1g2', 'aa4', 9, hermi=0)</span>
+        <span class="c1">#e2 += numpy.einsum('xpq,qp-&gt;x', vs[0], dm0)</span>
+        <span class="c1">#e2 -= numpy.einsum('xpq,qp-&gt;x', vs[1], dm0) * .5</span>
+        <span class="n">vk</span> <span class="o">=</span> <span class="n">jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="s1">'ijkl,jk-&gt;s1il'</span><span class="p">,</span>
+                       <span class="s1">'int2e_g1g2'</span><span class="p">,</span> <span class="s1">'aa4'</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qp-&gt;x'</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">dm0</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
 
     <span class="c1"># Note the sign of magnetizability (ksi) in the Talyor expansion</span>
     <span class="c1">#   E(B) = E0 - m * B - 1/2 B ksi B + ...</span>
@@ -419,48 +395,48 @@
     <span class="k">return</span> <span class="o">-</span><span class="n">e2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span></div>
 
 <span class="k">def</span> <span class="nf">_get_dia_1e</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">dme0</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;The dia-magnetic magnetizability from one-electron operators.</span>
+    <span class="sd">'''The dia-magnetic magnetizability from one-electron operators.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dm0 : Density matrix</span>
 
 <span class="sd">        dme0 : Energy-weighted density matrix</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">magobj</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">magobj</span><span class="o">.</span><span class="n">_scf</span>
 
     <span class="k">if</span> <span class="n">gauge_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">h2</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_rr_origj&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+        <span class="n">h2</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_rr_origj'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mol</span><span class="o">.</span><span class="n">set_common_origin</span><span class="p">(</span><span class="n">gauge_orig</span><span class="p">)</span>
-        <span class="n">h2</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_rr&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+        <span class="n">h2</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_rr'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_x2c&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;X2C for magnetizability&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'with_x2c'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'X2C for magnetizability'</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_qmmm&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Magnetizability with QM/MM&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'with_qmmm'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Magnetizability with QM/MM'</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_solvent&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Magnetizability with Solvent&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'with_solvent'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Magnetizability with Solvent'</span><span class="p">)</span>
 
-    <span class="n">e2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qp-&gt;x&#39;</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">dm0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">e2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qp-&gt;x'</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">dm0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">e2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">e2</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span> <span class="o">-</span> <span class="n">e2</span>
     <span class="n">e2</span> <span class="o">*=</span> <span class="o">.</span><span class="mi">25</span>
 
     <span class="c1"># If gauge_orig is None, computing the GIAO contributions</span>
     <span class="k">if</span> <span class="n">gauge_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">gl</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;qp,xpq-&gt;x&#39;</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_grjxp&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+        <span class="n">gl</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;x'</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_grjxp'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
         <span class="n">gl</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">e2</span> <span class="o">+=</span> <span class="p">(</span><span class="n">gl</span> <span class="o">+</span> <span class="n">gl</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
         <span class="n">e2</span> <span class="o">=</span> <span class="n">e2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;qp,xpq-&gt;x&#39;</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_ggkin&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
-        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;qp,xpq-&gt;x&#39;</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_ggnuc&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;x'</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_ggkin'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+        <span class="n">e2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;x'</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_ggnuc'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">has_ecp</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-            <span class="n">e2</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;qp,xpq-&gt;x&#39;</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;ECPscalar_ggnuc&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+            <span class="n">e2</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;x'</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'ECPscalar_ggnuc'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
 
-        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;qp,xpq-&gt;x&#39;</span><span class="p">,</span> <span class="n">dme0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_ggovlp&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
+        <span class="n">e2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;x'</span><span class="p">,</span> <span class="n">dme0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_ggovlp'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
 
     <span class="c1"># Note the sign of magnetizability (ksi) in the Talyor expansion</span>
     <span class="c1">#   E(B) = E0 - m * B - 1/2 B ksi B + ...</span>
@@ -470,7 +446,7 @@
 
 <span class="c1"># Note mo10 is the imaginary part of MO^1</span>
 <div class="viewcode-block" id="para"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.magnetizability/#pyscf.prop.magnetizability.rhf.para">[docs]</a><span class="k">def</span> <span class="nf">para</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_cphf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Paramagnetic susceptibility tensor</span>
+    <span class="sd">'''Paramagnetic susceptibility tensor</span>
 
 <span class="sd">    Kwargs:</span>
 <span class="sd">        h1: (3,nmo,nocc) array</span>
@@ -483,7 +459,7 @@
 <span class="sd">            generated by the function gen_vind.</span>
 <span class="sd">            If a function is given, CPHF equation will be solved, and the</span>
 <span class="sd">            given function is used to compute induced potential</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">magobj</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">magobj</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">cput1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
 
@@ -498,25 +474,25 @@
     <span class="k">if</span> <span class="n">h1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Imaginary part of F10</span>
         <span class="n">dm0</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
-        <span class="n">h1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,pi,qj-&gt;xij&#39;</span><span class="p">,</span> <span class="n">magobj</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">dm0</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">),</span>
+        <span class="n">h1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,pi,qj-&gt;xij'</span><span class="p">,</span> <span class="n">magobj</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">dm0</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">),</span>
                         <span class="n">mo_coeff</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbo</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">s1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Imaginary part of S10</span>
-        <span class="n">s1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,pi,qj-&gt;xij&#39;</span><span class="p">,</span> <span class="n">magobj</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">),</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,pi,qj-&gt;xij'</span><span class="p">,</span> <span class="n">magobj</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">),</span>
                         <span class="n">mo_coeff</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbo</span><span class="p">)</span>
-    <span class="n">cput1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">&#39;first order Fock matrix&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
+    <span class="n">cput1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'first order Fock matrix'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
 
     <span class="n">with_cphf</span> <span class="o">=</span> <span class="n">magobj</span><span class="o">.</span><span class="n">cphf</span>
     <span class="n">mo1</span><span class="p">,</span> <span class="n">mo_e1</span> <span class="o">=</span> <span class="n">rhf_nmr</span><span class="o">.</span><span class="n">solve_mo1</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span>
                                    <span class="n">h1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">with_cphf</span><span class="p">)</span>
-    <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="s1">&#39;solving mo1 eqn&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
+    <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">magobj</span><span class="p">,</span> <span class="s1">'solving mo1 eqn'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
 
-    <span class="n">mag_para</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;yji,xji-&gt;xy&#39;</span><span class="p">,</span> <span class="n">mo1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
-    <span class="n">mag_para</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;yji,xji,i-&gt;xy&#39;</span><span class="p">,</span> <span class="n">mo1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">])</span>
+    <span class="n">mag_para</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'yji,xji-&gt;xy'</span><span class="p">,</span> <span class="n">mo1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">mag_para</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'yji,xji,i-&gt;xy'</span><span class="p">,</span> <span class="n">mo1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">])</span>
     <span class="c1"># + c.c.</span>
     <span class="n">mag_para</span> <span class="o">=</span> <span class="n">mag_para</span> <span class="o">+</span> <span class="n">mag_para</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
 
-    <span class="n">mag_para</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xij,yij-&gt;xy&#39;</span><span class="p">,</span> <span class="n">s1</span><span class="p">[:,</span><span class="n">occidx</span><span class="p">],</span> <span class="n">mo_e1</span><span class="p">)</span>
+    <span class="n">mag_para</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xij,yij-&gt;xy'</span><span class="p">,</span> <span class="n">s1</span><span class="p">[:,</span><span class="n">occidx</span><span class="p">],</span> <span class="n">mo_e1</span><span class="p">)</span>
 
     <span class="c1"># *2 for double occupancy.</span>
     <span class="n">mag_para</span> <span class="o">*=</span> <span class="mi">2</span>
@@ -553,19 +529,19 @@
 
 <div class="viewcode-block" id="Magnetizability.dump_flags"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.magnetizability/#pyscf.prop.magnetizability.rhf.Magnetizability.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;******** </span><span class="si">%s</span><span class="s1"> for </span><span class="si">%s</span><span class="s1"> ********&#39;</span><span class="p">,</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'******** </span><span class="si">%s</span><span class="s1"> for </span><span class="si">%s</span><span class="s1"> ********'</span><span class="p">,</span>
                  <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gauge_orig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;gauge = GIAO&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'gauge = GIAO'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Common gauge = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gauge_orig</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'Common gauge = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gauge_orig</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cphf</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Solving MO10 eq with CPHF.&#39;</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CPHF conv_tol = </span><span class="si">%g</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CPHF max_cycle_cphf = </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle_cphf</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'Solving MO10 eq with CPHF.'</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'CPHF conv_tol = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'CPHF max_cycle_cphf = </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle_cphf</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Ground state SCF is not converged&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'Ground state SCF is not converged'</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="Magnetizability.kernel"><a class="viewcode-back" href="../../../../../pyscf_api_docs/pyscf.prop.magnetizability/#pyscf.prop.magnetizability.rhf.Magnetizability.kernel">[docs]</a>    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -577,18 +553,18 @@
         <span class="n">mag_para</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">para</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gauge_orig</span><span class="p">)</span>
         <span class="n">ksi</span> <span class="o">=</span> <span class="n">mag_para</span> <span class="o">+</span> <span class="n">mag_dia</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Magnetizability&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Magnetizability'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">:</span>
             <span class="n">_write</span> <span class="o">=</span> <span class="n">rhf_nmr</span><span class="o">.</span><span class="n">_write</span>
-            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">ksi</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Magnetizability (au)&#39;</span><span class="p">)</span>
-            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mag_dia</span><span class="p">,</span> <span class="s1">&#39;dia-magnetic contribution (au)&#39;</span><span class="p">)</span>
-            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mag_para</span><span class="p">,</span> <span class="s1">&#39;para-magnetic contribution (au)&#39;</span><span class="p">)</span>
+            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">ksi</span><span class="p">,</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">Magnetizability (au)'</span><span class="p">)</span>
+            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mag_dia</span><span class="p">,</span> <span class="s1">'dia-magnetic contribution (au)'</span><span class="p">)</span>
+            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mag_para</span><span class="p">,</span> <span class="s1">'para-magnetic contribution (au)'</span><span class="p">)</span>
             <span class="c1">#if self.verbose &gt;= logger.INFO:</span>
-            <span class="c1">#    _write(self.stdout, para_occ, &#39;occ part of para-magnetic term&#39;)</span>
-            <span class="c1">#    _write(self.stdout, para_vir, &#39;vir part of para-magnetic term&#39;)</span>
+            <span class="c1">#    _write(self.stdout, para_occ, 'occ part of para-magnetic term')</span>
+            <span class="c1">#    _write(self.stdout, para_vir, 'vir part of para-magnetic term')</span>
 
             <span class="n">unit</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">HARTREE2J</span> <span class="o">/</span> <span class="n">nist</span><span class="o">.</span><span class="n">AU2TESLA</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="mf">1e30</span>
-            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">ksi</span><span class="o">*</span><span class="n">unit</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Magnetizability (10^{-30} J/T^2)&#39;</span><span class="p">)</span>
+            <span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">ksi</span><span class="o">*</span><span class="n">unit</span><span class="p">,</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">Magnetizability (10^{-30} J/T^2)'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ksi</span></div>
 
     <span class="n">dia</span> <span class="o">=</span> <span class="n">dia</span>
@@ -601,15 +577,15 @@
         <span class="k">return</span> <span class="n">rhf_nmr</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">gauge_orig</span><span class="p">)</span></div></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">7</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;/dev/null&#39;</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;h  ,  0.   0.   0.</span>
-<span class="s1">                  F  ,  0.   0.   .917&#39;&#39;&#39;</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;631g&#39;</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="s1">'/dev/null'</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">'''h  ,  0.   0.   0.</span>
+<span class="s1">                  F  ,  0.   0.   .917'''</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'631g'</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -628,19 +604,16 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.7973915717274408</span><span class="p">)</span>
 
 
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;O      0.   0.       0.</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">'''O      0.   0.       0.</span>
 <span class="s1">                        H      0.  -0.757    0.587</span>
-<span class="s1">                        H      0.   0.757    0.587&#39;&#39;&#39;</span><span class="p">,</span>
-                <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;ccpvdz&#39;</span><span class="p">)</span>
+<span class="s1">                        H      0.   0.757    0.587'''</span><span class="p">,</span>
+                <span class="n">basis</span><span class="o">=</span><span class="s1">'ccpvdz'</span><span class="p">)</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="n">mag</span> <span class="o">=</span> <span class="n">Magnetizability</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="n">mag</span><span class="o">.</span><span class="n">cphf</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">m</span> <span class="o">=</span> <span class="n">mag</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.62173669377370366</span><span class="p">)</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>

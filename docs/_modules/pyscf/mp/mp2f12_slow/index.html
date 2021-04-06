@@ -59,34 +59,9 @@
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about/" />
     <link rel="index" title="Index" href="../../../../genindex/" />
-    <link rel="search" title="Search" href="../../../../search/" /> 
+    <link rel="search" title="Search" href="../../../../search/" />
   
    
-  
-<style type="text/css">
-  ul.ablog-archive {
-    list-style: none;
-    overflow: auto;
-    margin-left: 0px;
-  }
-  ul.ablog-archive li {
-    float: left;
-    margin-right: 5px;
-    font-size: 80%;
-  }
-  ul.postlist a {
-    font-style: italic;
-  }
-  ul.postlist-style-disc {
-    list-style-type: disc;
-  }
-  ul.postlist-style-none {
-    list-style-type: none;
-  }
-  ul.postlist-style-circle {
-    list-style-type: circle;
-  }
-</style>
 
   </head>
   <body dir=ltr
@@ -324,23 +299,24 @@
         
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
-             <h1>Source code for pyscf.mp.mp2f12_slow</h1><div class="highlight"><pre>
+            
+  <h1 id="modules-pyscf-mp-mp2f12-slow--page-root">Source code for pyscf.mp.mp2f12_slow</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 <span class="sd">MP2-F12 (In testing)</span>
 
 <span class="sd">Refs:</span>
@@ -348,7 +324,7 @@
 <span class="sd">* JCP 139, 084112 (2013); DOI:10.1063/1.4818753</span>
 
 <span class="sd">With strong orthogonalization ansatz 2</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
@@ -365,7 +341,7 @@
 <div class="viewcode-block" id="find_cabs"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.mp2f12_slow.find_cabs">[docs]</a><span class="k">def</span> <span class="nf">find_cabs</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxmol</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
     <span class="n">cabs_mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">conc_mol</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxmol</span><span class="p">)</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">&#39;int1e_ovlp&#39;</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
 
     <span class="n">ls12</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">nao</span><span class="p">,:</span><span class="n">nao</span><span class="p">],</span> <span class="n">s</span><span class="p">[:</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">:],</span> <span class="n">sym_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">s</span><span class="p">[</span><span class="n">nao</span><span class="p">:,</span><span class="n">nao</span><span class="p">:]</span> <span class="o">-=</span> <span class="n">s</span><span class="p">[</span><span class="n">nao</span><span class="p">:,:</span><span class="n">nao</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ls12</span><span class="p">)</span>
@@ -393,7 +369,7 @@
     <span class="k">return</span> <span class="n">eri1</span></div>
 
 <div class="viewcode-block" id="energy_f12"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.mp/#pyscf.mp.mp2f12_slow.energy_f12">[docs]</a><span class="k">def</span> <span class="nf">energy_f12</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">auxmol</span><span class="p">,</span> <span class="n">zeta</span><span class="p">):</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;******** MP2-F12 (In testing) ********&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'******** MP2-F12 (In testing) ********'</span><span class="p">)</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
@@ -410,11 +386,11 @@
     <span class="n">cbs</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
 
     <span class="n">mol</span><span class="o">.</span><span class="n">set_f12_zeta</span><span class="p">(</span><span class="n">zeta</span><span class="p">)</span>
-    <span class="n">Y</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e_yp&#39;</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e_yp'</span><span class="p">)</span>
     <span class="n">Y</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="p">[</span><span class="n">mo_o</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
 
     <span class="n">cabs_mol</span><span class="o">.</span><span class="n">set_f12_zeta</span><span class="p">(</span><span class="n">zeta</span><span class="p">)</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e_stg&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e_stg'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="p">)</span>
     <span class="n">RmPnQ</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="p">[</span><span class="n">mo_o</span><span class="p">,</span> <span class="n">Pcoeff</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">Pcoeff</span><span class="p">])</span>
     <span class="n">Rmpnq</span> <span class="o">=</span> <span class="n">RmPnQ</span><span class="p">[:,:</span><span class="n">nmo</span><span class="p">,:,:</span><span class="n">nmo</span><span class="p">]</span>
     <span class="n">Rmlnc</span> <span class="o">=</span> <span class="n">RmPnQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,:</span><span class="n">nocc</span><span class="p">,:</span><span class="n">nocc</span><span class="p">,</span><span class="n">nmo</span><span class="p">:]</span>
@@ -433,14 +409,14 @@
     <span class="n">Rpibj</span> <span class="o">=</span> <span class="n">Rqiaj</span>
 
     <span class="n">cabs_mol</span><span class="o">.</span><span class="n">set_f12_zeta</span><span class="p">(</span><span class="n">zeta</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">Rbar</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e_stg&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
+    <span class="n">Rbar</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e_stg'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
     <span class="n">Rbar</span> <span class="o">=</span> <span class="n">Rbar</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nca</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
     <span class="n">Rbar_minj</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">Rbar</span><span class="p">[:</span><span class="n">nao</span><span class="p">],</span> <span class="p">[</span><span class="n">mo_o</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">Rbar_miPj</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">Rbar</span><span class="p">,</span> <span class="p">[</span><span class="n">Pcoeff</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">tau</span> <span class="o">=</span> <span class="n">Rbar</span><span class="p">[:</span><span class="n">nao</span><span class="p">]</span> <span class="o">*</span> <span class="n">zeta</span><span class="o">**</span><span class="mi">2</span>
     <span class="n">tau</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="p">[</span><span class="n">mo_o</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
 
-    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nca</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
     <span class="n">vpiqj</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">v</span><span class="p">[:</span><span class="n">nao</span><span class="p">],</span> <span class="p">[</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">])</span>
     <span class="n">vlicj</span> <span class="o">=</span> <span class="n">trans</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">[</span><span class="n">cabs_coeff</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_o</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
@@ -448,15 +424,15 @@
 
     <span class="n">fPQ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="n">cabs_mol</span><span class="p">)</span>
     <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_o</span><span class="p">,</span> <span class="n">mo_o</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="p">)</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nca</span><span class="p">,</span><span class="n">nca</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
-    <span class="n">fPQ</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;pqij,ji-&gt;pq&#39;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+    <span class="n">fPQ</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pqij,ji-&gt;pq'</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
     <span class="n">fPQ</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">Pcoeff</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">,</span> <span class="n">Pcoeff</span><span class="p">))</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int2e&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2e'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="n">cbs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">obs</span><span class="o">+</span><span class="n">cbs</span><span class="p">)</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nca</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nca</span><span class="p">)</span>
-    <span class="n">kPQ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;pijq,ij-&gt;pq&#39;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span><span class="o">*.</span><span class="mi">5</span>
+    <span class="n">kPQ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pijq,ij-&gt;pq'</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span><span class="o">*.</span><span class="mi">5</span>
     <span class="n">kPQ</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">Pcoeff</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">kPQ</span><span class="p">,</span> <span class="n">Pcoeff</span><span class="p">))</span>
-    <span class="n">tPQ</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">&#39;int1e_kin&#39;</span><span class="p">)</span>
+    <span class="n">tPQ</span> <span class="o">=</span> <span class="n">cabs_mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_kin'</span><span class="p">)</span>
     <span class="n">tPQ</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">Pcoeff</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">tPQ</span><span class="p">,</span> <span class="n">Pcoeff</span><span class="p">))</span>
     <span class="n">hPQ</span> <span class="o">=</span> <span class="n">fPQ</span> <span class="o">-</span> <span class="n">tPQ</span>  <span class="c1"># hartree term</span>
     <span class="n">fPQ</span> <span class="o">=</span> <span class="n">hPQ</span> <span class="o">-</span> <span class="n">kPQ</span>
@@ -469,72 +445,69 @@
         <span class="n">tminj</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-.</span><span class="mi">5</span><span class="o">/</span><span class="n">zeta</span>
 
     <span class="n">V</span> <span class="o">=</span> <span class="n">Y</span>
-    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mpnq,piqj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmpnq</span><span class="p">,</span> <span class="n">vpiqj</span><span class="p">)</span>
-    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mlnc,licj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmlnc</span><span class="p">,</span> <span class="n">vlicj</span><span class="p">)</span>
-    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mcnl,cilj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmcnl</span><span class="p">,</span> <span class="n">vcilj</span><span class="p">)</span>
-    <span class="n">emp2_f12</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;minj,minj&#39;</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
-    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;minj,nimj&#39;</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mpnq,piqj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmpnq</span><span class="p">,</span> <span class="n">vpiqj</span><span class="p">)</span>
+    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mlnc,licj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmlnc</span><span class="p">,</span> <span class="n">vlicj</span><span class="p">)</span>
+    <span class="n">V</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mcnl,cilj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmcnl</span><span class="p">,</span> <span class="n">vcilj</span><span class="p">)</span>
+    <span class="n">emp2_f12</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'minj,minj'</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'minj,nimj'</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
 
     <span class="n">X</span> <span class="o">=</span> <span class="n">Rbar_minj</span>
-    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mpnq,piqj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmpnq</span><span class="p">,</span> <span class="n">Rpiqj</span><span class="p">)</span>
-    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mlnc,licj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmlnc</span><span class="p">,</span> <span class="n">Rlicj</span><span class="p">)</span>
-    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mcnl,cilj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rmcnl</span><span class="p">,</span> <span class="n">Rcilj</span><span class="p">)</span>
+    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mpnq,piqj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmpnq</span><span class="p">,</span> <span class="n">Rpiqj</span><span class="p">)</span>
+    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mlnc,licj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmlnc</span><span class="p">,</span> <span class="n">Rlicj</span><span class="p">)</span>
+    <span class="n">X</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mcnl,cilj-&gt;minj'</span><span class="p">,</span> <span class="n">Rmcnl</span><span class="p">,</span> <span class="n">Rcilj</span><span class="p">)</span>
 
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;miPj,nP-&gt;minj&#39;</span><span class="p">,</span> <span class="n">Rbar_miPj</span><span class="p">,</span> <span class="n">hPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'miPj,nP-&gt;minj'</span><span class="p">,</span> <span class="n">Rbar_miPj</span><span class="p">,</span> <span class="n">hPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
     <span class="n">B</span>   <span class="o">=</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">+</span> <span class="n">tmp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mPnQ,PR-&gt;mRnQ&#39;</span><span class="p">,</span> <span class="n">RmPnQ</span><span class="p">,</span> <span class="n">kPQ</span><span class="p">)</span>
-    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mRnQ,RiQj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RRiQj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mPnk,PQ-&gt;mQnk&#39;</span><span class="p">,</span> <span class="n">RmPnk</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">)</span>
-    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mQnk,Qikj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RQikj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mknc,kl-&gt;mlnc&#39;</span><span class="p">,</span> <span class="n">Rmknc</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,:</span><span class="n">nocc</span><span class="p">])</span>
-    <span class="n">B</span>  <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mlnc,licj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rlicj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mpna,pq-&gt;mqna&#39;</span><span class="p">,</span> <span class="n">Rmpna</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nmo</span><span class="p">,:</span><span class="n">nmo</span><span class="p">])</span>
-    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mqna,qiaj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rqiaj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mknc,kP-&gt;mPnc&#39;</span><span class="p">,</span> <span class="n">Rmknc</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
-    <span class="n">tmp1</span><span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mPnc,Picj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RPicj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mcnb,cp-&gt;mpnb&#39;</span><span class="p">,</span> <span class="n">Rmcnb</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[</span><span class="n">nmo</span><span class="p">:,:</span><span class="n">nmo</span><span class="p">])</span>
-    <span class="n">tmp1</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mpnb,pibj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rpibj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mPnQ,PR-&gt;mRnQ'</span><span class="p">,</span> <span class="n">RmPnQ</span><span class="p">,</span> <span class="n">kPQ</span><span class="p">)</span>
+    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mRnQ,RiQj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RRiQj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mPnk,PQ-&gt;mQnk'</span><span class="p">,</span> <span class="n">RmPnk</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">)</span>
+    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mQnk,Qikj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RQikj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mknc,kl-&gt;mlnc'</span><span class="p">,</span> <span class="n">Rmknc</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,:</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="n">B</span>  <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mlnc,licj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rlicj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mpna,pq-&gt;mqna'</span><span class="p">,</span> <span class="n">Rmpna</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nmo</span><span class="p">,:</span><span class="n">nmo</span><span class="p">])</span>
+    <span class="n">B</span>  <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mqna,qiaj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rqiaj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mknc,kP-&gt;mPnc'</span><span class="p">,</span> <span class="n">Rmknc</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="n">tmp1</span><span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mPnc,Picj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">RPicj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mcnb,cp-&gt;mpnb'</span><span class="p">,</span> <span class="n">Rmcnb</span><span class="p">,</span> <span class="n">fPQ</span><span class="p">[</span><span class="n">nmo</span><span class="p">:,:</span><span class="n">nmo</span><span class="p">])</span>
+    <span class="n">tmp1</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mpnb,pibj-&gt;minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">Rpibj</span><span class="p">)</span>
     <span class="n">B</span>  <span class="o">-=</span> <span class="n">tmp1</span> <span class="o">+</span> <span class="n">tmp1</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">B</span>   <span class="o">=</span> <span class="n">B</span> <span class="o">+</span> <span class="n">B</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">B</span>  <span class="o">+=</span> <span class="n">tau</span>
 
-    <span class="n">e_mn</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">&#39;i+j-&gt;ij&#39;</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">[:</span><span class="n">nocc</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mknl,kilj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tminj</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
-    <span class="n">emp2_f12</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;minj,minj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;minj,nimj&#39;</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mknl,kilj-&gt;minj&#39;</span><span class="p">,</span> <span class="n">tminj</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
-    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mn,minj,minj&#39;</span><span class="p">,</span> <span class="n">e_mn</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">emp2_f12</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;mn,minj,nimj&#39;</span><span class="p">,</span> <span class="n">e_mn</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span>
+    <span class="n">e_mn</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">'i+j-&gt;ij'</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">[:</span><span class="n">nocc</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mknl,kilj-&gt;minj'</span><span class="p">,</span> <span class="n">tminj</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+    <span class="n">emp2_f12</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'minj,minj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'minj,nimj'</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mknl,kilj-&gt;minj'</span><span class="p">,</span> <span class="n">tminj</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">emp2_f12</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mn,minj,minj'</span><span class="p">,</span> <span class="n">e_mn</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">emp2_f12</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'mn,minj,nimj'</span><span class="p">,</span> <span class="n">e_mn</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">tminj</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">emp2_f12</span></div>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
     <span class="c1">#mol.atom = [</span>
     <span class="c1">#    [8 , (0. , 0.     , 0.)],</span>
     <span class="c1">#    [1 , (0. , -0.757 , 0.587)],</span>
     <span class="c1">#    [1 , (0. , 0.757  , 0.587)]]</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">&#39;Ne 0 0 0&#39;</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">'Ne 0 0 0'</span>
 
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;cc-pvdz&#39;</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'cc-pvdz'</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">scf</span><span class="p">())</span>
 
     <span class="n">e</span> <span class="o">=</span> <span class="n">mp2</span><span class="o">.</span><span class="n">MP2</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">auxmol</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="c1">#auxmol.basis = &#39;cc-pVDZ-F12-OptRI&#39;</span>
-    <span class="n">auxmol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;ccpvdz-fit&#39;</span><span class="p">,</span> <span class="s1">&#39;cc-pVDZ-F12-OptRI&#39;</span><span class="p">)</span>
-    <span class="c1">#auxmol.basis = &#39;cc-pVTZ&#39;</span>
+    <span class="c1">#auxmol.basis = 'cc-pVDZ-F12-OptRI'</span>
+    <span class="n">auxmol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'ccpvdz-fit'</span><span class="p">,</span> <span class="s1">'cc-pVDZ-F12-OptRI'</span><span class="p">)</span>
+    <span class="c1">#auxmol.basis = 'cc-pVTZ'</span>
     <span class="n">auxmol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MP2&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'MP2'</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
     <span class="n">e</span><span class="o">+=</span> <span class="n">energy_f12</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">auxmol</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;MP2-F12&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;e_tot&#39;</span><span class="p">,</span> <span class="n">e</span><span class="o">+</span><span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'MP2-F12'</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'e_tot'</span><span class="p">,</span> <span class="n">e</span><span class="o">+</span><span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
 </pre></div>
-<div class="section">
-   
-</div>
 
           </article>
         </div>
