@@ -1,6 +1,6 @@
 .. _theory_tdscf:
 
-Time-dependent Hartree-Fock and Density Functional Theory
+Time-dependent Hartree-Fock and density functional theory
 *********************************************************
 
 *Modules*: :mod:`tdscf`, :mod:`pbc.tdscf`

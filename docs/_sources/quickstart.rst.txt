@@ -90,7 +90,7 @@ Linear response theory is available for both HF and KS-DFT (cf. `tddft/00-simple
   >>> tdhf_h2o = tdscf.TDHF(rhf_h2o)
   >>> tdhf_h2o.nstates = 6
   >>> tdhf_h2o.kernel()
-  >>> tddft_h2o = tdscf.TDA(rks_h2o) # TDDFT with Tamm-Dankoff approximation
+  >>> tddft_h2o = tdscf.TDA(rks_h2o) # TDDFT with Tamm-Dancoff approximation
   >>> tddft_h2o.nstates = 4
   >>> tddft_h2o.kernel()
 
