@@ -1,6 +1,6 @@
 .. _user_mrpt:
 
-Multi-Reference Perturbation Theory (MRPT)
+Multi-reference perturbation theory (MRPT)
 ******************************************
 
 *Modules*: :mod:`mrpt`

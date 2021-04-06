@@ -1,6 +1,6 @@
 .. _user_mp2:
 
-Second-Order Møller–Plesset Perturbation Theory (MP2)
+Second-order Møller–Plesset perturbation theory (MP2)
 *****************************************************
 
 *Modules*: :mod:`mp`, :mod:`pbc.mp`

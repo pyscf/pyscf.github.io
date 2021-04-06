@@ -30,7 +30,6 @@ See :ref:`installing_extproj`.
 .. toctree::
    :hidden:
    :maxdepth: 1
-   :numbered:
 
    Overview <overview.rst>
    Install <install.rst>
