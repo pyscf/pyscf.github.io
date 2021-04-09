@@ -1,6 +1,6 @@
 .. _user_sgx:
 
-Seminumerical Exchange (SGX)
+Seminumerical exchange (SGX)
 ****************************
 
 *Modules*: :mod:`sgx`

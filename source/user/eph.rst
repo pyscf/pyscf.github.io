@@ -1,8 +1,8 @@
 .. _user_eph:
 
-**********************
-Electron Phonon Matrix
-**********************
+************************
+Electron-phonon coupling
+************************
 
 *Modules*: :mod:`eph`, :mod:`pbc.eph`
 
@@ -14,9 +14,9 @@ Traditionally, vibronic coupling is evaluated with complex mathematical machiner
 However, if one relaxes the BO approximation and assumes that the electrons experience the moving nuclei as a perturbation of the potential, the full Hamiltonian can be approximated by a Taylor expansion with the adiabatic states at equilibrium and the quantized vibrational modes.
 This approach is widely used in solid state calculations for modeling electron/phonon transport properties (see :cite:`giustino2017eph` for more discussions).
 
-PySCF supports first order eph matrix calculation by either Coupled Perturbed Kohn-Sham/Hartree-Fock (CPKS/CPHF) or finite difference. In periodic system, only FFTDF-based Gamma-point calculation is supported with finite difference. In both cases, a geometrically relaxed structure is required, or the structure instability could lead to imaginary vibrational modes.
+PySCF supports the calculation of the first-order electron-phonon (e-ph) coupling matrix by either coupled perturbed Kohn-Sham/Hartree-Fock (CPKS/CPHF) or finite differences. In periodic systems, only FFTDF-based Gamma-point calculations are supported with finite differences. In both cases, a geometrically relaxed structure is required or the structural instability could lead to imaginary vibrational frequencies.
 
-A minimal example of analytical eph matrix calculation is as follows::
+A minimal example of analytical e-ph matrix calculation is as follows::
 
     from pyscf import gto, scf, eph
     mol = gto.M(
@@ -52,7 +52,7 @@ Alternatively, one can compute the matrix elements using finite difference::
 
 Spin symmetry
 =============
-The eph module in PySCF supports mean field methods including Hartree Fock and DFT using either spin-restricted or spin-unrestricted reference.
+The ``eph`` module in PySCF supports mean field methods including Hartree Fock and DFT using either spin-restricted or spin-unrestricted reference.
 
 Analytical eph matrix elements
 ------------------------------

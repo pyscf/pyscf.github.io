@@ -11,7 +11,7 @@ Introduction
 
 Multiconfigurational self-consistent field (MCSCF) methods go beyond the single-determinant Hartree-Fock (HF) method by allowing the wave function to become a linear combination of multiple determinants.
 While the configurations i.e. determinants can in principle be chosen in an arbitrary number of ways, PySCF focuses on the complete active space (CAS) family of methods, where the set of electron configurations is defined in terms of a given set of active orbitals, also known as the "active space".
-The CAS method generates all possible electron configurations that can be formed from the set of the active orbitals, and is therefore equivalent to an FCI procedure on a subset of the molecular orbitals; please see :numref:`theory_ci` for a discussion on the FCI method.
+The CAS method generates all possible electron configurations that can be formed from the set of the active orbitals, and is therefore equivalent to an FCI procedure on a subset of the molecular orbitals; please see :ref:`theory_ci` for a discussion on the FCI method.
 The use of MCSCF methods is crucial for reliable modeling of systems that exhibit nearly degenerate orbitals i.e. static correlation, such as transition metal complexes.
 For a detailed discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`.
 
@@ -56,7 +56,7 @@ CASSCF
    # We can also run CAS calculations starting from the Hartree-Fock orbitals.
    mycas = myhf.CASSCF(ncas, nelecas).run()
 
-Like many other modules in PySCF, :mod:`mcscf` works with density-fitting (:numref:`user_df`) and x2c (:numref:`user_x2c`).
+Like many other modules in PySCF, :mod:`mcscf` works with density-fitting (:ref:`user_df`) and x2c (:ref:`user_x2c`).
 It can also be used in its unrestricted formulation, please see :source:`examples/mcscf/60-uhf_based_ucasscf.py` for an example.
 An important feature of :mod:`mcscf` is that it can interface with external CI solver such as DMRG, FCIQMC, or selected CI methods, see the external projects for more details.
 You can even use MP2 or CC methods as solvers!
