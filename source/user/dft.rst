@@ -57,23 +57,9 @@ did not support compound functional aliases, and both exchange and correlation a
 
 PySCF supports two independent libraries of *xc* functional implementations, namely `Libxc <https://www.tddft.org/programs/libxc/>`_ and `XCFun <https://xcfun.readthedocs.io/en/latest/>`_. 
 The former of these is the default, but the latter may be selected by setting ``DFT._numint.libxc = dft.xcfun``, cf. `dft/32-xcfun_as_default.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/32-xcfun_as_default.py>`_.
-For complete lists of the available density functional approximations, the user is referred to the ``XC_CODES`` dictionaries in `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively.
-The user can choose the library at runtime in order to leverage any of its exclusive features.
+For complete lists of the available density functional approximations, the user is referred to the ``XC_CODES`` dictionaries in `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_, respectively. The user can choose the library at runtime in order to leverage any of its exclusive features.
 
-The constant maintenance and development of density functional libraries is hard work at little personal benefit, while everyone benefits from having a huge variety of density functionals in numerically stable form for use in applications.
-If you use Libxc in your calculations, please cite the most up-to-date work on Libxc in your paper.
-You can see the up-to-date citation on `the Libxc web page <https://www.tddft.org/programs/libxc/>_`.
-At the moment, it may be
-> S. Lehtola, C. Steigemann, M. J. T. Oliveira, and M. A. L. Marques
-> "Recent developments in LIBXC — a comprehensive library of functionals for density functional theory"
-> SoftwareX 7, 1 (2018). `DOI:10.1016/j.softx.2017.11.002 <https://doi.org/10.1016/j.softx.2017.11.002>_`
-Likewise, if you use XCFun in your calculations, please cite the most up-to-date work on XCFun in your paper.
-You can see the up-to-date citation on `the XCFun web page <https://github.com/dftlibs/xcfun/>_`.
-At the moment, it may be
-> U. Ekström, L. Visscher, R. Bast, A. J. Thorvaldsen and K. Ruud
-> "Arbitrary-Order Density Functional Response Theory from Automatic Differentiation"
-> J. Chem. Theory Comput. 6, 1971 (2010), `DOI:10.1021/ct100117s <https://doi.org/10.1021/ct100117s>_`
-Please check your log files for the library that was used in your calculation. (You may need to increase the `verbose` setting of your calculation to see this.)
+The constant maintenance and development of density functional libraries is hard work at little personal benefit, while everyone benefits from having a huge variety of density functionals in numerically stable form for use in applications. If you use Libxc in your calculations, please cite the most up-to-date work on Libxc in your paper. You can see the most up-to-date citation on the `Libxc web page <https://www.tddft.org/programs/libxc/>`_; at the moment, this is :cite:`lehtola_libxc_softwarex_2018`. Likewise, if you use XCFun in your calculations, please cite the most up-to-date work on XCFun in your paper. You can find recent citations on the `XCFun web page <https://github.com/dftlibs/xcfun/>`_; at present, this is :cite:`ekstroem_xcfun_jctc_2010`. Please check your log files for the library used in your calculation (you may need to increase the ``DFT.verbose`` setting of your calculation to see this).
 
 .. _user_dft_custom_func:
 
