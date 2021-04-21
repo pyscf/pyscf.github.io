@@ -182,23 +182,7 @@ extensions = [
     "pyscfdocext",
     # "ablog",
 ]
-bibtex_bibfiles = [
-    "./source/user/ref_solvent.bib",
-    "./source/user/ref_lo.bib",
-    "./source/user/ref_scf.bib",
-    "./source/user/ref_eph.bib",
-    "./source/user/ref_mcscf.bib",
-    "./source/user/ref_dft.bib",
-    "./source/user/ref_agf2.bib",
-    "./source/user/ref_df.bib",
-    "./source/user/ref_pbc.bib",
-    "./source/user/ref_mrpt.bib",
-    "./source/user/ref_sgx.bib",
-    "./source/user/ref_tddft.bib",
-    "./source/user/ref_ci.bib",
-    "./source/user/ref_adc.bib",
-    "./source/user/ref_mp.bib",
-]
+bibtex_bibfiles = []
 myst_update_mathjax = False
 
 
@@ -305,7 +289,7 @@ html_theme_options = {
         {"href": "install", "title": "Install", "internal": True},
         {"href": "quickstart", "title": "Quickstart", "internal": True},
         {"href": "user", "title": "User Guide", "internal": True},
-        # {"href": "develop", "title": "Developer Guide", "internal": True},
+        {"href": "develop", "title": "Developer Guide", "internal": True},
         {"href": "pyscf_api_docs/modules", "title": "API", "internal": True},
         # {"href": "blog_wrapper", "title": "Blog", "internal": True},
         {"href": "about", "title": "About", "internal": True},
