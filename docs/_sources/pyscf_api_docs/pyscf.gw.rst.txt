@@ -1,0 +1,53 @@
+pyscf.gw package
+================
+
+Submodules
+----------
+
+pyscf.gw.gw\_ac module
+----------------------
+
+.. automodule:: pyscf.gw.gw_ac
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.gw.gw\_cd module
+----------------------
+
+.. automodule:: pyscf.gw.gw_cd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.gw.gw\_exact module
+-------------------------
+
+.. automodule:: pyscf.gw.gw_exact
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.gw.gw\_slow module
+------------------------
+
+.. automodule:: pyscf.gw.gw_slow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.gw.ugw\_ac module
+-----------------------
+
+.. automodule:: pyscf.gw.ugw_ac
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.gw
+   :members:
+   :undoc-members:
+   :show-inheritance:

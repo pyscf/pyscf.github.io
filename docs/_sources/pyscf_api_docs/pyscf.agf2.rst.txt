@@ -1,0 +1,93 @@
+pyscf.agf2 package
+==================
+
+Submodules
+----------
+
+pyscf.agf2.aux module
+---------------------
+
+.. automodule:: pyscf.agf2.aux
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.chempot module
+-------------------------
+
+.. automodule:: pyscf.agf2.chempot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.chkfile module
+-------------------------
+
+.. automodule:: pyscf.agf2.chkfile
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.dfragf2 module
+-------------------------
+
+.. automodule:: pyscf.agf2.dfragf2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.dfuagf2 module
+-------------------------
+
+.. automodule:: pyscf.agf2.dfuagf2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.mpi\_helper module
+-----------------------------
+
+.. automodule:: pyscf.agf2.mpi_helper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.ragf2 module
+-----------------------
+
+.. automodule:: pyscf.agf2.ragf2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.ragf2\_slow module
+-----------------------------
+
+.. automodule:: pyscf.agf2.ragf2_slow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.uagf2 module
+-----------------------
+
+.. automodule:: pyscf.agf2.uagf2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.agf2.uagf2\_slow module
+-----------------------------
+
+.. automodule:: pyscf.agf2.uagf2_slow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.agf2
+   :members:
+   :undoc-members:
+   :show-inheritance:

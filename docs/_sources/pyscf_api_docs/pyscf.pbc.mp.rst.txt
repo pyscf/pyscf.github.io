@@ -1,0 +1,37 @@
+pyscf.pbc.mp package
+====================
+
+Submodules
+----------
+
+pyscf.pbc.mp.kmp2 module
+------------------------
+
+.. automodule:: pyscf.pbc.mp.kmp2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.pbc.mp.kump2 module
+-------------------------
+
+.. automodule:: pyscf.pbc.mp.kump2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.pbc.mp.mp2 module
+-----------------------
+
+.. automodule:: pyscf.pbc.mp.mp2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.pbc.mp
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,205 @@
+pyscf.grad package
+==================
+
+Submodules
+----------
+
+pyscf.grad.casci module
+-----------------------
+
+.. automodule:: pyscf.grad.casci
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.casscf module
+------------------------
+
+.. automodule:: pyscf.grad.casscf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.ccsd module
+----------------------
+
+.. automodule:: pyscf.grad.ccsd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.ccsd\_slow module
+----------------------------
+
+.. automodule:: pyscf.grad.ccsd_slow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.ccsd\_t module
+-------------------------
+
+.. automodule:: pyscf.grad.ccsd_t
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.cisd module
+----------------------
+
+.. automodule:: pyscf.grad.cisd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.dhf module
+---------------------
+
+.. automodule:: pyscf.grad.dhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.lagrange module
+--------------------------
+
+.. automodule:: pyscf.grad.lagrange
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.mp2 module
+---------------------
+
+.. automodule:: pyscf.grad.mp2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.rhf module
+---------------------
+
+.. automodule:: pyscf.grad.rhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.rks module
+---------------------
+
+.. automodule:: pyscf.grad.rks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.rohf module
+----------------------
+
+.. automodule:: pyscf.grad.rohf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.roks module
+----------------------
+
+.. automodule:: pyscf.grad.roks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.sacasscf module
+--------------------------
+
+.. automodule:: pyscf.grad.sacasscf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.tdrhf module
+-----------------------
+
+.. automodule:: pyscf.grad.tdrhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.tdrks module
+-----------------------
+
+.. automodule:: pyscf.grad.tdrks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.tduhf module
+-----------------------
+
+.. automodule:: pyscf.grad.tduhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.tduks module
+-----------------------
+
+.. automodule:: pyscf.grad.tduks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.uccsd module
+-----------------------
+
+.. automodule:: pyscf.grad.uccsd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.uccsd\_t module
+--------------------------
+
+.. automodule:: pyscf.grad.uccsd_t
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.ucisd module
+-----------------------
+
+.. automodule:: pyscf.grad.ucisd
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.uhf module
+---------------------
+
+.. automodule:: pyscf.grad.uhf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.uks module
+---------------------
+
+.. automodule:: pyscf.grad.uks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pyscf.grad.ump2 module
+----------------------
+
+.. automodule:: pyscf.grad.ump2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pyscf.grad
+   :members:
+   :undoc-members:
+   :show-inheritance:
