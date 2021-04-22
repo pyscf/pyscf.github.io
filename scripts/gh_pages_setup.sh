@@ -10,3 +10,9 @@ mv build/html docs
 
 echo -e "Adding .nojekyll file to docs (so GitHub pages renders it correctly)"
 touch docs/.nojekyll
+
+echo -e "Adding CNAME file"
+echo "pyscf.org" >> docs/CNAME
+
+echo -e "Adding google verification to docs"
+echo "google-site-verification: google356b16cacc76b077.html" >> docs/google356b16cacc76b077.html

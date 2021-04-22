@@ -289,7 +289,7 @@ html_theme_options = {
         {"href": "install", "title": "Install", "internal": True},
         {"href": "quickstart", "title": "Quickstart", "internal": True},
         {"href": "user", "title": "User Guide", "internal": True},
-        # {"href": "develop", "title": "Developer Guide", "internal": True},
+        {"href": "develop", "title": "Developer Guide", "internal": True},
         {"href": "pyscf_api_docs/modules", "title": "API", "internal": True},
         # {"href": "blog_wrapper", "title": "Blog", "internal": True},
         {"href": "about", "title": "About", "internal": True},
