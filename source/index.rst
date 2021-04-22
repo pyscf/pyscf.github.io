@@ -21,7 +21,6 @@ See :ref:`installing_extproj`.
 .. Blog <blog_wrapper.rst>
 .. Modules <modules.rst>
 .. about.md
-.. Developer Guide <develop.rst>
 
 
 .. toctree::
@@ -32,6 +31,7 @@ See :ref:`installing_extproj`.
    Install <install.rst>
    Quickstart <quickstart.rst>
    User Guide <user.rst>
+   Developer Guide <develop.rst>
    API <pyscf_api_docs/pyscf.rst>
    Interface <interface.rst>
    About <about.rst>
