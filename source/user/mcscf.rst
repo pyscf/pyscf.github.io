@@ -13,7 +13,8 @@ Multiconfigurational self-consistent field (MCSCF) methods go beyond the single-
 While the configurations i.e. determinants can in principle be chosen in an arbitrary number of ways, PySCF focuses on the complete active space (CAS) family of methods, where the set of electron configurations is defined in terms of a given set of active orbitals, also known as the "active space".
 The CAS method generates all possible electron configurations that can be formed from the set of the active orbitals, and is therefore equivalent to an FCI procedure on a subset of the molecular orbitals; please see :ref:`theory_ci` for a discussion on the FCI method.
 The use of MCSCF methods is crucial for reliable modeling of systems that exhibit nearly degenerate orbitals i.e. static correlation, such as transition metal complexes.
-For a detailed discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`.
+For a general discussion of MCSCF methods, we direct the reader to References :cite:`Helgaker2013` and :cite:`esqc`, and for specific details about PySCF's implementation of CASSCF see :cite:`Sun2017`.
+
 
 The MCSCF module has two main flavors: CASCI and CASSCF. 
 In CASCI, the wave function is written as a linear combination of Slater determinants, and the expansion coefficients are solved in a variational procedure.
@@ -101,7 +102,7 @@ Below is a list of several general strategies one could employ to pick active sp
   Hartree-Fock orbitals are often poor for systems with significant static correlation.
   In such cases, orbitals from density functional calculations often yield better starting points for CAS calculations.
 
- 2) Specifying the active space orbitals as a list of molecular orbital (MO) indices. 
+2) Specifying the active space orbitals as a list of molecular orbital (MO) indices. 
    This is often useful combined with a visual analysis of localized orbitals (see the section on localized orbitals).
   The user can select the MO orbital indices "manually" and pass them to the ``sort_mo`` function. NB! The orbitals are numbered from 1, not 0.
   See :source:`examples/mcscf/10-define_cas_space.py` and :source:`examples/mcscf/34-init_guess_localization.py` for more details.

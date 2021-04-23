@@ -36,7 +36,8 @@ ways, controlled by the ``freq_int`` keyword argument: by analytic continuation
 exactly (Exact, ``freq_int='exact'``).  The first two are much more affordable 
 and typically provide sufficient accuracy.  GW-AC supports spin-restricted and
 spin-unrestricted calculations; GW-CD and GW-Exact only support spin-restricted
-calculations.
+calculations. Details of the GW-AC and GW-CD implementations in PySCF can be 
+found in Ref. :cite:`Zhu2021`.
 
 Analytic continuation
 ---------------------
