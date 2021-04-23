@@ -547,7 +547,7 @@
 While the configurations i.e. determinants can in principle be chosen in an arbitrary number of ways, PySCF focuses on the complete active space (CAS) family of methods, where the set of electron configurations is defined in terms of a given set of active orbitals, also known as the “active space”.
 The CAS method generates all possible electron configurations that can be formed from the set of the active orbitals, and is therefore equivalent to an FCI procedure on a subset of the molecular orbitals; please see <a class="reference internal" href="ci.html#theory-ci"><span class="std std-ref">Configuration interaction (CISD and FCI)</span></a> for a discussion on the FCI method.
 The use of MCSCF methods is crucial for reliable modeling of systems that exhibit nearly degenerate orbitals i.e. static correlation, such as transition metal complexes.
-For a detailed discussion of MCSCF methods, we direct the reader to References <a class="bibtex reference internal" href="#helgaker2013" id="id1">[1]</a> and <a class="bibtex reference internal" href="#esqc" id="id2">[2]</a>.</p>
+For a general discussion of MCSCF methods, we direct the reader to References <a class="bibtex reference internal" href="#helgaker2013" id="id1">[1]</a> and <a class="bibtex reference internal" href="#esqc" id="id2">[2]</a>, and for specific details about PySCF’s implementation of CASSCF see <a class="bibtex reference internal" href="#sun2017" id="id3">[3]</a>.</p>
 <p>The MCSCF module has two main flavors: CASCI and CASSCF.
 In CASCI, the wave function is written as a linear combination of Slater determinants, and the expansion coefficients are solved in a variational procedure.
 The orbitals are fixed in a CASCI calculation.
@@ -621,21 +621,17 @@ In most circumstances, this is not an ideal strategy and will lead to poor conve
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<blockquote>
-<div><p>Hartree-Fock orbitals are often poor for systems with significant static correlation.
+<p>Hartree-Fock orbitals are often poor for systems with significant static correlation.
 In such cases, orbitals from density functional calculations often yield better starting points for CAS calculations.</p>
-</div></blockquote>
+</div>
 <ol class="arabic simple" start="2">
-<li><p>Specifying the active space orbitals as a list of molecular orbital (MO) indices.</p></li>
+<li><p>Specifying the active space orbitals as a list of molecular orbital (MO) indices.
+This is often useful combined with a visual analysis of localized orbitals (see the section on localized orbitals).</p></li>
 </ol>
 <blockquote>
-<div><blockquote>
-<div><p>This is often useful combined with a visual analysis of localized orbitals (see the section on localized orbitals).</p>
-</div></blockquote>
-<p>The user can select the MO orbital indices “manually” and pass them to the <code class="docutils literal notranslate"><span class="pre">sort_mo</span></code> function. NB! The orbitals are numbered from 1, not 0.
+<div><p>The user can select the MO orbital indices “manually” and pass them to the <code class="docutils literal notranslate"><span class="pre">sort_mo</span></code> function. NB! The orbitals are numbered from 1, not 0.
 See <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/10-define_cas_space.py">examples/mcscf/10-define_cas_space.py</a> and <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/34-init_guess_localization.py">examples/mcscf/34-init_guess_localization.py</a> for more details.</p>
 </div></blockquote>
-</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="c1"># Note sort_mo by default take the 1-based orbital indices.</span>
 <span class="n">mo</span> <span class="o">=</span> <span class="n">mycas</span><span class="o">.</span><span class="n">sort_mo</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">])</span>
@@ -704,7 +700,7 @@ These may be occupied, virtual, or active orbitals.</p>
 In such cases it is often helpful to optimize the orbitals for a state average.
 The <code class="docutils literal notranslate"><span class="pre">state_average_</span></code> function (note the hanging underscore) is a member function of <code class="docutils literal notranslate"><span class="pre">CASCI</span></code>/<code class="docutils literal notranslate"><span class="pre">CASSCF</span></code> objects and takes the weights of the states as input.
 The weights can be any normalized and non-negative array of values, but equal weights are typically used.
-See Section 12.7.2 in Ref. <a class="bibtex reference internal" href="#helgaker2013" id="id3">[1]</a> for more details.</p>
+See Section 12.7.2 in Ref. <a class="bibtex reference internal" href="#helgaker2013" id="id4">[1]</a> for more details.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n_states</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_states</span><span class="p">)</span><span class="o">/</span><span class="n">n_states</span>
 <span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">state_average_</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
@@ -766,7 +762,7 @@ See Section 12.7.2 in Ref. <a class="bibtex reference internal" href="#helgaker2
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mycas</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="s2">"casscf.chk"</span>
 </pre></div>
 </div>
-<p>Much like <a class="reference internal" href="../modules/scf.html#module-scf" title="scf: restricted and unrestricted, closed shell and open shell Hartree-Fock methods"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scf</span></code></a>, if a job is interrupted, users can restart the MCSCF calculations using checkpoint files from a crashed calculation.</p>
+<p>Much like <code class="xref py py-mod docutils literal notranslate"><span class="pre">scf</span></code>, if a job is interrupted, users can restart the MCSCF calculations using checkpoint files from a crashed calculation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">chkfile</span>
 <span class="n">old_chk_file</span> <span class="o">=</span> <span class="s2">"old_casscf.chk"</span>
 <span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
@@ -821,11 +817,14 @@ The user may request the active orbitals to be transformed to the so-called natu
 
 <h2 id="references">References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p id="bibtex-bibliography-user/mcscf-0"><dl class="citation">
-<dt class="bibtex label" id="helgaker2013"><span class="brackets">1</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id3">2</a>)</span></dt>
+<dt class="bibtex label" id="helgaker2013"><span class="brackets">1</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id4">2</a>)</span></dt>
 <dd><p>Trygve Helgaker, Poul Jorgensen, and Jeppe Olsen. <em>Molecular Electronic-Structure Theory</em>. Wiley, 2013. ISBN 9781118531471.</p>
 </dd>
 <dt class="bibtex label" id="esqc"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
 <dd><p>Esqc lectures 2019. URL: <a class="reference external" href="http://www.esqc.org/?page=lectures">http://www.esqc.org/?page=lectures</a>.</p>
+</dd>
+<dt class="bibtex label" id="sun2017"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
+<dd><p>Qiming Sun, Jun Yang, and Garnet Kin-lic Lic Chan. A general second order complete active space self-consistent-field solver for large-scale systems. <em>Chemical Physics Letters</em>, 683:291–299, 2017. <a class="reference external" href="https://arxiv.org/abs/1610.08394">arXiv:1610.08394</a>, <a class="reference external" href="https://doi.org/10.1016/j.cplett.2017.03.004">doi:10.1016/j.cplett.2017.03.004</a>.</p>
 </dd>
 </dl>
 </p>
