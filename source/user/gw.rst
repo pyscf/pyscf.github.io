@@ -89,3 +89,10 @@ be also used.  The instance of an executed ``tdscf`` method can be provided as a
 keyword argument:
 
 .. literalinclude:: ../../examples/gw/10-custom_screening.py
+
+
+References
+==========
+
+.. bibliography:: ref_gw.bib
+  :style: unsrt
