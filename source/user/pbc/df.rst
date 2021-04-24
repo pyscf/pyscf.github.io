@@ -107,7 +107,7 @@ MDF uses mixed GTOs and PWs as the fitting basis. The GTO part of the auxiliary 
 Saving and reusing DF tensors
 =============================
 
-While FFTDF is implemented in the so-called integral-direct manner and needs no "initialization", both GDF and MDF pre-compute the Cholesky decomposed electron repulsion integrals (CDERIs) and save the 3-index tensor to disk for later use. The APIs for saving and reusing the CDERIs in GDF and MDF are the same as in the molecular :mod:`df` module; we guide the user to :ref:`save_reuse_df_integrals` for a detailed description. A PBC example is provided in :source:`examples/pbc/35-gaussian_density_fit.py`.
+While FFTDF is implemented in the so-called integral-direct manner and needs no "initialization", both GDF and MDF pre-compute the Cholesky decomposed electron repulsion integrals (CDERIs) and save the 3-index tensor to disk for later use. The APIs for saving and reusing the CDERIs in GDF and MDF are the same as in the molecular :mod:`df` module; we guide the user to :ref:`save_reuse_df_tensors` for a detailed description. A PBC example is provided in :source:`examples/pbc/35-gaussian_density_fit.py`.
 
 
 Choice of DF method
@@ -137,9 +137,9 @@ Required accuracy
 
 * FFTDF can be considered "exact" for pseudopotential-based calculations within the given AO basis if a sufficiently large PW basis is used.
 
-* GDF has a typical error of :math:`10^{-5} \sim 10^{-4} E_h` when using default auxiliary basis sets. :cite:`Sun17JCP,Ye20arXiv` This error can be reduced by using a larger auxiliary basis set. :cite:`Ye20arXiv`
+* GDF has a typical error of :math:`10^{-5} \sim 10^{-4} E_h` per atom in the converged SCF energy when tested on simple 3D solids of first- and second-row elements and using default auxiliary basis sets. :cite:`Sun17JCP,Ye20arXiv` This error can be reduced by using a larger auxiliary basis set. :cite:`Ye20arXiv`
 
-* MDF is in general more accurate than GDF and comparable to FFTDF if a sufficiently large PW basis is used. The typical error of MDF is :math:`10^{-6} E_h` or lower with the default parameters. :cite:`Sun17JCP`
+* MDF is in general more accurate than GDF and comparable to FFTDF if a sufficiently large PW basis is used. The typical error of MDF is :math:`10^{-6} E_h` per atom or lower in the SCF energy with the default parameters. :cite:`Sun17JCP`
 
 Computational resources
 -----------------------
