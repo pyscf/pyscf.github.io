@@ -2,19 +2,22 @@
   <img src="https://github.com/pyscf/pyscf-doc/blob/master/logo/pyscf-logo.png" height="80px"/>
 </div>
 
-PySCF Documentation
-===================
+PySCF website and documentation
+===============================
 
 ## Overview
 
-The PySCF documentation uses `sphinx-doc` and several associated extensions to generate static `html` files for the website.
-To simplify the command line work, we use `make` to manage all building here, see [the Building section](#building) below or just run `make help` for more details.
+The PySCF website and documentation are written in a combination of Markdown and
+reStructuredText, using `sphinx-doc` and several associated extensions to
+generate static `html` files that are served from the `gh-pages` branch.  Pushes
+to this repository trigger a Github Action that builds and serves the updated
+website.
 
-## Building the Docs Locally
+## Building the docs locally
 
 ### Requirements
 
-Pip install the following packages:
+Pip install the following packages, which are also listed in `requirements.txt`:
 
 - pyscf
 - sphinx
@@ -22,9 +25,11 @@ Pip install the following packages:
 - sphinxcontrib-bibtex
 - nbsphinx
 
-> Pro-tip: Use `pyscf-doc/requirements.txt` to install all prerequisite packages at once.
-
-If you have multiple versions of PySCF on your machine and you would like so use a specific version, set `PYTHONPATH` to include the specific PySCF source directory you want; otherwise, uncomment `sys.path.append(os.path.abspath('path_to_pyscf'))` in [source/conf.py](source/conf.py).
+If you have multiple versions of PySCF on your machine and you would like so use
+a specific version, set `PYTHONPATH` to include the specific PySCF source
+directory you want; otherwise, uncomment
+`sys.path.append(os.path.abspath('path_to_pyscf'))` in
+[source/conf.py](source/conf.py).
 
 ### Building
 All sphinx related sources files (i.e. `.rst` and `.md`) are contained in `source` and all webpage files (once they're generated) live in the `build`.
