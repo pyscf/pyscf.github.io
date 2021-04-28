@@ -1,7 +1,10 @@
 .. _develop:
 
-Developer documentation
-***********************
+Developer Guide 
+***************
+
+A detailed Developer Guide for PySCF is currently being written. Please check
+back soon.
 
 .. toctree::
    :maxdepth: 1
