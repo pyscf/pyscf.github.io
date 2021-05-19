@@ -129,6 +129,20 @@ format::
 
   >>> mol.atom = (('O',numpy.zeros(3)), ['H', 0, 1, 0], ['H',[0, 0, 1]])
 
+You can also specify the path to an xyz file and PySCF will use the coordinates 
+from this file to build :attr:`Mole.atom`.
+::
+
+  >>> mol = gto.M(atom="my_molecule.xyz")
+
+Or
+::
+
+  >>> mol = gto.Mole()
+  >>> mol.atom = "my_molecule.xyz"
+  >>> mol.build()
+
+
 No matter which format or symbols are used in the input, :func:`Mole.build`
 will convert :attr:`Mole.atom` to the internal format::
 
