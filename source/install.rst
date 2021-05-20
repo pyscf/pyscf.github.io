@@ -435,12 +435,12 @@ couple of methods to install the extension modules.
 * Pypi command. For pypi version newer than 19.0, projects hosted on
   GitHub can be installed on the command line::
 
-    $ pip install git+https://github.com/pyscf/semiemprical
+    $ pip install git+https://github.com/pyscf/semiempirical
 
   A particular release on github can be installed with the release URL
   you can look up on GitHub::
 
-    $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
+    $ pip install https://github.com/pyscf/semiempirical/archive/v0.1.0.tar.gz
 
 * Pypi command for local paths. If you wish to load an extension
   module developed in a local directory, you can use the local install
@@ -450,8 +450,8 @@ couple of methods to install the extension modules.
 
     $ python -m venv /home/abc/pyscf-local-env
     $ source /home/abc/pyscf-local-env/bin/activate
-    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
-    $ pip install -e /home/abc/semiemprical
+    $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
+    $ pip install -e /home/abc/semiempirical
 
 * Environment variable `PYSCF_EXT_PATH`. You can place the location of
   each extension module (or a file that contains these locations) in
@@ -479,22 +479,21 @@ developed inside the pyscf main project::
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
 
-
-NAO
----
-
-The :mod:`nao` module includes basic functions for numerical atomic
+Common examples
+===============
+... NAO
+... ---
+... The :mod:`nao` module includes basic functions for numerical atomic
 orbitals (NAO) and NAO-based TDDFT methods.  This module was
 contributed by Marc Barbry and Peter Koval. More details of :mod:`nao`
 can be found in
 https://github.com/pyscf/nao/blob/master/README.md. This module can be
 installed with::
+...    $ pip install https://github.com/pyscf/nao
 
-    $ pip install https://github.com/pyscf/nao
 
-
-DMRG solver
------------
+DMRG solvers
+------------
 
 Density matrix renormalization group (DMRG) theory is a powerful
 method for solving ab initio quantum chemistry problems. PySCF can be
@@ -518,9 +517,11 @@ algorithm for performing tensor contraction for arbitrarily
 high-dimensional tensors. The native algorithm in TBLIS does not need
 to transform tensors into matrices by permutations, then call BLAS for
 the the matrix contraction, and back-permute the results. This means
-that tensor transposes and data moves are largely avoided by TBLIS.
+that tensor transposes and data moves are largely avoided by TBLIS. This
+leads to speedups in many correlated quantum chemistry methods in PySCF, such as
+the coupled cluster methods.
 The interface to TBLIS offers an efficient implementation for
-:func:`numpy.einsum` style tensor contraction.  The tlibs-einsum
+:func:`numpy.einsum` style tensor contraction.  The tblis-einsum
 plugin can be enabled with::
 
   $ pip install pyscf-tblis
