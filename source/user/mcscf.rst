@@ -160,7 +160,7 @@ For more details, see :source:`examples/mcscf/43-avas.py` and :source:`examples/
 
 
 Frozen-orbital MCSCF
------------------
+--------------------
 
 Orbitals can be frozen in the orbital optimization to e.g. reduce the computational effort of CASSCF calculations.
 The orbitals will remain fixed throughout the optimization.
@@ -186,6 +186,48 @@ See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 
 .. note::
   The `frozen` keyword of the CASSCF optimizer should not be confused with the `frozen` keyword of the FCI solver, which controls the number of orbitals that are constrained to be doubly occupied.
+
+
+Spin state of CAS wavefunction
+------------------------------
+The MCSCF wavefunction by default has the same Sz value as the setting of
+:attr:`mol.spin`. The program does not guarantee to derive the spin-adapted wave
+function of desired spin multiplicity. There are a few settings can be used
+to tune the spin multiplicity of the wavefunction.
+
+You can change the number of alpha and beta electrons to be correlated in active
+space. The Sz value of the MCSCF wavefunction can be different to the settings
+of :attr:`mol.spin`. It's common to start from `Sz=0` RHF calculations then
+setting different number of alpha and beta electrons in active space to solve triplet
+state. For example
+
+.. code-block:: python
+  mol.spin = 0
+  myhf = mol.RHF().run()
+  # 5 alpha electrons, 3 beta electrons
+  mycas = mcscf.CASSCF(myhf, 6, (5, 3))
+  mycas.kernel()
+
+It happens that the program give a wave-function of correct Sz while the spin
+multiplicity is wrong (or even a spin-contaminated wavefunction). The
+CASCI/CASSCF class provided the :func:`fix_spin_` method to correct the spin state.
+
+.. code-block:: python
+  mol.spin = 0
+  myhf = mol.RHF().run()
+  # 5 alpha electrons, 3 beta electrons
+  mycas = mcscf.CASSCF(myhf, 6, (4, 4))
+  # Targeting triplet state
+  mycas.fix_spin_(ss=2)
+  mycas.kernel()
+
+:func:`fix_spin_` is an energy-penalty method. It may affect the efficiency and
+accuracy of CASCI and CASSCF algorithm. It should not be used unless
+the MCSCF program get difficulty to find the correct spin state.
+
+In example :source:`examples/mcscf/02-cas_space_spin.py` and
+:source:`examples/mcscf/18-spatial_spin_symmetry.py.py`, you can find the
+complete scripts to tune spin states of the CASCI/CASSCF wavefunctions.
 
 
 State-Averaged Calculations
