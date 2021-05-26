@@ -178,6 +178,7 @@ Users can also specify a list of orbital indices (0-based).
 These may be occupied, virtual, or active orbitals.
 
 .. code-block:: python
+
   mycas = mcscf.CASSCF(myhf, 6, 8)
   mycas.frozen = [0,1,26,27]
   mycas.kernel()
@@ -202,6 +203,7 @@ setting different number of alpha and beta electrons in active space to solve tr
 state. For example
 
 .. code-block:: python
+
   mol.spin = 0
   myhf = mol.RHF().run()
   # 5 alpha electrons, 3 beta electrons
@@ -213,6 +215,7 @@ multiplicity is wrong (or even a spin-contaminated wavefunction). The
 CASCI/CASSCF class provided the :func:`fix_spin_` method to correct the spin state.
 
 .. code-block:: python
+
   mol.spin = 0
   myhf = mol.RHF().run()
   # 5 alpha electrons, 3 beta electrons
