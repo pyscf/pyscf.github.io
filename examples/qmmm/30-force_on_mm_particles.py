@@ -9,6 +9,7 @@ The force from QM region acting on the background MM particles.
 
 import numpy
 from pyscf import gto, scf, mp, qmmm
+from functools import reduce
 
 mol = gto.M(atom='''
 C       1.1879  -0.3829 0.0000
