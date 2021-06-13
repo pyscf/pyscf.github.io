@@ -1,5 +1,6 @@
 import numpy
 from pyscf import gto, scf, mcscf
+from functools import reduce
 
 '''
 Compare two CASSCF active space.

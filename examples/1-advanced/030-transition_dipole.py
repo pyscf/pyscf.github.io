@@ -6,6 +6,7 @@ Transition density matrix and transition dipole for CASSCF/CASCI wavefunction
 
 import numpy
 from pyscf import gto, scf, mcscf, fci
+from functools import reduce
 
 mol = gto.M(atom='''
 C   1.20809735,    0.69749533,   0.00000000
