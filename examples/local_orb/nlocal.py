@@ -21,6 +21,7 @@ from pyscf import tools,gto,scf,dft
 from pyscf.tools import molden
 import pmloc 
 import ulocal
+from functools import reduce
 
 def sqrtm(s):
    e, v = numpy.linalg.eigh(s)
