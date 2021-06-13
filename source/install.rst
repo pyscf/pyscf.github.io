@@ -429,10 +429,10 @@ tblis               https://github.com/pyscf/pyscf-tblis
 =================== =========================================================
 
 Based on the technique of namespace packages specified in `PEP 420
-<https://www.python.org/dev/peps/pep-0420/>`, PySCF has developed a
+<https://www.python.org/dev/peps/pep-0420/>`_, PySCF has developed a
 couple of methods to install the extension modules.
 
-* Pypi command. For pypi version newer than 19.0, projects hosted on
+* Pip command. For pip version newer than 19.0, projects hosted on
   GitHub can be installed on the command line::
 
     $ pip install git+https://github.com/pyscf/semiempirical
@@ -442,7 +442,7 @@ couple of methods to install the extension modules.
 
     $ pip install https://github.com/pyscf/semiempirical/archive/v0.1.0.tar.gz
 
-* Pypi command for local paths. If you wish to load an extension
+* Pip command for local paths. If you wish to load an extension
   module developed in a local directory, you can use the local install
   mode of pip. Use of a Python virtual environment is recommended to
   avoid polluting the system default Python runtime environment; for
