@@ -225,8 +225,8 @@ CASCI/CASSCF class provided the :func:`fix_spin_` method to correct the spin sta
   mycas.kernel()
 
 :func:`fix_spin_` is an energy-penalty method. It may affect the efficiency and
-accuracy of CASCI and CASSCF algorithm. It should not be used unless
-the MCSCF program get difficulty to find the correct spin state.
+accuracy of the CASCI and CASSCF algorithms. It should not be used unless
+the MCSCF program has difficulties in finding the wanted spin state.
 
 In example :source:`examples/mcscf/02-cas_space_spin.py` and
 :source:`examples/mcscf/18-spatial_spin_symmetry.py.py`, you can find the
