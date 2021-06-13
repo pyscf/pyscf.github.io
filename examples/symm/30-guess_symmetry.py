@@ -4,6 +4,7 @@
 
 import numpy
 from pyscf import gto, symm, scf
+from functools import reduce
 
 '''
 Pseudo symmetry for molecules which are slightly distorted from the symmetric
