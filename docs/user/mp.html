@@ -56,6 +56,8 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
     <link rel="shortcut icon" href="../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -293,6 +295,18 @@
         </li></ul>
             </nav>
         </li>
+        <li class="md-nav__item"><a href="#density-fitted-mp2-df-mp2" class="md-nav__link">Density-fitted MP2 (DF-MP2)</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#background" class="md-nav__link">Background</a>
+        </li>
+        <li class="md-nav__item"><a href="#using-the-df-mp2-implementation" class="md-nav__link">Using the DF-MP2 implementation</a>
+        </li>
+        <li class="md-nav__item"><a href="#df-mp2-densities" class="md-nav__link">DF-MP2 densities</a>
+        </li>
+        <li class="md-nav__item"><a href="#spin-component-scaling" class="md-nav__link">Spin-component scaling</a>
+        </li></ul>
+            </nav>
+        </li>
         <li class="md-nav__item"><a href="#references" class="md-nav__link">References</a>
         </li></ul>
             </nav>
@@ -470,6 +484,18 @@
         </li></ul>
             </nav>
         </li>
+        <li class="md-nav__item"><a href="#density-fitted-mp2-df-mp2" class="md-nav__link">Density-fitted MP2 (DF-MP2)</a><nav class="md-nav">
+              <ul class="md-nav__list">
+        <li class="md-nav__item"><a href="#background" class="md-nav__link">Background</a>
+        </li>
+        <li class="md-nav__item"><a href="#using-the-df-mp2-implementation" class="md-nav__link">Using the DF-MP2 implementation</a>
+        </li>
+        <li class="md-nav__item"><a href="#df-mp2-densities" class="md-nav__link">DF-MP2 densities</a>
+        </li>
+        <li class="md-nav__item"><a href="#spin-component-scaling" class="md-nav__link">Spin-component scaling</a>
+        </li></ul>
+            </nav>
+        </li>
         <li class="md-nav__item"><a href="#references" class="md-nav__link">References</a>
         </li></ul>
             </nav>
@@ -495,10 +521,12 @@
 also <a class="reference internal" href="cc.html#user-cc"><span class="std std-ref">Coupled-cluster theory</span></a>.</p>
 <section id="introduction">
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Second-order Møller–Plesset perturbation theory (MP2) <a class="bibtex reference internal" href="#moller1934" id="id1">[1]</a>
-is a post-Hartree–Fock method.
-MP2 calculations can be performed with or without density fitting,
-depending on the initial SCF calculation.</p>
+<p>Second-order Møller–Plesset perturbation theory (MP2) <a class="bibtex reference internal" href="#moller1934" id="id1">[1]</a> is a
+post-Hartree–Fock method. MP2 calculations can be performed in PySCF with or without
+density fitting, depending on the initial SCF calculation.</p>
+<p>Note also the existence of a <a class="reference internal" href="#dfmp2"><span class="std std-ref">native DF-MP2 implementation</span></a>, which does
+not depend on the integral approximation in SCF, and which is significantly faster than the
+default implementation of MP2 with density fitting.</p>
 <p>A simple example (see <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mp/00-simple_mp2.py">examples/mp/00-simple_mp2.py</a>) of running
 an MP2 calculation is</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
@@ -608,6 +636,94 @@ don’t need to be saved in memory:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mymp</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">MP2</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
 <span class="c1"># by default, with_t2=True</span>
 <span class="n">mymp</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">with_t2</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="density-fitted-mp2-df-mp2">
+<span id="dfmp2"></span><h2 id="density-fitted-mp2-df-mp2">Density-fitted MP2 (DF-MP2)<a class="headerlink" href="#density-fitted-mp2-df-mp2" title="Permalink to this headline">¶</a></h2>
+<section id="background">
+<h3 id="background">Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h3>
+<p>MP2 can be combined to great benefit with density fitting (DF), also known as the resolution of the identity
+(RI) approximation. While the formal scaling remains <span class="math notranslate nohighlight">\(O(N^5)\)</span>, the prefactor and the overall
+computational cost are reduced strongly, so that calculations can be performed on much larger
+molecules than with conventional MP2. Provided that a suitable auxiliary basis set is used,
+the resulting DF/RI errors in reaction energies, geometries, properties etc. are negligible
+compared to the intrinsic errors of MP2.</p>
+<p>This implementation can calculate energies, as well as unrelaxed and relaxed one-particle
+density matrices. Analytical gradients are not available yet. RHF and UHF references are supported
+throughout.</p>
+<p>Please note that this part of the documentation does <em>not</em> describe the older <code class="docutils literal notranslate"><span class="pre">mp.dfmp2.DFMP2</span></code>
+implementation, which is still returned by the <code class="docutils literal notranslate"><span class="pre">density_fit()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">mp.mp2.MP2</span></code>
+class; instead it is about the newer <code class="docutils literal notranslate"><span class="pre">DFRMP2</span></code> and <code class="docutils literal notranslate"><span class="pre">DFUMP2</span></code> classes, which need to be imported
+directly from <code class="docutils literal notranslate"><span class="pre">mp.dfmp2_native</span></code> or <code class="docutils literal notranslate"><span class="pre">mp.dfump2_native</span></code> at present.</p>
+</section>
+<section id="using-the-df-mp2-implementation">
+<h3 id="using-the-df-mp2-implementation">Using the DF-MP2 implementation<a class="headerlink" href="#using-the-df-mp2-implementation" title="Permalink to this headline">¶</a></h3>
+<p>For technical reasons (incompatible algorithms), the “native” DF-MP2 implementation is not
+implemented as a subclass of <code class="docutils literal notranslate"><span class="pre">mp.mp2.MP2</span></code>, but it is written as an independent class instead.
+Currently, the classes <code class="docutils literal notranslate"><span class="pre">DFRMP2</span></code> (for RHF references) and <code class="docutils literal notranslate"><span class="pre">DFUMP2</span></code> (for UHF references) need to
+be imported from the respective modules <code class="docutils literal notranslate"><span class="pre">mp.dfmp2_native</span></code> and <code class="docutils literal notranslate"><span class="pre">mp.dfump2_native</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.mp.dfmp2_native</span> <span class="kn">import</span> <span class="n">DFRMP2</span>
+<span class="kn">from</span> <span class="nn">pyscf.mp.dfump2_native</span> <span class="kn">import</span> <span class="n">DFUMP2</span>
+</pre></div>
+</div>
+<p>Both modules also make the respective classes available under the alias <code class="docutils literal notranslate"><span class="pre">DFMP2</span></code>. The file
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mp/10-dfmp2.py">examples/mp/10-dfmp2.py</a> contains a simple example for a DF-MP2 energy calculation.</p>
+<p>There is also an older variant of DF-MP2 implemented in <code class="docutils literal notranslate"><span class="pre">mp.dfmp2</span></code>, which does not exploit the
+advantages of density fitting fully, and may therefore have much higher memory demands for larger
+molecules. Please note that the <code class="docutils literal notranslate"><span class="pre">density_fit()</span></code> method of the conventional <code class="docutils literal notranslate"><span class="pre">mp.mp2.MP2</span></code> class
+provides an instance of the old implementation, not the new one! Currently, the “native”
+implementation can only be used by importing it from <code class="docutils literal notranslate"><span class="pre">mp.dfmp2_native</span></code> or <code class="docutils literal notranslate"><span class="pre">mp.dfump2_native</span></code>
+directly as shown above.</p>
+<p>Unless specified by the user, an appropriate auxiliary basis set is determined automatically. Note
+that there exist different auxiliary basis sets for Coulomb and exchange fitting in DF-HF on the one
+hand, and for correlation fitting in MP2 or other dynamic correlation methods on the other hand.
+The DF approximation in MP2 does not depend on the approximation taken for SCF. Arbitrary
+auxiliary sets can be specified with the <code class="docutils literal notranslate"><span class="pre">auxbasis</span></code> option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DFMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="s1">'cc-pVTZ-RI'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In RHF-DF-MP2 calculations, orbitals can be frozen by specifying either an integer, or a list. Frozen core
+UHF-DF-MP2 calculations are initiated by providing either an integer, or two lists of equal length (for the
+alpha and beta orbitals):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DFRMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">DFRMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">DFUMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">DFUMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+<section id="df-mp2-densities">
+<h3 id="df-mp2-densities">DF-MP2 densities<a class="headerlink" href="#df-mp2-densities" title="Permalink to this headline">¶</a></h3>
+<p>Relaxed and unrelaxed 1-RDMs can be calculated for the RHF and UHF variants of the “native” DF-MP2
+implementation. The points below provide some advice on choosing the correct type of MP2 density.</p>
+<ul class="simple">
+<li><p>The relaxed density should be used to calculate properties if the MP2 method is well-behaved for
+the system in question. Properties calculated thereby correspond to the correct derivative of the
+MP2 energy with respect to an appropriate external perturbation. This is illustrated in
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mp/11-dfmp2-density.py">examples/mp/11-dfmp2-density.py</a>, where the dipole moment of chloromethane is calculated
+much more accurately with the relaxed density than with the unrelaxed one. To calculate the
+relaxed density, a set of CP-SCF type equations needs to be solved in one of the steps. In
+ill-behaved systems, for example if there is multi-reference character, the MP2 natural occupation
+numbers can be substantially larger than two or smaller than zero.</p></li>
+<li><p>A typical use case for the unrelaxed density is to calculate starting orbitals for a CASSCF
+calculation, which can be used despite the system being described poorly at MP2 level otherwise.
+In contrast to the relaxed density, the natural occupation numbers of the unrelaxed density are
+always between two and zero. <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mp/12-dfump2-natorbs.py">examples/mp/12-dfump2-natorbs.py</a> shows how to calculate
+natural orbitals for the allyl radical, which has a significantly spin-contaminated UHF wave
+function. On the other hand, the unrelaxed density will often give very poor results for
+properties (such as electrostatic moments).</p></li>
+</ul>
+</section>
+<section id="spin-component-scaling">
+<h3 id="spin-component-scaling">Spin-component scaling<a class="headerlink" href="#spin-component-scaling" title="Permalink to this headline">¶</a></h3>
+<p>Spin-component scaled (SCS-)MP2 calculations can be performed analogously to DF-MP2 calculations
+using the classes <code class="docutils literal notranslate"><span class="pre">SCSDFRMP2</span></code> and <code class="docutils literal notranslate"><span class="pre">SCSDFUMP2</span></code>, which also have got aliases such as <code class="docutils literal notranslate"><span class="pre">SCSMP2</span></code>
+inside the respective modules. The default scaling factors can be changed to arbitrary values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.mp.dfmp2_native</span> <span class="kn">import</span> <span class="n">SCSMP2</span>
+<span class="n">pt</span> <span class="o">=</span> <span class="n">SCSMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ps</span><span class="o">=</span><span class="mi">6</span><span class="o">/</span><span class="mi">5</span><span class="p">,</span> <span class="n">pt</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
