@@ -11,11 +11,13 @@ also :ref:`user_cc`.
 Introduction
 ============
 
-Second-order Møller–Plesset perturbation theory (MP2) :cite:`Moller1934` is a
-post-Hartree--Fock method.  MP2 calculations can be performed with or without
-density fitting, depending on the initial SCF calculation. Please make sure to
-read the section on the :ref:`native DF-MP2 implementation<DFMP2>`, which does
-not depend on the integral approximation in SCF.
+Second-order Møller--Plesset perturbation theory (MP2) :cite:`Moller1934` is a
+post-Hartree--Fock method. MP2 calculations can be performed in PySCF with or without
+density fitting, depending on the initial SCF calculation.
+
+Note also the existence of a :ref:`native DF-MP2 implementation<DFMP2>`, which does
+not depend on the integral approximation in SCF, and which is significantly faster than the
+default implementation of MP2 with density fitting.
 
 A simple example (see :source:`examples/mp/00-simple_mp2.py`) of running
 an MP2 calculation is
@@ -133,12 +135,14 @@ Density-fitted MP2 (DF-MP2)
 Background
 ----------
 
-MP2 can be combined to great benefit with the density fitting (DF) or resolution of the identity
+MP2 can be combined to great benefit with density fitting (DF), also known as the resolution of the identity
 (RI) approximation. While the formal scaling remains :math:`O(N^5)`, the prefactor and the overall
 computational cost are reduced strongly, so that calculations can be performed on much larger
-molecules than with conventional MP2. In general, the errors in reaction energies, geometries,
-properties etc. with a suitable auxiliary set are negligible compared to the intrinsic errors of
-MP2. This implementation can calculate energies, as well as unrelaxed and relaxed one-particle
+molecules than with conventional MP2. Provided that a suitable auxiliary basis set is used,
+the resulting DF/RI errors in reaction energies, geometries, properties etc. are negligible
+compared to the intrinsic errors of MP2. 
+
+This implementation can calculate energies, as well as unrelaxed and relaxed one-particle
 density matrices. Analytical gradients are not available yet. RHF and UHF references are supported
 throughout.
 
@@ -171,13 +175,13 @@ directly as shown above.
 Unless specified by the user, an appropriate auxiliary basis set is determined automatically. Note
 that there exist different auxiliary basis sets for Coulomb and exchange fitting in DF-HF on the one
 hand, and for correlation fitting in MP2 or other dynamic correlation methods on the other hand.
-Anyway, the DF approximation in MP2 should not depend on the approximation taken for SCF. Arbitrary
+The DF approximation in MP2 does not depend on the approximation taken for SCF. Arbitrary
 auxiliary sets can be specified with the ``auxbasis`` option::
 
     DFMP2(mf, auxbasis='cc-pVTZ-RI')
 
-In RHF-DF-MP2 calculations, orbitals can be frozen by specifying an integer or a list. Frozen core
-UHF-DF-MP2 calculations are initiated by providing an integer or two lists of equal length (for the
+In RHF-DF-MP2 calculations, orbitals can be frozen by specifying either an integer, or a list. Frozen core
+UHF-DF-MP2 calculations are initiated by providing either an integer, or two lists of equal length (for the
 alpha and beta orbitals)::
 
    DFRMP2(mf, frozen=2)
