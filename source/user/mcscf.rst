@@ -191,16 +191,15 @@ See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 
 Spin state of CAS wavefunction
 ------------------------------
-The MCSCF wavefunction by default has the same Sz value as the setting of
-:attr:`mol.spin`. The program does not guarantee to derive the spin-adapted wave
-function of desired spin multiplicity. There are a few settings can be used
-to tune the spin multiplicity of the wavefunction.
+By default, the MCSCF wavefunction uses the setting in :attr:`mol.spin` by default for the value of Sz.
+However, there is no guarantee that a spin-adapted wave function of the desired spin multiplicity is obtained.
+There are a few settings that can be used to tune the spin multiplicity of the wavefunction.
 
-You can change the number of alpha and beta electrons to be correlated in active
-space. The Sz value of the MCSCF wavefunction can be different to the settings
-of :attr:`mol.spin`. It's common to start from `Sz=0` RHF calculations then
-setting different number of alpha and beta electrons in active space to solve triplet
-state. For example
+You can change the number of alpha and beta electrons in the active space.
+The Sz value of the MCSCF wavefunction can differ from :attr:`mol.spin`.
+It's common to start from `Sz=0` RHF calculations, and then to vary the
+number of alpha and beta electrons in the active space to solve higher
+spin states, such as the triplet state. For example```
 
 .. code-block:: python
 
@@ -210,9 +209,13 @@ state. For example
   mycas = mcscf.CASSCF(myhf, 6, (5, 3))
   mycas.kernel()
 
-It happens that the program give a wave-function of correct Sz while the spin
-multiplicity is wrong (or even a spin-contaminated wavefunction). The
-CASCI/CASSCF class provided the :func:`fix_spin_` method to correct the spin state.
+It may happen that a wave function of correct Sz is achieved while
+S^2 is wrong. This issue may either be caused by convergence onto
+another spin state, or spin contamination in the CAS wave function.
+
+Such issues can be circumvented with the :func:`fix_spin_` method
+of the CASCI/CASSCF class, which is able to correct the spin state
+by biasing the calculation towards the wanted state.
 
 .. code-block:: python
 
