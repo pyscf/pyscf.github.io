@@ -22,7 +22,7 @@ mf.kernel()
 mf = sgx.sgx_fit(scf.RHF(mol), pjs=False)
 mf.kernel()
 
-# Using RI for Coulomb matrix while K-matrix is constructed with COS-X method
+# Using RI for Coulomb matrix while K-matrix is constructed with SGX method
 mf.with_df.dfj = True
 mf.kernel()
 
