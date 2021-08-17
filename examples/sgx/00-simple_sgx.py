@@ -14,9 +14,27 @@ mol = gto.M(
     ''',
     basis = 'ccpvdz',
 )
-mf = sgx.sgx_fit(scf.RHF(mol))
+# Using SGX for J-matrix and K-matrix
+mf = sgx.sgx_fit(scf.RHF(mol), pjs=False)
 mf.kernel()
 
 # Using RI for Coulomb matrix while K-matrix is constructed with COS-X method
 mf.with_df.dfj = True
 mf.kernel()
+
+# Turn on P-junction screening to accelerate large calculations
+# (uses algorithm similar to COSX)
+mf.with_df.pjs = True
+mf.kernel()
+
+# If dfj is off at runtime, it is turned on and a user warning is issued
+# because SGX-J cannot be used with P-junction screening.
+mf.with_df.dfj = False
+mf.kernel()
+
+# Use direct J-matrix evaluation (slow, primarily for testing purposes)
+mf = sgx.sgx_fit(scf.RHF(mol), pjs=False)
+mf.with_df.direct_j = True
+mf.with_df.dfj = False
+mf.kernel()
+
