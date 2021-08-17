@@ -27,18 +27,20 @@ Any :attr:`scf.hf.SCF` object :attr:`mf` can be converted to an equivalent objec
 
 .. code::
 
+    converged SCF energy = -76.026765673118
     converged SCF energy = -76.0267374704184
     converged SCF energy = -76.0267978618973
     converged SCF energy = -76.0267978618973
-    /home/kyle/Research/projects/devpyscf/pyscf/pyscf/sgx/sgx.py:126: UserWarning:
+    converged SCF energy = -76.0267978671524
+    /home/kyle/Research/projects/devpyscf/pyscf/pyscf/sgx/sgx.py:126: UserWarning: 
                         P-junction screening is not compatible with SGX J-matrix.
                         Setting dfj = True. If you want to use SGX J-matrix,
                         set pjs = False to turn off P-junction screening.
       warnings.warn(msg)
-    converged SCF energy = -76.0267978618974
+    converged SCF energy = -76.0267978671524
     converged SCF energy = -76.0267685471926
 
-In this case, the error of SGX compared to analytical exchange is about 0.06 mEh. The line
+In this case, the error of DFJ+SGX compared to analytical exchange is about 0.03 mEh. The line
 
 .. code::
 
