@@ -18,7 +18,7 @@ mol = gto.M(
 mf = scf.RHF(mol)
 mf.kernel()
 
-# Using SGX for J-matrix and K-matrix
+# Using SGX for J-matrix and K-matrix, without using P-junction screening
 mf = sgx.sgx_fit(scf.RHF(mol), pjs=False)
 mf.kernel()
 
