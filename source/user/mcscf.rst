@@ -191,15 +191,19 @@ See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
 
 Spin state of CAS wavefunction
 ------------------------------
-By default, the MCSCF wavefunction uses the setting in :attr:`mol.spin` by default for the value of Sz.
-However, there is no guarantee that a spin-adapted wave function of the desired spin multiplicity is obtained.
-There are a few settings that can be used to tune the spin multiplicity of the wavefunction.
+Multiconfigurational wavefunction provided by the
+the `pyscf.fci` solver is typically spin-adapted, but there is no direct
+control of the spin multiplicity (i.e. S^2 value). It is, nevertheless, possible
+to define the spin projection Sz of the obtained WF, which helps to fix the spin
+multiplicity in most of the cases. By default, the MCSCF uses the setting in
+:attr:`mol.spin` for the value of 2*Sz.
 
 You can change the number of alpha and beta electrons in the active space.
 The Sz value of the MCSCF wavefunction can differ from :attr:`mol.spin`.
-It's common to start from `Sz=0` RHF calculations, and then to vary the
+
+For example, you can start from `Sz=0` RHF calculations, and then change the
 number of alpha and beta electrons in the active space to solve higher
-spin states, such as the triplet state. For example```
+spin states, such as the triplet state.```
 
 .. code-block:: python
 
@@ -207,6 +211,18 @@ spin states, such as the triplet state. For example```
   myhf = mol.RHF().run()
   # 5 alpha electrons, 3 beta electrons
   mycas = mcscf.CASSCF(myhf, 6, (5, 3))
+  mycas.kernel()
+
+Another common scenario to adjust the spin settings is the caulations of
+transition-metal systems. For transition-metal system with open d shell, one can
+start with single-reference maximum-Sz state and then switch to more complicated
+low-spin states in CASSCF.
+
+.. code-block:: python
+
+  mol.spin = 4
+  myhf = mol.ROHF().run()
+  mycas = mcscf.CASSCF(myhf, 6, (3, 3))
   mycas.kernel()
 
 It may happen that a wave function of correct Sz is achieved while
@@ -221,9 +237,8 @@ by biasing the calculation towards the wanted state.
 
   mol.spin = 0
   myhf = mol.RHF().run()
-  # 5 alpha electrons, 3 beta electrons
   mycas = mcscf.CASSCF(myhf, 6, (4, 4))
-  # Targeting triplet state
+  # Targeting triplet state with Sz=0
   mycas.fix_spin_(ss=2)
   mycas.kernel()
 
