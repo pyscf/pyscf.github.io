@@ -18,11 +18,11 @@ mol = gto.M(
 mf = scf.RHF(mol)
 mf.kernel()
 
-# Using SGX for J-matrix and K-matrix
+# Using SGX for J-matrix and K-matrix, without using P-junction screening
 mf = sgx.sgx_fit(scf.RHF(mol), pjs=False)
 mf.kernel()
 
-# Using RI for Coulomb matrix while K-matrix is constructed with COS-X method
+# Using RI for Coulomb matrix while K-matrix is constructed with SGX method
 mf.with_df.dfj = True
 mf.kernel()
 
