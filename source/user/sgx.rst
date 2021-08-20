@@ -25,21 +25,6 @@ Any :attr:`scf.hf.SCF` object :attr:`mf` can be converted to an equivalent objec
 
 .. literalinclude:: ../../examples/sgx/00-simple_sgx.py
 
-.. code::
-
-    converged SCF energy = -76.026765673118
-    converged SCF energy = -76.0267374704184
-    converged SCF energy = -76.0267978618973
-    converged SCF energy = -76.0267978618973
-    converged SCF energy = -76.0267978671524
-    /home/kyle/Research/projects/devpyscf/pyscf/pyscf/sgx/sgx.py:126: UserWarning: 
-                        P-junction screening is not compatible with SGX J-matrix.
-                        Setting dfj = True. If you want to use SGX J-matrix,
-                        set pjs = False to turn off P-junction screening.
-      warnings.warn(msg)
-    converged SCF energy = -76.0267978671524
-    converged SCF energy = -76.0267685471926
-
 In this case, the error of DFJ+SGX compared to analytical exchange is about 0.03 mEh. The line
 
 .. code::
@@ -75,6 +60,7 @@ Calling the :attr:`sgx_fit` function on an :attr:`scf.hf.SCF` object returns an 
 :attr:`SGXHF` attribute:
 
 * :attr:`direct_scf_sgx`: Whether to use direct SCF within the SGX module, meaning that the J and K matrices are evaluated from the difference in the density matrix from the previous iteration.
+* :attr:`rebuild_nsteps`: Rebuild the SGX JK matrix from scratch every :attr:`rebuild_nsteps` steps (default 5). Set to 0 to turn off rebuilding the JK matrix (Warning: This can cause creeping numerical error).
 
 References
 ==========
