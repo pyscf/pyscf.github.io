@@ -101,7 +101,7 @@ The XC functional string is parsed against a set of rules, as described below.
 
 * The string ``HF`` stands for exact exchange (HF K matrix). ``HF`` can be put in the correlation functional part (after the comma). Putting ``HF`` in the correlation part is the same as putting ``HF`` in the exchange part
 
-* The special string ``RSH`` means a range-separated operator. Its format is ``RSH(alpha; beta; omega)``. Another way to input range separation is to use keywords ``SR_HF`` and ``LR_HF``, e.g., ``SR_HF(.1) * alpha_plus_beta`` and ``LR_HF(.1) * alpha`` where the number in the parenthesis is the value of ``omega``
+* The special string ``RSH`` means a range-separated operator. Its format is ``RSH(omega, alpha, beta)``. Another way to input range separation is to use keywords ``SR_HF`` and ``LR_HF``, e.g., ``SR_HF(.1) * alpha_plus_beta`` and ``LR_HF(.1) * alpha`` where the number in the parenthesis is the value of ``omega``
 
 * The ``RSH`` kernel in PySCF is based on the error function kernel; Yukawa kernels are not supported at present
 
