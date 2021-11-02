@@ -421,6 +421,7 @@ icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
 nao                 https://github.com/pyscf/nao
+qsdopt              https://github.com/pyscf/qsdopt
 rt                  https://github.com/pyscf/rt
 semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
