@@ -121,6 +121,8 @@ Several keyword arguments can be passed to `kernel`:
   to consider convergence reached. (Default: 1e-6)
 - gthres: Gradient norm to consider convergence. (Default: 1e-5)
 
+.. literalinclude:: /../examples/geomopt/16-ethane_transition_state.py
+
 Excited states
 --------------
 For excited-state geometry optimizations, the state to be optimized 
