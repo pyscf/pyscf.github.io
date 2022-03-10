@@ -125,7 +125,6 @@ branch) from github::
 
   $ git clone https://github.com/pyscf/pyscf.git
   $ cd pyscf
-  $ git checkout dev  # optional if you'd like to try out the development branch
 
 Next, you need to build the C extensions in :file:`pyscf/lib`::
 
