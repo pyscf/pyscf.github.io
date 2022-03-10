@@ -455,7 +455,7 @@ couple of methods to install the extension modules.
 * Environment variable `PYSCF_EXT_PATH`. You can place the location of
   each extension module (or a file that contains these locations) in
   this environment variable. The PySCF library will parse the paths
-  defined in this environment variable, and load the relevent
+  defined in this environment variable, and load the relevant
   submodules. For example::
 
     $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
