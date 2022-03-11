@@ -474,7 +474,7 @@ the methods shown above), you can use them as regular submodules
 developed inside the pyscf main project::
 
     >>> import pyscf
-    >>> from pyscf.semiempirical import MINDO
+    >>> from pyscf.semiempirical import MINDO3
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
 
