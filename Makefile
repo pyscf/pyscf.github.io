@@ -19,11 +19,21 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) sou
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html html_full api_docs gh_pages_setup html_parallel dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  html       to make standalone HTML files"
+	@echo "Common Commands"
+	@echo "==============="
+	@echo "  html            to make standalone HTML files"
+	@echo "  api_docs        to make source files for the API docs section of the website"
+	@echo "  html_parallel   to make standalone HTML files in parallel (doesn't work for MacOS)"
+	@echo "  html_full       to make source files for API docs (AND) the standalone HTML files"
+	@echo "  gh_pages_setup  to make move the constructed website to the docs directory, where it will be rendered by GitHub pages after commit"
+	@echo ""
+	@echo ""
+	@echo "Less Common Commands"
+	@echo "===================="
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
@@ -51,10 +61,45 @@ clean:
 	rm -rf $(BUILDDIR)/doctrees
 
 html:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "\033[0;32mBuilding PySCF docs\033[0m"
+
+	@echo "$(SPHINXBUILD) log in _build.log"
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html > _build.log 2> _build_err.log
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html_parallel:
+	@echo
+	@echo "\033[0;32mBuilding PySCF docs\033[0m"
+
+	@echo "$(SPHINXBUILD) log in _build.log"
+	$(SPHINXBUILD) -b html -j auto $(ALLSPHINXOPTS) $(BUILDDIR)/html > _build.log 2> _build_err.log
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+api_docs:
+	@echo
+	bash scripts/generate_api_docs.sh
+	@echo
+
+html_full: api_docs
+	@echo
+	@echo "\033[0;32mBuilding PySCF docs\033[0m"
+
+	@echo "$(SPHINXBUILD) log in _build.log"
+	$(SPHINXBUILD) -b html -j auto $(ALLSPHINXOPTS) $(BUILDDIR)/html > _build.log 2> _build_err.log
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+gh_pages_setup:
+	@echo
+	bash scripts/gh_pages_setup.sh
+	@echo
+
+#
+# Less common commands
+#
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo

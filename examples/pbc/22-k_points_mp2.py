@@ -6,6 +6,7 @@ MP2 at an individual k-point
 
 import numpy
 from pyscf.pbc import gto, scf, mp
+from functools import reduce
 
 cell = gto.Cell()
 cell.atom='''

@@ -13,7 +13,7 @@ Self-consistent field (SCF) methods include both Hartree-Fock (HF) theory
 and Kohn-Sham (KS) density functional theory (DFT). Self-consistent
 field theories only depend on the electronic density matrices, and are
 the simplest level of quantum chemical models. Details that are
-specific to DFT can be found in :numref:`user_dft`.
+specific to DFT can be found in :ref:`user_dft`.
 
 In both HF and KS-DFT, the ground-state wavefunction is expressed as a
 single Slater determinant :math:`\Phi_0` of molecular orbitals (MOs)
@@ -425,6 +425,8 @@ orthonormalization technique
 shown to work reliably even in the presence of such truly pathological
 linear dependencies.
   
+.. _user_x2c: 
+
 Scalar relativistic correction
 ==============================
 

@@ -29,28 +29,28 @@ How to make an extension
 1. Download the template (https://github.com/pyscf/extension-template), run the
    script in the extension template::
 
-  $ curl https://github.com/pyscf/extension-template/pyscf-extension-template-0.1.0.tar.gz | tar xvzf -
-  $ mv extension-template new-project
-  $ cd new-project
-  $ make new-project
+    $ curl -L https://github.com/pyscf/extension-template/archive/refs/tags/0.1.0.tar.gz | tar xvzf -
+    $ mv extension-template new-project
+    $ cd new-project
+    $ make new-project
 
 2. Check whether files like `README.md`, `setup.py`, `__init__.py` are correctly updated.
 
 3. In the new project folder, initialize git repo::
 
-  $ git init 
-  $ git add .
-  $ git commit -m "An example of new extension package"
+    $ git init
+    $ git add .
+    $ git commit -m "An example of new extension package"
 
 4. If your program needs to compile C/C++ code, you can edit the setup.py to
    include your code files. For example::
 
-  SO_EXTENSIONS = {
-    'pyscf.new_feature.new_feature': ['pyscf/new_feature/new_feature.cc']
-  }
+    SO_EXTENSIONS = {
+      'pyscf.new_feature.new_feature': ['pyscf/new_feature/new_feature.cc']
+    }
 
+5. Release the extension project on https://github.com/pyscf.
 
-4. Release the extension project on https://github.com/pyscf.
    * Open an issue on https://github.com/pyscf/pyscf about the new project.
    * When the issue is approved, a repo will be created under https://github.com/pyscf/new-project.
      You can run the commands below to sync your local repo to the remote one::

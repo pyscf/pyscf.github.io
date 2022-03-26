@@ -40,9 +40,9 @@ can be written as
 .. math::
     \Sigma_{xy}(\omega)
     &= \sum_{ija} \frac{ (xi|ja) [ 2 (yi|ja) - (yj|ia) ] }
-                       { E_i + E_j - E_a } \\
+                       { \omega - (E_i + E_j - E_a) } \\
     &+ \sum_{abi} \frac{ (xa|bi) [ 2 (ya|bi) - (yb|ai) ] }
-                       { E_a + E_b - E_i }.
+                       { \omega - (E_a + E_b - E_i) }.
 
 In AGF2, the first two spectral moments of the MP2 self-energy,
 
@@ -91,7 +91,7 @@ consistency based on the  first two self-energy spectral moments is the default
 behaviour.
 
 Photoemission spectra
-====================
+=====================
 
 The compression of the effective dynamics performed in AGF2 permits the 
 calculation of the full spectrum of charged excitations, as no additional 

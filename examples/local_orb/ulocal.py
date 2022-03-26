@@ -20,6 +20,7 @@ import scipy.linalg
 from pyscf import tools,gto,scf,dft
 import h5py
 from pyscf.tools import molden
+from functools import reduce
 
 def sqrtm(s):
    e, v = numpy.linalg.eigh(s)

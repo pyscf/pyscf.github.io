@@ -15,6 +15,7 @@ pathological linear dependencies via the partial Cholesky procedure.
 import numpy
 import numpy.linalg
 from pyscf import gto, scf, mcscf
+from functools import reduce
 
 mol = gto.M(atom=['H 0 0 %f'%i for i in range(10)], unit='Bohr',
             basis='ccpvtz')

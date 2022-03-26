@@ -108,6 +108,7 @@ shell::
 
 
 .. _compile_c_extensions:
+
 Compiling from source code
 ==========================
 
@@ -176,18 +177,63 @@ directory can be used to fix this problem::
   ``pyscf/lib`` and ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
 
 
+CMake options and compiling flags
+---------------------------------
+A full build of PySCF may take a long time to finish.
+`XCFun` may fail to build a proper C++ compiler is not available, such as on certain old operating systems.
+The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
+Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
+
+================= ======= ==============================================================
+Flags             Default Comments
+================= ======= ==============================================================
+`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
+                          is appended to cmake command, `LibXC` will not be compiled.
+`ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
+                          is appended to cmake command, `XCFun` will not be compiled.
+`BUILD_LIBXC`     ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
+                          still calls `LibXC` library by default. The dft module will be
+                          linked against the `LibXC` library from an earlier build.
+`BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
+                          will be linked against the `XCFun` library from an earlier build.
+`BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
+                          library from an earlier build will be used.
+`WITH_F12`        ON      Whether to compile the F12 integrals.
+`DISABLE_DFT`     OFF     Set this flag to skip the entire dft module. Neither `LibXC`
+                          nor `XCFun` will be compiled.
+----------------- ------- --------------------------------------------------------------
+
+CMake config file
+-----------------
+
+CMake options can be saved in a configuration file
+``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
+automatically loaded and overwrite the default CMake options during
+compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
+to include advanced compiler optimization flags::
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
+
+Other settings, variables, and flags can also be set in this file::
+
+  set(ENABLE_XCFUN Off)
+  set(WITH_F12 Off)
+
+Some examples of platform-specific configurations can be found in
+directory ``pyscf/lib/cmake_user_inc_examples``.
+
 
 Environment variables and global configures
 ===========================================
 
------------------------ ---------------------------------------------------------
+======================= =========================================================
 Env variable            Comments
------------------------ ---------------------------------------------------------
+======================= =========================================================
 `PYSCF_MAX_MEMORY`      Maximum memory to use in MB
 `PYSCF_TMPDIR`          Directory for temporary files
 `PYSCF_CONFIG_FILE`     File where various PySCF default settings are stored
 `PYSCF_EXT_PATH`        Path for finding external extensions
------------------------ ---------------------------------------------------------
+======================= =========================================================
 
 `PYSCF_MAX_MEMORY` sets the default maximum memory in MB when creating
 `Mole` (or `Cell`) object. It corresponds to the attribute
@@ -216,6 +262,7 @@ packages. This is documented in detail in :ref:`installing_extproj`.
 
 
 .. _installing_wo_network:
+
 Installation without network
 ============================
 
@@ -270,6 +317,7 @@ that the Python interpreter can find your installation of PySCF.
 
 
 .. _installing_blas:
+
 Using optimized BLAS
 ====================
 
@@ -334,6 +382,7 @@ You can also hardcode the libraries you want to use in
 
 
 .. _installing_qcint:
+
 Using optimized integral library
 ================================
 
@@ -352,36 +401,17 @@ URL of the integral library in lib/CMakeLists.txt file::
      ...
 
 
-Cmake config file
-=================
-
-CMake options can be saved in a configuration file
-``pyscf/lib/cmake.arch.inc``.  The settings in this file will be
-automatically loaded and overwrite the default CMake options during
-compilation.  For example, you can set ``CMAKE_C_FLAGS`` in this file
-to include advanced compiler optimization flags::
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -mtune=native -march=native")
-
-Other settings, variables, and flags can also be set in this file::
-
-  set(ENABLE_XCFUN Off)
-  set(WITH_F12 Off)
-
-Some examples of platform-specific configurations can be found in
-directory ``pyscf/lib/cmake_arch_config``.
-
-
 .. _installing_extproj:
+
 Extension modules
 =================
 
 As of PySCF-2.0, some modules have been moved from the main code trunk
 to extension projects hosted at https://github.com/pyscf.
 
-------------------- ---------------------------------------------------------
+=================== =========================================================
 Project             URL
-------------------- ---------------------------------------------------------
+=================== =========================================================
 cornell_shci        https://github.com/pyscf/cornell_shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
@@ -396,23 +426,23 @@ semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
 tblis               https://github.com/pyscf/pyscf-tblis
-------------------- ---------------------------------------------------------
+=================== =========================================================
 
 Based on the technique of namespace packages specified in `PEP 420
-<https://www.python.org/dev/peps/pep-0420/>`, PySCF has developed a
+<https://www.python.org/dev/peps/pep-0420/>`_, PySCF has developed a
 couple of methods to install the extension modules.
 
-* Pypi command. For pypi version newer than 19.0, projects hosted on
+* Pip command. For pip version newer than 19.0, projects hosted on
   GitHub can be installed on the command line::
 
-    $ pip install git+https://github.com/pyscf/semiemprical
+    $ pip install git+https://github.com/pyscf/semiempirical
 
   A particular release on github can be installed with the release URL
   you can look up on GitHub::
 
-    $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
+    $ pip install https://github.com/pyscf/semiempirical/archive/v0.1.0.tar.gz
 
-* Pypi command for local paths. If you wish to load an extension
+* Pip command for local paths. If you wish to load an extension
   module developed in a local directory, you can use the local install
   mode of pip. Use of a Python virtual environment is recommended to
   avoid polluting the system default Python runtime environment; for
@@ -420,8 +450,8 @@ couple of methods to install the extension modules.
 
     $ python -m venv /home/abc/pyscf-local-env
     $ source /home/abc/pyscf-local-env/bin/activate
-    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
-    $ pip install -e /home/abc/semiemprical
+    $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
+    $ pip install -e /home/abc/semiempirical
 
 * Environment variable `PYSCF_EXT_PATH`. You can place the location of
   each extension module (or a file that contains these locations) in
@@ -449,22 +479,21 @@ developed inside the pyscf main project::
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
 
-
-NAO
----
-
-The :mod:`nao` module includes basic functions for numerical atomic
+Common examples
+===============
+... NAO
+... ---
+... The :mod:`nao` module includes basic functions for numerical atomic
 orbitals (NAO) and NAO-based TDDFT methods.  This module was
 contributed by Marc Barbry and Peter Koval. More details of :mod:`nao`
 can be found in
 https://github.com/pyscf/nao/blob/master/README.md. This module can be
 installed with::
+...    $ pip install https://github.com/pyscf/nao
 
-    $ pip install https://github.com/pyscf/nao
 
-
-DMRG solver
------------
+DMRG solvers
+------------
 
 Density matrix renormalization group (DMRG) theory is a powerful
 method for solving ab initio quantum chemistry problems. PySCF can be
@@ -488,9 +517,11 @@ algorithm for performing tensor contraction for arbitrarily
 high-dimensional tensors. The native algorithm in TBLIS does not need
 to transform tensors into matrices by permutations, then call BLAS for
 the the matrix contraction, and back-permute the results. This means
-that tensor transposes and data moves are largely avoided by TBLIS.
+that tensor transposes and data moves are largely avoided by TBLIS. This
+leads to speedups in many correlated quantum chemistry methods in PySCF, such as
+the coupled cluster methods.
 The interface to TBLIS offers an efficient implementation for
-:func:`numpy.einsum` style tensor contraction.  The tlibs-einsum
+:func:`numpy.einsum` style tensor contraction.  The tblis-einsum
 plugin can be enabled with::
 
   $ pip install pyscf-tblis

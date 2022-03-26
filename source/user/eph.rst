@@ -1,22 +1,22 @@
 .. _user_eph:
 
-**********************
-Electron Phonon Matrix
-**********************
+************************
+Electron-phonon coupling
+************************
 
 *Modules*: :mod:`eph`, :mod:`pbc.eph`
 
 Introduction
 ============
-Because nuclei are much heavier than the electrons, one usually assumes that the Born-Oppenheimer (BO) approximation holds and that the full wave function factorizes in the electronic and the nuclear wave function.
-This approximation hugely simplifies the computation of the full wave function and its properties, but the approximation can break down when there is significant vibronic coupling.
-Traditionally, vibronic coupling is evaluated with complex mathematical machinery, which often yields unrealistic results for large systems.
-However, if one relaxes the BO approximation and assumes that the electrons experience the moving nuclei as a perturbation of the potential, the full Hamiltonian can be approximated by a Taylor expansion with the adiabatic states at equilibrium and the quantized vibrational modes.
-This approach is widely used in solid state calculations for modeling electron/phonon transport properties (see :cite:`giustino2017eph` for more discussions).
+Because nuclei are much heavier than the electrons, one usually assumes the Born-Oppenheimer (BO) approximation, which
+defines an adiabatic electronic wavefunction for fixed nuclear positions. However, this approximation breaks down when the electronic states both change very rapidly with nuclear position and approach each other in energy.
 
-PySCF supports first order eph matrix calculation by either Coupled Perturbed Kohn-Sham/Hartree-Fock (CPKS/CPHF) or finite difference. In periodic system, only FFTDF-based Gamma-point calculation is supported with finite difference. In both cases, a geometrically relaxed structure is required, or the structure instability could lead to imaginary vibrational modes.
+To move beyond the BO approximation, one can assume that the electrons experience the moving nuclei as a perturbation of the external potential. Carrying out an expansion to linear order in nuclear positions and assuming quadratic nuclear motion around the minimum leads to an approximate Hamiltonian for the electron and nuclear motion 
+known as the linear electron-phonon coupling approximation. When deriving this Hamiltonian, the electronic degrees of freedom are assumed to be treated within a mean-field theory. This approximation is widely used in solid state calculations to model phenomena arising from coupled electron/nuclear motion (see :cite:`giustino2017eph` for more discussion).
 
-A minimal example of analytical eph matrix calculation is as follows::
+PySCF supports the calculation of the first-order electron-phonon (e-ph) coupling matrix elements using either coupled perturbed Kohn-Sham/Hartree-Fock (CPKS/CPHF) or finite differences. In periodic systems, only FFTDF-based Gamma-point calculations are supported by the finite difference implementation. In both cases, a geometrically relaxed structure is required for the consistency of the theory. 
+
+A minimal example of an analytical e-ph matrix calculation is as follows::
 
     from pyscf import gto, scf, eph
     mol = gto.M(
@@ -34,7 +34,7 @@ A minimal example of analytical eph matrix calculation is as follows::
     print('eph matrix', ephmat)
     print('phonon frequencies', omega)
 
-Alternatively, one can compute the matrix elements using finite difference::
+Alternatively, one can compute the matrix elements using finite differences::
 
     from pyscf import gto, scf, eph
     mol = gto.M(
@@ -52,7 +52,7 @@ Alternatively, one can compute the matrix elements using finite difference::
 
 Spin symmetry
 =============
-The eph module in PySCF supports mean field methods including Hartree Fock and DFT using either spin-restricted or spin-unrestricted reference.
+The ``eph`` module in PySCF supports mean field methods including Hartree Fock and DFT using either spin-restricted or spin-unrestricted reference.
 
 Analytical eph matrix elements
 ------------------------------
