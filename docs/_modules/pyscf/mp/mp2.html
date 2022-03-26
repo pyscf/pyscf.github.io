@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -313,7 +313,7 @@
 <span class="sd">RMP2</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
@@ -368,7 +368,7 @@
 
 <span class="c1"># Iteratively solve MP2 if non-canonical HF is provided</span>
 <span class="k">def</span> <span class="nf">_iterative_kernel</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">eris</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">cput1</span> <span class="o">=</span> <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">cput1</span> <span class="o">=</span> <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
 
     <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">init_amps</span><span class="p">(</span><span class="n">eris</span><span class="o">=</span><span class="n">eris</span><span class="p">)</span>
@@ -493,6 +493,14 @@
 <div class="viewcode-block" id="make_fno"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mp.html#pyscf.mp.mp2.make_fno">[docs]</a><span class="k">def</span> <span class="nf">make_fno</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">pct_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nvir_act</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">t2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">'''</span>
 <span class="sd">    Frozen natural orbitals</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        thresh : float</span>
+<span class="sd">            Threshold on NO occupation numbers. Default is 1e-6 (very conservative).</span>
+<span class="sd">        pct_occ : float</span>
+<span class="sd">            Percentage of total occupation number. Default is None. If present, overrides `thresh`.</span>
+<span class="sd">        nvir_act : int</span>
+<span class="sd">            Number of virtual NOs to keep. Default is None. If present, overrides `thresh` and `pct_occ`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        frozen : list or ndarray</span>
@@ -754,8 +762,8 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="k">if</span> <span class="n">mo_coeff</span>  <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_coeff</span>  <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
-        <span class="k">if</span> <span class="n">mo_occ</span>    <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_occ</span>    <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
+        <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+        <span class="k">if</span> <span class="n">mo_occ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">mf</span>
@@ -940,7 +948,7 @@
 
 <span class="k">def</span> <span class="nf">_make_eris</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ao2mofn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-    <span class="n">time0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">time0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">eris</span> <span class="o">=</span> <span class="n">_ChemistsERIs</span><span class="p">()</span>
     <span class="n">eris</span><span class="o">.</span><span class="n">_common_init_</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">eris</span><span class="o">.</span><span class="n">mo_coeff</span>
@@ -983,7 +991,7 @@
         <span class="c1">#eris.ovov = eris.feri['eri_mo']</span>
         <span class="n">eris</span><span class="o">.</span><span class="n">ovov</span> <span class="o">=</span> <span class="n">_ao2mo_ovov</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">cv</span><span class="p">,</span> <span class="n">eris</span><span class="o">.</span><span class="n">feri</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">),</span> <span class="n">log</span><span class="p">)</span>
 
-    <span class="n">time1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'Integral transformation'</span><span class="p">,</span> <span class="o">*</span><span class="n">time0</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'Integral transformation'</span><span class="p">,</span> <span class="o">*</span><span class="n">time0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">eris</span>
 
 <span class="c1">#</span>
@@ -992,7 +1000,7 @@
 <span class="c1">#   or    =&gt; (ij|ol) =&gt; (oj|ol) =&gt; (oj|ov) =&gt; (ov|ov)</span>
 <span class="c1">#</span>
 <span class="k">def</span> <span class="nf">_ao2mo_ovov</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">orbo</span><span class="p">,</span> <span class="n">orbv</span><span class="p">,</span> <span class="n">feri</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">time0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">time0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
 
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mol</span>
@@ -1134,7 +1142,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

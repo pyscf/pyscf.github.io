@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -293,7 +293,7 @@
             
   <h1 id="modules-pyscf-pbc-gto-cell--page-root">Source code for pyscf.pbc.gto.cell</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2021 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -319,7 +319,7 @@
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">factorial2</span>
-<span class="k">except</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">scipy.misc</span> <span class="kn">import</span> <span class="n">factorial2</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erf</span><span class="p">,</span> <span class="n">erfc</span>
 <span class="kn">import</span> <span class="nn">scipy.optimize</span>
@@ -345,6 +345,8 @@
 <span class="n">WITH_GAMMA</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_gto_cell_make_kpts_with_gamma'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">EXP_DELIMITER</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_gto_cell_split_basis_exp_delimiter'</span><span class="p">,</span>
                         <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="c1"># cutoff penalty due to lattice summation</span>
+<span class="n">LATTICE_SUM_PENALTY</span> <span class="o">=</span> <span class="mf">1e-1</span>
 
 
 <span class="c1"># For code compatiblity in python-2 and python-3</span>
@@ -542,7 +544,7 @@
     <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>  <span class="c1"># noqa</span>
     <span class="n">celldic</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">cellstr</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-<span class="c1"># Convert to utf8 because JSON loads fucntion returns unicode.</span>
+        <span class="c1"># Convert to utf8 because JSON loads fucntion returns unicode.</span>
         <span class="k">def</span> <span class="nf">byteify</span><span class="p">(</span><span class="n">inp</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">byteify</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">byteify</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inp</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()])</span>
@@ -655,8 +657,8 @@
     <span class="n">pcell</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">cell1</span><span class="p">)</span>
     <span class="n">pcell</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cell1</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
     <span class="n">pcell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> \
-    <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">conc_env</span><span class="p">(</span><span class="n">cell1</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell1</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell1</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
-                             <span class="n">cell2</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+            <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">conc_env</span><span class="p">(</span><span class="n">cell1</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell1</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell1</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
+                                     <span class="n">cell2</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">shls_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cell1</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cell2</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
     <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">j0</span><span class="p">,</span> <span class="n">j1</span> <span class="o">=</span> <span class="n">shls_slice</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
@@ -766,11 +768,14 @@
     <span class="k">return</span> <span class="n">nimgs</span></div>
 
 <span class="k">def</span> <span class="nf">_estimate_rcut</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">INTEGRAL_PRECISION</span><span class="p">):</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="mf">1e-200</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">alpha</span> <span class="o">/</span> <span class="n">precision</span>
+    <span class="sd">'''rcut based on the overlap integrals. This estimation is too conservative</span>
+<span class="sd">    in many cases. A possible replacement can be the value of the basis</span>
+<span class="sd">    function at rcut ~ c*r^(l+2)*exp(-alpha*r^2) &lt; precision'''</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">precision</span> <span class="o">*</span> <span class="n">LATTICE_SUM_PENALTY</span><span class="p">)</span>
     <span class="n">r0</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="c1"># +1. to ensure np.log returning positive value</span>
     <span class="n">r0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">r0</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
-    <span class="n">rcut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">r0</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="n">rcut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">r0</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">alpha</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rcut</span>
 
 <div class="viewcode-block" id="bas_rcut"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.bas_rcut">[docs]</a><span class="k">def</span> <span class="nf">bas_rcut</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">bas_id</span><span class="p">,</span> <span class="n">precision</span><span class="o">=</span><span class="n">INTEGRAL_PRECISION</span><span class="p">):</span>
@@ -845,7 +850,7 @@
     <span class="k">return</span> <span class="n">errmax</span></div>
 
 <div class="viewcode-block" id="get_bounding_sphere"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.get_bounding_sphere">[docs]</a><span class="k">def</span> <span class="nf">get_bounding_sphere</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">rcut</span><span class="p">):</span>
-    <span class="sd">'''Finds all the lattice points within a sphere of radius rcut.  </span>
+    <span class="sd">'''Finds all the lattice points within a sphere of radius rcut.</span>
 
 <span class="sd">    Defines a parallelipiped given by -N_x &lt;= n_x &lt;= N_x, with x in [1,3]</span>
 <span class="sd">    See Martin p. 85</span>
@@ -997,9 +1002,9 @@
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span>
           <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">==</span> <span class="s1">'inf_vacuum'</span><span class="p">)):</span>
-<span class="c1"># Non-uniform PW grids are used for low-dimensional ewald summation.  The cutoff</span>
-<span class="c1"># estimation for long range part based on exp(G^2/(4*eta^2)) does not work for</span>
-<span class="c1"># non-uniform grids.  Smooth model density is preferred.</span>
+        <span class="c1"># Non-uniform PW grids are used for low-dimensional ewald summation.  The cutoff</span>
+        <span class="c1"># estimation for long range part based on exp(G^2/(4*eta^2)) does not work for</span>
+        <span class="c1"># non-uniform grids.  Smooth model density is preferred.</span>
         <span class="n">ew_cut</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">rcut</span>
         <span class="n">ew_eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">ew_cut</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">precision</span><span class="p">)</span><span class="o">/</span><span class="n">ew_cut</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="o">.</span><span class="mi">1</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1142,7 +1147,7 @@
 <span class="sd">        scaled_center : (3,) array</span>
 <span class="sd">            Shift all points in the Monkhorst-pack grid to be centered on</span>
 <span class="sd">            scaled_center, given as the zeroth index of the returned kpts.</span>
-<span class="sd">            Scaled meaning that the k-points are scaled to a grid from </span>
+<span class="sd">            Scaled meaning that the k-points are scaled to a grid from</span>
 <span class="sd">            [-1,1] x [-1,1] x [-1,1]</span>
 
 <span class="sd">    Returns:</span>
@@ -1347,8 +1352,10 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">mole</span><span class="o">.</span><span class="n">Mole</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># lattice vectors, (a1,a2,a3)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ke_cutoff</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># if set, defines a spherical cutoff</span>
-                              <span class="c1"># of fourier components, with .5 * G**2 &lt; ke_cutoff</span>
+        <span class="c1"># if set, defines a spherical cutoff</span>
+        <span class="c1"># of fourier components, with .5 * G**2 &lt; ke_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ke_cutoff</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">pseudo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="mi">3</span>
         <span class="c1"># TODO: Simple hack for now; the implementation of ewald depends on the</span>
@@ -1402,10 +1409,10 @@
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"ew_cut is no longer stored in the cell object. Setting it has no effect"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_gto_cell_Cell_verify_nelec'</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-<span class="c1"># nelec method defined in Mole class raises error when the attributes .spin</span>
-<span class="c1"># and .nelectron are inconsistent.  In PBC, when the system has even number of</span>
-<span class="c1"># k-points, it is valid that .spin is odd while .nelectron is even.</span>
-<span class="c1"># Overwriting nelec method to avoid this check.</span>
+        <span class="c1"># nelec method defined in Mole class raises error when the attributes .spin</span>
+        <span class="c1"># and .nelectron are inconsistent.  In PBC, when the system has even number of</span>
+        <span class="c1"># k-points, it is valid that .spin is odd while .nelectron is even.</span>
+        <span class="c1"># Overwriting nelec method to avoid this check.</span>
         <span class="nd">@property</span>
         <span class="k">def</span> <span class="nf">nelec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">ne</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelectron</span>
@@ -1423,7 +1430,7 @@
         <span class="k">if</span> <span class="n">key</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'__'</span><span class="p">:</span>  <span class="c1"># Skip Python builtins</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">'Cell object has no attribute </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'_ipython_canary_method_should_not_exist_'</span><span class="p">,</span>
-                   <span class="s1">'_repr_mimebundle_'</span><span class="p">):</span>
+                     <span class="s1">'_repr_mimebundle_'</span><span class="p">):</span>
             <span class="c1"># https://github.com/mewwts/addict/issues/26</span>
             <span class="c1"># https://github.com/jupyter/notebook/issues/2014</span>
             <span class="k">raise</span> <span class="ne">AttributeError</span>
@@ -1822,7 +1829,7 @@
 <span class="sd">            \mathbf{b_3} &amp;= 2\pi \frac{\mathbf{a_1} \times \mathbf{a_2}}{\mathbf{a_3} \cdot (\mathbf{a_1} \times \mathbf{a_2})}</span>
 <span class="sd">            \end{align}</span>
 
-<span class="sd">        '''</span>
+<span class="sd">        '''</span>  <span class="c1"># noqa: E501</span>
         <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">assert</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mf">1e-9</span> <span class="ow">and</span>
@@ -1842,7 +1849,7 @@
 <span class="sd">            scaled_kpts : (nkpts, 3) ndarray of floats</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            abs_kpts : (nkpts, 3) ndarray of floats </span>
+<span class="sd">            abs_kpts : (nkpts, 3) ndarray of floats</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">scaled_kpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">())</span></div>
 
@@ -1850,7 +1857,7 @@
         <span class="sd">'''Get scaled k-points, given absolute k-points in 1/Bohr.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            abs_kpts : (nkpts, 3) ndarray of floats </span>
+<span class="sd">            abs_kpts : (nkpts, 3) ndarray of floats</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            scaled_kpts : (nkpts, 3) ndarray of floats</span>
@@ -1863,18 +1870,26 @@
         <span class="k">return</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
     <span class="n">pack</span> <span class="o">=</span> <span class="n">pack</span>
-<div class="viewcode-block" id="Cell.unpack"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.unpack">[docs]</a>    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">unpack</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moldic</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cell.unpack"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.unpack">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">unpack</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">moldic</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">unpack</span><span class="p">(</span><span class="n">moldic</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Cell.unpack_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.unpack_">[docs]</a>    <span class="k">def</span> <span class="nf">unpack_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moldic</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cell.unpack_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.unpack_">[docs]</a>    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">unpack</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">unpack_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moldic</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">moldic</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="n">dumps</span> <span class="o">=</span> <span class="n">dumps</span>
-<div class="viewcode-block" id="Cell.loads"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.loads">[docs]</a>    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">loads</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">loads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molstr</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cell.loads"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.loads">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">loads</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">loads</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">molstr</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">molstr</span><span class="p">)</span></div>
-<div class="viewcode-block" id="Cell.loads_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.loads_">[docs]</a>    <span class="k">def</span> <span class="nf">loads_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molstr</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Cell.loads_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.loads_">[docs]</a>    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">unpack</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">loads_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molstr</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loads</span><span class="p">(</span><span class="n">molstr</span><span class="p">)</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -1996,7 +2011,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -326,7 +326,7 @@
 <span class="sd">to IO overhead.</span>
 <span class="sd">"""</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
@@ -480,7 +480,7 @@
         <span class="n">feri_swap</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">piece</span><span class="p">)]</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">T</span>
 
     <span class="c1"># transform \mu\nu -&gt; ij</span>
-    <span class="n">cput0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">cput0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="k">with</span> <span class="n">lib</span><span class="o">.</span><span class="n">call_in_background</span><span class="p">(</span><span class="n">save</span><span class="p">)</span> <span class="k">as</span> <span class="n">async_write</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">istep</span><span class="p">,</span> <span class="p">(</span><span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nao_pair</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">:</span>
@@ -512,7 +512,7 @@
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'(uv|lo) -&gt; (ij|lo)'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
 
     <span class="c1"># transform \lambda\sigma -&gt; kl</span>
-    <span class="n">cput1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">Cklam</span> <span class="o">=</span> <span class="n">mo_coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
     <span class="n">buf_read</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">chunk_size</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">buf_prefetch</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">buf_read</span><span class="p">)</span>
@@ -574,31 +574,31 @@
     <span class="n">nvir</span> <span class="o">=</span> <span class="n">nmo</span> <span class="o">-</span> <span class="n">nocc</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Full incore transformation (pyscf)...'</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">eri_incore</span> <span class="o">=</span> <span class="n">ao2mo</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
     <span class="n">onnn</span> <span class="o">=</span> <span class="n">eri_incore</span><span class="p">[:</span><span class="n">nocc</span><span class="o">*</span><span class="n">nmo</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Parital incore transformation (pyscf)...'</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">orbo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[:,:</span><span class="n">nocc</span><span class="p">]</span>
     <span class="n">onnn2</span> <span class="o">=</span> <span class="n">ao2mo</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">general</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="p">(</span><span class="n">orbo</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
 
     <span class="n">tmpfile2</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">TMPDIR</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Custom outcore transformation ...'</span><span class="p">)</span>
     <span class="n">orbo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[:,:</span><span class="n">nocc</span><span class="p">]</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">general</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="p">(</span><span class="n">orbo</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">),</span> <span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'aa'</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">stop_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="n">stop_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">stop_time</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Pyscf outcore transformation ...'</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">ao2mo</span><span class="o">.</span><span class="n">outcore</span><span class="o">.</span><span class="n">general</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="p">(</span><span class="n">orbo</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">),</span> <span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'ab'</span><span class="p">,</span>
                           <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">stop_time2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="n">stop_time2</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">stop_time2</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'How worse is the custom implemenation?'</span><span class="p">,</span><span class="n">stop_time</span><span class="o">/</span><span class="n">stop_time2</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -606,15 +606,15 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">'Outcore (pyscf) vs outcore (custom)?'</span><span class="p">,</span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">'ab'</span><span class="p">],</span><span class="n">f</span><span class="p">[</span><span class="s1">'aa'</span><span class="p">]))</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Custom full outcore transformation ...'</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">general</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">),</span> <span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'aa'</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">stop_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="n">stop_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">stop_time</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Pyscf full outcore transformation ...'</span><span class="p">)</span>
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">ao2mo</span><span class="o">.</span><span class="n">outcore</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'ab'</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">stop_time2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="n">stop_time2</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'    Time elapsed (s): '</span><span class="p">,</span><span class="n">stop_time2</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'    How worse is the custom implemenation?'</span><span class="p">,</span><span class="n">stop_time</span><span class="o">/</span><span class="n">stop_time2</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">tmpfile2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -646,7 +646,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

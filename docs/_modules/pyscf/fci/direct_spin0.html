@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -294,7 +294,7 @@
             
   <h1 id="modules-pyscf-fci-direct-spin0--page-root">Source code for pyscf.fci.direct_spin0</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2021 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -434,8 +434,9 @@
 <span class="k">def</span> <span class="nf">make_rdm12</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">link_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reorder</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="c1">#dm1, dm2 = rdm.make_rdm12('FCIrdm12kern_spin0', fcivec, fcivec,</span>
     <span class="c1">#                          norb, nelec, link_index, 1)</span>
-<span class="c1"># NOT use FCIrdm12kern_spin0 because for small system, the kernel may call</span>
-<span class="c1"># direct diagonalization, which may not fulfil  fcivec = fcivet.T</span>
+
+    <span class="c1"># NOT use FCIrdm12kern_spin0 because for small system, the kernel may call</span>
+    <span class="c1"># direct diagonalization, which may not fulfil  fcivec = fcivet.T</span>
     <span class="n">dm1</span><span class="p">,</span> <span class="n">dm2</span> <span class="o">=</span> <span class="n">rdm</span><span class="o">.</span><span class="n">make_rdm12</span><span class="p">(</span><span class="s1">'FCIrdm12kern_sf'</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span>
                               <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">link_index</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">reorder</span><span class="p">:</span>
@@ -549,8 +550,8 @@
             <span class="n">pw</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">pspace_size</span> <span class="o">&gt;=</span> <span class="n">na</span><span class="o">*</span><span class="n">na</span> <span class="ow">and</span> <span class="n">ci0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">davidson_only</span><span class="p">:</span>
-<span class="c1"># The degenerated wfn can break symmetry.  The davidson iteration with proper</span>
-<span class="c1"># initial guess doesn't have this issue</span>
+            <span class="c1"># The degenerated wfn can break symmetry.  The davidson iteration with proper</span>
+            <span class="c1"># initial guess doesn't have this issue</span>
             <span class="k">if</span> <span class="n">na</span><span class="o">*</span><span class="n">na</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">pw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">ecore</span><span class="p">,</span> <span class="n">pv</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">nroots</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -567,9 +568,10 @@
                 <span class="n">civec</span> <span class="o">=</span> <span class="n">civec</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">na</span><span class="p">)</span>
                 <span class="n">civec</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">transpose_sum</span><span class="p">(</span><span class="n">civec</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
                 <span class="c1"># direct diagonalization may lead to triplet ground state</span>
-<span class="c1">##TODO: optimize initial guess.  Using pspace vector as initial guess may have</span>
-<span class="c1">## spin problems.  The 'ground state' of psapce vector may have different spin</span>
-<span class="c1">## state to the true ground state.</span>
+
+                <span class="c1">#TODO: optimize initial guess.  Using pspace vector as initial guess may have</span>
+                <span class="c1"># spin problems.  The 'ground state' of psapce vector may have different spin</span>
+                <span class="c1"># state to the true ground state.</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">pw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">ecore</span><span class="p">,</span> <span class="n">_check_</span><span class="p">(</span><span class="n">civec</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">na</span><span class="p">))</span>
                 <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -716,7 +718,6 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">time</span>
     <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
@@ -748,7 +749,7 @@
     <span class="n">eri</span> <span class="o">=</span> <span class="n">ao2mo</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">general</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,)</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">cis</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">eri</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="o">-</span><span class="mf">15.9977886375</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'t'</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'t'</span><span class="p">,</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">())</span>
 
 </pre></div>
 
@@ -774,7 +775,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

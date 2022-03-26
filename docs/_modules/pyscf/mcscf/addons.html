@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -294,7 +294,7 @@
             
   <h1 id="modules-pyscf-mcscf-addons--page-root">Source code for pyscf.mcscf.addons</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2019 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2021 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -602,8 +602,58 @@
                              <span class="n">cas_irrep_ncore</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">sort_mo</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">caslst</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="make_natural_orbitals"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.addons.make_natural_orbitals">[docs]</a><span class="k">def</span> <span class="nf">make_natural_orbitals</span> <span class="p">(</span><span class="n">method_obj</span><span class="p">):</span>
+    <span class="sd">"""Make natural orbitals from a general PySCF method object.</span>
+<span class="sd">    See Eqn. (1) in Keller et al. [DOI:10.1063/1.4922352] for details.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        method_obj : Any PySCF method that has the function `make_rdm1` with kwarg</span>
+<span class="sd">            `ao_repr`. This object can be a restricted OR unrestricted method.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        noons : A 1-D array of the natural orbital occupations (NOONs).</span>
+
+<span class="sd">        natorbs : A set of natural orbitals made from method_obj.</span>
+<span class="sd">    """</span>
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">method_obj</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">method_obj</span><span class="p">,</span> <span class="s2">"_scf"</span><span class="p">):</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">method_obj</span><span class="o">.</span><span class="n">_scf</span>
+    <span class="n">rdm1</span> <span class="o">=</span> <span class="n">method_obj</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">ao_repr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
+
+    <span class="c1"># Slight difference for restricted vs. unrestriced case</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rdm1</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">Dm</span> <span class="o">=</span> <span class="n">rdm1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">rdm1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rdm1</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">rdm1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">Dm</span> <span class="o">=</span> <span class="n">rdm1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">rdm1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">rdm1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">Dm</span> <span class="o">=</span> <span class="n">rdm1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"rdm1 passed to is a numpy array,"</span> <span class="o">+</span>
+                <span class="s2">"but it has the wrong number of dimensions: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">rdm1</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"</span><span class="se">\n\t</span><span class="s2">The rdm1 generated by method_obj.make_rdm1() was a </span><span class="si">{}</span><span class="s2">."</span>
+            <span class="s2">"</span><span class="se">\n\t</span><span class="s2">This type is not supported, please select a different method and/or "</span>
+            <span class="s2">"open an issue at https://github.com/pyscf/pyscf/issues"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">rdm1</span><span class="p">))</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Diagonalize the DM in AO (using Eqn. (1) referenced above)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">Dm</span><span class="p">,</span> <span class="n">S</span><span class="p">))</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="c1"># Flip NOONs (and NOs) since they're in increasing order</span>
+    <span class="n">noons</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">natorbs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">noons</span><span class="p">,</span> <span class="n">natorbs</span></div>
+
+
 <div class="viewcode-block" id="project_init_guess"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.addons.project_init_guess">[docs]</a><span class="k">def</span> <span class="nf">project_init_guess</span> <span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">mo_init</span><span class="p">,</span> <span class="n">prev_mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_hf_core</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">'''Project the given initial guess to the current CASSCF problem </span>
+    <span class="sd">'''Project the given initial guess to the current CASSCF problem</span>
 <span class="sd">    giving using a sequence of SVDs on orthogonal orbital subspaces.</span>
 
 <span class="sd">    Args:</span>
@@ -622,7 +672,7 @@
 <span class="sd">    Kwargs:</span>
 <span class="sd">        prev_mol : an instance of :class:`Mole`</span>
 <span class="sd">            If given, the inital guess orbitals are associated to the</span>
-<span class="sd">            basis of prev_mol. Otherwise, the orbitals are presumed to </span>
+<span class="sd">            basis of prev_mol. Otherwise, the orbitals are presumed to</span>
 <span class="sd">            be in the basis of casscf.mol. Beware linear dependencies if</span>
 <span class="sd">            you are projecting from a LARGER basis to a SMALLER one.</span>
 
@@ -632,7 +682,7 @@
 <span class="sd">            projected. Orbitals orthogonalized earlier are deformed less</span>
 <span class="sd">            than those orthogonalized later. 'core' means core, then</span>
 <span class="sd">            active, then virtual; 'active' means active, then core, then</span>
-<span class="sd">            virtual, and the Gram-Schmidt process is generated by </span>
+<span class="sd">            virtual, and the Gram-Schmidt process is generated by</span>
 <span class="sd">            [[0],[1],[2],...] or numpy.eye (nmo). Missing orbitals are</span>
 <span class="sd">            presumed virtual. Defaults to 'active' if you are projecting</span>
 <span class="sd">            from the same basis set (prev_mol is None or has the same</span>
@@ -690,8 +740,8 @@
         <span class="n">orbsym_basis</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf_symm</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_basis</span><span class="p">,</span> <span class="n">s0</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ir</span> <span class="ow">in</span> <span class="nb">set</span> <span class="p">(</span><span class="n">orbsym_target</span><span class="p">):</span>
             <span class="n">errstr</span> <span class="o">=</span> <span class="s1">'inadequate basis for symmetry </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="n">ir</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span> <span class="p">(</span><span class="n">orbsym_basis</span><span class="o">==</span><span class="n">ir</span><span class="p">)</span> <span class="o">&gt;=</span> 
-                <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span> <span class="p">(</span><span class="n">orbsym_target</span><span class="o">==</span><span class="n">ir</span><span class="p">)),</span> <span class="n">errstr</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span> <span class="p">(</span><span class="n">orbsym_basis</span><span class="o">==</span><span class="n">ir</span><span class="p">)</span> <span class="o">&gt;=</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span> <span class="p">(</span><span class="n">orbsym_target</span><span class="o">==</span><span class="n">ir</span><span class="p">)),</span> <span class="n">errstr</span>
         <span class="c1"># Avoid scrambling the order of the target orbitals</span>
         <span class="n">mo_null</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">mo_proj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span> <span class="p">(</span><span class="n">mo_target</span><span class="p">)</span>
@@ -751,13 +801,13 @@
             <span class="k">elif</span> <span class="ow">not</span> <span class="n">priority</span><span class="o">.</span><span class="n">lower</span> <span class="p">()</span> <span class="o">==</span> <span class="s1">'core'</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span> <span class="p">(</span><span class="s2">"Invalid priority keyword: string must be either 'active' or 'core'"</span><span class="p">)</span>
             <span class="c1"># Edge case: ncore == 0 or ncas == 0 -&gt; remove zero rows from ridx</span>
-            <span class="n">ridx</span> <span class="o">=</span> <span class="n">ridx</span><span class="p">[</span><span class="n">ridx</span><span class="o">.</span><span class="n">sum</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span> <span class="p">(</span><span class="nb">bool</span><span class="p">)]</span> 
+            <span class="n">ridx</span> <span class="o">=</span> <span class="n">ridx</span><span class="p">[</span><span class="n">ridx</span><span class="o">.</span><span class="n">sum</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span> <span class="p">(</span><span class="nb">bool</span><span class="p">)]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ridx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span> <span class="p">((</span><span class="nb">len</span> <span class="p">(</span><span class="n">priority</span><span class="p">),</span> <span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">ridx</span><span class="p">,</span> <span class="n">priority</span><span class="p">):</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">row</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span> <span class="p">(</span><span class="s2">"Invalid priority keyword: index array cannot address shape (*,nmo_init)"</span><span class="p">)</span>
             <span class="n">ridx_counts</span> <span class="o">=</span> <span class="n">ridx</span><span class="o">.</span><span class="n">astype</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span> <span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span> <span class="p">(</span><span class="n">ridx_counts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
@@ -768,14 +818,14 @@
 
     <span class="c1"># Iterate over spin cases</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ncore</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
-        <span class="n">errstr</span> <span class="o">=</span> <span class="s1">'Invalid priority keyword (3-dim is valid for UHF-CAS only)'</span>
+        <span class="c1"># errstr = 'Invalid priority keyword (3-dim is valid for UHF-CAS only)'</span>
         <span class="n">range_idx</span><span class="p">,</span> <span class="n">sort_idx</span> <span class="o">=</span> <span class="n">_interpret</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">_spincase</span> <span class="p">(</span><span class="n">mf_mo</span><span class="p">,</span> <span class="n">mo_init</span><span class="p">,</span> <span class="n">range_idx</span><span class="p">,</span> <span class="n">sort_idx</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span> <span class="c1"># UHF-based CASSCF</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="c1"># single string</span>
-            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">priority</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># single mask array</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>  <span class="c1"># single string</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">priority</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># single mask array</span>
             <span class="ow">or</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">priority</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">))):</span> <span class="c1"># 2d nested list</span>
-                <span class="n">priority</span> <span class="o">=</span> <span class="p">[</span><span class="n">priority</span><span class="p">,</span> <span class="n">priority</span><span class="p">]</span>
+            <span class="n">priority</span> <span class="o">=</span> <span class="p">[</span><span class="n">priority</span><span class="p">,</span> <span class="n">priority</span><span class="p">]</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">_interpret</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)]</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="p">(</span><span class="n">_spincase</span> <span class="p">(</span><span class="n">mf_mo</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_init</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
               <span class="n">_spincase</span> <span class="p">(</span><span class="n">mf_mo</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_init</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
@@ -1165,8 +1215,8 @@
             <span class="k">return</span> <span class="n">dm1</span>
 
         <span class="k">def</span> <span class="nf">make_rdm1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">sum</span> <span class="p">([</span><span class="n">w</span> <span class="o">*</span> <span class="n">dm</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">dm</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">states_make_rdm1</span> <span class="p">(</span><span class="n">ci0</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))])</span>
+            <span class="k">return</span> <span class="nb">sum</span> <span class="p">([</span><span class="n">w</span> <span class="o">*</span> <span class="n">dm</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">dm</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">states_make_rdm1</span><span class="p">(</span><span class="n">ci0</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))])</span>
 
         <span class="k">def</span> <span class="nf">states_make_rdm1s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">dm1a</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1640,7 +1690,7 @@
                 <span class="n">fcivec</span> <span class="o">=</span> <span class="n">_state_args</span> <span class="p">(</span><span class="n">fcivec</span><span class="p">)</span>
                 <span class="n">nelec</span> <span class="o">=</span> <span class="n">_solver_args</span> <span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_nelec</span> <span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">nelec</span><span class="p">)</span> <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolvers</span><span class="p">])</span>
                 <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">(</span><span class="s1">'transform_ci_for_orbital_rotation'</span><span class="p">,</span>
-                                    <span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+                                          <span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
     <span class="n">fcisolver</span> <span class="o">=</span> <span class="n">FakeCISolver</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
     <span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
@@ -1748,7 +1798,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

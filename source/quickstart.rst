@@ -17,7 +17,7 @@ Whenever you change the value of the attributes of :class:`Mole`, you'll need to
 
 Symmetry may be specified in the ``Mole.symmetry`` attribute as either ``True`` or ``False`` (default is ``False``, i.e., off). Alternatively, a particular subgroup can be specified by a string argument (`gto/13-symmetry.py <https://github.com/pyscf/pyscf/blob/master/examples/gto/13-symmetry.py>`_):
 
-  >>> mol_c2 = gto.M(atom = 'C 0 0 .625; O 0 0 -.625', symmetry = 'd2h')
+  >>> mol_c2 = gto.M(atom = 'C 0 0 .625; C 0 0 -.625', symmetry = 'd2h')
   
 There are many other ways to input a molecular or crystalline geometry (e.g., by means of Z-matrices or reading in .xyz files), cf. the complete suite of `gto <https://github.com/pyscf/pyscf/blob/master/examples/gto>`_ and `pbc <https://github.com/pyscf/pyscf/blob/master/examples/pbc>`_ examples.
 

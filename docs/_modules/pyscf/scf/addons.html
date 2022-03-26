@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -320,11 +320,13 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.gto</span> <span class="kn">import</span> <span class="n">mole</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib.scipy_helper</span> <span class="kn">import</span> <span class="n">pivoted_cholesky</span>
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">hf</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">LINEAR_DEP_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_addons_remove_linear_dep_threshold'</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
 <span class="n">CHOLESKY_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_addons_cholesky_threshold'</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>
+<span class="n">FORCE_PIVOTED_CHOLESKY</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_addons_force_cholesky'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">LINEAR_DEP_TRIGGER</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_addons_remove_linear_dep_trigger'</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>
 
 <div class="viewcode-block" id="smearing_"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.smearing_">[docs]</a><span class="k">def</span> <span class="nf">smearing_</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -597,7 +599,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'mom alpha electron occupation numbers do not match: </span><span class="si">%d</span><span class="s1">, </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
                       <span class="n">nocc_a</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">!=</span> <span class="n">nocc_b</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'mom alpha electron occupation numbers do not match: </span><span class="si">%d</span><span class="s1">, </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">'mom beta electron occupation numbers do not match: </span><span class="si">%d</span><span class="s1">, </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
                       <span class="n">nocc_b</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
 
         <span class="c1">#output 1-dimension occupation number for restricted open-shell</span>
@@ -760,10 +762,9 @@
 
     <span class="c1"># Run the pivoted Cholesky decomposition</span>
     <span class="n">Ssort</span> <span class="o">=</span> <span class="n">Snorm</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">sortidx</span><span class="p">,</span> <span class="n">sortidx</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">pstrf</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lapack</span><span class="o">.</span><span class="n">get_lapack_funcs</span><span class="p">(</span><span class="s1">'pstrf'</span><span class="p">)</span>
-    <span class="n">c</span><span class="p">,</span> <span class="n">piv</span><span class="p">,</span> <span class="n">r_c</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">pstrf</span><span class="p">(</span><span class="n">Ssort</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">cholthr</span><span class="p">)</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">piv</span><span class="p">,</span> <span class="n">r_c</span> <span class="o">=</span> <span class="n">pivoted_cholesky</span><span class="p">(</span><span class="n">Ssort</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">cholthr</span><span class="p">)</span>
     <span class="c1"># The functions we're going to use are given by the pivot as</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">sortidx</span><span class="p">[</span><span class="n">piv</span><span class="p">[:</span><span class="n">r_c</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">sortidx</span><span class="p">[</span><span class="n">piv</span><span class="p">[:</span><span class="n">r_c</span><span class="p">]]</span>
 
     <span class="c1"># Get the (un-normalized) sub-basis</span>
     <span class="n">Ssub</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">idx</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -778,7 +779,8 @@
 
 <div class="viewcode-block" id="remove_linear_dep_"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.remove_linear_dep_">[docs]</a><span class="k">def</span> <span class="nf">remove_linear_dep_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">,</span>
                        <span class="n">lindep</span><span class="o">=</span><span class="n">LINEAR_DEP_TRIGGER</span><span class="p">,</span>
-                       <span class="n">cholesky_threshold</span><span class="o">=</span><span class="n">CHOLESKY_THRESHOLD</span><span class="p">):</span>
+                       <span class="n">cholesky_threshold</span><span class="o">=</span><span class="n">CHOLESKY_THRESHOLD</span><span class="p">,</span>
+                       <span class="n">force_pivoted_cholesky</span><span class="o">=</span><span class="n">FORCE_PIVOTED_CHOLESKY</span><span class="p">):</span>
     <span class="sd">'''</span>
 <span class="sd">    Args:</span>
 <span class="sd">        threshold : float</span>
@@ -790,13 +792,13 @@
 <span class="sd">    '''</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
     <span class="n">cond</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">lindep</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">lindep</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mf</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Applying remove_linear_dep_ on SCF object.'</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Overlap condition number </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">cond</span><span class="p">)</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using canonical orthogonalization'</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using canonical orthogonalization with threshold </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
         <span class="k">def</span> <span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">canonical_orth_</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
             <span class="n">xhx</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
@@ -807,6 +809,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using partial Cholesky orthogonalization '</span>
                     <span class="s1">'(doi:10.1063/1.5139948, doi:10.1103/PhysRevA.101.032504)'</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using threshold </span><span class="si">{}</span><span class="s1"> for pivoted Cholesky'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cholesky_threshold</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using threshold </span><span class="si">{}</span><span class="s1"> to orthogonalize the subbasis'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
         <span class="k">def</span> <span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">partial_cholesky_orth_</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">canthr</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">cholthr</span><span class="o">=</span><span class="n">cholesky_threshold</span><span class="p">)</span>
             <span class="n">xhx</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
@@ -874,11 +878,11 @@
         <span class="n">out</span> <span class="o">=</span> <span class="n">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">remove_df</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-<span class="c1"># Remove with_df for SOSCF method because the post-HF code checks the</span>
-<span class="c1"># attribute .with_df to identify whether an SCF object is DF-SCF method.</span>
-<span class="c1"># with_df in SOSCF is used in orbital hessian approximation only.  For the</span>
-<span class="c1"># returned SCF object, whehter with_df exists in SOSCF has no effects on the</span>
-<span class="c1"># mean-field energy and other properties.</span>
+        <span class="c1"># Remove with_df for SOSCF method because the post-HF code checks the</span>
+        <span class="c1"># attribute .with_df to identify whether an SCF object is DF-SCF method.</span>
+        <span class="c1"># with_df in SOSCF is used in orbital hessian approximation only.  For the</span>
+        <span class="c1"># returned SCF object, whehter with_df exists in SOSCF has no effects on the</span>
+        <span class="c1"># mean-field energy and other properties.</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'_scf'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_scf</span><span class="p">),</span> <span class="n">remove_df</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1123,12 +1127,12 @@
                      <span class="n">scf</span><span class="o">.</span><span class="n">hf_symm</span><span class="o">.</span><span class="n">RHF</span>   <span class="p">:</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf_symm</span><span class="o">.</span><span class="n">GHF</span><span class="p">,</span>
                      <span class="n">scf</span><span class="o">.</span><span class="n">hf_symm</span><span class="o">.</span><span class="n">ROHF</span>  <span class="p">:</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf_symm</span><span class="o">.</span><span class="n">GHF</span><span class="p">,</span>
                      <span class="n">scf</span><span class="o">.</span><span class="n">uhf_symm</span><span class="o">.</span><span class="n">UHF</span>  <span class="p">:</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf_symm</span><span class="o">.</span><span class="n">GHF</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">rks</span><span class="o">.</span><span class="n">RKS</span>       <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">roks</span><span class="o">.</span><span class="n">ROKS</span>     <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">uks</span><span class="o">.</span><span class="n">UKS</span>       <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">RKS</span>  <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">ROKS</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">dft</span><span class="o">.</span><span class="n">uks_symm</span><span class="o">.</span><span class="n">UKS</span>  <span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">rks</span><span class="o">.</span><span class="n">RKS</span>       <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks</span><span class="o">.</span><span class="n">GKS</span><span class="p">,</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">roks</span><span class="o">.</span><span class="n">ROKS</span>     <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks</span><span class="o">.</span><span class="n">GKS</span><span class="p">,</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">uks</span><span class="o">.</span><span class="n">UKS</span>       <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks</span><span class="o">.</span><span class="n">GKS</span><span class="p">,</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">RKS</span>  <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks_symm</span><span class="o">.</span><span class="n">GKS</span><span class="p">,</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">ROKS</span> <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks_symm</span><span class="o">.</span><span class="n">GKS</span><span class="p">,</span>
+                     <span class="n">dft</span><span class="o">.</span><span class="n">uks_symm</span><span class="o">.</span><span class="n">UKS</span>  <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">gks_symm</span><span class="o">.</span><span class="n">GKS</span><span class="p">}</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_object_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">known_cls</span><span class="p">,</span> <span class="n">remove_df</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">update_mo_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span></div>
@@ -1296,7 +1300,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

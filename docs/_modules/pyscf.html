@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -328,9 +328,10 @@
 
 <span class="sd">'''</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">'1.7.6'</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">'2.0.1'</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="c1"># Avoid too many threads being created in OMP loops.</span>
 <span class="c1"># See issue https://github.com/pyscf/pyscf/issues/317</span>
 <span class="k">if</span> <span class="s1">'OPENBLAS_NUM_THREADS'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
@@ -338,7 +339,48 @@
 <span class="k">if</span> <span class="s1">'MKL_NUM_THREADS'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MKL_NUM_THREADS'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'1'</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1"># Load modules which are developed as plugins of the namespace package</span>
+<span class="n">PYSCF_EXT_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">'PYSCF_EXT_PATH'</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">PYSCF_EXT_PATH</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">PYSCF_EXT_PATH</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">':'</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">submodules</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">'pyscf'</span> <span class="ow">in</span> <span class="n">submodules</span><span class="p">:</span>
+                <span class="c1"># PYSCF_EXT_PATH points to the root directory of a submodule</span>
+                <span class="n">__path__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">'pyscf'</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Load all modules in PYSCF_EXT_PATH if it's a folder that</span>
+                <span class="c1"># contains all extended modules</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">submodules</span><span class="p">:</span>
+                    <span class="n">__path__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s1">'pyscf'</span><span class="p">))</span>
+                <span class="k">del</span> <span class="n">f</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="c1"># Load all moduels defined inside the file PYSCF_EXT_PATH</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">__path__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+            <span class="k">del</span> <span class="n">f</span>
+    <span class="k">del</span> <span class="n">p</span>
+<span class="k">elif</span> <span class="s1">'/site-packages/'</span> <span class="ow">in</span> <span class="vm">__file__</span> <span class="ow">or</span> <span class="s1">'/dist-packages/'</span> <span class="ow">in</span> <span class="vm">__file__</span><span class="p">:</span>
+    <span class="c1"># If pyscf has been installed in the standard runtime path (typically</span>
+    <span class="c1"># under site-packages), and plugins are installed with the pip editable</span>
+    <span class="c1"># mode, load namespace plugins. In this case, it is likely all modules are</span>
+    <span class="c1"># managed by pip/conda or their virtual environments. It is safe to search</span>
+    <span class="c1"># namespace plugins according to the old style of PEP 420.</span>
+    <span class="n">__path__</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">'pkgutil'</span><span class="p">)</span><span class="o">.</span><span class="n">extend_path</span><span class="p">(</span><span class="n">__path__</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># We need a better way to load plugins if pyscf is imported by the</span>
+    <span class="c1"># environment variable PYTHONPATH. Current treatment may mix installed</span>
+    <span class="c1"># plugins (e.g.  through pip install) with the developing plugins which</span>
+    <span class="c1"># were accidentally placed under PYTHONPATH. When PYTHONPATH mechanism is</span>
+    <span class="c1"># taken, an explicit list of extended paths (using environment</span>
+    <span class="c1"># PYSCF_EXT_PATH) is recommended.</span>
+    <span class="n">__path__</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="s1">'pkgutil'</span><span class="p">)</span><span class="o">.</span><span class="n">extend_path</span><span class="p">(</span><span class="n">__path__</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="s1">'/site-packages/'</span> <span class="ow">in</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">__path__</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'pyscf plugins found in </span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span>
+                         <span class="s1">'When PYTHONPATH is set, it is recommended to load '</span>
+                         <span class="s1">'these plugins through the environment variable '</span>
+                         <span class="s1">'PYSCF_EXT_PATH'</span> <span class="o">%</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">__path__</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
 <span class="kn">from</span> <span class="nn">distutils.version</span> <span class="kn">import</span> <span class="n">LooseVersion</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="k">if</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="s1">'1.8.0'</span><span class="p">:</span>
@@ -366,9 +408,8 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 
-<span class="c1">#__path__.append(os.path.join(os.path.dirname(__file__), 'future'))</span>
-<span class="c1">#__path__.append(os.path.join(os.path.dirname(__file__), 'tools'))</span>
-
+<span class="c1"># Whether to enable debug mode. When this flag is set, some modules may run</span>
+<span class="c1"># extra debug code.</span>
 <span class="n">DEBUG</span> <span class="o">=</span> <span class="n">__config__</span><span class="o">.</span><span class="n">DEBUG</span>
 
 <div class="viewcode-block" id="M"><a class="viewcode-back" href="../pyscf_api_docs/pyscf.html#pyscf.M">[docs]</a><span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -379,7 +420,7 @@
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># Molecule</span>
         <span class="k">return</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<span class="k">del</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="n">sys</span><span class="p">,</span> <span class="n">LooseVersion</span><span class="p">)</span>
+<span class="k">del</span> <span class="n">os</span><span class="p">,</span> <span class="n">sys</span><span class="p">,</span> <span class="n">LooseVersion</span>
 </pre></div>
 
           </article>
@@ -404,7 +445,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

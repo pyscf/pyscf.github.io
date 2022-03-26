@@ -108,7 +108,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -333,6 +333,8 @@
         </li>
         <li class="md-nav__item"><a href="#frozen-orbital-mcscf" class="md-nav__link">Frozen-orbital MCSCF</a>
         </li>
+        <li class="md-nav__item"><a href="#spin-state-of-cas-wavefunction" class="md-nav__link">Spin state of CAS wavefunction</a>
+        </li>
         <li class="md-nav__item"><a href="#state-averaged-calculations" class="md-nav__link">State-Averaged Calculations</a>
         </li>
         <li class="md-nav__item"><a href="#job-control" class="md-nav__link">Job Control</a><nav class="md-nav">
@@ -485,6 +487,8 @@
         <li class="md-nav__item"><a href="#picking-an-active-space" class="md-nav__link">Picking an Active Space</a>
         </li>
         <li class="md-nav__item"><a href="#frozen-orbital-mcscf" class="md-nav__link">Frozen-orbital MCSCF</a>
+        </li>
+        <li class="md-nav__item"><a href="#spin-state-of-cas-wavefunction" class="md-nav__link">Spin state of CAS wavefunction</a>
         </li>
         <li class="md-nav__item"><a href="#state-averaged-calculations" class="md-nav__link">State-Averaged Calculations</a>
         </li>
@@ -674,11 +678,67 @@ The orbitals will remain fixed throughout the optimization.</p>
 </div>
 <p>Users can also specify a list of orbital indices (0-based).
 These may be occupied, virtual, or active orbitals.</p>
-<p>See <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/19-frozen_core.py">examples/mcscf/19-frozen_core.py</a> for a complete example.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">26</span><span class="p">,</span><span class="mi">27</span><span class="p">]</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/19-frozen_orbital.py">examples/mcscf/19-frozen_orbital.py</a> for a complete example.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The <cite>frozen</cite> keyword of the CASSCF optimizer should not be confused with the <cite>frozen</cite> keyword of the FCI solver, which controls the number of orbitals that are constrained to be doubly occupied.</p>
 </div>
+</section>
+<section id="spin-state-of-cas-wavefunction">
+<h2 id="spin-state-of-cas-wavefunction">Spin state of CAS wavefunction<a class="headerlink" href="#spin-state-of-cas-wavefunction" title="Permalink to this headline">¶</a></h2>
+<p>Multiconfigurational wavefunction provided by the
+the <cite>pyscf.fci</cite> solver is typically spin-adapted, but there is no direct
+control of the spin multiplicity (i.e. S^2 value). It is, nevertheless, possible
+to define the spin projection Sz of the obtained WF, which helps to fix the spin
+multiplicity in most of the cases. By default, the MCSCF uses the setting in
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">mol.spin</span></code> for the value of 2*Sz.</p>
+<p>You can change the number of alpha and beta electrons in the active space.
+The Sz value of the MCSCF wavefunction can differ from <code class="xref py py-attr docutils literal notranslate"><span class="pre">mol.spin</span></code>.</p>
+<p>For example, you can start from <cite>Sz=0</cite> RHF calculations, and then change the
+number of alpha and beta electrons in the active space to solve higher
+spin states, such as the triplet state.```</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">myhf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="c1"># 5 alpha electrons, 3 beta electrons</span>
+<span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Another common scenario to adjust the spin settings is the caulations of
+transition-metal systems. For transition-metal system with open d shell, one can
+start with single-reference maximum-Sz state and then switch to more complicated
+low-spin states in CASSCF.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">myhf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">ROHF</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It may happen that a wave function of correct Sz is achieved while
+S^2 is wrong. This issue may either be caused by convergence onto
+another spin state, or spin contamination in the CAS wave function.</p>
+<p>Such issues can be circumvented with the <code class="xref py py-func docutils literal notranslate"><span class="pre">fix_spin_()</span></code> method
+of the CASCI/CASSCF class, which is able to correct the spin state
+by biasing the calculation towards the wanted state.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">myhf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">mycas</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="c1"># Targeting triplet state with Sz=0</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">fix_spin_</span><span class="p">(</span><span class="n">ss</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">mycas</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="xref py py-func docutils literal notranslate"><span class="pre">fix_spin_()</span></code> is an energy-penalty method. It may affect the efficiency and
+accuracy of the CASCI and CASSCF algorithms. It should not be used unless
+the MCSCF program has difficulties in finding the wanted spin state.</p>
+<p>In example <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/02-cas_space_spin.py">examples/mcscf/02-cas_space_spin.py</a> and
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/mcscf/18-spatial_spin_symmetry.py.py">examples/mcscf/18-spatial_spin_symmetry.py.py</a>, you can find the
+complete scripts to tune spin states of the CASCI/CASSCF wavefunctions.</p>
 </section>
 <section id="state-averaged-calculations">
 <h2 id="state-averaged-calculations">State-Averaged Calculations<a class="headerlink" href="#state-averaged-calculations" title="Permalink to this headline">¶</a></h2>
@@ -864,7 +924,7 @@ The user may request the active orbitals to be transformed to the so-called natu
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

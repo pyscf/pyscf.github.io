@@ -160,7 +160,7 @@ For more details, see :source:`examples/mcscf/43-avas.py` and :source:`examples/
 
 
 Frozen-orbital MCSCF
------------------
+--------------------
 
 Orbitals can be frozen in the orbital optimization to e.g. reduce the computational effort of CASSCF calculations.
 The orbitals will remain fixed throughout the optimization.
@@ -178,14 +178,77 @@ Users can also specify a list of orbital indices (0-based).
 These may be occupied, virtual, or active orbitals.
 
 .. code-block:: python
+
   mycas = mcscf.CASSCF(myhf, 6, 8)
   mycas.frozen = [0,1,26,27]
   mycas.kernel()
 
-See :source:`examples/mcscf/19-frozen_core.py` for a complete example.
+See :source:`examples/mcscf/19-frozen_orbital.py` for a complete example.
 
 .. note::
   The `frozen` keyword of the CASSCF optimizer should not be confused with the `frozen` keyword of the FCI solver, which controls the number of orbitals that are constrained to be doubly occupied.
+
+
+Spin state of CAS wavefunction
+------------------------------
+Multiconfigurational wavefunction provided by the
+the `pyscf.fci` solver is typically spin-adapted, but there is no direct
+control of the spin multiplicity (i.e. S^2 value). It is, nevertheless, possible
+to define the spin projection Sz of the obtained WF, which helps to fix the spin
+multiplicity in most of the cases. By default, the MCSCF uses the setting in
+:attr:`mol.spin` for the value of 2*Sz.
+
+You can change the number of alpha and beta electrons in the active space.
+The Sz value of the MCSCF wavefunction can differ from :attr:`mol.spin`.
+
+For example, you can start from `Sz=0` RHF calculations, and then change the
+number of alpha and beta electrons in the active space to solve higher
+spin states, such as the triplet state.```
+
+.. code-block:: python
+
+  mol.spin = 0
+  myhf = mol.RHF().run()
+  # 5 alpha electrons, 3 beta electrons
+  mycas = mcscf.CASSCF(myhf, 6, (5, 3))
+  mycas.kernel()
+
+Another common scenario to adjust the spin settings is the caulations of
+transition-metal systems. For transition-metal system with open d shell, one can
+start with single-reference maximum-Sz state and then switch to more complicated
+low-spin states in CASSCF.
+
+.. code-block:: python
+
+  mol.spin = 4
+  myhf = mol.ROHF().run()
+  mycas = mcscf.CASSCF(myhf, 6, (3, 3))
+  mycas.kernel()
+
+It may happen that a wave function of correct Sz is achieved while
+S^2 is wrong. This issue may either be caused by convergence onto
+another spin state, or spin contamination in the CAS wave function.
+
+Such issues can be circumvented with the :func:`fix_spin_` method
+of the CASCI/CASSCF class, which is able to correct the spin state
+by biasing the calculation towards the wanted state.
+
+.. code-block:: python
+
+  mol.spin = 0
+  myhf = mol.RHF().run()
+  mycas = mcscf.CASSCF(myhf, 6, (4, 4))
+  # Targeting triplet state with Sz=0
+  mycas.fix_spin_(ss=2)
+  mycas.kernel()
+
+:func:`fix_spin_` is an energy-penalty method. It may affect the efficiency and
+accuracy of the CASCI and CASSCF algorithms. It should not be used unless
+the MCSCF program has difficulties in finding the wanted spin state.
+
+In example :source:`examples/mcscf/02-cas_space_spin.py` and
+:source:`examples/mcscf/18-spatial_spin_symmetry.py.py`, you can find the
+complete scripts to tune spin states of the CASCI/CASSCF wavefunctions.
 
 
 State-Averaged Calculations

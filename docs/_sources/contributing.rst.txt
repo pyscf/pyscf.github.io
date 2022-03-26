@@ -29,7 +29,7 @@ How to make an extension
 1. Download the template (https://github.com/pyscf/extension-template), run the
    script in the extension template::
 
-    $ curl https://github.com/pyscf/extension-template/pyscf-extension-template-0.1.0.tar.gz | tar xvzf -
+    $ curl -L https://github.com/pyscf/extension-template/archive/refs/tags/0.1.0.tar.gz | tar xvzf -
     $ mv extension-template new-project
     $ cd new-project
     $ make new-project

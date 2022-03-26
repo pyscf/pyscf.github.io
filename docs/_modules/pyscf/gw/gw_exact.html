@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -316,7 +316,7 @@
 <span class="sd">Spin-restricted G0W0 approximation with exact frequency integration</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -383,23 +383,22 @@
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">orbs</span><span class="p">:</span>
         <span class="n">tdm_p</span> <span class="o">=</span> <span class="n">tdm</span><span class="p">[:,:,</span><span class="n">p</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">gw</span><span class="o">.</span><span class="n">linearized</span><span class="p">:</span>
-            <span class="n">de</span> <span class="o">=</span> <span class="mf">1e-6</span>
             <span class="n">ep</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
-            <span class="c1">#TODO: analytic sigma derivative</span>
             <span class="n">sigma</span> <span class="o">=</span> <span class="n">get_sigma_element</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">td_e</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
-            <span class="n">dsigma</span> <span class="o">=</span> <span class="n">get_sigma_element</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="n">ep</span><span class="o">+</span><span class="n">de</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">td_e</span><span class="p">)</span><span class="o">.</span><span class="n">real</span> <span class="o">-</span> <span class="n">sigma</span>
-            <span class="n">zn</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">dsigma</span><span class="o">/</span><span class="n">de</span><span class="p">)</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="n">ep</span> <span class="o">+</span> <span class="n">zn</span><span class="o">*</span><span class="p">(</span><span class="n">sigma</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span> <span class="n">vk</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_mf</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">])</span>
-            <span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">dsigma_dw</span> <span class="o">=</span> <span class="n">get_sigma_deriv_element</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">td_e</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">zn</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">dsigma_dw</span><span class="p">)</span>
+            <span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">ep</span> <span class="o">+</span> <span class="n">zn</span><span class="o">*</span><span class="p">(</span><span class="n">sigma</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span> <span class="n">vk</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_mf</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">quasiparticle</span><span class="p">(</span><span class="n">omega</span><span class="p">):</span>
                 <span class="n">sigma</span> <span class="o">=</span> <span class="n">get_sigma_element</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">td_e</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">omega</span> <span class="o">-</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">sigma</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span> <span class="n">vk</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_mf</span><span class="p">[</span><span class="n">p</span><span class="p">,</span><span class="n">p</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">e</span> <span class="o">=</span> <span class="n">newton</span><span class="p">(</span><span class="n">quasiparticle</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-                <span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+                <span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">newton</span><span class="p">(</span><span class="n">quasiparticle</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
                 <span class="n">conv</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">p</span><span class="p">]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="s1">'Root finding for GW eigenvalue </span><span class="si">%s</span><span class="s1"> did not converge. '</span>
+                                <span class="s1">'Setting it equal to the reference MO energy.'</span><span class="o">%</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span>
 
     <span class="k">if</span> <span class="n">gw</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
@@ -422,6 +421,18 @@
     <span class="k">return</span> <span class="n">sigma</span></div>
 
 
+<div class="viewcode-block" id="get_sigma_deriv_element"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.gw_exact.get_sigma_deriv_element">[docs]</a><span class="k">def</span> <span class="nf">get_sigma_deriv_element</span><span class="p">(</span><span class="n">gw</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">tdm_p</span><span class="p">,</span> <span class="n">tdm_q</span><span class="p">,</span> <span class="n">td_e</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vir_sgn</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">eta</span>
+
+    <span class="n">nocc</span> <span class="o">=</span> <span class="n">gw</span><span class="o">.</span><span class="n">nocc</span>
+    <span class="n">evi</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">'v-i-&gt;vi'</span><span class="p">,</span> <span class="n">td_e</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[:</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="n">eva</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">'v+a-&gt;va'</span><span class="p">,</span> <span class="n">td_e</span><span class="p">,</span> <span class="n">gw</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="p">:])</span>
+    <span class="n">dsigma</span> <span class="o">=</span>  <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">tdm_p</span><span class="p">[:,:</span><span class="n">nocc</span><span class="p">]</span><span class="o">*</span><span class="n">tdm_q</span><span class="p">[:,:</span><span class="n">nocc</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">omega</span> <span class="o">+</span> <span class="n">evi</span> <span class="o">-</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">eta</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+    <span class="n">dsigma</span> <span class="o">+=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">tdm_p</span><span class="p">[:,</span><span class="n">nocc</span><span class="p">:]</span><span class="o">*</span><span class="n">tdm_q</span><span class="p">[:,</span><span class="n">nocc</span><span class="p">:]</span><span class="o">/</span><span class="p">(</span><span class="n">omega</span> <span class="o">-</span> <span class="n">eva</span> <span class="o">+</span> <span class="n">vir_sgn</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">eta</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dsigma</span></div>
+
+
 <div class="viewcode-block" id="get_g"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.gw_exact.get_g">[docs]</a><span class="k">def</span> <span class="nf">get_g</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">eta</span><span class="p">):</span>
     <span class="n">sgn</span> <span class="o">=</span> <span class="n">mo_occ</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">omega</span> <span class="o">-</span> <span class="n">mo_energy</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">eta</span><span class="o">*</span><span class="n">sgn</span><span class="p">)</span></div>
@@ -438,7 +449,7 @@
 <span class="sd">            Orbital coefficients</span>
 <span class="sd">    '''</span>
 
-    <span class="n">eta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'gw_gw_GW_eta'</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'gw_gw_GW_eta'</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
     <span class="n">linearized</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'gw_gw_GW_linearized'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tdmf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -521,7 +532,7 @@
         <span class="k">if</span> <span class="n">td_xy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">td_xy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tdscf</span><span class="o">.</span><span class="n">xy</span>
 
-        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> \
                 <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">td_e</span><span class="p">,</span> <span class="n">td_xy</span><span class="p">,</span>
@@ -549,9 +560,9 @@
             <span class="k">return</span> <span class="n">_make_eris_incore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="s1">'with_df'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'GW detected DF being used in the HF object. '</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'GW Exact detected DF being used in the HF object. '</span>
                         <span class="s1">'MO integrals are computed based on the DF 3-index tensors.</span><span class="se">\n</span><span class="s1">'</span>
-                        <span class="s1">'Developer TODO:  Write dfgw.GW for the '</span>
+                        <span class="s1">'Developer TODO:  Write dfgw.GWExact for the '</span>
                         <span class="s1">'DF-GW calculations'</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
             <span class="c1">#return _make_df_eris_outcore(self, mo_coeff)</span>
@@ -598,7 +609,7 @@
         <span class="k">return</span> <span class="bp">self</span>
 
 <span class="k">def</span> <span class="nf">_make_eris_incore</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ao2mofn</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">eris</span> <span class="o">=</span> <span class="n">_ChemistsERIs</span><span class="p">()</span>
     <span class="n">eris</span><span class="o">.</span><span class="n">_common_init_</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
     <span class="n">nocc</span> <span class="o">=</span> <span class="n">eris</span><span class="o">.</span><span class="n">nocc</span>
@@ -619,7 +630,7 @@
     <span class="k">return</span> <span class="n">eris</span>
 
 <span class="k">def</span> <span class="nf">_make_eris_outcore</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mycc</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">eris</span> <span class="o">=</span> <span class="n">_ChemistsERIs</span><span class="p">()</span>
     <span class="n">eris</span><span class="o">.</span><span class="n">_common_init_</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
@@ -687,11 +698,11 @@
     <span class="n">gw</span> <span class="o">=</span> <span class="n">GWExact</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="n">gw</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">gw</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">)</span>
-<span class="c1"># [-20.10555946  -1.2264067   -0.68160939  -0.53066326  -0.44679868</span>
-<span class="c1">#   0.17291986   0.24457082   0.74758227   0.80045129   1.11748735</span>
-<span class="c1">#   1.1508353    1.19081928   1.40406947   1.43593681   1.63324734</span>
-<span class="c1">#   1.81839838   1.86943727   2.37827782   2.48829939   3.26028229</span>
-<span class="c1">#   3.3247595    3.4958492    3.77735135   4.14572189]</span>
+<span class="c1"># [-20.10555941  -1.2264133   -0.68160937  -0.53066324  -0.44679866</span>
+<span class="c1">#    0.17291986   0.24457082   0.74758225   0.80045126   1.11748749</span>
+<span class="c1">#    1.15083528   1.19081826   1.40406946   1.43593671   1.63324755</span>
+<span class="c1">#    1.79839248   1.88459324   2.31461977   2.48839545   3.26047431</span>
+<span class="c1">#    3.32486673   3.49601314   3.77699489   4.14575936]</span>
 
     <span class="n">nocc</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nelectron</span><span class="o">//</span><span class="mi">2</span>
 
@@ -724,7 +735,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

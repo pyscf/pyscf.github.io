@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -329,19 +329,9 @@
 
 <span class="n">DISABLE_EVAL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'DISABLE_EVAL'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-<span class="n">MAXL</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">SPDF</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'S'</span><span class="p">,</span> <span class="s1">'P'</span><span class="p">,</span> <span class="s1">'D'</span><span class="p">,</span> <span class="s1">'F'</span><span class="p">,</span> <span class="s1">'G'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">,</span> <span class="s1">'I'</span><span class="p">,</span> <span class="s1">'K'</span><span class="p">,</span> <span class="s1">'L'</span><span class="p">,</span> <span class="s1">'M'</span><span class="p">)</span>
-<span class="n">MAPSPDF</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'S'</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-           <span class="s1">'P'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-           <span class="s1">'D'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-           <span class="s1">'F'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-           <span class="s1">'G'</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-           <span class="s1">'H'</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-           <span class="s1">'I'</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
-           <span class="s1">'K'</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
-           <span class="s1">'L'</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-           <span class="s1">'M'</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
-          <span class="p">}</span>
+<span class="n">MAXL</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">SPDF</span> <span class="o">=</span> <span class="s1">'SPDFGHIKLMNORTU'</span>
+<span class="n">MAPSPDF</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">l</span> <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">SPDF</span><span class="p">)}</span>
 
 <span class="n">BASIS_SET_DELIMITER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'# *BASIS SET.*</span><span class="se">\n</span><span class="s1">|END</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
 <span class="n">ECP_DELIMITER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> *ECP *</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
@@ -406,7 +396,8 @@
     <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">raw_basis</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span></div>
 
 <span class="k">def</span> <span class="nf">_parse</span><span class="p">(</span><span class="n">raw_basis</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">basis_add</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">basis_parsed</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAXL</span><span class="p">)]</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">raw_basis</span><span class="p">:</span>
         <span class="n">dat</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dat</span> <span class="ow">or</span> <span class="n">dat</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'#'</span><span class="p">):</span>
@@ -414,10 +405,12 @@
         <span class="k">elif</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'SP'</span><span class="p">:</span>
-                <span class="n">basis_add</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
-                <span class="n">basis_add</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">basis_add</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">MAPSPDF</span><span class="p">[</span><span class="n">key</span><span class="p">]])</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">MAPSPDF</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">current_basis</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="p">]</span>
+                <span class="n">basis_parsed</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_basis</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'D'</span><span class="p">,</span><span class="s1">'e'</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
@@ -430,14 +423,14 @@
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span>
                                          <span class="s1">'</span><span class="se">\n</span><span class="s1">or the required basis file not existed.'</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'SP'</span><span class="p">:</span>
-                <span class="n">basis_add</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
-                <span class="n">basis_add</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Failed to parse basis'</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'SP'</span><span class="p">:</span>
+                <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+                <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">basis_add</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
-    <span class="n">basis_sorted</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAXL</span><span class="p">):</span>
-        <span class="n">basis_sorted</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">basis_add</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">l</span><span class="p">])</span>
+                <span class="n">current_basis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+    <span class="n">basis_sorted</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">bs</span> <span class="ow">in</span> <span class="n">basis_parsed</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bs</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">optimize</span><span class="p">:</span>
         <span class="n">basis_sorted</span> <span class="o">=</span> <span class="n">optimize_contraction</span><span class="p">(</span><span class="n">basis_sorted</span><span class="p">)</span>
@@ -734,7 +727,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

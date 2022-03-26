@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -321,14 +321,16 @@
 
 
 <div class="viewcode-block" id="get_atm_nrhf"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.get_atm_nrhf">[docs]</a><span class="k">def</span> <span class="nf">get_atm_nrhf</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">atomic_configuration</span><span class="o">=</span><span class="n">elements</span><span class="o">.</span><span class="n">NRSRHF_CONFIGURATION</span><span class="p">):</span>
-    <span class="n">atm_scf_result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">elements</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Spherically averaged atomic HF for </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">elements</span><span class="p">)</span>
 
     <span class="n">atm_template</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
     <span class="n">atm_template</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">atm_template</span><span class="o">.</span><span class="n">symmetry</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># TODO: enable SO3 symmetry here</span>
     <span class="n">atm_template</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="n">atm_template</span><span class="o">.</span><span class="n">_atom</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">atm_template</span><span class="o">.</span><span class="n">cart</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># AtomSphericAverageRHF does not support cartensian basis</span>
+    <span class="n">atm_template</span><span class="o">.</span><span class="n">cart</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># AtomSphAverageRHF does not support cartensian basis</span>
 
+    <span class="n">atm_scf_result</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">ia</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">):</span>
         <span class="n">element</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">atm_scf_result</span><span class="p">:</span>
@@ -338,10 +340,13 @@
         <span class="n">atm</span><span class="o">.</span><span class="n">_atom</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
         <span class="n">atm</span><span class="o">.</span><span class="n">_atm</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">[</span><span class="n">ia</span><span class="p">:</span><span class="n">ia</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">atm</span><span class="o">.</span><span class="n">_bas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ia</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">atm</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Point to the only atom</span>
-        <span class="n">atm</span><span class="o">.</span><span class="n">_ecpbas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">[</span><span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ia</span><span class="p">]</span>
+        <span class="n">atm</span><span class="o">.</span><span class="n">_ecpbas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">[</span><span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ia</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># Point to the only atom</span>
+        <span class="n">atm</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">atm</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_pseudo</span><span class="p">:</span>
             <span class="n">atm</span><span class="o">.</span><span class="n">_pseudo</span> <span class="o">=</span> <span class="p">{</span><span class="n">element</span><span class="p">:</span> <span class="n">mol</span><span class="o">.</span><span class="n">_pseudo</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">element</span><span class="p">)}</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">atm</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">nelectron</span> <span class="o">%</span> <span class="mi">2</span>
 
         <span class="n">nao</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">nao</span>
@@ -354,17 +359,17 @@
             <span class="k">if</span> <span class="n">atm</span><span class="o">.</span><span class="n">nelectron</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">atm_hf</span> <span class="o">=</span> <span class="n">AtomHF1e</span><span class="p">(</span><span class="n">atm</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">atm_hf</span> <span class="o">=</span> <span class="n">AtomSphericAverageRHF</span><span class="p">(</span><span class="n">atm</span><span class="p">)</span>
+                <span class="n">atm_hf</span> <span class="o">=</span> <span class="n">AtomSphAverageRHF</span><span class="p">(</span><span class="n">atm</span><span class="p">)</span>
                 <span class="n">atm_hf</span><span class="o">.</span><span class="n">atomic_configuration</span> <span class="o">=</span> <span class="n">atomic_configuration</span>
 
-            <span class="n">atm_hf</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="n">atm_hf</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span>
             <span class="n">atm_hf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
             <span class="n">atm_scf_result</span><span class="p">[</span><span class="n">element</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">atm_hf</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="n">atm_hf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">,</span>
                                        <span class="n">atm_hf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">atm_hf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">atm_scf_result</span></div>
 
 
-<div class="viewcode-block" id="AtomSphericAverageRHF"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF">[docs]</a><span class="k">class</span> <span class="nc">AtomSphericAverageRHF</span><span class="p">(</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomSphAverageRHF"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF">[docs]</a><span class="k">class</span> <span class="nc">AtomSphAverageRHF</span><span class="p">(</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eri</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atomic_configuration</span> <span class="o">=</span> <span class="n">elements</span><span class="o">.</span><span class="n">NRSRHF_CONFIGURATION</span>
@@ -374,12 +379,15 @@
         <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">96</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span> <span class="o">=</span> <span class="s1">'1e'</span>
 
-<div class="viewcode-block" id="AtomSphericAverageRHF.dump_flags"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'occupation averaged SCF for atom  </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span>
-                     <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span></div>
+<div class="viewcode-block" id="AtomSphAverageRHF.check_sanity"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.check_sanity">[docs]</a>    <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AtomSphericAverageRHF.eig"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF.eig">[docs]</a>    <span class="k">def</span> <span class="nf">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomSphAverageRHF.dump_flags"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'atom = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="AtomSphAverageRHF.eig"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.eig">[docs]</a>    <span class="k">def</span> <span class="nf">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">ao_ang</span> <span class="o">=</span> <span class="n">_angular_momentum_for_each_ao</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
 
@@ -412,7 +420,7 @@
 
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AtomSphericAverageRHF.get_occ"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF.get_occ">[docs]</a>    <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomSphAverageRHF.get_occ"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.get_occ">[docs]</a>    <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">'''spherically averaged fractional occupancy'''</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">symb</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -442,16 +450,27 @@
 
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">occ</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AtomSphericAverageRHF.get_grad"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF.get_grad">[docs]</a>    <span class="k">def</span> <span class="nf">get_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomSphAverageRHF.get_grad"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.get_grad">[docs]</a>    <span class="k">def</span> <span class="nf">get_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="AtomSphericAverageRHF.scf"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphericAverageRHF.scf">[docs]</a>    <span class="k">def</span> <span class="nf">scf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="AtomSphAverageRHF.scf"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomSphAverageRHF.scf">[docs]</a>    <span class="k">def</span> <span class="nf">scf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">'dump_chk'</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">scf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">scf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Atomic HF for atom  </span><span class="si">%s</span><span class="s1">  converged. SCF energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Atomic HF for atom  </span><span class="si">%s</span><span class="s1">  not converged. SCF energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<span class="n">AtomSphericAverageRHF</span> <span class="o">=</span> <span class="n">AtomSphAverageRHF</span>
 
 
-<div class="viewcode-block" id="AtomHF1e"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomHF1e">[docs]</a><span class="k">class</span> <span class="nc">AtomHF1e</span><span class="p">(</span><span class="n">rohf</span><span class="o">.</span><span class="n">HF1e</span><span class="p">,</span> <span class="n">AtomSphericAverageRHF</span><span class="p">):</span>
-    <span class="n">eig</span> <span class="o">=</span> <span class="n">AtomSphericAverageRHF</span><span class="o">.</span><span class="n">eig</span></div>
+<div class="viewcode-block" id="AtomHF1e"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.AtomHF1e">[docs]</a><span class="k">class</span> <span class="nc">AtomHF1e</span><span class="p">(</span><span class="n">rohf</span><span class="o">.</span><span class="n">HF1e</span><span class="p">,</span> <span class="n">AtomSphAverageRHF</span><span class="p">):</span>
+    <span class="n">eig</span> <span class="o">=</span> <span class="n">AtomSphAverageRHF</span><span class="o">.</span><span class="n">eig</span></div>
 
 
 <div class="viewcode-block" id="frac_occ"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.atom_hf.frac_occ">[docs]</a><span class="k">def</span> <span class="nf">frac_occ</span><span class="p">(</span><span class="n">symb</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">atomic_configuration</span><span class="o">=</span><span class="n">elements</span><span class="o">.</span><span class="n">NRSRHF_CONFIGURATION</span><span class="p">):</span>
@@ -510,7 +529,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

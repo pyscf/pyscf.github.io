@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -293,7 +293,7 @@
             
   <h1 id="modules-pyscf-grad-lagrange--page-root">Source code for pyscf.grad.lagrange</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2021 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -306,23 +306,19 @@
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
-<span class="c1">#</span>
-<span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
-<span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span><span class="p">,</span> <span class="n">__config__</span>
-<span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">rhf_grad</span>
-<span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">ciah</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span><span class="p">,</span> <span class="n">optimize</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">sparse_linalg</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span><span class="p">,</span> <span class="n">__config__</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">rhf_grad</span>
+<span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">ciah</span>
 
 <span class="n">default_level_shift</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'grad_lagrange_Gradients_level_shift'</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
 <span class="n">default_conv_atol</span> <span class="o">=</span> <span class="nb">getattr</span> <span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'grad_lagrange_Gradients_conv_atol'</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
 <span class="n">default_conv_rtol</span> <span class="o">=</span> <span class="nb">getattr</span> <span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'grad_lagrange_Gradients_conv_rtol'</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
-<span class="n">default_max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span> <span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'grad_lagrange_Gradients_max_cycle'</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span> 
+<span class="n">default_max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span> <span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'grad_lagrange_Gradients_max_cycle'</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Gradients"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients">[docs]</a><span class="k">class</span> <span class="nc">Gradients</span> <span class="p">(</span><span class="n">rhf_grad</span><span class="o">.</span><span class="n">GradientsMixin</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">''' Dummy parent class for calculating analytical nuclear gradients using the technique of Lagrange multipliers:</span>
@@ -331,32 +327,35 @@
 <span class="sd">    I.E., the Lagrange multipliers L_i cancel the direct dependence of the wave function on the nuclear coordinates</span>
 <span class="sd">    and allow the Hellmann-Feynman theorem to be used for some non-variational methods. '''</span>
 
-    <span class="c1">################################## Child classes MUST overwrite the methods below ################################################</span>
+    <span class="c1">################################## Child classes MUST overwrite the methods below ##################################</span>
 
 <div class="viewcode-block" id="Gradients.get_wfn_response"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.get_wfn_response">[docs]</a>    <span class="k">def</span> <span class="nf">get_wfn_response</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">''' Return first derivative of the energy wrt wave function parameters conjugate to the Lagrange multipliers.</span>
 <span class="sd">            Used to calculate the value of the Lagrange multipliers. '''</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span> <span class="p">(</span><span class="n">nlag</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Gradients.get_Aop_Adiag"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.get_Aop_Adiag">[docs]</a>    <span class="k">def</span> <span class="nf">get_Aop_Adiag</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">''' Return a function calculating Lvec . J_wfn, where J_wfn is the Jacobian of the Lagrange cofactors (e.g.,</span>
 <span class="sd">            in state-averaged CASSCF, the Hessian of the state-averaged energy wrt wfn parameters) along with</span>
 <span class="sd">            the diagonal of the Jacobian. '''</span>
         <span class="k">def</span> <span class="nf">Aop</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span> <span class="p">(</span><span class="n">nlag</span><span class="p">)</span>
-        <span class="n">Adiag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span> <span class="p">(</span><span class="n">nlag</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">)</span>
+        <span class="n">Adiag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">Adiag</span></div>
-    
+
 <div class="viewcode-block" id="Gradients.get_ham_response"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.get_ham_response">[docs]</a>    <span class="k">def</span> <span class="nf">get_ham_response</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">''' Return expectation values &lt;dH/dx&gt; where x is nuclear displacement. I.E., the gradient if the method were variational. '''</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span> <span class="p">((</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+        <span class="sd">''' Return expectation values &lt;dH/dx&gt; where x is nuclear displacement.</span>
+<span class="sd">        I.E., the gradient if the method were variational.</span>
+<span class="sd">        '''</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Gradients.get_LdotJnuc"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.get_LdotJnuc">[docs]</a>    <span class="k">def</span> <span class="nf">get_LdotJnuc</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lvec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">''' Return Lvec . J_nuc, where J_nuc is the Jacobian of the Lagrange cofactors wrt nuclear displacement. This is the</span>
-<span class="sd">            second term of the final gradient expectation value. '''</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span> <span class="p">((</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
+        <span class="sd">''' Return Lvec . J_nuc, where J_nuc is the Jacobian of the Lagrange cofactors wrt nuclear displacement.</span>
+<span class="sd">        This is the second term of the final gradient expectation value.</span>
+<span class="sd">        '''</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span></div>
 
-    <span class="c1">################################## Child classes SHOULD overwrite the methods below ##############################################</span>
+    <span class="c1">################################## Child classes SHOULD overwrite the methods below ################################</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">nlag</span><span class="p">):</span>
         <span class="c1">#self.mol = mol</span>
@@ -376,14 +375,14 @@
         <span class="n">rhf_grad</span><span class="o">.</span><span class="n">GradientsMixin</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Gradients.debug_lagrange"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.debug_lagrange">[docs]</a>    <span class="k">def</span> <span class="nf">debug_lagrange</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lvec</span><span class="p">,</span> <span class="n">bvec</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">Adiag</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"</span><span class="si">{}</span><span class="s2"> gradient Lagrange factor debugging not enabled"</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
-        <span class="k">pass</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"</span><span class="si">{}</span><span class="s2"> gradient Lagrange factor debugging not enabled"</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Gradients.get_lagrange_callback"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.get_lagrange_callback">[docs]</a>    <span class="k">def</span> <span class="nf">get_lagrange_callback</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lvec_last</span><span class="p">,</span> <span class="n">itvec</span><span class="p">,</span> <span class="n">geff_op</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">my_call</span> <span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="n">itvec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange optimization iteration </span><span class="si">{}</span><span class="s1">, |geff| = </span><span class="si">{}</span><span class="s1">, |dLvec| = </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="n">itvec</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">geff_op</span> <span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">Lvec_last</span><span class="p">)))</span> 
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange optimization iteration </span><span class="si">{}</span><span class="s1">, |geff| = </span><span class="si">{}</span><span class="s1">, |dLvec| = </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span>
+                <span class="n">itvec</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">geff_op</span> <span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">Lvec_last</span><span class="p">)))</span>
             <span class="n">Lvec_last</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:]</span>
         <span class="k">return</span> <span class="n">my_call</span></div>
 
@@ -396,7 +395,7 @@
         <span class="k">return</span> <span class="n">precond</span> <span class="p">(</span><span class="o">-</span><span class="n">bvec</span><span class="p">)</span></div>
 
 
-    <span class="c1">################################## Child classes SHOULD NOT overwrite the methods below ###########################################</span>
+    <span class="c1">################################## Child classes SHOULD NOT overwrite the methods below ############################</span>
 
 <div class="viewcode-block" id="Gradients.solve_lagrange"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.solve_lagrange">[docs]</a>    <span class="k">def</span> <span class="nf">solve_lagrange</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lvec_guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level_shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">bvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_wfn_response</span> <span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -408,55 +407,60 @@
             <span class="k">return</span> <span class="n">Lvec_last</span>
         <span class="n">precond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lagrange_precond</span> <span class="p">(</span><span class="n">Adiag</span><span class="p">,</span> <span class="n">level_shift</span><span class="o">=</span><span class="n">level_shift</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">it</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span> <span class="p">([</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange multiplier determination intial gradient norm: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">bvec</span><span class="p">)))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange multiplier determination intial gradient norm: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">bvec</span><span class="p">)))</span>
         <span class="n">my_call</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_lagrange_callback</span> <span class="p">(</span><span class="n">Lvec_last</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span> <span class="n">my_geff</span><span class="p">)</span>
         <span class="n">Aop_obj</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">LinearOperator</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">),</span> <span class="n">matvec</span><span class="o">=</span><span class="n">Aop</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">bvec</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">prec_obj</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">LinearOperator</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">),</span> <span class="n">matvec</span><span class="o">=</span><span class="n">precond</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">bvec</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">x0_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_init_guess</span> <span class="p">(</span><span class="n">bvec</span><span class="p">,</span> <span class="n">Adiag</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">precond</span><span class="p">)</span>
-        <span class="n">Lvec</span><span class="p">,</span> <span class="n">info_int</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">cg</span> <span class="p">(</span><span class="n">Aop_obj</span><span class="p">,</span> <span class="o">-</span><span class="n">bvec</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0_guess</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_atol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_call</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">prec_obj</span><span class="p">)</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange multiplier determination </span><span class="si">{}</span><span class="s1"> after </span><span class="si">{}</span><span class="s1"> iterations</span><span class="se">\n</span><span class="s1">   |geff| = </span><span class="si">{}</span><span class="s1">, |Lvec| = </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s1">'converged'</span><span class="p">,</span><span class="s1">'not converged'</span><span class="p">)[</span><span class="nb">bool</span> <span class="p">(</span><span class="n">info_int</span><span class="p">)],</span> <span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">my_geff</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">)),</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">)))</span> 
-        <span class="k">if</span> <span class="n">info_int</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange multiplier determination error code </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="n">info_int</span><span class="p">))</span>
+        <span class="n">Lvec</span><span class="p">,</span> <span class="n">info_int</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">cg</span><span class="p">(</span><span class="n">Aop_obj</span><span class="p">,</span> <span class="o">-</span><span class="n">bvec</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0_guess</span><span class="p">,</span>
+                                          <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_atol</span><span class="p">,</span>
+                                          <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_call</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">prec_obj</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="s1">'Lagrange multiplier determination </span><span class="si">{}</span><span class="s1"> after </span><span class="si">{}</span><span class="s1"> iterations</span><span class="se">\n</span><span class="s1">'</span>
+                            <span class="s1">'   |geff| = </span><span class="si">{}</span><span class="s1">, |Lvec| = </span><span class="si">{}</span><span class="s1">'</span><span class="p">)</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span>
+                                <span class="s1">'converged'</span> <span class="k">if</span> <span class="n">info_int</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">'not converged'</span><span class="p">,</span>
+                                <span class="n">it</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">my_geff</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">)),</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">info_int</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange multiplier determination error code </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span><span class="n">info_int</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">info_int</span><span class="o">==</span><span class="mi">0</span><span class="p">),</span> <span class="n">Lvec</span><span class="p">,</span> <span class="n">bvec</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">Adiag</span></div>
-                    
+
 <div class="viewcode-block" id="Gradients.kernel"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.Gradients.kernel">[docs]</a>    <span class="k">def</span> <span class="nf">kernel</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level_shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
-        <span class="n">log</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">if</span> <span class="s1">'atmlst'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">atmlst</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'atmlst'</span><span class="p">]</span>
         <span class="c1">#self.natm = len (self.atmlst)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">WARN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">WARN</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">()</span>
 
         <span class="n">conv</span><span class="p">,</span> <span class="n">Lvec</span><span class="p">,</span> <span class="n">bvec</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">Adiag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_lagrange</span> <span class="p">(</span><span class="n">level_shift</span><span class="o">=</span><span class="n">level_shift</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">debug_lagrange</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">,</span> <span class="n">bvec</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">Adiag</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1">#if not conv: raise RuntimeError ('Lagrange multiplier determination not converged!')</span>
-        <span class="n">cput1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient multiplier solution'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
+        <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient multiplier solution'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
 
         <span class="n">ham_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ham_response</span> <span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> gradient Hamiltonian response ---------------'</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> gradient Hamiltonian response ---------------'</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="n">rhf_grad</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">ham_response</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmlst</span><span class="p">)</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
-        <span class="n">cput1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient Hellmann-Feynman determination'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
+        <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient Hellmann-Feynman determination'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
 
         <span class="n">LdotJnuc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_LdotJnuc</span> <span class="p">(</span><span class="n">Lvec</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> gradient Lagrange response ---------------'</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> gradient Lagrange response ---------------'</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
         <span class="n">rhf_grad</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">LdotJnuc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmlst</span><span class="p">)</span>
-        <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
-        <span class="n">cput1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient Jacobian'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
-        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
+        <span class="n">cput1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lagrange gradient Jacobian'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">=</span> <span class="n">ham_response</span> <span class="o">+</span> <span class="n">LdotJnuc</span>
         <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'Lagrange gradients'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_finalize</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">de</span></div></div>
 
     <span class="c1">#def dump_flags(self):</span>
-    <span class="c1">#    log = lib.logger.Logger(self.stdout, self.verbose)</span>
+    <span class="c1">#    log = logger.Logger(self.stdout, self.verbose)</span>
     <span class="c1">#    log.info('\n')</span>
     <span class="c1">#    if not self.base.converged:</span>
     <span class="c1">#        log.warn('Ground state method not converged')</span>
@@ -467,11 +471,11 @@
     <span class="c1">#    return self</span>
 
     <span class="c1">#def _finalize (self):</span>
-    <span class="c1">#    if self.verbose &gt;= lib.logger.NOTE:</span>
-    <span class="c1">#        lib.logger.note(self, '--------------- %s gradients ---------------',</span>
-    <span class="c1">#                    self.base.__class__.__name__)</span>
+    <span class="c1">#    if self.verbose &gt;= logger.NOTE:</span>
+    <span class="c1">#        logger.note(self, '--------------- %s gradients ---------------',</span>
+    <span class="c1">#                self.base.__class__.__name__)</span>
     <span class="c1">#        rhf_grad._write(self, self.mol, self.de, self.atmlst)</span>
-    <span class="c1">#        lib.logger.note(self, '----------------------------------------------')</span>
+    <span class="c1">#        logger.note(self, '----------------------------------------------')</span>
 
 <div class="viewcode-block" id="LagPrec"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.lagrange.LagPrec">[docs]</a><span class="k">class</span> <span class="nc">LagPrec</span> <span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">''' A callable preconditioner for solving the Lagrange equations. Default is 1/(Adiagd+level_shift) '''</span>
@@ -510,7 +514,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

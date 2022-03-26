@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -293,7 +293,7 @@
             
   <h1 id="modules-pyscf-pbc-df-aft-jk--page-root">Source code for pyscf.pbc.df.aft_jk</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2021 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -314,7 +314,7 @@
 <span class="sd">JK with analytic Fourier transformation</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
@@ -338,33 +338,38 @@
     <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">ft_loop</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">):</span>
         <span class="n">_update_vj_</span><span class="p">(</span><span class="n">vj_kpts</span><span class="p">,</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">coulG</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">weight</span><span class="p">)</span>
-    <span class="n">aoao</span> <span class="o">=</span> <span class="n">aoaoks</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">aoaoks</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts</span><span class="p">):</span>
         <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">vj_kpts</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">_format_jks</span><span class="p">(</span><span class="n">vj_kpts</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span></div>
 
 <span class="k">def</span> <span class="nf">_update_vj_</span><span class="p">(</span><span class="n">vj_kpts</span><span class="p">,</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">coulG</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
-    <span class="n">n_dm</span> <span class="o">=</span> <span class="n">vj_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="sa">r</span><span class="sd">'''Compute the Coulomb matrix</span>
+<span class="sd">    J_{kl} = \sum_{ij} \sum_G 4\pi/G^2 * FT(\rho_{ij}) IFT(\rho_{kl}) dm_{ji}</span>
+<span class="sd">    for analytical FT tensor FT(\rho_{ij})</span>
+<span class="sd">    '''</span>
+    <span class="c1"># FT(\rho_{ij, kpt}) = \int exp(-i G*r) conj(\psi_{i,kpt}) \psi_{j,kpt} dr</span>
+    <span class="c1"># IFT(\rho_{ij, kpt}) = \int exp(i G*r) conj(\psi_{i,kpt}) \psi_{j,kpt} dr</span>
+    <span class="c1"># IFT(\rho_{ij, kpt}) = conj(FT(\rho_{ji, kpt}))</span>
+    <span class="c1"># rhoG[k] = einsum('ij,gji-&gt;g', dms[i,k], IFT(\rho))</span>
+    <span class="c1">#         = einsum('ij,gji-&gt;g', dms[i,k], aoao.conj().transpose(0,2,1))</span>
+    <span class="c1">#         = einsum('ij,gij-&gt;g', dms[i,k].conj(), aoao).conj()</span>
+    <span class="c1"># vG = sum_k rhoG[k] * coulG</span>
+    <span class="c1"># vj[k] = einsum('g,gji-&gt;g', vG, aoao[k])</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">vj_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">vG</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_dm</span>
+    <span class="n">rhoG</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">aoao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aoaoks</span><span class="p">):</span>
         <span class="n">aoao</span> <span class="o">=</span> <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dm</span><span class="p">):</span>
-            <span class="c1"># einsum('ij,Lji-&gt;L', dms[i,k], aoao.conj())</span>
-            <span class="c1"># = einsum('ij,Lji-&gt;L', dms[i,k].conj(), aoao).conj()</span>
-            <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,Lji-&gt;L'</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">],</span> <span class="n">aoao</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
-            <span class="n">vG</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">coulG</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dm</span><span class="p">):</span>
-        <span class="n">vG</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">weight</span>
+        <span class="n">rhoG</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'nij,Lij-&gt;nL'</span><span class="p">,</span> <span class="n">dms</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">aoao</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+    <span class="n">vG</span> <span class="o">=</span> <span class="n">rhoG</span> <span class="o">*</span> <span class="n">coulG</span> <span class="o">*</span> <span class="n">weight</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">aoao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aoaoks</span><span class="p">):</span>
         <span class="n">aoao</span> <span class="o">=</span> <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_dm</span><span class="p">):</span>
-            <span class="n">vj_kpts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'L,Lij-&gt;ij'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">aoao</span><span class="p">)</span>
+        <span class="n">vj_kpts</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'nL,Lij-&gt;nij'</span><span class="p">,</span> <span class="n">vG</span><span class="p">,</span> <span class="n">aoao</span><span class="p">)</span>
 
 <div class="viewcode-block" id="get_j_for_bands"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.aft_jk.get_j_for_bands">[docs]</a><span class="k">def</span> <span class="nf">get_j_for_bands</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
 
     <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
@@ -374,19 +379,16 @@
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
     <span class="n">coulG</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">weighted_coulG</span><span class="p">(</span><span class="n">kpt_allow</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
     <span class="n">ngrids</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coulG</span><span class="p">)</span>
-    <span class="n">vG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+    <span class="n">rhoG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="o">.</span><span class="mi">8</span>
 
     <span class="k">for</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">ft_loop</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">):</span>
-        <span class="c1">#:rho = numpy.einsum('lkL,lk-&gt;L', pqk.conj(), dm)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">aoao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aoaoks</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,Lji-&gt;L'</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">],</span>
-                                   <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
-                <span class="n">vG</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">coulG</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
+            <span class="n">rhoG</span><span class="p">[:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'nij,Lij-&gt;nL'</span><span class="p">,</span> <span class="n">dms</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span>
+                                          <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
     <span class="n">aoao</span> <span class="o">=</span> <span class="n">aoaoks</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-    <span class="n">vG</span> <span class="o">*=</span> <span class="n">weight</span>
+    <span class="n">vG</span> <span class="o">=</span> <span class="n">rhoG</span> <span class="o">*</span> <span class="n">coulG</span> <span class="o">*</span> <span class="n">weight</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'get_j pass 1 to compute J(G)'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="n">kpts_band</span><span class="p">,</span> <span class="n">input_band</span> <span class="o">=</span> <span class="n">_format_kpts_band</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">),</span> <span class="n">kpts_band</span>
@@ -395,9 +397,8 @@
     <span class="k">for</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">ft_loop</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span>
                                         <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">aoao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aoaoks</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
-                <span class="n">vj_kpts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'L,Lij-&gt;ij'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span>
-                                             <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span>
+            <span class="n">vj_kpts</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'nL,Lij-&gt;nij'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span>
+                                         <span class="n">aoao</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span>
     <span class="n">aoao</span> <span class="o">=</span> <span class="n">aoaoks</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">):</span>
@@ -409,7 +410,7 @@
                <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
 
     <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
     <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
@@ -547,7 +548,7 @@
 
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
 
     <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="p">[</span><span class="n">kpt</span><span class="p">])</span>
@@ -702,7 +703,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

@@ -105,7 +105,7 @@
 <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
-    <form class="md-search__form" action="../../../../search.html" method="GET" name="search">
+    <form class="md-search__form" action="../../../../search.html" method="get" name="search">
       <input type="text" class="md-search__input" name="q" placeholder="Search"
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
@@ -314,9 +314,10 @@
 <span class="sd">JK with discrete Fourier transformation</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">tools</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.df_jk</span> <span class="kn">import</span> <span class="n">_format_dms</span><span class="p">,</span> <span class="n">_format_kpts_band</span><span class="p">,</span> <span class="n">_format_jks</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.df_jk</span> <span class="kn">import</span> <span class="n">_ewald_exxdiv_for_G0</span>
@@ -533,13 +534,13 @@
     <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">mem_now</span>
     <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">max_memory</span><span class="o">-</span><span class="n">mem_now</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="mi">4</span><span class="o">/</span><span class="n">ngrids</span><span class="o">/</span><span class="n">nao</span><span class="p">)))</span>
-    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
-                      <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
+                  <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
     <span class="c1">#ao1_dtype = np.result_type(*ao1_kpts)</span>
     <span class="c1">#ao2_dtype = np.result_type(*ao2_kpts)</span>
     <span class="n">vR_dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">vk_kpts</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">k2</span><span class="p">,</span> <span class="n">ao2T</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao2_kpts</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ao2T</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -582,7 +583,7 @@
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">vk_kpts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vR_dm</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ao1T</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="c1"># Function _ewald_exxdiv_for_G0 to add back in the G=0 component to vk_kpts</span>
     <span class="c1"># Note in the _ewald_exxdiv_for_G0 implementation, the G=0 treatments are</span>
@@ -646,12 +647,12 @@
     <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">mem_now</span>
     <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">max_memory</span><span class="o">-</span><span class="n">mem_now</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">ngrids</span><span class="o">/</span><span class="n">nao</span><span class="p">)))</span>
-    <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
-                      <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'fft_jk: get_k_kpts max_memory </span><span class="si">%s</span><span class="s1">  blksize </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
+                  <span class="n">max_memory</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
 
     <span class="n">vR_dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">nset</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">vk_kpts</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">k2</span><span class="p">,</span> <span class="n">ao2T</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ao2_kpts</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ao2T</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -694,7 +695,7 @@
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">vk_kpts</span><span class="p">[:,</span><span class="n">i</span><span class="p">,</span><span class="n">k1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'aig,jg-&gt;aij'</span><span class="p">,</span> <span class="n">vR_dm</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">ao1T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">k2</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="c1"># Ewald correction has no contribution to nuclear gradient unless range separted Coulomb is used</span>
     <span class="c1"># The gradient correction part is not added in the vk matrix</span>
@@ -826,7 +827,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
