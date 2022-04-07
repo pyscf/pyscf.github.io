@@ -15,7 +15,7 @@ rest keywords are all compatible to the old Block program.
 The new block2 code (https://github.com/block-hczhai/block2-preview)
 can be more efficient than Block-1.5 (stackblock) for max bond dim < 2000,
 and for larger bond dimension they provide similar efficiency.
-The DMRGSCF interface for block2 and stackblock are the same.
+The DMRGSCF interface for block2 and stackblock is the same.
 '''
 
 from pyscf import lib
