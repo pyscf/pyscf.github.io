@@ -418,7 +418,7 @@ doci                https://github.com/pyscf/doci
 fciqmcscf           https://github.com/pyscf/fciqmcscf
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
-naive_hci           https://github.com/pyscf/naive_hci
+naive-hci           https://github.com/pyscf/naive-hci
 nao                 https://github.com/pyscf/nao
 rt                  https://github.com/pyscf/rt
 semiempirical       https://github.com/pyscf/semiempirical
