@@ -422,7 +422,7 @@ doci                https://github.com/pyscf/doci
 fciqmc              https://github.com/pyscf/fciqmc
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
-naive_hci           https://github.com/pyscf/naive_hci
+naive-hci           https://github.com/pyscf/naive-hci
 nao                 https://github.com/pyscf/nao
 qsdopt              https://github.com/pyscf/qsdopt
 rt                  https://github.com/pyscf/rt
