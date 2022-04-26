@@ -411,7 +411,7 @@ to extension projects hosted at https://github.com/pyscf.
 =================== =========================================================
 Project             URL
 =================== =========================================================
-cornell_shci        https://github.com/pyscf/cornell_shci
+cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
