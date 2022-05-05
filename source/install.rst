@@ -183,24 +183,26 @@ A full build of PySCF may take a long time to finish.
 The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
 Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
 
-================= ======= ==============================================================
-Flags             Default Comments
-================= ======= ==============================================================
-`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
-                          is appended to cmake command, `LibXC` will not be compiled.
-`ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
-                          is appended to cmake command, `XCFun` will not be compiled.
-`BUILD_LIBXC`     ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
-                          still calls `LibXC` library by default. The dft module will be
-                          linked against the `LibXC` library from an earlier build.
-`BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
-                          will be linked against the `XCFun` library from an earlier build.
-`BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
-                          library from an earlier build will be used.
-`WITH_F12`        ON      Whether to compile the F12 integrals.
-`DISABLE_DFT`     OFF     Set this flag to skip the entire dft module. Neither `LibXC`
-                          nor `XCFun` will be compiled.
------------------ ------- --------------------------------------------------------------
+==================== ======= =================================================================
+Flags                Default Comments
+==================== ======= =================================================================
+`ENABLE_LIBXC`       ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
+                             is appended to cmake command, `LibXC` will not be compiled.
+`ENABLE_XCFUN`       ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
+                             is appended to cmake command, `XCFun` will not be compiled.
+`BUILD_LIBXC`        ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
+                             still calls `LibXC` library by default. The dft module will be
+                             linked against the `LibXC` library from an earlier build.
+`BUILD_XCFUN`        ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
+                             will be linked against the `XCFun` library from an earlier build.
+`BUILD_LIBCINT`      ON      Set it to `OFF` to skip compiling `libcint`. The integral
+                             library from an earlier build will be used.
+`WITH_F12`           ON      Whether to compile the F12 integrals.
+`DISABLE_DFT`        OFF     Set this flag to skip the entire dft module. Neither `LibXC`
+                             nor `XCFun` will be compiled.
+`BUILD_MARCH_NATIVE` OFF     Whether to let the compiler optimize the code against CPU
+                             architecture
+==================== ======= =================================================================
 
 CMake config file
 -----------------
