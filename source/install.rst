@@ -125,7 +125,6 @@ branch) from github::
 
   $ git clone https://github.com/pyscf/pyscf.git
   $ cd pyscf
-  $ git checkout dev  # optional if you'd like to try out the development branch
 
 Next, you need to build the C extensions in :file:`pyscf/lib`::
 
@@ -412,7 +411,7 @@ to extension projects hosted at https://github.com/pyscf.
 =================== =========================================================
 Project             URL
 =================== =========================================================
-cornell_shci        https://github.com/pyscf/cornell_shci
+cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
@@ -456,7 +455,7 @@ couple of methods to install the extension modules.
 * Environment variable `PYSCF_EXT_PATH`. You can place the location of
   each extension module (or a file that contains these locations) in
   this environment variable. The PySCF library will parse the paths
-  defined in this environment variable, and load the relevent
+  defined in this environment variable, and load the relevant
   submodules. For example::
 
     $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
@@ -475,7 +474,7 @@ the methods shown above), you can use them as regular submodules
 developed inside the pyscf main project::
 
     >>> import pyscf
-    >>> from pyscf.semiempirical import MINDO
+    >>> from pyscf.semiempirical import MINDO3
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
 
