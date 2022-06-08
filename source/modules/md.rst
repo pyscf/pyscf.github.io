@@ -12,6 +12,7 @@ Examples
 
 * :source:`examples/md/00-simple_nve.py`
 * :source:`examples/md/01-set_init_veloc.py`
+* :source:`examples/md/02-use_callback.py`
 
 Program reference
 =================
