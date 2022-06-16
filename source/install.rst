@@ -411,11 +411,11 @@ to extension projects hosted at https://github.com/pyscf.
 =================== =========================================================
 Project             URL
 =================== =========================================================
-cornell_shci        https://github.com/pyscf/cornell_shci
+cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
-fciqmcscf           https://github.com/pyscf/fciqmcscf
+fciqmc              https://github.com/pyscf/fciqmc
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
@@ -496,14 +496,19 @@ DMRG solvers
 
 Density matrix renormalization group (DMRG) theory is a powerful
 method for solving ab initio quantum chemistry problems. PySCF can be
-used with two implementations of DMRG: Block
-(https://sanshar.github.io/Block) and CheMPS2
-(http://sebwouters.github.io/CheMPS2/index.html).  `Installing Block
-<https://sanshar.github.io/Block/build.html>`_ requires a C++11
+used with three implementations of DMRG: Block
+(https://sanshar.github.io/Block), block2
+(https://block2.readthedocs.io/en/latest), and CheMPS2
+(http://sebwouters.github.io/CheMPS2/index.html).
+
+`Installing Block <https://sanshar.github.io/Block/build.html>`_ requires a C++11
 compiler.  If C++11 is not supported by your compiler, you can
-register and download the precompiled Block binary from
-https://sanshar.github.io/Block/build.html.  Before using Block or
-CheMPS2, you need create a configuration file
+download the precompiled Block binary from https://sanshar.github.io/Block/build.html.
+
+``block2`` can be easily installed via ``pip install block2`` or ``pip install block2-mpi``,
+or `building from source <https://block2.readthedocs.io/en/latest/user/installation.html>`_.
+
+Before using Block or CheMPS2, you need create a configuration file
 ``pyscf/dmrgscf/settings.py`` (as shown by settings.py.example) to
 store the path where the DMRG solver was installed.
 

@@ -331,7 +331,7 @@ Finally, additional dynamic correlation may be added by means of second-order pe
 External Approximate Full Configuration Interaction Solvers
 -----------------------------------------------------------
 
-Besides the exact solvers discussed :ref:`earlier <FCI>`, PySCF has interfaces to efficient approximate solvers. For instance, the `StackBlock <https://github.com/sanshar/StackBlock>`_ code can be used as a DMRG solver to perform parallel DMRGSCF calculations across several processes (cf. `dmrg/01-dmrg_casscf_with_stackblock.py <https://github.com/pyscf/pyscf/blob/master/examples/dmrg/01-dmrg_casscf_with_stackblock.py>`_):
+Besides the exact solvers discussed :ref:`earlier <FCI>`, PySCF has interfaces to efficient approximate solvers. For instance, the `StackBlock <https://github.com/sanshar/StackBlock>`_ or `block2 <https://github.com/block-hczhai/block2-preview>`_ code can be used as a DMRG solver to perform parallel DMRGSCF calculations across several processes (cf. `dmrg/01-dmrg_casscf_with_stackblock.py <https://github.com/pyscf/dmrgscf/blob/master/examples/01-dmrg_casscf_with_stackblock.py>`_):
 
   >>> from pyscf import dmrgscf
   >>> import os
