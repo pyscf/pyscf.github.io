@@ -415,7 +415,7 @@ cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
-fciqmcscf           https://github.com/pyscf/fciqmcscf
+fciqmc              https://github.com/pyscf/fciqmc
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
