@@ -232,6 +232,31 @@ but the ``STO-3G`` basis will be used for the atom ``H2``:
 
 See :source:`examples/gto/04-input_basis.py` for more examples.
 
+Basis format
+------------
+Basis data can be a text file or a python file.
+
+The text file should store the
+basis data in NWChem format. Most basis in PySCF were downloaded from
+https://www.basissetexchange.org/ . Some basis (mostly the cc-pV*Z basis) were
+downloaded with the option "optimize general contractions" checked.
+
+The python basis format stores the basis in the internal format which looks::
+
+    [[angular, kappa, [[exp, c_1, c_2, ..],
+                       [exp, c_1, c_2, ..],
+                       ... ]],
+     [angular, kappa, [[exp, c_1, c_2, ..],
+                       [exp, c_1, c_2, ..]
+                       ... ]]]
+
+The list `[angular, kappa, [[exp, c, ...]]]` defines the angular momentum of the
+basis, the kappa value, the Gaussian exponents and basis contraction coefficients.
+`kappa` can have value :math:`-l-1` (corresponding to spinors with :math:`j=l+1/2`),
+:math:`l` (corresponding to spinors with :math:`j=l-1/2`) or 0. When kappa is 0, both
+types of spinors are assumed in the basis. A few basis for relativistic
+calculations (e.g. Dyall basis) were saved in this format. 
+
 Ordering of basis functions
 ---------------------------
 GTO basis functions are stored in the following order: (1) atoms, (2) angular

@@ -183,24 +183,26 @@ A full build of PySCF may take a long time to finish.
 The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
 Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
 
-================= ======= ==============================================================
-Flags             Default Comments
-================= ======= ==============================================================
-`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
-                          is appended to cmake command, `LibXC` will not be compiled.
-`ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
-                          is appended to cmake command, `XCFun` will not be compiled.
-`BUILD_LIBXC`     ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
-                          still calls `LibXC` library by default. The dft module will be
-                          linked against the `LibXC` library from an earlier build.
-`BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
-                          will be linked against the `XCFun` library from an earlier build.
-`BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
-                          library from an earlier build will be used.
-`WITH_F12`        ON      Whether to compile the F12 integrals.
-`DISABLE_DFT`     OFF     Set this flag to skip the entire dft module. Neither `LibXC`
-                          nor `XCFun` will be compiled.
------------------ ------- --------------------------------------------------------------
+==================== ======= =================================================================
+Flags                Default Comments
+==================== ======= =================================================================
+`ENABLE_LIBXC`       ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
+                             is appended to cmake command, `LibXC` will not be compiled.
+`ENABLE_XCFUN`       ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
+                             is appended to cmake command, `XCFun` will not be compiled.
+`BUILD_LIBXC`        ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
+                             still calls `LibXC` library by default. The dft module will be
+                             linked against the `LibXC` library from an earlier build.
+`BUILD_XCFUN`        ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
+                             will be linked against the `XCFun` library from an earlier build.
+`BUILD_LIBCINT`      ON      Set it to `OFF` to skip compiling `libcint`. The integral
+                             library from an earlier build will be used.
+`WITH_F12`           ON      Whether to compile the F12 integrals.
+`DISABLE_DFT`        OFF     Set this flag to skip the entire dft module. Neither `LibXC`
+                             nor `XCFun` will be compiled.
+`BUILD_MARCH_NATIVE` OFF     Whether to let the compiler optimize the code against CPU
+                             architecture
+==================== ======= =================================================================
 
 CMake config file
 -----------------
@@ -415,7 +417,7 @@ cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
-fciqmcscf           https://github.com/pyscf/fciqmcscf
+fciqmc              https://github.com/pyscf/fciqmc
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
@@ -496,14 +498,19 @@ DMRG solvers
 
 Density matrix renormalization group (DMRG) theory is a powerful
 method for solving ab initio quantum chemistry problems. PySCF can be
-used with two implementations of DMRG: Block
-(https://sanshar.github.io/Block) and CheMPS2
-(http://sebwouters.github.io/CheMPS2/index.html).  `Installing Block
-<https://sanshar.github.io/Block/build.html>`_ requires a C++11
+used with three implementations of DMRG: Block
+(https://sanshar.github.io/Block), block2
+(https://block2.readthedocs.io/en/latest), and CheMPS2
+(http://sebwouters.github.io/CheMPS2/index.html).
+
+`Installing Block <https://sanshar.github.io/Block/build.html>`_ requires a C++11
 compiler.  If C++11 is not supported by your compiler, you can
-register and download the precompiled Block binary from
-https://sanshar.github.io/Block/build.html.  Before using Block or
-CheMPS2, you need create a configuration file
+download the precompiled Block binary from https://sanshar.github.io/Block/build.html.
+
+``block2`` can be easily installed via ``pip install block2`` or ``pip install block2-mpi``,
+or `building from source <https://block2.readthedocs.io/en/latest/user/installation.html>`_.
+
+Before using Block or CheMPS2, you need create a configuration file
 ``pyscf/dmrgscf/settings.py`` (as shown by settings.py.example) to
 store the path where the DMRG solver was installed.
 
