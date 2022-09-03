@@ -476,21 +476,19 @@ and we can check the occupancy of the MOs in each irreducible representation::
   >>> from pyscf import symm
   >>> def myocc(mf):
   ...     mol = mf.mol
-  ...     irrep_id = mol.irrep_id
-  ...     so = mol.symm_orb
-  ...     orbsym = symm.label_orb_symm(mol, irrep_id, so, mf.mo_coeff)
+  ...     orbsym = symm.label_orb_symm(mol, mol.irrep_id, mol.symm_orb, mf.mo_coeff)
   ...     doccsym = numpy.array(orbsym)[mf.mo_occ==2]
   ...     soccsym = numpy.array(orbsym)[mf.mo_occ==1]
-  ...     for ir,irname in enumerate(mol.irrep_name):
+  ...     for ir,irname in zip(mol.irrep_id, mol.irrep_name):
   ...         print('%s, double-occ = %d, single-occ = %d' %
   ...               (irname, sum(doccsym==ir), sum(soccsym==ir)))
   >>> myocc(mf)
   Ag, double-occ = 3, single-occ = 0
-  B2g, double-occ = 0, single-occ = 0
+  B2g, double-occ = 0, single-occ = 1
   B3g, double-occ = 0, single-occ = 1
-  B1u, double-occ = 0, single-occ = 1
-  B2u, double-occ = 0, single-occ = 0
-  B3u, double-occ = 2, single-occ = 0
+  B1u, double-occ = 2, single-occ = 0
+  B2u, double-occ = 1, single-occ = 0
+  B3u, double-occ = 1, single-occ = 0
 
 To label the irreducible representation of given orbitals,
 :func:`symm.label_orb_symm` needs the information of the point group
