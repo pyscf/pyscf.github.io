@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.newton_casscf </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -1115,7 +1116,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fcasci</span> <span class="o">=</span> <span class="n">mc1step</span><span class="o">.</span><span class="n">_fake_h_for_fast_casci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
 
-        <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">fcasci</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+        <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">fcasci</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span>
+                                            <span class="n">envs</span><span class="o">=</span><span class="n">envs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e_cas</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Multiple roots are detected in fcisolver.  '</span>
                                <span class="s1">'CASSCF does not know which state to optimize.</span><span class="se">\n</span><span class="s1">'</span>
@@ -1125,7 +1127,10 @@
             <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'CAS space CI energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="s1">'spin_square'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">spin_square</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">spin_square</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+                    <span class="n">ss</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ss</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1279,7 +1284,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

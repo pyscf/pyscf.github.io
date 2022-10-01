@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.tdscf </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -311,6 +312,7 @@
 <span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#</span>
 
+<span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tdscf</span> <span class="kn">import</span> <span class="n">rhf</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tdscf</span> <span class="kn">import</span> <span class="n">uhf</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tdscf</span> <span class="kn">import</span> <span class="n">krhf</span>
@@ -326,88 +328,71 @@
 
 <div class="viewcode-block" id="TDHF"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.TDHF">[docs]</a><span class="k">def</span> <span class="nf">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">KTDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'kpt'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Only supports gamma-point TDHF'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'TDHF does not support DFT object </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">mf</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="c1">#mf = scf.addons.convert_to_uhf(mf) # To remove newton decoration</span>
-        <span class="k">return</span> <span class="n">uhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#mf = scf.addons.convert_to_rhf(mf)</span>
-        <span class="k">return</span> <span class="n">rhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+    <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+        <span class="c1"># Is it correct to call TDUHF for ROHF?</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uhf</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="TDA"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.TDA">[docs]</a><span class="k">def</span> <span class="nf">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">KTDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'kpt'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="c1">#mf = scf.addons.convert_to_uhf(mf)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">uks</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Only supports gamma-point TDA'</span><span class="p">)</span>
+    <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uks</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">uhf</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#mf = scf.addons.convert_to_rhf(mf)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">rks</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">rhf</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uhf</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDA</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="TDDFT"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.TDDFT">[docs]</a><span class="k">def</span> <span class="nf">TDDFT</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">numpy</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">KTDDFT</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'kpt'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="c1">#mf = scf.addons.convert_to_uhf(mf)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">uks</span><span class="o">.</span><span class="n">tddft</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">uhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'Only supports gamma-point TDDFT'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+        <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uks</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDDFT</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#mf = scf.addons.convert_to_rhf(mf)</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">rks</span><span class="o">.</span><span class="n">tddft</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">rhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="KTDHF"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.KTDHF">[docs]</a><span class="k">def</span> <span class="nf">KTDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'TDHF does not support DFT object </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">mf</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">kuhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">krhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+    <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uhf</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="KTDA"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.KTDA">[docs]</a><span class="k">def</span> <span class="nf">KTDA</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">kuks</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uks</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">kuhf</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">krks</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">krhf</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uhf</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDA</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="KTDDFT"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.pbc.tdscf.html#pyscf.pbc.tdscf.KTDDFT">[docs]</a><span class="k">def</span> <span class="nf">KTDDFT</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">kuks</span><span class="o">.</span><span class="n">tddft</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">kuhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+        <span class="c1">#TODO: mf = mf.remove_soscf()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_uks</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDDFT</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">krks</span><span class="o">.</span><span class="n">tddft</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">krhf</span><span class="o">.</span><span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">KTDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
 
 <span class="n">KTD</span> <span class="o">=</span> <span class="n">KTDDFT</span>
 
@@ -435,7 +420,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

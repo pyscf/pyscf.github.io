@@ -55,6 +55,7 @@
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.gto.eval_gto </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -323,8 +324,9 @@
 
 <span class="n">libpbc</span> <span class="o">=</span> <span class="n">_pbcintor</span><span class="o">.</span><span class="n">libpbc</span>
 
-<div class="viewcode-block" id="eval_gto"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.eval_gto.eval_gto">[docs]</a><span class="k">def</span> <span class="nf">eval_gto</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">non0tab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ao_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="eval_gto"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.eval_gto">[docs]</a><span class="k">def</span> <span class="nf">eval_gto</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">non0tab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ao_loc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">'''Evaluate PBC-AO function value on the given grids,</span>
 
 <span class="sd">    Args:</span>
@@ -357,6 +359,9 @@
 <span class="sd">        non0tab : 2D bool array</span>
 <span class="sd">            mask array to indicate whether the AO values are zero.  The mask</span>
 <span class="sd">            array can be obtained by calling :func:`dft.gen_grid.make_mask`</span>
+<span class="sd">        cutoff : float</span>
+<span class="sd">            AO values smaller than cutoff will be set to zero. The default</span>
+<span class="sd">            cutoff threshold is ~1e-22 (defined in gto/grid_ao_drv.h)</span>
 <span class="sd">        out : ndarray</span>
 <span class="sd">            If provided, results are written into this array.</span>
 
@@ -368,19 +373,19 @@
 <span class="sd">    Examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; cell = pbc.gto.M(a=numpy.eye(3)*4, atom='He 1 1 1', basis='6-31g')</span>
-<span class="sd">    &gt;&gt;&gt; coords = cell.get_uniform_grids([20,20,20])</span>
+<span class="sd">    &gt;&gt;&gt; coords = cell.get_uniform_grids([10,10,10])</span>
 <span class="sd">    &gt;&gt;&gt; kpts = cell.make_kpts([3,3,3])</span>
 <span class="sd">    &gt;&gt;&gt; ao_value = cell.pbc_eval_gto("GTOval_sph", coords, kpts)</span>
 <span class="sd">    &gt;&gt;&gt; len(ao_value)</span>
 <span class="sd">    27</span>
 <span class="sd">    &gt;&gt;&gt; ao_value[0].shape</span>
-<span class="sd">    (100, 2)</span>
+<span class="sd">    (1000, 2)</span>
 <span class="sd">    &gt;&gt;&gt; ao_value = cell.pbc_eval_gto("GTOval_ig_sph", coords, kpts, comp=3)</span>
 <span class="sd">    &gt;&gt;&gt; print(ao_value.shape)</span>
 <span class="sd">    &gt;&gt;&gt; len(ao_value)</span>
 <span class="sd">    27</span>
 <span class="sd">    &gt;&gt;&gt; ao_value[0].shape</span>
-<span class="sd">    (3, 100, 2)</span>
+<span class="sd">    (3, 1000, 2)</span>
 <span class="sd">    '''</span>
     <span class="k">if</span> <span class="n">eval_name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'PBC'</span><span class="p">:</span>  <span class="c1"># PBCGTOval_xxx</span>
         <span class="n">eval_name</span><span class="p">,</span> <span class="n">comp</span> <span class="o">=</span> <span class="n">_get_intor_and_comp</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span> <span class="n">comp</span><span class="p">)</span>
@@ -407,7 +412,7 @@
         <span class="n">non0tab</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="n">ngrids</span><span class="o">+</span><span class="n">BLKSIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">,</span> <span class="n">nbas</span><span class="p">),</span>
                               <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 <span class="c1"># non0tab stores the number of images to be summed in real space.</span>
-<span class="c1"># Initializing it to 255 means all images are summed</span>
+<span class="c1"># Initializing it to 255 means all images should be included</span>
         <span class="n">non0tab</span><span class="p">[:]</span> <span class="o">=</span> <span class="mh">0xff</span>
 
     <span class="k">if</span> <span class="n">ao_loc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -422,26 +427,29 @@
 
     <span class="c1"># For atoms near the boundary of the cell, it is necessary (even in low-</span>
     <span class="c1"># dimensional systems) to include lattice translations in all 3 dimensions.</span>
-    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">==</span> <span class="s1">'inf_vacuum'</span><span class="p">:</span>
-        <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">Ls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">==</span> <span class="s1">'inf_vacuum'</span><span class="p">:</span>
+            <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))]</span>
     <span class="n">expLk</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">))</span>
-    <span class="n">rcut</span> <span class="o">=</span> <span class="n">_estimate_rcut</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rcut</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rcut</span> <span class="o">=</span> <span class="n">_estimate_rcut</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
 
-    <span class="n">drv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">)</span>
-    <span class="n">drv</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">),</span>
-        <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">2</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span> <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">Ls</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)),</span>
-        <span class="n">expLk</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkpts</span><span class="p">),</span>
-        <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">coords</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">rcut</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">non0tab</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">natm</span><span class="p">),</span>
-        <span class="n">bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nbas</span><span class="p">),</span>
-        <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
+    <span class="k">with</span> <span class="n">cell</span><span class="o">.</span><span class="n">with_integral_screen</span><span class="p">(</span><span class="n">cutoff</span><span class="p">):</span>
+        <span class="n">drv</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">eval_name</span><span class="p">)</span>
+        <span class="n">drv</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">2</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span> <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">Ls</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)),</span>
+            <span class="n">expLk</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkpts</span><span class="p">),</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">coords</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">rcut</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">non0tab</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">natm</span><span class="p">),</span>
+            <span class="n">bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nbas</span><span class="p">),</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
 
     <span class="n">ao_kpts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">):</span>
@@ -470,6 +478,7 @@
         <span class="n">cs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">bas_ctr_coeff</span><span class="p">(</span><span class="n">ib</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">r</span> <span class="o">=</span> <span class="mf">5.</span>
         <span class="n">r</span> <span class="o">=</span> <span class="p">(((</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">+</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_prec</span><span class="p">)</span> <span class="o">/</span> <span class="n">es</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
+        <span class="n">r</span><span class="p">[</span><span class="n">r</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
         <span class="n">r</span> <span class="o">=</span> <span class="p">(((</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">+</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span> <span class="o">-</span> <span class="n">log_prec</span><span class="p">)</span> <span class="o">/</span> <span class="n">es</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
         <span class="n">rcut</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rcut</span><span class="p">)</span>
@@ -511,7 +520,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

@@ -55,6 +55,7 @@
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.df_jk </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -322,8 +323,9 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
-<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">zdotNN</span><span class="p">,</span> <span class="n">zdotCN</span><span class="p">,</span> <span class="n">zdotNC</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">tools</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts</span> <span class="kn">import</span> <span class="n">KPoints</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span><span class="p">,</span> <span class="n">gamma_point</span><span class="p">,</span> <span class="n">member</span>
 
 <div class="viewcode-block" id="density_fit"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df_jk.density_fit">[docs]</a><span class="k">def</span> <span class="nf">density_fit</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -345,6 +347,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpt</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
 
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts</span>
         <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
         <span class="n">with_df</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">max_memory</span>
         <span class="n">with_df</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">stdout</span>
@@ -472,7 +476,7 @@
     <span class="n">bufR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">mydf</span><span class="o">.</span><span class="n">blockdim</span><span class="o">*</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">bufI</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">mydf</span><span class="o">.</span><span class="n">blockdim</span><span class="o">*</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span><span class="o">-</span><span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">def</span> <span class="nf">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="n">swap_2e</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="n">swap_2e</span><span class="p">,</span> <span class="n">inverse_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">kpti</span> <span class="o">=</span> <span class="n">kpts</span><span class="p">[</span><span class="n">ki</span><span class="p">]</span>
         <span class="n">kptj</span> <span class="o">=</span> <span class="n">kpts_band</span><span class="p">[</span><span class="n">kj</span><span class="p">]</span>
 
@@ -495,12 +499,17 @@
             <span class="k">if</span> <span class="n">swap_2e</span><span class="p">:</span>
                 <span class="n">tmpR</span> <span class="o">=</span> <span class="n">tmpR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="o">*</span><span class="n">nrow</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
                 <span class="n">tmpI</span> <span class="o">=</span> <span class="n">tmpI</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="o">*</span><span class="n">nrow</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
+                <span class="n">ki_tmp</span> <span class="o">=</span> <span class="n">ki</span>
+                <span class="n">kj_tmp</span> <span class="o">=</span> <span class="n">kj</span>
+                <span class="k">if</span> <span class="n">inverse_idx</span><span class="p">:</span>
+                    <span class="n">ki_tmp</span> <span class="o">=</span> <span class="n">inverse_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">kj_tmp</span> <span class="o">=</span> <span class="n">inverse_idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                     <span class="n">zdotNN</span><span class="p">(</span><span class="n">pLqR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">),</span> <span class="n">pLqI</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">),</span>
-                           <span class="n">dmsR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">kj</span><span class="p">],</span> <span class="n">dmsI</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">kj</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tmpR</span><span class="p">,</span> <span class="n">tmpI</span><span class="p">)</span>
+                           <span class="n">dmsR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">kj_tmp</span><span class="p">],</span> <span class="n">dmsI</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">kj_tmp</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tmpR</span><span class="p">,</span> <span class="n">tmpI</span><span class="p">)</span>
                     <span class="n">zdotNC</span><span class="p">(</span><span class="n">tmpR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">tmpI</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
                            <span class="n">pLqR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">pLqI</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
-                           <span class="n">sign</span><span class="p">,</span> <span class="n">vkR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ki</span><span class="p">],</span> <span class="n">vkI</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ki</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+                           <span class="n">sign</span><span class="p">,</span> <span class="n">vkR</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ki_tmp</span><span class="p">],</span> <span class="n">vkI</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">ki_tmp</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">kpts_band</span> <span class="ow">is</span> <span class="n">kpts</span><span class="p">:</span>  <span class="c1"># normal k-points HF/DFT</span>
         <span class="k">for</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
@@ -509,9 +518,33 @@
             <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'get_k_kpts: make_kpt ki&gt;=kj (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">ki</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">idx_in_kpts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="n">kpts_band</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">member</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">idx_in_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">idx_in_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">idx_in_kpts_band</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="n">kpts</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">member</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">idx_in_kpts_band</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">idx_in_kpts_band</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">kj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nband</span><span class="p">):</span>
-                <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">idx_in_kpts</span><span class="p">[</span><span class="n">kj</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">idx_in_kpts</span><span class="p">[</span><span class="n">kj</span><span class="p">]</span> <span class="o">==</span> <span class="n">ki</span><span class="p">:</span>
+                    <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">idx_in_kpts</span><span class="p">[</span><span class="n">kj</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">ki</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">idx_in_kpts_band</span><span class="p">[</span><span class="n">ki</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="n">idx_in_kpts_band</span><span class="p">[</span><span class="n">ki</span><span class="p">],</span> <span class="n">idx_in_kpts</span><span class="p">[</span><span class="n">kj</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">idx_in_kpts_band</span><span class="p">[</span><span class="n">ki</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">make_kpt</span><span class="p">(</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'get_k_kpts: make_kpt (</span><span class="si">%d</span><span class="s1">,*)'</span><span class="o">%</span><span class="n">ki</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span> <span class="ow">and</span> <span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">)</span> <span class="ow">and</span>
@@ -660,6 +693,8 @@
     <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">dm_kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dms</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">):</span>
+        <span class="n">dms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dms</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dms</span>
 
 <span class="k">def</span> <span class="nf">_format_kpts_band</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
@@ -688,30 +723,6 @@
             <span class="k">return</span> <span class="n">v_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># dm_kpts.ndim == 4 or kpts.shape[0] == 1:  # nset=Ndm</span>
             <span class="k">return</span> <span class="n">v_kpts</span>
-
-<div class="viewcode-block" id="zdotNN"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df_jk.zdotNN">[docs]</a><span class="k">def</span> <span class="nf">zdotNN</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cI</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">'''c = a*b'''</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span><span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="k">return</span> <span class="n">cR</span><span class="p">,</span> <span class="n">cI</span></div>
-
-<div class="viewcode-block" id="zdotCN"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df_jk.zdotCN">[docs]</a><span class="k">def</span> <span class="nf">zdotCN</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cI</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">'''c = a.conj()*b'''</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span><span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="k">return</span> <span class="n">cR</span><span class="p">,</span> <span class="n">cI</span></div>
-
-<div class="viewcode-block" id="zdotNC"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df_jk.zdotNC">[docs]</a><span class="k">def</span> <span class="nf">zdotNC</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cI</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="sd">'''c = a*b.conj()'''</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cR</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aR</span><span class="p">,</span> <span class="n">bI</span><span class="p">,</span><span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
-    <span class="n">cI</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">ddot</span><span class="p">(</span><span class="n">aI</span><span class="p">,</span> <span class="n">bR</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">cI</span><span class="p">,</span> <span class="mi">1</span>   <span class="p">)</span>
-    <span class="k">return</span> <span class="n">cR</span><span class="p">,</span> <span class="n">cI</span></div>
 
 <span class="k">def</span> <span class="nf">_ewald_exxdiv_for_G0</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">s</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
@@ -811,7 +822,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

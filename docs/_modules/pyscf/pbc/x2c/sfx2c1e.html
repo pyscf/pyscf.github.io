@@ -55,6 +55,7 @@
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.x2c.sfx2c1e </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -307,9 +308,13 @@
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="c1"># Authors: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
+<span class="c1">#          Chia-Nan Yeh &lt;yehcanon@gmail.com&gt;</span>
+<span class="c1">#</span>
 
 <span class="sd">'''</span>
-<span class="sd">spin-free X2C correction for extended systems (experimental feature)</span>
+<span class="sd">One-electron spin-free X2C approximation for extended systems</span>
 <span class="sd">'''</span>
 
 
@@ -326,13 +331,15 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft_jk</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">incore</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">gdf_builder</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">ghf</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 
 <div class="viewcode-block" id="sfx2c1e"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.sfx2c1e">[docs]</a><span class="k">def</span> <span class="nf">sfx2c1e</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
     <span class="sd">'''Spin-free X2C.</span>
-<span class="sd">    For the given SCF object, update the hcore constructor.</span>
+<span class="sd">    For the given SCF object, it updates the hcore constructor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mf : an SCF object</span>
@@ -353,7 +360,10 @@
 <span class="sd">    '''</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_X2C_SCF</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_x2c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">with_x2c</span> <span class="o">=</span> <span class="n">SpinFreeX2CHelper</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">mf</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_x2c</span><span class="p">,</span> <span class="n">SpinFreeX2CHelper</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">mf</span>
 
@@ -362,6 +372,7 @@
         <span class="n">doc</span> <span class="o">=</span> <span class="s1">''</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="n">mf_class</span><span class="o">.</span><span class="vm">__doc__</span>
+
     <span class="k">class</span> <span class="nc">SFX2C1E_SCF</span><span class="p">(</span><span class="n">mf_class</span><span class="p">,</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_X2C_SCF</span><span class="p">):</span>
         <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">doc</span> <span class="o">+</span> <span class="s1">'''</span>
 <span class="s1">        Attributes for spin-free X2C:</span>
@@ -369,7 +380,7 @@
 <span class="s1">        '''</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">with_x2c</span> <span class="o">=</span> <span class="n">SpinFreeX2C</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">with_x2c</span> <span class="o">=</span> <span class="n">SpinFreeX2CHelper</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'with_x2c'</span><span class="p">])</span>
 
         <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -393,14 +404,23 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">mf_class</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">SFX2C1E_SCF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">mf_class</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_x2c</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">with_x2c</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="n">with_x2c</span> <span class="o">=</span> <span class="n">SpinFreeX2CHelper</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">SFX2C1E_SCF</span><span class="p">)</span><span class="o">.</span><span class="n">add_keys</span><span class="p">(</span><span class="n">with_x2c</span><span class="o">=</span><span class="n">with_x2c</span><span class="p">)</span></div>
 
 <span class="n">sfx2c</span> <span class="o">=</span> <span class="n">sfx2c1e</span>
 
-<div class="viewcode-block" id="X2C"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.X2C">[docs]</a><span class="k">class</span> <span class="nc">X2C</span><span class="p">(</span><span class="n">x2c</span><span class="o">.</span><span class="n">X2C</span><span class="p">):</span>
+<div class="viewcode-block" id="PBCX2CHelper"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.PBCX2CHelper">[docs]</a><span class="k">class</span> <span class="nc">PBCX2CHelper</span><span class="p">(</span><span class="n">x2c</span><span class="o">.</span><span class="n">X2C</span><span class="p">):</span>
 
     <span class="n">exp_drop</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_x2c_X2C_exp_drop'</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
-    <span class="n">approx</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_x2c_X2C_approx'</span><span class="p">,</span> <span class="s1">'atom1e'</span><span class="p">)</span>
+    <span class="c1"># 1e: X2C1e, atom1e: X2C1e with one-center approximation</span>
+    <span class="n">approx</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_x2c_X2C_approx'</span><span class="p">,</span> <span class="s1">'1e'</span><span class="p">)</span>
+    <span class="c1"># By default, uncontracted cell.basis is used to construct the modified Dirac equation.</span>
     <span class="n">xuncontract</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_x2c_X2C_xuncontract'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">basis</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_x2c_X2C_basis'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
@@ -408,18 +428,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="n">x2c</span><span class="o">.</span><span class="n">X2C</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpinFreeX2C"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2C">[docs]</a><span class="k">class</span> <span class="nc">SpinFreeX2C</span><span class="p">(</span><span class="n">X2C</span><span class="p">):</span>
-<div class="viewcode-block" id="SpinFreeX2C.get_hcore"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2C.get_hcore">[docs]</a>    <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SpinFreeX2CHelper"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2CHelper">[docs]</a><span class="k">class</span> <span class="nc">SpinFreeX2CHelper</span><span class="p">(</span><span class="n">PBCX2CHelper</span><span class="p">):</span>
+    <span class="sd">'''1-component X2c Foldy-Wouthuysen (FW Hamiltonian  (spin-free part only)</span>
+<span class="sd">    '''</span>
+<div class="viewcode-block" id="SpinFreeX2CHelper.get_hcore"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2CHelper.get_hcore">[docs]</a>    <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">kpts_lst</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kpts_lst</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-
+        <span class="c1"># By default, we use uncontracted cell.basis plus additional steep orbital for modified Dirac equation.</span>
         <span class="n">xcell</span><span class="p">,</span> <span class="n">contr_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xmol</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
-        <span class="n">with_df</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">xcell</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">df</span>
+        <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">xcell</span><span class="p">)</span>
+
         <span class="n">c</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">LIGHT_SPEED</span>
-        <span class="k">assert</span><span class="p">(</span><span class="s1">'1E'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="s1">'1E'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
         <span class="k">if</span> <span class="s1">'ATOM'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
             <span class="n">atom_slices</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">offset_nr_by_atom</span><span class="p">()</span>
             <span class="n">nao</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
@@ -439,25 +463,33 @@
                 <span class="n">wloc</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">w1</span>
                 <span class="n">x</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_x2c1e_xmatrix</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">w1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">get_pnucp</span><span class="p">(</span><span class="n">with_df</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
 
         <span class="n">t</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_kin'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">HERMITIAN</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">HERMITIAN</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">with_df</span><span class="o">.</span><span class="n">get_nuc</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">)</span>
-        <span class="c1">#w = get_pnucp(with_df, kpts_lst)</span>
+        <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">pseudo</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_nuc</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">s22</span> <span class="o">=</span> <span class="n">s</span>
             <span class="n">s21</span> <span class="o">=</span> <span class="n">pbcgto</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">xcell</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts_lst</span><span class="p">)</span>
 
         <span class="n">h1_kpts</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">)):</span>
-            <span class="c1"># The treatment of pnucp local part has huge effects to hcore</span>
-            <span class="c1">#h1 = x2c._get_hcore_fw(t[k], vloc, wloc, s[k], x, c) - vloc + v[k]</span>
-            <span class="c1">#h1 = x2c._get_hcore_fw(t[k], v[k], w[k], s[k], x, c)</span>
-            <span class="n">h1</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_get_hcore_fw</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">wloc</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">'ATOM'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+                <span class="c1"># The treatment of pnucp local part has huge effects to hcore</span>
+                <span class="c1">#h1 = x2c._get_hcore_fw(t[k], vloc, wloc, s[k], x, c) - vloc + v[k]</span>
+                <span class="c1">#h1 = x2c._get_hcore_fw(t[k], v[k], w[k], s[k], x, c)</span>
+                <span class="n">h1</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_get_hcore_fw</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">wloc</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xk</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_x2c1e_xmatrix</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">c</span><span class="p">)</span>
+                <span class="n">h1</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_get_hcore_fw</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">xk</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">c</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s22</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s21</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                <span class="n">h1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+                <span class="c1"># If cell = xcell, U = identity matrix</span>
+                <span class="n">U</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s22</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s21</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="n">h1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">U</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">U</span><span class="p">))</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xuncontract</span> <span class="ow">and</span> <span class="n">contr_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">h1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">contr_coeff</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">contr_coeff</span><span class="p">))</span>
             <span class="n">h1_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h1</span><span class="p">)</span>
@@ -466,11 +498,11 @@
             <span class="n">h1_kpts</span> <span class="o">=</span> <span class="n">h1_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">h1_kpts</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpinFreeX2C.get_xmat"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2C.get_xmat">[docs]</a>    <span class="k">def</span> <span class="nf">get_xmat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SpinFreeX2CHelper.get_xmat"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2CHelper.get_xmat">[docs]</a>    <span class="k">def</span> <span class="nf">get_xmat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="n">xcell</span><span class="p">,</span> <span class="n">contr_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xmol</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
         <span class="n">c</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">LIGHT_SPEED</span>
-        <span class="k">assert</span><span class="p">(</span><span class="s1">'1E'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="s1">'1E'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
         <span class="k">if</span> <span class="s1">'ATOM'</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
             <span class="n">atom_slices</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">offset_nr_by_atom</span><span class="p">()</span>
             <span class="n">nao</span> <span class="o">=</span> <span class="n">xcell</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
@@ -487,14 +519,20 @@
                 <span class="n">x</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">_x2c1e_xmatrix</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">w1</span><span class="p">,</span> <span class="n">s1</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-        <span class="k">return</span> <span class="n">x</span></div></div>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="SpinFreeX2CHelper.dump_flags"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.SpinFreeX2CHelper.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'******** </span><span class="si">%s</span><span class="s1"> ********'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'approx = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">approx</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'xuncontract = </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xuncontract</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'basis for X matrix = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
 
 
-<span class="c1"># Use Ewald-like technique to compute spVsp.</span>
-<span class="c1"># spVsp may not be divergent because the numerator spsp and the denominator</span>
-<span class="c1"># in Coulomb kernel 4pi/G^2 are likely cancelled.  Even a real space lattice</span>
-<span class="c1"># sum can converge to a finite value, it's difficult to accurately converge</span>
-<span class="c1"># this value, i.e., large number of images in lattice summation is required.</span>
+<span class="c1"># Use Ewald-like technique to compute spVsp without the G=0 contribution.</span>
 <div class="viewcode-block" id="get_pnucp"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.x2c.html#pyscf.pbc.x2c.sfx2c1e.get_pnucp">[docs]</a><span class="k">def</span> <span class="nf">get_pnucp</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -509,54 +547,57 @@
     <span class="n">nao</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
     <span class="n">nao_pair</span> <span class="o">=</span> <span class="n">nao</span> <span class="o">*</span> <span class="p">(</span><span class="n">nao</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
 
-    <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kws</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
-    <span class="n">charge</span> <span class="o">=</span> <span class="o">-</span><span class="n">cell</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+    <span class="n">eta</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="n">gdf_builder</span><span class="o">.</span><span class="n">_guess_eta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'get_pnucp eta = </span><span class="si">%s</span><span class="s1"> mesh = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
+
+    <span class="n">nuccell</span> <span class="o">=</span> <span class="n">incore</span><span class="o">.</span><span class="n">_compensate_nuccell</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
+    <span class="n">wj</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_int_nuc_vloc</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span> <span class="s1">'int3c2e_pvp1'</span><span class="p">)</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'pnucp pass1: analytic int'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+
+    <span class="n">charge</span> <span class="o">=</span> <span class="o">-</span><span class="n">cell</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span> <span class="c1"># Apply Koseki effective charge?</span>
+    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">nucbar</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">z</span><span class="o">/</span><span class="n">nuccell</span><span class="o">.</span><span class="n">bas_exp</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charge</span><span class="p">)])</span>
+        <span class="n">nucbar</span> <span class="o">*=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span>
+
+        <span class="n">ovlp</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_kin'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">HERMITIAN</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">pack_tril</span><span class="p">(</span><span class="n">ovlp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="c1"># *2 due to the factor 1/2 in T</span>
+            <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">nucbar</span><span class="o">*</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s</span>
+
+    <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">incore</span><span class="o">.</span><span class="n">_IntNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">supmol</span><span class="o">.</span><span class="n">strip_basis</span><span class="p">()</span>
+    <span class="n">ft_kern</span> <span class="o">=</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">gen_ft_kernel</span><span class="p">(</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'GTO_ft_pdotp'</span><span class="p">,</span>
+                                      <span class="n">return_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+
+    <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kws</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+    <span class="n">gxyz</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">cartesian_prod</span><span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Gvbase</span><span class="p">])</span>
+    <span class="n">ngrids</span> <span class="o">=</span> <span class="n">Gv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">kpt_allow</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">Gv</span><span class="o">=</span><span class="n">Gv</span><span class="p">)</span>
+    <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">Gv</span><span class="o">=</span><span class="n">Gv</span><span class="p">)</span>
     <span class="n">coulG</span> <span class="o">*=</span> <span class="n">kws</span>
-    <span class="k">if</span> <span class="n">mydf</span><span class="o">.</span><span class="n">eta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">wj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
-        <span class="n">SI</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_SI</span><span class="p">(</span><span class="n">Gv</span><span class="p">)</span>
-        <span class="n">vG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix-&gt;x'</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">SI</span><span class="p">)</span> <span class="o">*</span> <span class="n">coulG</span>
-        <span class="n">wj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">nuccell</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
-        <span class="n">half_sph_norm</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-        <span class="n">norm</span> <span class="o">=</span> <span class="n">half_sph_norm</span><span class="o">/</span><span class="n">mole</span><span class="o">.</span><span class="n">gaussian_int</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
-        <span class="n">chg_env</span> <span class="o">=</span> <span class="p">[</span><span class="n">mydf</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">norm</span><span class="p">]</span>
-        <span class="n">ptr_eta</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">size</span>
-        <span class="n">ptr_norm</span> <span class="o">=</span> <span class="n">ptr_eta</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">chg_bas</span> <span class="o">=</span> <span class="p">[[</span><span class="n">ia</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ptr_eta</span><span class="p">,</span> <span class="n">ptr_norm</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">natm</span><span class="p">)]</span>
-        <span class="n">nuccell</span><span class="o">.</span><span class="n">_atm</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_atm</span>
-        <span class="n">nuccell</span><span class="o">.</span><span class="n">_bas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">chg_bas</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-        <span class="n">nuccell</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">chg_env</span><span class="p">))</span>
-
-        <span class="n">wj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">_int_nuc_vloc</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span> <span class="s1">'int3c2e_pvp1'</span><span class="p">))</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'pnucp pass1: analytic int'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
-
-        <span class="n">aoaux</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">ft_ao</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">Gv</span><span class="p">)</span>
-        <span class="n">vG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,xi-&gt;x'</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">aoaux</span><span class="p">)</span> <span class="o">*</span> <span class="n">coulG</span>
-        <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">nucbar</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">z</span><span class="o">/</span><span class="n">nuccell</span><span class="o">.</span><span class="n">bas_exp</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charge</span><span class="p">)])</span>
-            <span class="n">nucbar</span> <span class="o">*=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span>
-
-            <span class="n">ovlp</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_kin'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">HERMITIAN</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">pack_tril</span><span class="p">(</span><span class="n">ovlp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-                <span class="c1"># *2 due to the factor 1/2 in T</span>
-                <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">nucbar</span><span class="o">*</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s</span>
-
+    <span class="n">aoaux</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">ft_ao</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">Gv</span><span class="p">)</span>
+    <span class="n">vG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,xi-&gt;x'</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">aoaux</span><span class="p">)</span> <span class="o">*</span> <span class="n">coulG</span>
+    <span class="n">vGR</span> <span class="o">=</span> <span class="n">vG</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">vGI</span> <span class="o">=</span> <span class="n">vG</span><span class="o">.</span><span class="n">imag</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">max_memory</span><span class="o">-</span><span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">aoaoks</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">ft_loop</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span>
-                                       <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span>
-                                       <span class="n">intor</span><span class="o">=</span><span class="s1">'GTO_ft_pdotp'</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">aoao</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">aoaoks</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">aft_jk</span><span class="o">.</span><span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
-                <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">aoao</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
-                <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">aoao</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vG</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">aoao</span><span class="p">)</span>
+    <span class="n">Gblksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="n">nao_pair</span><span class="o">/</span><span class="n">nkpts</span><span class="p">))</span>
+    <span class="n">Gblksize</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Gblksize</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="mi">200000</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'max_memory = </span><span class="si">%s</span><span class="s1">  Gblksize = </span><span class="si">%s</span><span class="s1">  ngrids = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span>
+               <span class="n">max_memory</span><span class="p">,</span> <span class="n">Gblksize</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">)</span>
+
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">Gblksize</span><span class="p">,</span> <span class="n">nao_pair</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">Gblksize</span><span class="p">):</span>
+        <span class="c1"># shape of Gpq (nkpts, nGv, nao_pair)</span>
+        <span class="n">Gpq</span> <span class="o">=</span> <span class="n">ft_kern</span><span class="p">(</span><span class="n">Gv</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">gxyz</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">GpqR</span><span class="p">,</span> <span class="n">GpqI</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Gpq</span><span class="p">)):</span>
+            <span class="n">vR</span>  <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGR</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqR</span><span class="p">)</span>
+            <span class="n">vR</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGI</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqI</span><span class="p">)</span>
+            <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vR</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">aft_jk</span><span class="o">.</span><span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+                <span class="n">vI</span>  <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGR</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqI</span><span class="p">)</span>
+                <span class="n">vI</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGI</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqR</span><span class="p">)</span>
+                <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vI</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'contracting pnucp'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="n">wj_kpts</span> <span class="o">=</span> <span class="p">[]</span>
@@ -636,7 +677,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

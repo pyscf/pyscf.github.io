@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.symm.geom </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -413,6 +414,53 @@
         <span class="n">new_axes</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[[</span><span class="n">y_id</span><span class="p">,</span><span class="n">x_id</span><span class="p">,</span><span class="n">z_id</span><span class="p">]]</span>
     <span class="k">return</span> <span class="n">new_axes</span></div>
 
+<span class="k">def</span> <span class="nf">_adjust_planar_c2v</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+    <span class="sd">'''Adjust axes for planar molecules'''</span>
+    <span class="c1"># Following http://iopenshell.usc.edu/resources/howto/symmetry/</span>
+    <span class="c1"># See also dicussions in issue #1201</span>
+    <span class="c1"># * planar C2v molecules should be oriented such that the X axis is perpendicular</span>
+    <span class="c1"># to the plane of the molecule, and the Z axis is the axis of symmetry;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">atom_coords</span> <span class="o">-</span> <span class="n">center</span>
+    <span class="n">natm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">TOLERANCE</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">natm</span><span class="p">)</span>
+    <span class="n">atoms_on_xz</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="n">tol</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">atoms_on_xz</span><span class="p">):</span>
+        <span class="c1"># rotate xy</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">axes</span>
+
+<span class="k">def</span> <span class="nf">_adjust_planar_d2h</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+    <span class="sd">'''Adjust axes for planar molecules'''</span>
+    <span class="c1"># Following http://iopenshell.usc.edu/resources/howto/symmetry/</span>
+    <span class="c1"># See also dicussions in issue #1201</span>
+    <span class="c1"># * planar D2h molecules should be oriented such that the X axis is</span>
+    <span class="c1"># perpendicular to the plane of the molecule, and the Z axis passes through</span>
+    <span class="c1"># the greatest number of atoms.</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">atom_coords</span> <span class="o">-</span> <span class="n">center</span>
+    <span class="n">natm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="n">TOLERANCE</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">natm</span><span class="p">)</span>
+    <span class="n">natm_with_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="n">natm_with_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="n">natm_with_z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">natm_with_z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># atoms on xy plane</span>
+        <span class="k">if</span> <span class="n">natm_with_x</span> <span class="o">&gt;=</span> <span class="n">natm_with_y</span><span class="p">:</span>  <span class="c1"># atoms-on-y &gt;= atoms-on-x</span>
+            <span class="c1"># rotate xz</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># rotate xy then rotate xz</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="k">elif</span> <span class="n">natm_with_y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># atoms on xz plane</span>
+        <span class="k">if</span> <span class="n">natm_with_x</span> <span class="o">&gt;=</span> <span class="n">natm_with_z</span><span class="p">:</span>  <span class="c1"># atoms-on-z &gt;= atoms-on-x</span>
+            <span class="c1"># rotate xy</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># rotate xz then rotate xy</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="k">elif</span> <span class="n">natm_with_x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># atoms on yz plane</span>
+        <span class="k">if</span> <span class="n">natm_with_y</span> <span class="o">&lt;</span> <span class="n">natm_with_z</span><span class="p">:</span>  <span class="c1"># atoms-on-z &lt; atoms-on-y</span>
+            <span class="c1"># rotate yz</span>
+            <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">axes</span>
 
 <div class="viewcode-block" id="detect_symm"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.detect_symm">[docs]</a><span class="k">def</span> <span class="nf">detect_symm</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">WARN</span><span class="p">):</span>
     <span class="sd">'''Detect the point group symmetry for given molecule.</span>
@@ -539,6 +587,8 @@
             <span class="k">if</span> <span class="n">is_c2z</span> <span class="ow">and</span> <span class="n">is_c2x</span> <span class="ow">and</span> <span class="n">is_c2y</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_icenter</span><span class="p">():</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'D2h'</span>
+                    <span class="c1"># _adjust_planar_d2h is unlikely to be called</span>
+                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_d2h</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">charge_center</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'D2'</span>
                 <span class="n">axes</span> <span class="o">=</span> <span class="n">alias_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
@@ -551,6 +601,7 @@
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2h'</span>
                 <span class="k">elif</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_mirror</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2v'</span>
+                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_c2v</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">charge_center</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2'</span>
             <span class="k">else</span><span class="p">:</span>
@@ -700,8 +751,8 @@
     <span class="k">return</span> <span class="n">opdic</span></div>
 
 <div class="viewcode-block" id="symm_identical_atoms"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.symm_identical_atoms">[docs]</a><span class="k">def</span> <span class="nf">symm_identical_atoms</span><span class="p">(</span><span class="n">gpname</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
-    <span class="sd">''' Requires '''</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
+    <span class="sd">'''Symmetry identical atoms'''</span>
+    <span class="c1"># from pyscf import gto</span>
     <span class="c1"># Dooh Coov for linear molecule</span>
     <span class="k">if</span> <span class="n">gpname</span> <span class="o">==</span> <span class="s1">'Dooh'</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -745,9 +796,19 @@
     <span class="n">eql_atom_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">eql_atom_ids</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">eql_atom_ids</span></div>
 
-<div class="viewcode-block" id="check_given_symm"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.check_given_symm">[docs]</a><span class="k">def</span> <span class="nf">check_given_symm</span><span class="p">(</span><span class="n">gpname</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="c1"># more strict than symm_identical_atoms, we required not only the coordinates</span>
-    <span class="c1"># match, but also the symbols and basis functions</span>
+<div class="viewcode-block" id="check_symm"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.check_symm">[docs]</a><span class="k">def</span> <span class="nf">check_symm</span><span class="p">(</span><span class="n">gpname</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    Check whether the declared symmetry (gpname) exists in the system</span>
+
+<span class="sd">    If basis is specified, this function checks also the basis functions have</span>
+<span class="sd">    the required symmetry.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gpname: str</span>
+<span class="sd">            point group name</span>
+<span class="sd">        atoms: list</span>
+<span class="sd">            [[symbol, [x, y, z]], [symbol, [x, y, z]], ...]</span>
+<span class="sd">    '''</span>
 
     <span class="c1">#FIXME: compare the basis set when basis is given</span>
     <span class="k">if</span> <span class="n">gpname</span> <span class="o">==</span> <span class="s1">'Dooh'</span><span class="p">:</span>
@@ -776,6 +837,8 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">coords0</span><span class="p">,</span> <span class="n">newc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="n">TOLERANCE</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="kc">True</span></div>
+
+<span class="n">check_given_symm</span> <span class="o">=</span> <span class="n">check_symm</span>
 
 <div class="viewcode-block" id="shift_atom"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.shift_atom">[docs]</a><span class="k">def</span> <span class="nf">shift_atom</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">orig</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">])</span>
@@ -829,6 +892,10 @@
             <span class="n">u</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">dists</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">group_atoms_by_distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="n">idx</span> <span class="o">==</span> <span class="n">i</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">atom_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
 
 <div class="viewcode-block" id="SymmSys.cartesian_tensor"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.SymmSys.cartesian_tensor">[docs]</a>    <span class="k">def</span> <span class="nf">cartesian_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
@@ -1007,7 +1074,7 @@
 
     <span class="n">zaxis</span> <span class="o">=</span> <span class="n">c5_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">cos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c5_axes</span><span class="p">,</span> <span class="n">zaxis</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)</span> <span class="o">|</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)</span> <span class="o">|</span>
                      <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)))</span>
 
     <span class="k">if</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_icenter</span><span class="p">():</span>
@@ -1028,7 +1095,7 @@
                <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_rotation</span><span class="p">(</span><span class="n">c4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">c4_axes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># T group</span>
-        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c4_axes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">c4_axes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_icenter</span><span class="p">():</span>
             <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'Oh'</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1042,7 +1109,7 @@
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="n">cos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c3_axes</span><span class="p">,</span> <span class="n">c3_axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)</span> <span class="o">|</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)</span> <span class="o">|</span>
                          <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">cos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_icenter</span><span class="p">():</span>
@@ -1158,7 +1225,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

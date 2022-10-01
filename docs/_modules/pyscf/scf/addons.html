@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.scf.addons </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -466,7 +467,10 @@
 <span class="n">frac_occ</span> <span class="o">=</span> <span class="n">frac_occ_</span>
 
 <div class="viewcode-block" id="dynamic_occ_"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.dynamic_occ_">[docs]</a><span class="k">def</span> <span class="nf">dynamic_occ_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">))</span>
+    <span class="sd">'''</span>
+<span class="sd">    Dyanmically adjust the occupancy to avoid degeneracy between HOMO and LUMO</span>
+<span class="sd">    '''</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">))</span>
     <span class="n">old_get_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_occ</span>
     <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
@@ -494,16 +498,18 @@
 <span class="sd">    value is set to (HF energy change * factor)</span>
 <span class="sd">    '''</span>
     <span class="n">old_get_fock</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span>
-    <span class="n">last_e</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">mf</span><span class="o">.</span><span class="n">_last_e</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">def</span> <span class="nf">get_fock</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">s1e</span><span class="p">,</span> <span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">cycle</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">diis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">diis_start_cycle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level_shift_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">damp_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">cycle</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">diis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ehf</span> <span class="o">=</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji'</span><span class="p">,</span> <span class="n">h1e</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span> <span class="o">+</span>
-                  <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji'</span><span class="p">,</span> <span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">last_e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">level_shift_factor</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ehf</span><span class="o">-</span><span class="n">last_e</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">factor</span>
+        <span class="k">if</span> <span class="n">cycle</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">diis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">'exc'</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">:</span>  <span class="c1"># DFT</span>
+                <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'e1'</span><span class="p">]</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'coul'</span><span class="p">]</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'exc'</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'e1'</span><span class="p">]</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'e2'</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">_last_e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">level_shift_factor</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">e_tot</span><span class="o">-</span><span class="n">mf</span><span class="o">.</span><span class="n">_last_e</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Set level shift to </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">level_shift_factor</span><span class="p">)</span>
-            <span class="n">last_e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ehf</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">_last_e</span> <span class="o">=</span> <span class="n">e_tot</span>
         <span class="k">return</span> <span class="n">old_get_fock</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">s1e</span><span class="p">,</span> <span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">diis</span><span class="p">,</span> <span class="n">diis_start_cycle</span><span class="p">,</span>
                             <span class="n">level_shift_factor</span><span class="p">,</span> <span class="n">damp_factor</span><span class="p">)</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span> <span class="o">=</span> <span class="n">get_fock</span>
@@ -516,7 +522,7 @@
 <span class="sd">    Determine occupation of alpha and beta electrons based on energy spectrum</span>
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">uhf</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">))</span>
     <span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">ee</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">))</span>
@@ -637,7 +643,7 @@
 
 <div class="viewcode-block" id="project_mo_nr2r"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.project_mo_nr2r">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">project_mo_nr2nr</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">project_mo_nr2r</span><span class="p">(</span><span class="n">mol1</span><span class="p">,</span> <span class="n">mo1</span><span class="p">,</span> <span class="n">mol2</span><span class="p">):</span>
-    <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">mol1</span><span class="o">.</span><span class="n">cart</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="ow">not</span> <span class="n">mol1</span><span class="o">.</span><span class="n">cart</span><span class="p">)</span>
     <span class="n">s22</span> <span class="o">=</span> <span class="n">mol2</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp_spinor'</span><span class="p">)</span>
     <span class="n">s21</span> <span class="o">=</span> <span class="n">mole</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp_sph'</span><span class="p">,</span> <span class="n">mol2</span><span class="p">,</span> <span class="n">mol1</span><span class="p">)</span>
 
@@ -697,7 +703,7 @@
 
 <div class="viewcode-block" id="project_dm_nr2r"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.project_dm_nr2r">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">project_dm_nr2nr</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">project_dm_nr2r</span><span class="p">(</span><span class="n">mol1</span><span class="p">,</span> <span class="n">dm1</span><span class="p">,</span> <span class="n">mol2</span><span class="p">):</span>
-    <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">mol1</span><span class="o">.</span><span class="n">cart</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="ow">not</span> <span class="n">mol1</span><span class="o">.</span><span class="n">cart</span><span class="p">)</span>
     <span class="n">s22</span> <span class="o">=</span> <span class="n">mol2</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp_spinor'</span><span class="p">)</span>
     <span class="n">s21</span> <span class="o">=</span> <span class="n">mole</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp_sph'</span><span class="p">,</span> <span class="n">mol2</span><span class="p">,</span> <span class="n">mol1</span><span class="p">)</span>
 
@@ -798,7 +804,7 @@
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Applying remove_linear_dep_ on SCF object.'</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Overlap condition number </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">cond</span><span class="p">)</span>
-    <span class="k">if</span><span class="p">(</span><span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">numpy</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Using canonical orthogonalization with threshold </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
         <span class="k">def</span> <span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">canonical_orth_</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
@@ -843,7 +849,7 @@
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">dft</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Converting </span><span class="si">%s</span><span class="s1"> to UHF'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
 
@@ -875,7 +881,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">elif</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">remove_df</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
@@ -948,6 +954,7 @@
 <span class="k">def</span> <span class="nf">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">remove_df</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">newton_ah</span>
     <span class="n">mf_dic</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+    <span class="n">mf_dic</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'_keys'</span><span class="p">)</span>
 
     <span class="c1"># if mf is SOSCF object, avoid to overwrite the with_df method</span>
     <span class="c1"># FIXME: it causes bug when converting pbc-SOSCF.</span>
@@ -981,7 +988,7 @@
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">dft</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Converting </span><span class="si">%s</span><span class="s1"> to RHF'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
 
@@ -1012,7 +1019,7 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">elif</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">remove_df</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">)</span> <span class="ow">or</span>
@@ -1062,7 +1069,7 @@
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">dft</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Converting </span><span class="si">%s</span><span class="s1"> to GHF'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
 
@@ -1112,7 +1119,7 @@
         <span class="k">return</span> <span class="n">mf1</span>
 
     <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_update_mf_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">remove_df</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="p">):</span>
@@ -1178,7 +1185,7 @@
                                <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">nvira</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">nvirb</span><span class="p">)[</span><span class="n">vidx</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">orbspin</span></div>
 
-<span class="k">del</span><span class="p">(</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">,</span> <span class="n">LINEAR_DEP_TRIGGER</span><span class="p">)</span>
+<span class="k">del</span> <span class="p">(</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">,</span> <span class="n">LINEAR_DEP_TRIGGER</span><span class="p">)</span>
 
 <div class="viewcode-block" id="fast_newton"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.fast_newton">[docs]</a><span class="k">def</span> <span class="nf">fast_newton</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dual_basis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">newton_kwargs</span><span class="p">):</span>
@@ -1273,7 +1280,7 @@
 <span class="c1">#    def mf_kernel(*args, **kwargs):</span>
 <span class="c1">#        logger.warn(mf, "fast_newton is a wrap function to quickly setup and call Newton solver. "</span>
 <span class="c1">#                    "There's no need to call kernel function again for fast_newton.")</span>
-<span class="c1">#        del(mf.kernel)  # warn once and remove circular depdence</span>
+<span class="c1">#        del (mf.kernel)  # warn once and remove circular depdence</span>
 <span class="c1">#        return mf.e_tot</span>
 <span class="c1">#    mf.kernel = mf_kernel</span>
     <span class="k">return</span> <span class="n">mf</span></div>
@@ -1301,7 +1308,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

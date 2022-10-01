@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.grad.tduhf </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -512,6 +513,8 @@
         <span class="n">de</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xji,ij-&gt;x'</span><span class="p">,</span> <span class="n">vhf1a</span><span class="p">[</span><span class="mi">3</span><span class="p">,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">dmxmya</span><span class="p">[:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
         <span class="n">de</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xji,ij-&gt;x'</span><span class="p">,</span> <span class="n">vhf1b</span><span class="p">[</span><span class="mi">3</span><span class="p">,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">dmxmyb</span><span class="p">[:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
 
+        <span class="n">de</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">td_grad</span><span class="o">.</span><span class="n">extra_force</span><span class="p">(</span><span class="n">ia</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
+
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'TDUHF nuclear gradients'</span><span class="p">,</span> <span class="o">*</span><span class="n">time0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">de</span></div>
 
@@ -525,52 +528,6 @@
 
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">tdscf</span>
 <span class="n">tdscf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">TDA</span><span class="o">.</span><span class="n">Gradients</span> <span class="o">=</span> <span class="n">tdscf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">TDHF</span><span class="o">.</span><span class="n">Gradients</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">Gradients</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">tddft</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">[</span><span class="s1">'H'</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span> <span class="p">,</span> <span class="mf">1.804</span><span class="p">)],</span>
-        <span class="p">[</span><span class="s1">'F'</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span> <span class="p">]</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">'B'</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'631g'</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">conv_tol</span><span class="o">=</span><span class="mf">1e-14</span><span class="p">)</span>
-    <span class="n">td</span> <span class="o">=</span> <span class="n">tddft</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="n">td</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-14</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-    <span class="n">tdg</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">Gradients</span><span class="p">()</span>
-    <span class="c1">#tdg.verbose = 5</span>
-    <span class="n">g1</span> <span class="o">=</span> <span class="n">tdg</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.3970638627132136</span><span class="p">)</span>
-    <span class="n">td_solver</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">td_solver</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="s1">'H 0 0 1.805; F 0 0 0'</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">))</span>
-    <span class="n">e2</span> <span class="o">=</span> <span class="n">td_solver</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="s1">'H 0 0 1.803; F 0 0 0'</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">((</span><span class="n">e1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">e2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/.</span><span class="mi">002</span> <span class="o">-</span> <span class="n">g1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-
-    <span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="s1">'H 0 0 1.804; F 0 0 0'</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">)</span>
-    <span class="n">td</span> <span class="o">=</span> <span class="n">tddft</span><span class="o">.</span><span class="n">TDDFT</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="n">td</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-14</span>
-    <span class="n">td</span><span class="o">.</span><span class="n">nstates</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-    <span class="n">tdg</span> <span class="o">=</span> <span class="n">Gradients</span><span class="p">(</span><span class="n">td</span><span class="p">)</span>
-    <span class="n">g1</span> <span class="o">=</span> <span class="n">tdg</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">fp</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.39823315202373544</span><span class="p">)</span>
-    <span class="n">td_solver</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">td_solver</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="s1">'H 0 0 1.805; F 0 0 0'</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">))</span>
-    <span class="n">e2</span> <span class="o">=</span> <span class="n">td_solver</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="s1">'H 0 0 1.803; F 0 0 0'</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">((</span><span class="n">e1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">e2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/.</span><span class="mi">002</span> <span class="o">-</span> <span class="n">g1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-
 </pre></div>
 
           </article>
@@ -595,7 +552,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.mc1step </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -535,6 +536,7 @@
     <span class="n">dr</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">ikf</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">g_op</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">g_orb</span>
+    <span class="n">problem_size</span> <span class="o">=</span> <span class="n">g_orb</span><span class="o">.</span><span class="n">size</span>
 
     <span class="k">for</span> <span class="n">ah_end</span><span class="p">,</span> <span class="n">ihop</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">dxi</span><span class="p">,</span> <span class="n">hdxi</span><span class="p">,</span> <span class="n">residual</span><span class="p">,</span> <span class="n">seig</span> \
             <span class="ow">in</span> <span class="n">ciah</span><span class="o">.</span><span class="n">davidson_cc</span><span class="p">(</span><span class="n">h_op</span><span class="p">,</span> <span class="n">g_op</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">x0_guess</span><span class="p">,</span>
@@ -547,13 +549,14 @@
             <span class="p">(</span><span class="n">seig</span> <span class="o">&lt;</span> <span class="n">casscf</span><span class="o">.</span><span class="n">ah_lindep</span><span class="p">)):</span>
             <span class="n">imic</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">dxmax</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">dxi</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">dxmax</span> <span class="o">&gt;</span> <span class="n">max_stepsize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ihop</span> <span class="o">==</span> <span class="n">problem_size</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'... Hx=g fully converged for small systems'</span><span class="p">)</span>
+                <span class="c1">#max_stepsize = casscf.max_stepsize * 10</span>
+            <span class="k">elif</span> <span class="n">dxmax</span> <span class="o">&gt;</span> <span class="n">max_stepsize</span><span class="p">:</span>
                 <span class="n">scale</span> <span class="o">=</span> <span class="n">max_stepsize</span> <span class="o">/</span> <span class="n">dxmax</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'... scale rotation size </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
                 <span class="n">dxi</span> <span class="o">*=</span> <span class="n">scale</span>
                 <span class="n">hdxi</span> <span class="o">*=</span> <span class="n">scale</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="n">g_orb</span> <span class="o">=</span> <span class="n">g_orb</span> <span class="o">+</span> <span class="n">hdxi</span>
             <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">+</span> <span class="n">dxi</span>
@@ -629,6 +632,7 @@
            <span class="n">ci0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">,</span> <span class="n">dump_chk</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">'''quasi-newton CASSCF optimization driver</span>
 <span class="sd">    '''</span>
+    <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'Start 1-step CASSCF'</span><span class="p">)</span>
@@ -728,6 +732,25 @@
         <span class="n">eris</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo</span><span class="p">)</span>
         <span class="n">t2m</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'update eri'</span><span class="p">,</span> <span class="o">*</span><span class="n">t3m</span><span class="p">)</span>
 
+        <span class="n">max_offdiag_u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">max_offdiag_u</span> <span class="o">&lt;</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span><span class="p">:</span>
+            <span class="n">small_rot</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">small_rot</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
+            <span class="c1"># The fcivec from builtin FCI solver is a numpy.ndarray</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">fcivec</span> <span class="o">=</span> <span class="n">small_rot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newvecs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">subvec</span> <span class="ow">in</span> <span class="n">fcivec</span><span class="p">:</span>
+                <span class="c1"># CI vector obtained by builtin FCI is a numpy array</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subvec</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="n">newvecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">small_rot</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">newvecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subvec</span><span class="p">)</span>
+            <span class="n">fcivec</span> <span class="o">=</span> <span class="n">newvecs</span>
+
         <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">casci</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">eris</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
         <span class="n">casdm1</span><span class="p">,</span> <span class="n">casdm2</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">make_rdm12</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">casscf</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
         <span class="n">norm_ddm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">casdm1</span> <span class="o">-</span> <span class="n">casdm1_last</span><span class="p">)</span>
@@ -736,8 +759,9 @@
         <span class="n">t3m</span> <span class="o">=</span> <span class="n">t2m</span> <span class="o">=</span> <span class="n">t1m</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'macro iter </span><span class="si">%d</span><span class="s1">'</span><span class="o">%</span><span class="n">imacro</span><span class="p">,</span> <span class="o">*</span><span class="n">t1m</span><span class="p">)</span>
 
         <span class="n">de</span><span class="p">,</span> <span class="n">elast</span> <span class="o">=</span> <span class="n">e_tot</span> <span class="o">-</span> <span class="n">elast</span><span class="p">,</span> <span class="n">e_tot</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">de</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span>
-            <span class="ow">and</span> <span class="p">(</span><span class="n">norm_gorb0</span> <span class="o">&lt;</span> <span class="n">conv_tol_grad</span> <span class="ow">and</span> <span class="n">norm_ddm</span> <span class="o">&lt;</span> <span class="n">conv_tol_ddm</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">de</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">norm_gorb0</span> <span class="o">&lt;</span> <span class="n">conv_tol_grad</span> <span class="ow">and</span>
+                <span class="n">norm_ddm</span> <span class="o">&lt;</span> <span class="n">conv_tol_ddm</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="n">max_offdiag_u</span> <span class="o">&lt;</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span> <span class="ow">or</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
             <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">dump_chk</span><span class="p">:</span>
@@ -865,6 +889,11 @@
 <span class="s1">            Max number of micro iterations in each macro iteration.  Depending on</span>
 <span class="s1">            systems, increasing this value might reduce the total macro</span>
 <span class="s1">            iterations.  Generally, 2 - 5 steps should be enough.  Default is 3.</span>
+<span class="s1">        small_rot_tol : float</span>
+<span class="s1">            Threshold for orbital rotation to be considered small. If the largest orbital</span>
+<span class="s1">            rotation is smaller than this value, the CI solver will restart from the</span>
+<span class="s1">            previous iteration if supported.</span>
+<span class="s1">            Default is 0.01</span>
 <span class="s1">        ah_level_shift : float, for AH solver.</span>
 <span class="s1">            Level shift for the Davidson diagonalization in AH solver.  Default is 1e-8.</span>
 <span class="s1">        ah_conv_tol : float, for AH solver.</span>
@@ -993,6 +1022,7 @@
     <span class="n">canonicalization</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'mcscf_mc1step_CASSCF_canonicalization'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">sorting_mo_energy</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'mcscf_mc1step_CASSCF_sorting_mo_energy'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">scale_restoration</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'mcscf_mc1step_CASSCF_scale_restoration'</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">small_rot_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'mcscf_mc1step_CASSCF_small_rot_tol'</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
@@ -1043,6 +1073,7 @@
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'conv_tol = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'conv_tol_grad = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol_grad</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'orbital rotation max_stepsize = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'orbital rotation threshold for CI restart = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">small_rot_tol</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'augmented hessian ah_max_cycle = </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ah_max_cycle</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'augmented hessian ah_conv_tol = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ah_conv_tol</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'augmented hessian ah_linear dependence = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ah_lindep</span><span class="p">)</span>
@@ -1127,7 +1158,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fcasci</span> <span class="o">=</span> <span class="n">_fake_h_for_fast_casci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
 
-        <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">fcasci</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+        <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">fcasci</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span>
+                                            <span class="n">envs</span><span class="o">=</span><span class="n">envs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e_cas</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Multiple roots are detected in fcisolver.  '</span>
                                <span class="s1">'CASSCF does not know which state to optimize.</span><span class="se">\n</span><span class="s1">'</span>
@@ -1140,7 +1172,10 @@
             <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'CAS space CI energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="s1">'spin_square'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">spin_square</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">spin_square</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+                    <span class="n">ss</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ss</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1155,14 +1190,14 @@
                              <span class="s1">'CASSCF E = </span><span class="si">%.15g</span><span class="s1">  dE = </span><span class="si">%.8g</span><span class="s1">  S^2 = </span><span class="si">%.7f</span><span class="s1">'</span><span class="p">,</span>
                              <span class="n">envs</span><span class="p">[</span><span class="s1">'imacro'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'njk'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'imicro'</span><span class="p">],</span>
                              <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_tot</span><span class="o">-</span><span class="n">envs</span><span class="p">[</span><span class="s1">'elast'</span><span class="p">],</span> <span class="n">ss</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">if</span> <span class="s1">'norm_gci'</span> <span class="ow">in</span> <span class="n">envs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'norm_gci'</span> <span class="ow">in</span> <span class="n">envs</span> <span class="ow">and</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gci'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'               |grad[o]|=</span><span class="si">%5.3g</span><span class="s1">  '</span>
-                             <span class="s1">'|grad[c]|= </span><span class="si">%s</span><span class="s1">  |ddm|=</span><span class="si">%5.3g</span><span class="s1">'</span><span class="p">,</span>
+                             <span class="s1">'|grad[c]|= </span><span class="si">%s</span><span class="s1">  |ddm|=</span><span class="si">%5.3g</span><span class="s1">  |maxRot[o]|=</span><span class="si">%5.3g</span><span class="s1">'</span><span class="p">,</span>
                              <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gorb0'</span><span class="p">],</span>
-                             <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gci'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_ddm'</span><span class="p">])</span>
+                             <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gci'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_ddm'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'max_offdiag_u'</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'               |grad[o]|=</span><span class="si">%5.3g</span><span class="s1">  |ddm|=</span><span class="si">%5.3g</span><span class="s1">'</span><span class="p">,</span>
-                             <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gorb0'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_ddm'</span><span class="p">])</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'               |grad[o]|=</span><span class="si">%5.3g</span><span class="s1">  |ddm|=</span><span class="si">%5.3g</span><span class="s1">  |maxRot[o]|=</span><span class="si">%5.3g</span><span class="s1">'</span><span class="p">,</span>
+                             <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_gorb0'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'norm_ddm'</span><span class="p">],</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'max_offdiag_u'</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># Initialization step</span>
                 <span class="k">if</span> <span class="n">ss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'CASCI E = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="n">e_tot</span><span class="p">)</span>
@@ -1381,23 +1416,24 @@
         <span class="n">hc</span> <span class="o">=</span> <span class="n">contract_2e</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span>
         <span class="n">g</span> <span class="o">=</span> <span class="n">hc</span> <span class="o">-</span> <span class="p">(</span><span class="n">e_cas</span><span class="o">-</span><span class="n">ecore</span><span class="p">)</span> <span class="o">*</span> <span class="n">ci0</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci_response_space</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci_response_space</span> <span class="o">&gt;</span> <span class="mi">7</span> <span class="ow">or</span> <span class="n">ci0</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">pspace_size</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'CI step by full response'</span><span class="p">)</span>
             <span class="c1"># full response</span>
             <span class="n">max_memory</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="o">-</span><span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">e</span><span class="p">,</span> <span class="n">ci1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ecore</span><span class="o">=</span><span class="n">ecore</span><span class="p">,</span>
                                            <span class="n">ci0</span><span class="o">=</span><span class="n">ci0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">nd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci_response_space</span>
+            <span class="n">nd</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_response_space</span><span class="p">,</span> <span class="n">ci0</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ci0</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc</span><span class="p">]</span>
             <span class="n">heff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nd</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
             <span class="n">seff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nd</span><span class="p">,</span><span class="n">nd</span><span class="p">))</span>
             <span class="n">heff</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">seff</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">tol_residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">**</span> <span class="o">.</span><span class="mi">5</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nd</span><span class="p">):</span>
                 <span class="n">dx</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">e_cas</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol_residual</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">contract_2e</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
@@ -1405,7 +1441,7 @@
                     <span class="n">heff</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">heff</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ax</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
                     <span class="n">seff</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">seff</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
             <span class="n">nd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
-            <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">safe_eigh</span><span class="p">(</span><span class="n">heff</span><span class="p">[:</span><span class="n">nd</span><span class="p">,:</span><span class="n">nd</span><span class="p">],</span> <span class="n">seff</span><span class="p">[:</span><span class="n">nd</span><span class="p">,:</span><span class="n">nd</span><span class="p">])[:</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">e</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">seig</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">safe_eigh</span><span class="p">(</span><span class="n">heff</span><span class="p">[:</span><span class="n">nd</span><span class="p">,:</span><span class="n">nd</span><span class="p">],</span> <span class="n">seff</span><span class="p">[:</span><span class="n">nd</span><span class="p">,:</span><span class="n">nd</span><span class="p">])</span>
             <span class="n">ci1</span> <span class="o">=</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nd</span><span class="p">):</span>
                 <span class="n">ci1</span> <span class="o">+=</span> <span class="n">xs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
@@ -1550,15 +1586,23 @@
         <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">casscf</span>
         <span class="k">return</span> <span class="n">casscf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
+    <span class="k">def</span> <span class="nf">_state_average_nuc_grad_method</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Hook for addons.state_average. Every child method of CASSCF will</span>
+        <span class="c1"># probably need to overwrite this.</span>
+        <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">sacasscf</span> <span class="k">as</span> <span class="n">sacasscf_grad</span>
+        <span class="k">return</span> <span class="n">sacasscf_grad</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+
 <div class="viewcode-block" id="CASSCF.newton"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.mc1step.CASSCF.newton">[docs]</a>    <span class="k">def</span> <span class="nf">newton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.mcscf</span> <span class="kn">import</span> <span class="n">newton_casscf</span>
+        <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
         <span class="n">mc1</span> <span class="o">=</span> <span class="n">newton_casscf</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
         <span class="n">mc1</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="n">mc1</span><span class="o">.</span><span class="n">max_cycle_micro</span> <span class="o">=</span> <span class="mi">10</span>
         <span class="c1"># MRH, 04/08/2019: enable state-average CASSCF second-order algorithm</span>
-        <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
-            <span class="n">mc1</span> <span class="o">=</span> <span class="n">mc1</span><span class="o">.</span><span class="n">state_average_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+            <span class="c1"># FIXME: (QS) Should not need to pass wfnsym for general CASSCF object.</span>
+            <span class="n">wfnsym</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'wfnsym'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">mc1</span> <span class="o">=</span> <span class="n">mc1</span><span class="o">.</span><span class="n">state_average_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mc1</span></div></div>
 
 <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">CASSCF</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="o">.</span><span class="n">CASSCF</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">CASSCF</span><span class="p">)</span>
@@ -1712,7 +1756,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

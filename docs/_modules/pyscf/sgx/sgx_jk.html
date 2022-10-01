@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.sgx.sgx_jk </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -367,7 +368,7 @@
         <span class="n">batch_nuc</span> <span class="o">=</span> <span class="n">_gen_batch_nuc</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">batch_jk</span> <span class="o">=</span> <span class="n">_gen_jk_direct</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'s2'</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span> <span class="n">direct_scf_tol</span><span class="p">,</span>
-                                  <span class="n">sgx</span><span class="o">.</span><span class="n">_opt</span><span class="p">)</span>
+                                  <span class="n">sgx</span><span class="o">.</span><span class="n">_opt</span><span class="p">,</span> <span class="n">sgx</span><span class="o">.</span><span class="n">pjs</span><span class="p">)</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s2">"sgX initialziation"</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
 
     <span class="n">sn</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span>
@@ -381,6 +382,7 @@
     <span class="n">tnuc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
         <span class="n">ao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">eval_gto</span><span class="p">(</span><span class="s1">'GTOval'</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
         <span class="n">wao</span> <span class="o">=</span> <span class="n">ao</span> <span class="o">*</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
         <span class="n">sn</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">wao</span><span class="p">)</span>
@@ -395,6 +397,7 @@
             <span class="n">wao</span> <span class="o">=</span> <span class="n">wao</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">fg</span> <span class="o">=</span> <span class="n">fg</span><span class="p">[:,</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">sgx</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="n">tnuc</span> <span class="o">=</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
@@ -407,7 +410,7 @@
             <span class="n">gbn</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tnuc</span> <span class="o">=</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
-            <span class="n">jg</span><span class="p">,</span> <span class="n">gv</span> <span class="o">=</span> <span class="n">batch_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">jg</span><span class="p">,</span> <span class="n">gv</span> <span class="o">=</span> <span class="n">batch_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">weights</span><span class="p">)</span>
             <span class="n">tnuc</span> <span class="o">=</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
@@ -456,7 +459,7 @@
         <span class="n">batch_nuc</span> <span class="o">=</span> <span class="n">_gen_batch_nuc</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">batch_jk</span> <span class="o">=</span> <span class="n">_gen_jk_direct</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'s2'</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span> <span class="n">direct_scf_tol</span><span class="p">,</span>
-                                  <span class="n">sgx</span><span class="o">.</span><span class="n">_opt</span><span class="p">)</span>
+                                  <span class="n">sgx</span><span class="o">.</span><span class="n">_opt</span><span class="p">,</span> <span class="n">sgx</span><span class="o">.</span><span class="n">pjs</span><span class="p">)</span>
 
     <span class="n">sn</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span>
     <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -479,6 +482,7 @@
     <span class="n">tnuc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
         <span class="n">ao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">eval_gto</span><span class="p">(</span><span class="s1">'GTOval'</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
         <span class="n">wao</span> <span class="o">=</span> <span class="n">ao</span> <span class="o">*</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
 
@@ -491,6 +495,7 @@
             <span class="n">ao</span> <span class="o">=</span> <span class="n">ao</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">fg</span> <span class="o">=</span> <span class="n">fg</span><span class="p">[:,</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
             <span class="n">rhog</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xgu,gu-&gt;xg'</span><span class="p">,</span> <span class="n">fg</span><span class="p">,</span> <span class="n">ao</span><span class="p">)</span>
@@ -509,7 +514,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tnuc</span> <span class="o">=</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span> <span class="n">rhog</span> <span class="o">=</span> <span class="n">rhog</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">jpart</span><span class="p">,</span> <span class="n">gv</span> <span class="o">=</span> <span class="n">batch_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">rhog</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">jpart</span><span class="p">,</span> <span class="n">gv</span> <span class="o">=</span> <span class="n">batch_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">rhog</span><span class="p">,</span> <span class="n">fg</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">weights</span><span class="p">)</span>
             <span class="n">tnuc</span> <span class="o">=</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">tnuc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
@@ -541,7 +546,7 @@
         <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">j3c</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">batch_nuc</span>
 
-<span class="k">def</span> <span class="nf">_gen_jk_direct</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span> <span class="n">direct_scf_tol</span><span class="p">,</span> <span class="n">sgxopt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_gen_jk_direct</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span> <span class="n">direct_scf_tol</span><span class="p">,</span> <span class="n">sgxopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pjs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">'''Contraction between sgX Coulomb integrals and density matrices</span>
 <span class="sd">    J: einsum('guv,xg-&gt;xuv', gbn, dms) if dms == rho at grid</span>
 <span class="sd">       einsum('gij,xij-&gt;xg', gbn, dms) if dms are density matrices</span>
@@ -549,23 +554,29 @@
 <span class="sd">    '''</span>
     <span class="k">if</span> <span class="n">sgxopt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyscf.sgx</span> <span class="kn">import</span> <span class="n">sgx</span>
-        <span class="n">sgxopt</span> <span class="o">=</span> <span class="n">sgx</span><span class="o">.</span><span class="n">_make_opt</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="n">sgxopt</span> <span class="o">=</span> <span class="n">sgx</span><span class="o">.</span><span class="n">_make_opt</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">pjs</span><span class="o">=</span><span class="n">pjs</span><span class="p">)</span>
     <span class="n">sgxopt</span><span class="o">.</span><span class="n">direct_scf_tol</span> <span class="o">=</span> <span class="n">direct_scf_tol</span>
 
     <span class="n">ncomp</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
     <span class="n">cintor</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">(</span><span class="n">sgxopt</span><span class="o">.</span><span class="n">_intor</span><span class="p">)</span>
-    <span class="n">fdot</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">(</span><span class="s1">'SGXdot_nr'</span><span class="o">+</span><span class="n">aosym</span><span class="p">)</span>
+    <span class="n">fdot</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">(</span><span class="s1">'SGXdot_nrk'</span><span class="p">)</span>
     <span class="n">drv</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">libcvhf</span><span class="o">.</span><span class="n">SGXnr_direct_drv</span>
 
-    <span class="k">def</span> <span class="nf">jk_part</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grid_coords</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">fg</span><span class="p">):</span>
-        <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">grid_coords</span><span class="p">)</span>
-        <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">conc_env</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
-                                          <span class="n">fakemol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">fakemol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">fakemol</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">jk_part</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grid_coords</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">fg</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+        <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span>
+        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">env</span><span class="p">[</span><span class="n">gto</span><span class="o">.</span><span class="n">NGRIDS</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngrids</span>
+        <span class="n">env</span><span class="p">[</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_GRIDS</span><span class="p">]</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">if</span> <span class="n">pjs</span><span class="p">:</span>
+            <span class="n">sgxopt</span><span class="o">.</span><span class="n">set_dm</span><span class="p">(</span><span class="n">fg</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="kc">None</span><span class="p">,:])),</span>
+                          <span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
 
         <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">moleintor</span><span class="o">.</span><span class="n">make_loc</span><span class="p">(</span><span class="n">bas</span><span class="p">,</span> <span class="n">sgxopt</span><span class="o">.</span><span class="n">_intor</span><span class="p">)</span>
-        <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bas</span><span class="p">))</span>
-        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
+
+        <span class="n">fg</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">fg</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="n">vj</span> <span class="o">=</span> <span class="n">vk</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">fjk</span> <span class="o">=</span> <span class="p">[]</span>
@@ -585,7 +596,7 @@
                     <span class="n">vjkptr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
                     <span class="n">fjk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_vhf</span><span class="o">.</span><span class="n">_fpointer</span><span class="p">(</span><span class="s1">'SGXnr'</span><span class="o">+</span><span class="n">aosym</span><span class="o">+</span><span class="s1">'_ijg_ji_g'</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">with_k</span><span class="p">:</span>
-            <span class="n">vk</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">fg</span><span class="p">),</span><span class="n">ncomp</span><span class="p">,</span><span class="n">ngrids</span><span class="p">,</span><span class="n">nao</span><span class="p">))[:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">fg</span><span class="p">),</span><span class="n">ncomp</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">ngrids</span><span class="p">))[:,</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fg</span><span class="p">):</span>
                 <span class="n">dmsptr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
                 <span class="n">vjkptr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
@@ -597,12 +608,17 @@
         <span class="n">vjkptr</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="o">*</span><span class="p">(</span><span class="n">n_dm</span><span class="p">))(</span><span class="o">*</span><span class="n">vjkptr</span><span class="p">)</span>
 
         <span class="n">drv</span><span class="p">(</span><span class="n">cintor</span><span class="p">,</span> <span class="n">fdot</span><span class="p">,</span> <span class="n">fjk</span><span class="p">,</span> <span class="n">dmsptr</span><span class="p">,</span> <span class="n">vjkptr</span><span class="p">,</span> <span class="n">n_dm</span><span class="p">,</span> <span class="n">ncomp</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">6</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">4</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span>
             <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
             <span class="n">sgxopt</span><span class="o">.</span><span class="n">_cintopt</span><span class="p">,</span> <span class="n">sgxopt</span><span class="o">.</span><span class="n">_this</span><span class="p">,</span>
             <span class="n">atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">),</span>
             <span class="n">bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>
-            <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">aosym</span> <span class="o">==</span> <span class="s1">'s2'</span> <span class="k">else</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">vk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="n">vk</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">vk</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span>
     <span class="k">return</span> <span class="n">jk_part</span>
 
@@ -699,7 +715,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

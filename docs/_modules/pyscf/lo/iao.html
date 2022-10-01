@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.lo.iao </span>
         </div>
       </div>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -332,14 +333,23 @@
 <span class="c1">#     vec_lowdin(iao_coeff, mol.intor('int1e_ovlp'))</span>
 <span class="n">MINAO</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'lo_iao_minao'</span><span class="p">,</span> <span class="s1">'minao'</span><span class="p">)</span>
 
-<div class="viewcode-block" id="iao"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.iao.iao">[docs]</a><span class="k">def</span> <span class="nf">iao</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">orbocc</span><span class="p">,</span> <span class="n">minao</span><span class="o">=</span><span class="n">MINAO</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="iao"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.iao.iao">[docs]</a><span class="k">def</span> <span class="nf">iao</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">orbocc</span><span class="p">,</span> <span class="n">minao</span><span class="o">=</span><span class="n">MINAO</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lindep_threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
     <span class="sd">'''Intrinsic Atomic Orbitals. [Ref. JCTC, 9, 4834]</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        mol : the molecule or cell object</span>
+<span class="sd">    For large basis sets which are close to being linearly dependent,</span>
+<span class="sd">    the Cholesky decomposition can fail. In this case a canonical orthogonalization</span>
+<span class="sd">    with threshold `lindep_threshold` is used.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        mol : molecule or cell object</span>
 <span class="sd">        orbocc : 2D array</span>
 <span class="sd">            occupied orbitals</span>
+<span class="sd">        minao : str, optional</span>
+<span class="sd">            reference basis set for IAOs</span>
+<span class="sd">        kpts : 2D ndarray, optional</span>
+<span class="sd">            k-points, for cell objects only</span>
+<span class="sd">        lindep_threshold : float, optional</span>
+<span class="sd">            threshold for canonical orthogonalization</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        non-orthogonal IAO orbitals.  Orthogonalize them as C (C^T S C)^{-1/2},</span>
@@ -349,20 +359,18 @@
 <span class="sd">        &gt;&gt;&gt; c = iao(mol, orbocc)</span>
 <span class="sd">        &gt;&gt;&gt; numpy.dot(c, orth.lowdin(reduce(numpy.dot, (c.T,s,c))))</span>
 <span class="sd">    '''</span>
-    <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">has_ecp</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">has_ecp</span><span class="p">()</span> <span class="ow">and</span> <span class="n">minao</span> <span class="o">==</span> <span class="s1">'minao'</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'ECP/PP is used. MINAO is not a good reference AO basis in IAO.'</span><span class="p">)</span>
 
     <span class="n">pmol</span> <span class="o">=</span> <span class="n">reference_mol</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">minao</span><span class="p">)</span>
     <span class="c1"># For PBC, we must use the pbc code for evaluating the integrals lest the</span>
     <span class="c1"># pbc conditions be ignored.</span>
-    <span class="c1"># DO NOT import pbcgto early and check whether mol is a cell object.</span>
-    <span class="c1"># "from pyscf.pbc import gto as pbcgto and isinstance(mol, pbcgto.Cell)"</span>
-    <span class="c1"># The code should work even pbc module is not availabe.</span>
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'pbc_intor'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># cell object has pbc_intor method</span>
+    <span class="n">has_pbc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'dimension'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">has_pbc</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span> <span class="k">as</span> <span class="n">pbcgto</span>
-        <span class="n">s1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">))</span>
-        <span class="n">s2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pmol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">))</span>
-        <span class="n">s12</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pbcgto</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">pmol</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">))</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">pmol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">s12</span> <span class="o">=</span> <span class="n">pbcgto</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">pmol</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1">#s1 is the one electron overlap integrals (coulomb integrals)</span>
         <span class="n">s1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
@@ -371,37 +379,42 @@
         <span class="c1">#overlap integrals of the two molecules</span>
         <span class="n">s12</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">pmol</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">make_iaos</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s12</span><span class="p">,</span> <span class="n">mo</span><span class="p">):</span>
+        <span class="sd">"""Make IAOs for a molecule or single k-point"""</span>
         <span class="n">s21</span> <span class="o">=</span> <span class="n">s12</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">s1cd</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+        <span class="c1"># s2 is overlap in minimal reference basis and should never be singular:</span>
         <span class="n">s2cd</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
-        <span class="n">p12</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd</span><span class="p">,</span> <span class="n">s12</span><span class="p">)</span>
-        <span class="n">ctild</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s2cd</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s21</span><span class="p">,</span> <span class="n">orbocc</span><span class="p">))</span>
-        <span class="n">ctild</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s12</span><span class="p">,</span> <span class="n">ctild</span><span class="p">))</span>
+        <span class="n">ctild</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s2cd</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s21</span><span class="p">,</span> <span class="n">mo</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s1cd</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">s1</span><span class="p">)</span>
+            <span class="n">p12</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd</span><span class="p">,</span> <span class="n">s12</span><span class="p">)</span>
+            <span class="n">ctild</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s12</span><span class="p">,</span> <span class="n">ctild</span><span class="p">))</span>
+        <span class="c1"># s1 can be singular in large basis sets: Use canonical orthogonalization in this case:</span>
+        <span class="k">except</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">canonical_orth_</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">lindep_threshold</span><span class="p">)</span>
+            <span class="n">p12</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">multi_dot</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s12</span><span class="p">))</span>
+            <span class="n">ctild</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p12</span><span class="p">,</span> <span class="n">ctild</span><span class="p">)</span>
+        <span class="c1"># If there are no occupied orbitals at this k-point, all but the first term will vanish:</span>
+        <span class="k">if</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">p12</span>
         <span class="n">ctild</span> <span class="o">=</span> <span class="n">vec_lowdin</span><span class="p">(</span><span class="n">ctild</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
-        <span class="n">ccs1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">orbocc</span><span class="p">,</span> <span class="n">orbocc</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">))</span>
-        <span class="n">ccs2</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">ctild</span><span class="p">,</span> <span class="n">ctild</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">))</span>
+        <span class="n">ccs1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">multi_dot</span><span class="p">((</span><span class="n">mo</span><span class="p">,</span> <span class="n">mo</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">))</span>
+        <span class="n">ccs2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">multi_dot</span><span class="p">((</span><span class="n">ctild</span><span class="p">,</span> <span class="n">ctild</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">))</span>
         <span class="c1">#a is the set of IAOs in the original basis</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">p12</span> <span class="o">+</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">ccs1</span><span class="p">,</span> <span class="n">ccs2</span><span class="p">,</span> <span class="n">p12</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="n">p12</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">multi_dot</span><span class="p">((</span><span class="n">ccs1</span><span class="p">,</span> <span class="n">ccs2</span><span class="p">,</span> <span class="n">p12</span><span class="p">))</span>
              <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ccs1</span><span class="p">,</span> <span class="n">p12</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ccs2</span><span class="p">,</span> <span class="n">p12</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span> <span class="c1"># k point sampling</span>
-        <span class="n">s21</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">s12</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
-        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">s2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-            <span class="c1"># ZHC NOTE check the case, at some kpts, there is no occupied MO.</span>
-            <span class="n">s1cd_k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="n">s2cd_k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">s2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="n">p12_k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd_k</span><span class="p">,</span> <span class="n">s12</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="n">ctild_k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s2cd_k</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s21</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">orbocc</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
-            <span class="n">ctild_k</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">s1cd_k</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s12</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">ctild_k</span><span class="p">))</span>
-            <span class="n">ctild_k</span> <span class="o">=</span> <span class="n">vec_lowdin</span><span class="p">(</span><span class="n">ctild_k</span><span class="p">,</span> <span class="n">s1</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="n">ccs1_k</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">orbocc</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">orbocc</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
-            <span class="n">ccs2_k</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">ctild_k</span><span class="p">,</span> <span class="n">ctild_k</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s1</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
-            <span class="c1">#a is the set of IAOs in the original basis</span>
-            <span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">p12_k</span> <span class="o">+</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">ccs1_k</span><span class="p">,</span> <span class="n">ccs2_k</span><span class="p">,</span> <span class="n">p12_k</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
-                    <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ccs1_k</span><span class="p">,</span> <span class="n">p12_k</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ccs2_k</span><span class="p">,</span> <span class="n">p12_k</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">a</span></div>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="c1"># Molecules and Gamma-point only solids</span>
+    <span class="k">if</span> <span class="n">s1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">iaos</span> <span class="o">=</span> <span class="n">make_iaos</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">,</span> <span class="n">s12</span><span class="p">,</span> <span class="n">orbocc</span><span class="p">)</span>
+    <span class="c1"># Solid with multiple k-points</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">iaos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)):</span>
+            <span class="n">iaos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">make_iaos</span><span class="p">(</span><span class="n">s1</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s12</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">orbocc</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+        <span class="n">iaos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">iaos</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">iaos</span></div>
 
 <div class="viewcode-block" id="reference_mol"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.iao.reference_mol">[docs]</a><span class="k">def</span> <span class="nf">reference_mol</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">minao</span><span class="o">=</span><span class="n">MINAO</span><span class="p">):</span>
     <span class="sd">'''Create a molecule which uses reference minimal basis'''</span>
@@ -450,7 +463,7 @@
               <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">iao_inv</span><span class="p">,</span> <span class="n">dm</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">iao_inv</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">))]</span>
         <span class="k">return</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">mulliken_pop</span><span class="p">(</span><span class="n">pmol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">s_iao</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
 
-<span class="k">del</span><span class="p">(</span><span class="n">MINAO</span><span class="p">)</span>
+<span class="k">del</span> <span class="p">(</span><span class="n">MINAO</span><span class="p">)</span>
 </pre></div>
 
           </article>
@@ -475,7 +488,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

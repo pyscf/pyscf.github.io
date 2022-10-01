@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.mc2step </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -320,6 +321,7 @@
 
 <div class="viewcode-block" id="kernel"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.mc2step.kernel">[docs]</a><span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">conv_tol_grad</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">ci0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dump_chk</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
     <span class="k">if</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">verbose</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">verbose</span>
     <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -401,13 +403,33 @@
         <span class="n">totinner</span> <span class="o">+=</span> <span class="n">njk</span>
         <span class="n">totmicro</span> <span class="o">+=</span> <span class="n">imicro</span> <span class="o">+</span> <span class="mi">1</span>
 
+        <span class="n">max_offdiag_u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">max_offdiag_u</span> <span class="o">&lt;</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span><span class="p">:</span>
+            <span class="n">small_rot</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'Small orbital rotation, restart CI if supported by solver'</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">small_rot</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
+            <span class="c1"># The fcivec from builtin FCI solver is a numpy.ndarray</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">fcivec</span> <span class="o">=</span> <span class="n">small_rot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newvecs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">subvec</span> <span class="ow">in</span> <span class="n">fcivec</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subvec</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="n">newvecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">small_rot</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">newvecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subvec</span><span class="p">)</span>
+            <span class="n">fcivec</span> <span class="o">=</span> <span class="n">newvecs</span>
+
         <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">casci</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">eris</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
         <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'CASCI solver'</span><span class="p">,</span> <span class="o">*</span><span class="n">t3m</span><span class="p">)</span>
         <span class="n">t2m</span> <span class="o">=</span> <span class="n">t1m</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'macro iter </span><span class="si">%d</span><span class="s1">'</span><span class="o">%</span><span class="n">imacro</span><span class="p">,</span> <span class="o">*</span><span class="n">t1m</span><span class="p">)</span>
 
         <span class="n">de</span><span class="p">,</span> <span class="n">elast</span> <span class="o">=</span> <span class="n">e_tot</span> <span class="o">-</span> <span class="n">elast</span><span class="p">,</span> <span class="n">e_tot</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">de</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span>
-            <span class="n">norm_gorb</span> <span class="o">&lt;</span> <span class="n">conv_tol_grad</span> <span class="ow">and</span> <span class="n">norm_ddm</span> <span class="o">&lt;</span> <span class="n">conv_tol_ddm</span><span class="p">):</span>
+                <span class="n">norm_gorb</span> <span class="o">&lt;</span> <span class="n">conv_tol_grad</span> <span class="ow">and</span> <span class="n">norm_ddm</span> <span class="o">&lt;</span> <span class="n">conv_tol_ddm</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="n">max_offdiag_u</span> <span class="o">&lt;</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span> <span class="ow">or</span> <span class="n">casscf</span><span class="o">.</span><span class="n">small_rot_tol</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
             <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">elast</span> <span class="o">=</span> <span class="n">e_tot</span>
@@ -524,7 +546,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

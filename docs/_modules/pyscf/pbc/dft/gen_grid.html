@@ -55,6 +55,7 @@
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.dft.gen_grid </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -320,11 +321,12 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.gto.cell</span> <span class="kn">import</span> <span class="n">get_uniform_grids</span><span class="p">,</span> <span class="n">gen_uniform_grids</span>
 <span class="kn">from</span> <span class="nn">pyscf.dft.gen_grid</span> <span class="kn">import</span> <span class="p">(</span><span class="n">sg1_prune</span><span class="p">,</span> <span class="n">nwchem_prune</span><span class="p">,</span> <span class="n">treutler_prune</span><span class="p">,</span>
                                 <span class="n">stratmann</span><span class="p">,</span> <span class="n">original_becke</span><span class="p">,</span> <span class="n">gen_atomic_grids</span><span class="p">,</span>
-                                <span class="n">BLKSIZE</span><span class="p">)</span>
+                                <span class="n">BLKSIZE</span><span class="p">,</span> <span class="n">NBINS</span><span class="p">,</span> <span class="n">CUTOFF</span><span class="p">)</span>
 
 <span class="n">libpbc</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libpbc'</span><span class="p">)</span>
 
-<div class="viewcode-block" id="make_mask"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gen_grid.make_mask">[docs]</a><span class="k">def</span> <span class="nf">make_mask</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="make_mask"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gen_grid.make_mask">[docs]</a><span class="k">def</span> <span class="nf">make_mask</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''Mask to indicate whether a shell is zero on grid.</span>
 <span class="sd">    The resultant mask array is an extension to the mask array used in</span>
 <span class="sd">    molecular code (see also pyscf.dft.numint.make_mask function).</span>
@@ -337,13 +339,17 @@
     <span class="n">ngrids</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">shls_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">shls_slice</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">shls_slice</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span><span class="p">))</span>
 
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># For atoms near the boundary of the cell, it is necessary (even in low-</span>
+    <span class="c1"># dimensional systems) to include lattice translations in all 3 dimensions.</span>
+    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">==</span> <span class="s1">'inf_vacuum'</span><span class="p">:</span>
+        <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))]</span>
 
-    <span class="n">non0tab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="n">ngrids</span><span class="o">+</span><span class="n">BLKSIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>
-                          <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">non0tab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="n">ngrids</span><span class="o">+</span><span class="n">BLKSIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
     <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCnr_ao_screen</span><span class="p">(</span><span class="n">non0tab</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
                            <span class="n">coords</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
                            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">),</span>
@@ -356,6 +362,8 @@
 
 <div class="viewcode-block" id="UniformGrids"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gen_grid.UniformGrids">[docs]</a><span class="k">class</span> <span class="nc">UniformGrids</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
     <span class="sd">'''Uniform Grid class.'''</span>
+
+    <span class="n">cutoff</span> <span class="o">=</span> <span class="n">CUTOFF</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
@@ -596,7 +604,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

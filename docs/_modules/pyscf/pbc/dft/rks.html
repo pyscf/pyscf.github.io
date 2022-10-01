@@ -55,6 +55,7 @@
     <script src="../../../../_static/underscore.js"></script>
     <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.pbc.dft.rks </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -328,14 +329,16 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">hf</span> <span class="k">as</span> <span class="n">pbchf</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">khf</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">addons</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">gen_grid</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">numint</span>
 <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">rks</span> <span class="k">as</span> <span class="n">mol_ks</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">multigrid</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts</span> <span class="kn">import</span> <span class="n">KPoints</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 
-<div class="viewcode-block" id="get_veff"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.get_veff">[docs]</a><span class="k">def</span> <span class="nf">get_veff</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm_last</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vhf_last</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<div class="viewcode-block" id="get_veff"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.get_veff">[docs]</a><span class="k">def</span> <span class="nf">get_veff</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm_last</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vhf_last</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
              <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''Coulomb + XC functional</span>
 
@@ -385,7 +388,7 @@
     <span class="k">if</span> <span class="n">hermi</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># because rho = 0</span>
         <span class="n">n</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">n</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">nr_rks</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">nr_rks</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
                                         <span class="n">kpt</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'nelec by numeric integration = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'vxc'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
@@ -426,7 +429,7 @@
     <span class="k">return</span> <span class="n">new_df</span>
 
 <span class="n">NELEC_ERROR_TOL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_dft_rks_prune_error_tol'</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)</span>
-<div class="viewcode-block" id="prune_small_rho_grids_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.prune_small_rho_grids_">[docs]</a><span class="k">def</span> <span class="nf">prune_small_rho_grids_</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
+<div class="viewcode-block" id="prune_small_rho_grids_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.prune_small_rho_grids_">[docs]</a><span class="k">def</span> <span class="nf">prune_small_rho_grids_</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
     <span class="n">rho</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">cell</span><span class="o">.</span><span class="n">nelectron</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">NELEC_ERROR_TOL</span><span class="o">*</span><span class="n">n</span><span class="p">:</span>
@@ -439,7 +442,7 @@
         <span class="n">grids</span><span class="o">.</span><span class="n">non0tab</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">make_mask</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">grids</span></div>
 
-<div class="viewcode-block" id="get_rho"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.get_rho">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">pbchf</span><span class="o">.</span><span class="n">get_rho</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<div class="viewcode-block" id="get_rho"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.get_rho">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">pbchf</span><span class="o">.</span><span class="n">get_rho</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">get_rho</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">dm</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">grids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">grids</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">grids</span>
@@ -461,29 +464,77 @@
 <span class="c1"># don't modify the following attributes, they are not input options</span>
     <span class="c1"># Note Do not refer to .with_df._numint because mesh/coords may be different</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
-        <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">KNumInt</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">KNumInt</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">KNumInt</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">NumInt</span><span class="p">()</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'small_rho_cutoff'</span><span class="p">])</span>
 
-<div class="viewcode-block" id="KohnShamDFT"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.KohnShamDFT">[docs]</a><span class="k">class</span> <span class="nc">KohnShamDFT</span><span class="p">(</span><span class="n">mol_ks</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+<div class="viewcode-block" id="KohnShamDFT"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT">[docs]</a><span class="k">class</span> <span class="nc">KohnShamDFT</span><span class="p">(</span><span class="n">mol_ks</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
     <span class="sd">'''PBC-KS'''</span>
 
     <span class="fm">__init__</span> <span class="o">=</span> <span class="n">_dft_common_init_</span>
 
-<div class="viewcode-block" id="KohnShamDFT.dump_flags"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.KohnShamDFT.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="KohnShamDFT.dump_flags"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'XC functionals = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'small_rho_cutoff = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">small_rho_cutoff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="KohnShamDFT.reset"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.KohnShamDFT.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="KohnShamDFT.reset"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">pbchf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="KohnShamDFT.to_rks"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT.to_rks">[docs]</a>    <span class="k">def</span> <span class="nf">to_rks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">'''Convert the input mean-field object to a RKS/ROKS object.</span>
+
+<span class="sd">        Note this conversion only changes the class of the mean-field object.</span>
+<span class="sd">        The total energy and wave-function are the same as them in the input</span>
+<span class="sd">        mean-field object.</span>
+<span class="sd">        '''</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">convert_to_rhf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RKS</span><span class="p">):</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">mf</span></div>
+
+<div class="viewcode-block" id="KohnShamDFT.to_uks"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT.to_uks">[docs]</a>    <span class="k">def</span> <span class="nf">to_uks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">'''Convert the input mean-field object to a UKS object.</span>
+
+<span class="sd">        Note this conversion only changes the class of the mean-field object.</span>
+<span class="sd">        The total energy and wave-function are the same as them in the input</span>
+<span class="sd">        mean-field object.</span>
+<span class="sd">        '''</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">convert_to_uhf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">mf</span></div>
+
+<div class="viewcode-block" id="KohnShamDFT.to_gks"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.KohnShamDFT.to_gks">[docs]</a>    <span class="k">def</span> <span class="nf">to_gks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">'''Convert the input mean-field object to a GKS object.</span>
+
+<span class="sd">        Note this conversion only changes the class of the mean-field object.</span>
+<span class="sd">        The total energy and wave-function are the same as them in the input</span>
+<span class="sd">        mean-field object.</span>
+<span class="sd">        '''</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">convert_to_ghf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
+        <span class="k">if</span> <span class="n">xc</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">:</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">mf</span></div></div>
+
+<span class="c1"># Update the KohnShamDFT label in pbc.scf.hf module</span>
+<span class="n">pbchf</span><span class="o">.</span><span class="n">KohnShamDFT</span> <span class="o">=</span> <span class="n">KohnShamDFT</span>
 
 
-<div class="viewcode-block" id="RKS"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.RKS">[docs]</a><span class="k">class</span> <span class="nc">RKS</span><span class="p">(</span><span class="n">KohnShamDFT</span><span class="p">,</span> <span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
+<div class="viewcode-block" id="RKS"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.RKS">[docs]</a><span class="k">class</span> <span class="nc">RKS</span><span class="p">(</span><span class="n">KohnShamDFT</span><span class="p">,</span> <span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
     <span class="sd">'''RKS class adapted for PBCs.</span>
 
 <span class="sd">    This is a literal duplication of the molecular RKS class with some `mol`</span>
@@ -494,7 +545,7 @@
         <span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="n">exxdiv</span><span class="p">)</span>
         <span class="n">KohnShamDFT</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="p">)</span>
 
-<div class="viewcode-block" id="RKS.dump_flags"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.krks.RKS.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="RKS.dump_flags"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.gks.RKS.dump_flags">[docs]</a>    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="n">KohnShamDFT</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
@@ -504,6 +555,7 @@
     <span class="n">get_rho</span> <span class="o">=</span> <span class="n">get_rho</span>
 
     <span class="n">density_fit</span> <span class="o">=</span> <span class="n">_patch_df_beckegrids</span><span class="p">(</span><span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">density_fit</span><span class="p">)</span>
+    <span class="n">rs_density_fit</span> <span class="o">=</span> <span class="n">_patch_df_beckegrids</span><span class="p">(</span><span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">rs_density_fit</span><span class="p">)</span>
     <span class="n">mix_density_fit</span> <span class="o">=</span> <span class="n">_patch_df_beckegrids</span><span class="p">(</span><span class="n">pbchf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">mix_density_fit</span><span class="p">)</span></div>
 
 
@@ -547,7 +599,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

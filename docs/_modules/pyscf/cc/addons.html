@@ -55,6 +55,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="shortcut icon" href="../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../about.html" />
@@ -96,7 +97,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.0</span>
+          <span class="md-header-nav__topic">PySCF 2.1</span>
           <span class="md-header-nav__topic"> pyscf.cc.addons </span>
         </div>
       </div>
@@ -204,7 +205,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.0</a>
+       title="PySCF">PySCF 2.1</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -321,17 +322,20 @@
         <span class="k">return</span> <span class="n">spatial2spin</span><span class="p">((</span><span class="n">tx</span><span class="p">,</span><span class="n">tx</span><span class="p">),</span> <span class="n">orbspin</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
         <span class="c1"># RCCSD t2 amplitudes</span>
-        <span class="n">t2aa</span> <span class="o">=</span> <span class="n">tx</span> <span class="o">-</span> <span class="n">tx</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">t2aa</span> <span class="o">=</span> <span class="n">tx</span> <span class="o">-</span> <span class="n">tx</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">spatial2spin</span><span class="p">((</span><span class="n">t2aa</span><span class="p">,</span><span class="n">tx</span><span class="p">,</span><span class="n">t2aa</span><span class="p">),</span> <span class="n">orbspin</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># t1</span>
         <span class="n">t1a</span><span class="p">,</span> <span class="n">t1b</span> <span class="o">=</span> <span class="n">tx</span>
         <span class="n">nocc_a</span><span class="p">,</span> <span class="n">nvir_a</span> <span class="o">=</span> <span class="n">t1a</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">nocc_b</span><span class="p">,</span> <span class="n">nvir_b</span> <span class="o">=</span> <span class="n">t1b</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># t2</span>
         <span class="n">t2aa</span><span class="p">,</span> <span class="n">t2ab</span><span class="p">,</span> <span class="n">t2bb</span> <span class="o">=</span> <span class="n">tx</span>
         <span class="n">nocc_a</span><span class="p">,</span> <span class="n">nocc_b</span><span class="p">,</span> <span class="n">nvir_a</span><span class="p">,</span> <span class="n">nvir_b</span> <span class="o">=</span> <span class="n">t2ab</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Unknown T amplitudes'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">orbspin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">nocc_a</span> <span class="o">==</span> <span class="n">nocc_b</span>
         <span class="n">orbspin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nocc_a</span><span class="o">+</span><span class="n">nvir_a</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="n">orbspin</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -375,10 +379,14 @@
 <span class="n">spatial2spinorb</span> <span class="o">=</span> <span class="n">spatial2spin</span>
 
 <div class="viewcode-block" id="spin2spatial"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.cc.html#pyscf.cc.addons.spin2spatial">[docs]</a><span class="k">def</span> <span class="nf">spin2spatial</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">orbspin</span><span class="p">):</span>
+    <span class="sd">'''Convert T1/T2 in spin-orbital basis to T1/T2 in spatial orbital basis</span>
+<span class="sd">    '''</span>
     <span class="k">if</span> <span class="n">tx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># t1</span>
         <span class="n">nocc</span><span class="p">,</span> <span class="n">nvir</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">shape</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">tx</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
         <span class="n">nocc</span><span class="p">,</span> <span class="n">nvir</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Unknown T amplitudes'</span><span class="p">)</span>
 
     <span class="n">idxoa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbspin</span><span class="p">[:</span><span class="n">nocc</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">idxob</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbspin</span><span class="p">[:</span><span class="n">nocc</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -419,8 +427,8 @@
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">convert_to_uhf</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span>
     <span class="n">ucc</span> <span class="o">=</span> <span class="n">uccsd</span><span class="o">.</span><span class="n">UCCSD</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nocc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nmo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nocc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nmo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">ucc</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
     <span class="n">ucc</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">mf</span>
     <span class="n">ucc</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
@@ -438,8 +446,8 @@
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">convert_to_ghf</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span>
     <span class="n">gcc</span> <span class="o">=</span> <span class="n">gccsd</span><span class="o">.</span><span class="n">GCCSD</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nocc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nmo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nocc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">_nmo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">gcc</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
     <span class="n">gcc</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">mf</span>
     <span class="n">gcc</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
@@ -475,7 +483,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
