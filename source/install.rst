@@ -271,15 +271,14 @@ In the usual case, all external libraries (libcint, libxc, xcfun) are
 downloaded and installed when the C extensions are compiled, thus
 requiring network access. In this section, we show how to install the
 external libraries without accessing to network. First, you need to
-install the libcint, Libxc, and XCFun libraries::
+download the libcint, Libxc, and XCFun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
     $ tar czf libcint.tar.gz libcint
 
-    $ wget https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
+    $ wget https://gitlab.com/libxc/libxc/-/archive/6.0.0/libxc-6.0.0.tar.gz
 
-    $ git clone https://github.com/sunqm/xcfun.git
-    $ tar czf xcfun.tar.gz xcfun
+    $ wget -O xcfun.tar.gz https://github.com/fishjojo/xcfun/archive/refs/tags/cmake-3.5.tar.gz
 
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
@@ -291,8 +290,8 @@ packages should be compiled with the flags::
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
-    $ tar xvzf libxc-4.3.4.tar.gz
-    $ cd libxc-4.3.4
+    $ tar xvzf libxc-6.0.0.tar.gz
+    $ cd libxc-6.0.0
     $ mkdir build && cd build
     $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 \
         -DENABLE_FORTRAN=0 -DDISABLE_KXC=0 -DDISABLE_LXC=1 \
