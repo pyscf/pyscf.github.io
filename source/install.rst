@@ -301,7 +301,7 @@ packages should be compiled with the flags::
     $ tar xvzf xcfun.tar.gz
     $ cd xcfun
     $ mkdir build && cd build
-    $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 -DXC_MAX_ORDER=3 -DXCFUN_ENABLE_TESTS=0 \
+    $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 -DXCFUN_MAX_ORDER=3 -DXCFUN_ENABLE_TESTS=0 \
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
