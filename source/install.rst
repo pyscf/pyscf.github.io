@@ -299,7 +299,7 @@ packages should be compiled with the flags::
     $ make && make install
 
     $ tar xvzf xcfun.tar.gz
-    $ cd xcfun
+    $ cd xcfun-cmake-3.5
     $ mkdir build && cd build
     $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 -DXCFUN_MAX_ORDER=3 -DXCFUN_ENABLE_TESTS=0 \
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
