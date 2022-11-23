@@ -491,7 +491,7 @@
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>Direct computation of the Hartree-Fock exchange matrix in the atomic orbital basis scales poorly with system size.
 To achieve better scaling, one three-dimensional integral in the 6-dimensional two-electron integrals can be computed analytically, while the other can be evaluated on a real-space grid, as proposed by Friesner <a class="bibtex reference internal" href="#friesner1985" id="id1">[1]</a>.
-The PySCF implementation resembles the chain-of-spheres (COSX) algorithm of Neese et al. <a class="bibtex reference internal" href="#neese2009" id="id2">[2]</a>, but uses more conservative grids and does not implement P-junction screening.
+The PySCF implementation resembles the chain-of-spheres (COSX) algorithm of Neese et al. <a class="bibtex reference internal" href="#neese2009" id="id2">[2]</a>, but uses more conservative grids and a slightly different P-junction screening function.
 Overlap fitting is used to reduce aliasing errors <a class="bibtex reference internal" href="#izsak2011" id="id3">[3]</a>.
 SGX scales as <span class="math notranslate nohighlight">\(O(N^2)\)</span> with system size, as opposed to the <span class="math notranslate nohighlight">\(O(N^4)\)</span> scaling of analytical exchange <a class="bibtex reference internal" href="#neese2009" id="id4">[2]</a>.</p>
 </section>
@@ -517,33 +517,73 @@ SGX scales as <span class="math notranslate nohighlight">\(O(N^2)\)</span> with 
 <span class="s1">    '''</span><span class="p">,</span>
     <span class="n">basis</span> <span class="o">=</span> <span class="s1">'ccpvdz'</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">mf</span> <span class="o">=</span> <span class="n">sgx</span><span class="o">.</span><span class="n">sgx_fit</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">))</span>
+<span class="c1"># Direct K matrix for comparison</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
 <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
 
-<span class="c1"># Using RI for Coulomb matrix while K-matrix is constructed with COS-X method</span>
+<span class="c1"># Using SGX for J-matrix and K-matrix, without using P-junction screening</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">sgx</span><span class="o">.</span><span class="n">sgx_fit</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span> <span class="n">pjs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1"># Using RI for Coulomb matrix while K-matrix is constructed with SGX method</span>
 <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">dfj</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1"># Turn on P-junction screening to accelerate large calculations</span>
+<span class="c1"># (uses algorithm similar to COSX)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">pjs</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1"># direct_scf_sgx turns on direct SCF for SGX</span>
+<span class="c1"># JK matrix is rebuilt from scratch every rebuild_nsteps steps</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">direct_scf_sgx</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1"># If grids_level_i == grids_level_j, no grid switch occurs</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">grids_level_i</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1"># If dfj is off at runtime, it is turned on and a user warning is issued</span>
+<span class="c1"># because SGX-J cannot be used with P-junction screening.</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">dfj</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1"># Use direct J-matrix evaluation (slow, primarily for testing purposes)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">sgx</span><span class="o">.</span><span class="n">sgx_fit</span><span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">),</span> <span class="n">pjs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">direct_j</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">dfj</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">converged</span> <span class="n">SCF</span> <span class="n">energy</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.0267374704185</span>
-<span class="n">converged</span> <span class="n">SCF</span> <span class="n">energy</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.0267978618974</span>
-</pre></div>
-</div>
-<p>In this case, the error of SGX compared to analytical exchange is about 0.06 mEh. The line</p>
+<p>In this case, the error of DFJ+SGX compared to analytical exchange is about 0.03 mEh. The line</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">dfj</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <p>specifies to compute the Coulomb matrix using density fitting (DF-J) while using SGX for the exchange matrix.</p>
+<p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">pjs</span></code> option turns on P-junction screening, which means that the three-center integrals are screened by the density matrix.
+If a three-center integral gets contracted only with negligibly small density matrix elements, it is not computed.
+This feature can only be used with <code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj=True</span></code>.
+If <code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj=False</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">pjs=True</span></code>, <code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj</span></code> is set to <code class="xref py py-attr docutils literal notranslate"><span class="pre">True</span></code>, and a warning is issued.
+The P-junction screening threshold is determined by <code class="xref py py-attr docutils literal notranslate"><span class="pre">mf.direct_scf_tol</span></code>.</p>
+<p>Direct evaluation of the J matrix can be used by setting <code class="xref py py-attr docutils literal notranslate"><span class="pre">mf.with_df.direct_j</span> <span class="pre">=</span> <span class="pre">True</span></code>, but this is much slower than SGX-J or DF-J and only intended for testing purposes.</p>
 </section>
 <section id="adjustable-parameters">
 <h2 id="adjustable-parameters">Adjustable Parameters<a class="headerlink" href="#adjustable-parameters" title="Permalink to this heading">¶</a></h2>
-<p>Calling the <code class="xref py py-attr docutils literal notranslate"><span class="pre">sgx_fit</span></code> function on an <code class="xref py py-attr docutils literal notranslate"><span class="pre">scf.hf.SCF</span></code> object returns an equivalent <code class="xref py py-attr docutils literal notranslate"><span class="pre">SGXHF</span></code> object with a <code class="xref py py-attr docutils literal notranslate"><span class="pre">with_df</span></code> attribute that handles SGX integration. To use a non-default auxiliary basis (for <code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj=True</span></code>), <code class="xref py py-attr docutils literal notranslate"><span class="pre">auxbasis</span></code> can be specified in the call to <code class="xref py py-attr docutils literal notranslate"><span class="pre">sgx_fit</span></code>. In addition, there are five main adjustable parameters for this object:</p>
+<p>Calling the <code class="xref py py-attr docutils literal notranslate"><span class="pre">sgx_fit</span></code> function on an <code class="xref py py-attr docutils literal notranslate"><span class="pre">scf.hf.SCF</span></code> object returns an equivalent <code class="xref py py-attr docutils literal notranslate"><span class="pre">SGXHF</span></code> object with a <code class="xref py py-attr docutils literal notranslate"><span class="pre">with_df</span></code> attribute that handles SGX integration. To use a non-default auxiliary basis (for <code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj=True</span></code>), <code class="xref py py-attr docutils literal notranslate"><span class="pre">auxbasis</span></code> can be specified in the call to <code class="xref py py-attr docutils literal notranslate"><span class="pre">sgx_fit</span></code>. In addition, there are various adjustable parameters for SGX:</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">with_df</span></code> attributes:</p>
 <ul class="simple">
 <li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_level_i</span></code>: The grid level to use for initial SCF iterations.</p></li>
 <li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_level_f</span></code>: The grid level to use for final SCF iterations.</p></li>
 <li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_thrd</span></code>: The grid points where no atomic orbital is significant (has a value greater than this threshold) are removed from consideration.</p></li>
 <li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_switch_thrd</span></code>: The threshold for the magnitude of the change in the density matrix that triggers the switch from the initial grid specified by <code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_level_i</span></code> to the final grid specified by <code class="xref py py-attr docutils literal notranslate"><span class="pre">grids_level_f</span></code>.</p></li>
-<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">blockdim</span></code>: The maximum number of grid points to loop over at once. The number of grid points per batch is the minimum of <code class="xref py py-attr docutils literal notranslate"><span class="pre">blockmin</span></code> and the maximum number of points allowed by the memory available for the calculation. The maximum memory can be adjusted by setting the <code class="xref py py-attr docutils literal notranslate"><span class="pre">max_memory</span></code> attribute, which is initially set to <code class="xref py py-attr docutils literal notranslate"><span class="pre">mol.max_memory</span></code>, the max memory setting for the Mole object.</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">blockdim</span></code>: The maximum number of grid points to loop over at once. The number of grid points per batch is the minimum of <code class="xref py py-attr docutils literal notranslate"><span class="pre">blockdim</span></code> and the maximum number of points allowed by the memory available for the calculation. The maximum memory can be adjusted by setting the <code class="xref py py-attr docutils literal notranslate"><span class="pre">max_memory</span></code> attribute, which is initially set to <code class="xref py py-attr docutils literal notranslate"><span class="pre">mol.max_memory</span></code>, the max memory setting for the Mole object.</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">dfj</span></code>: If <code class="xref py py-attr docutils literal notranslate"><span class="pre">True</span></code>, density fitting is used for the J-matrix. If <code class="xref py py-attr docutils literal notranslate"><span class="pre">False</span></code>, SGX is used.</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">direct_j</span></code>: If <code class="xref py py-attr docutils literal notranslate"><span class="pre">True</span></code>, direct evaluation of the J-matrix is used (slow, for testing only).</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">pjs</span></code>: If <code class="xref py py-attr docutils literal notranslate"><span class="pre">True</span></code>, P-junction screening is used. Threshold determined by <code class="xref py py-attr docutils literal notranslate"><span class="pre">direct_scf_tol</span></code>.</p></li>
+</ul>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">SGXHF</span></code> attribute:</p>
+<ul class="simple">
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">direct_scf_sgx</span></code>: Whether to use direct SCF within the SGX module, meaning that the J and K matrices are evaluated from the difference in the density matrix from the previous iteration.</p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">rebuild_nsteps</span></code>: Rebuild the SGX JK matrix from scratch every <code class="xref py py-attr docutils literal notranslate"><span class="pre">rebuild_nsteps</span></code> steps (default 5). Set to 0 to turn off rebuilding the JK matrix (Warning: This can cause creeping numerical error).</p></li>
 </ul>
 </section>
 <section id="references">
