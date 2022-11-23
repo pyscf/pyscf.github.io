@@ -404,6 +404,8 @@
         </li>
         <li class="md-nav__item"><a href="#constraints" class="md-nav__link">Constraints</a>
         </li>
+        <li class="md-nav__item"><a href="#transition-state-optimization" class="md-nav__link">Transition state optimization</a>
+        </li>
         <li class="md-nav__item"><a href="#excited-states" class="md-nav__link">Excited states</a>
         </li>
         <li class="md-nav__item"><a href="#callback" class="md-nav__link">Callback</a>
@@ -461,6 +463,8 @@
         </li>
         <li class="md-nav__item"><a href="#constraints" class="md-nav__link">Constraints</a>
         </li>
+        <li class="md-nav__item"><a href="#transition-state-optimization" class="md-nav__link">Transition state optimization</a>
+        </li>
         <li class="md-nav__item"><a href="#excited-states" class="md-nav__link">Excited states</a>
         </li>
         <li class="md-nav__item"><a href="#callback" class="md-nav__link">Callback</a>
@@ -487,8 +491,9 @@
 <section id="basics">
 <h2 id="basics">Basics<a class="headerlink" href="#basics" title="Permalink to this heading">¶</a></h2>
 <p>PySCF implements geometry optimization via
-interfaces to <a class="reference external" href="https://github.com/leeping/geomeTRIC">geomeTRIC</a>
-and <a class="reference external" href="https://github.com/jhrmnn/pyberny">PyBerny</a> (see <a class="reference internal" href="../install.html#installing"><span class="std std-ref">Installation</span></a>
+interfaces to <a class="reference external" href="https://github.com/leeping/geomeTRIC">geomeTRIC</a> and
+<a class="reference external" href="https://github.com/jhrmnn/pyberny">PyBerny</a>, and through PySCF extension
+<cite>qsdopt &lt;https://github.com/pyscf/qsdopt&gt;`_(see :ref:`installing</cite>
 for installation instructions).</p>
 <p>There are two ways to invoke geometry optimization.
 The first is to import the <code class="xref py py-func docutils literal notranslate"><span class="pre">optimize()</span></code> function
@@ -604,6 +609,59 @@ custom energy and gradient functions:</p>
 <span class="c1">#</span>
 <span class="n">new_mol</span> <span class="o">=</span> <span class="n">geometric_solver</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">fake_method</span><span class="p">)</span>
 
+</pre></div>
+</div>
+</section>
+<section id="transition-state-optimization">
+<h2 id="transition-state-optimization">Transition state optimization<a class="headerlink" href="#transition-state-optimization" title="Permalink to this heading">¶</a></h2>
+<p>The PySCF extension <a class="reference external" href="https://github.com/pyscf/qsdopt">qsdopt</a> performs transition
+state optimizations through
+<a class="reference external" href="https://aip.scitation.org/doi/10.1063/1.467721">quadratic steepest descent method</a>
+This is a second order method that requires computation of the hessian at some steps during
+the optimization process. The following is a minimal usage example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="n">imort</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span>
+<span class="kn">from</span> <span class="nn">pyscf.qsdopt.qsd_optimizer</span> <span class="kn">import</span> <span class="n">QSD</span>
+
+<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">'''</span>
+<span class="s1">O 0 0 0</span>
+<span class="s1">H 0 0 1.2</span>
+<span class="s1">H 0, 0.5, -1.2'''</span><span class="p">,</span>
+<span class="n">basis</span><span class="o">=</span><span class="s1">'minao'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"Bohr"</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">QSD</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">stationary_point</span><span class="o">=</span><span class="s2">"TS"</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Several keyword arguments can be passed to <cite>kernel</cite>:</p>
+<ul class="simple">
+<li><p>hess_update_freq: Frequency for numerical reevaluation of hessian. = 0 evaluates the numerical
+hessian in the first iteration and is updated with an BFGS rule, unless approaching a trap region,
+where it is reevaluated. (Default: 0)</p></li>
+<li><p>numhess_method: Method for evaluating numerical hessian. Forward and central differences are available
+with “forward” and “central”, respectively. (Default: “forward”)</p></li>
+<li><p>max_iter: Maximum number of optimization steps. (Default: 100)</p></li>
+<li><p>step: Maximum norm between two optimization steps. (Default: 0.1)</p></li>
+<li><p>hmin: Minimum distance between current geometry and stationary point of the quadratic form
+to consider convergence reached. (Default: 1e-6)</p></li>
+<li><p>gthres: Gradient norm to consider convergence. (Default: 1e-5)</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.qsdopt.qsd_optimizer</span> <span class="kn">import</span> <span class="n">QSD</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span>
+
+<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">'''</span>
+<span class="s1">C  -2.17177  -0.46068  -0.00000</span>
+<span class="s1">C  -0.02194  -0.50455  0.00000</span>
+<span class="s1">H  0.35133   0.30506   -0.59169</span>
+<span class="s1">H  0.33677   -0.40796  1.00344</span>
+<span class="s1">H  0.31586   -1.43259  -0.41175</span>
+<span class="s1">H  -2.68285  -0.25342  0.93134</span>
+<span class="s1">H  -2.40018  0.15510   -0.90287</span>
+<span class="s1">H   -2.53568   -1.52338   -0.17790'''</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">'minao'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">QSD</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">stationary_point</span><span class="o">=</span><span class="s2">"TS"</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">hess_update_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">hmin</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

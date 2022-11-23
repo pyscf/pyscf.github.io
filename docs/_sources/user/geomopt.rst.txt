@@ -9,8 +9,9 @@ Basics
 ------
 
 PySCF implements geometry optimization via
-interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_
-and `PyBerny <https://github.com/jhrmnn/pyberny>`_ (see :ref:`installing`
+interfaces to `geomeTRIC <https://github.com/leeping/geomeTRIC>`_ and
+`PyBerny <https://github.com/jhrmnn/pyberny>`_, and through PySCF extension
+`qsdopt <https://github.com/pyscf/qsdopt>`_(see :ref:`installing`
 for installation instructions).
 
 There are two ways to invoke geometry optimization.
@@ -31,6 +32,7 @@ and :mod:`pyscf.geomopt.berny_solver`::
     from pyscf.geomopt.berny_solver import optimize
     mol_eq = optimize(mf, maxsteps=100)
     print(mol_eq.atom_coords())
+
 
 The second way is to create an :func:`optimizer` from the :class:`Gradients` class::
 
@@ -84,6 +86,42 @@ The geometry optimization can also be carried out based on
 custom energy and gradient functions:
 
 .. literalinclude:: /../examples/geomopt/02-as_pyscf_method.py
+
+Transition state optimization
+--------------
+The PySCF extension `qsdopt <https://github.com/pyscf/qsdopt>`_ performs transition
+state optimizations through
+`quadratic steepest descent method <https://aip.scitation.org/doi/10.1063/1.467721>`_
+This is a second order method that requires computation of the hessian at some steps during
+the optimization process. The following is a minimal usage example::
+
+    from pyscf imort gto, scf
+    from pyscf.qsdopt.qsd_optimizer import QSD
+
+    mol = gto.M(atom='''
+    O 0 0 0
+    H 0 0 1.2
+    H 0, 0.5, -1.2''',
+    basis='minao', verbose=0, unit="Bohr")
+    mf = scf.RHF(mol)
+
+    optimizer = QSD(mf, stationary_point="TS")
+    optimizer.kernel()
+
+Several keyword arguments can be passed to `kernel`:
+
+- hess_update_freq: Frequency for numerical reevaluation of hessian. = 0 evaluates the numerical
+  hessian in the first iteration and is updated with an BFGS rule, unless approaching a trap region,
+  where it is reevaluated. (Default: 0)
+- numhess_method: Method for evaluating numerical hessian. Forward and central differences are available
+  with "forward" and "central", respectively. (Default: "forward")
+- max_iter: Maximum number of optimization steps. (Default: 100)
+- step: Maximum norm between two optimization steps. (Default: 0.1)
+- hmin: Minimum distance between current geometry and stationary point of the quadratic form
+  to consider convergence reached. (Default: 1e-6)
+- gthres: Gradient norm to consider convergence. (Default: 1e-5)
+
+.. literalinclude:: /../examples/geomopt/16-ethane_transition_state.py
 
 Excited states
 --------------
