@@ -26,6 +26,7 @@ functionalities.
    user/tddft.rst
    user/solvent.rst
    user/qmmm.rst
+   user/md.rst
    user/df.rst
    user/pbc.rst
    user/eph.rst
