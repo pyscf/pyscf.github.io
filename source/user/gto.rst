@@ -509,7 +509,7 @@ function by assigning the number of alpha electrons and beta electrons
 Spin and charge
 ---------------
 
-Charge and spin multiplicity can be assigned to :class:`Mole` object::
+Charge and spin can be assigned to :class:`Mole` object::
 
   mol.charge = 1
   mol.spin = 1
