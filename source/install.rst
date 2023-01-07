@@ -32,7 +32,7 @@ The extension modules can be found in `https://github.com/pyscf` (see
 also :ref:`installing_extproj`).
 
 .. note::
-   Since PySCF version 2.1, the pip Linux wheels requires manylinux2010 (for x86_64) or manylinux2014 (for aarch64). So the pip version should >= 19.3 for installing on Linux.
+   Since PySCF version 2.1, the Linux wheels require manylinux2010 (for x86_64) or manylinux2014 (for aarch64). So the pip version should >= 19.3 for installing on Linux.
 
 Installing the latest code on GitHub with pip
 ---------------------------------------------
