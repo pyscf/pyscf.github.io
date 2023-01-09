@@ -2,10 +2,15 @@
 
 
 Version history
-===============
+***************
 
-===============  ==========
----------------  ----------
+===============  ============
+Version          Release date
+===============  ============
+2.1.1_           2022-09-24
+2.1.0            2022-09-03
+2.0.1_           2021-11-03
+2.0.0            2021-11-01
 2.0a             2021-04-01
 1.7.6_           2021-03-28
 1.7.6a1          2020-12-17
@@ -61,8 +66,10 @@ Version history
 1.0 beta 1       2015-08-02 (feature frozen)
 1.0 alpha 2      2015-07-03
 1.0 alpha 1      2015-04-07
-===============  ==========
+===============  ============
 
+.. _2.1.1: https://github.com/pyscf/pyscf/releases/tag/v2.1.1
+.. _2.0.1: https://github.com/pyscf/pyscf/releases/tag/v2.0.1
 .. _1.7.6: https://github.com/pyscf/pyscf/releases/tag/v1.7.6
 .. _1.7.5: https://github.com/pyscf/pyscf/releases/tag/v1.7.5
 .. _1.7.4: https://github.com/pyscf/pyscf/releases/tag/v1.7.4

@@ -31,6 +31,9 @@ All extension modules can be installed with::
 The extension modules can be found in `https://github.com/pyscf` (see
 also :ref:`installing_extproj`).
 
+.. note::
+   Since PySCF version 2.1, the Linux wheels require manylinux2010 (for x86_64) or manylinux2014 (for aarch64). So the pip version should >= 19.3 for installing on Linux.
+
 Installing the latest code on GitHub with pip
 ---------------------------------------------
 The latest code on github can be installed with::
@@ -125,7 +128,6 @@ branch) from github::
 
   $ git clone https://github.com/pyscf/pyscf.git
   $ cd pyscf
-  $ git checkout dev  # optional if you'd like to try out the development branch
 
 Next, you need to build the C extensions in :file:`pyscf/lib`::
 
@@ -184,24 +186,26 @@ A full build of PySCF may take a long time to finish.
 The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
 Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
 
-================= ======= ==============================================================
-Flags             Default Comments
-================= ======= ==============================================================
-`ENABLE_LIBXC`    ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
-                          is appended to cmake command, `LibXC` will not be compiled.
-`ENABLE_XCFUN`    ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
-                          is appended to cmake command, `XCFun` will not be compiled.
-`BUILD_LIBXC`     ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
-                          still calls `LibXC` library by default. The dft module will be
-                          linked against the `LibXC` library from an earlier build.
-`BUILD_XCFUN`     ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
-                          will be linked against the `XCFun` library from an earlier build.
-`BUILD_LIBCINT`   ON      Set it to `OFF` to skip compiling `libcint`. The integral
-                          library from an earlier build will be used.
-`WITH_F12`        ON      Whether to compile the F12 integrals.
-`DISABLE_DFT`     OFF     Set this flag to skip the entire dft module. Neither `LibXC`
-                          nor `XCFun` will be compiled.
------------------ ------- --------------------------------------------------------------
+==================== ======= =================================================================
+Flags                Default Comments
+==================== ======= =================================================================
+`ENABLE_LIBXC`       ON      Whether to use `LibXC` library in PySCF. If `-DENABLE_LIBXC=OFF`
+                             is appended to cmake command, `LibXC` will not be compiled.
+`ENABLE_XCFUN`       ON      Whether to use `XCFun` library in PySCF. If `-DENABLE_XCFUN=OFF`
+                             is appended to cmake command, `XCFun` will not be compiled.
+`BUILD_LIBXC`        ON      Set it to `OFF` to skip compiling `Libxc`. The dft module
+                             still calls `LibXC` library by default. The dft module will be
+                             linked against the `LibXC` library from an earlier build.
+`BUILD_XCFUN`        ON      Set it to `OFF` to skip compiling `XCFun`. The dft module
+                             will be linked against the `XCFun` library from an earlier build.
+`BUILD_LIBCINT`      ON      Set it to `OFF` to skip compiling `libcint`. The integral
+                             library from an earlier build will be used.
+`WITH_F12`           ON      Whether to compile the F12 integrals.
+`DISABLE_DFT`        OFF     Set this flag to skip the entire dft module. Neither `LibXC`
+                             nor `XCFun` will be compiled.
+`BUILD_MARCH_NATIVE` OFF     Whether to let the compiler optimize the code against CPU
+                             architecture
+==================== ======= =================================================================
 
 CMake config file
 -----------------
@@ -270,15 +274,14 @@ In the usual case, all external libraries (libcint, libxc, xcfun) are
 downloaded and installed when the C extensions are compiled, thus
 requiring network access. In this section, we show how to install the
 external libraries without accessing to network. First, you need to
-install the libcint, Libxc, and XCFun libraries::
+download the libcint, Libxc, and XCFun libraries::
 
     $ git clone https://github.com/sunqm/libcint.git
     $ tar czf libcint.tar.gz libcint
 
-    $ wget https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
+    $ wget https://gitlab.com/libxc/libxc/-/archive/6.0.0/libxc-6.0.0.tar.gz
 
-    $ git clone https://github.com/sunqm/xcfun.git
-    $ tar czf xcfun.tar.gz xcfun
+    $ wget -O xcfun.tar.gz https://github.com/fishjojo/xcfun/archive/refs/tags/cmake-3.5.tar.gz
 
 Assuming ``/opt`` is the place where these libraries will be installed, these
 packages should be compiled with the flags::
@@ -290,8 +293,8 @@ packages should be compiled with the flags::
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
-    $ tar xvzf libxc-4.3.4.tar.gz
-    $ cd libxc-4.3.4
+    $ tar xvzf libxc-6.0.0.tar.gz
+    $ cd libxc-6.0.0
     $ mkdir build && cd build
     $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 \
         -DENABLE_FORTRAN=0 -DDISABLE_KXC=0 -DDISABLE_LXC=1 \
@@ -299,9 +302,9 @@ packages should be compiled with the flags::
     $ make && make install
 
     $ tar xvzf xcfun.tar.gz
-    $ cd xcfun
+    $ cd xcfun-cmake-3.5
     $ mkdir build && cd build
-    $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 -DXC_MAX_ORDER=3 -DXCFUN_ENABLE_TESTS=0 \
+    $ cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=1 -DXCFUN_MAX_ORDER=3 -DXCFUN_ENABLE_TESTS=0 \
         -DCMAKE_INSTALL_PREFIX:PATH=/opt -DCMAKE_INSTALL_LIBDIR:PATH=lib ..
     $ make && make install
 
@@ -412,15 +415,16 @@ to extension projects hosted at https://github.com/pyscf.
 =================== =========================================================
 Project             URL
 =================== =========================================================
-cornell_shci        https://github.com/pyscf/cornell_shci
+cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
-fciqmcscf           https://github.com/pyscf/fciqmcscf
+fciqmc              https://github.com/pyscf/fciqmc
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive_hci           https://github.com/pyscf/naive_hci
 nao                 https://github.com/pyscf/nao
+qsdopt              https://github.com/pyscf/qsdopt
 rt                  https://github.com/pyscf/rt
 semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
@@ -429,20 +433,20 @@ tblis               https://github.com/pyscf/pyscf-tblis
 =================== =========================================================
 
 Based on the technique of namespace packages specified in `PEP 420
-<https://www.python.org/dev/peps/pep-0420/>`, PySCF has developed a
+<https://www.python.org/dev/peps/pep-0420/>`_, PySCF has developed a
 couple of methods to install the extension modules.
 
-* Pypi command. For pypi version newer than 19.0, projects hosted on
+* Pip command. For pip version newer than 19.0, projects hosted on
   GitHub can be installed on the command line::
 
-    $ pip install git+https://github.com/pyscf/semiemprical
+    $ pip install git+https://github.com/pyscf/semiempirical
 
   A particular release on github can be installed with the release URL
   you can look up on GitHub::
 
-    $ pip install https://github.com/pyscf/semiemprical/archive/v0.1.0.tar.gz
+    $ pip install https://github.com/pyscf/semiempirical/archive/v0.1.0.tar.gz
 
-* Pypi command for local paths. If you wish to load an extension
+* Pip command for local paths. If you wish to load an extension
   module developed in a local directory, you can use the local install
   mode of pip. Use of a Python virtual environment is recommended to
   avoid polluting the system default Python runtime environment; for
@@ -450,13 +454,13 @@ couple of methods to install the extension modules.
 
     $ python -m venv /home/abc/pyscf-local-env
     $ source /home/abc/pyscf-local-env/bin/activate
-    $ git clone https://github.com/pyscf/semiemprical /home/abc/semiemprical
-    $ pip install -e /home/abc/semiemprical
+    $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
+    $ pip install -e /home/abc/semiempirical
 
 * Environment variable `PYSCF_EXT_PATH`. You can place the location of
   each extension module (or a file that contains these locations) in
   this environment variable. The PySCF library will parse the paths
-  defined in this environment variable, and load the relevent
+  defined in this environment variable, and load the relevant
   submodules. For example::
 
     $ git clone https://github.com/pyscf/semiempirical /home/abc/semiempirical
@@ -475,37 +479,41 @@ the methods shown above), you can use them as regular submodules
 developed inside the pyscf main project::
 
     >>> import pyscf
-    >>> from pyscf.semiempirical import MINDO
+    >>> from pyscf.semiempirical import MINDO3
     >>> mol = pyscf.M(atom='N 0 0 0; N 0 0 1')
     >>> MINDO(mol).run()
 
-
-NAO
----
-
-The :mod:`nao` module includes basic functions for numerical atomic
+Common examples
+===============
+... NAO
+... ---
+... The :mod:`nao` module includes basic functions for numerical atomic
 orbitals (NAO) and NAO-based TDDFT methods.  This module was
 contributed by Marc Barbry and Peter Koval. More details of :mod:`nao`
 can be found in
 https://github.com/pyscf/nao/blob/master/README.md. This module can be
 installed with::
+...    $ pip install https://github.com/pyscf/nao
 
-    $ pip install https://github.com/pyscf/nao
 
-
-DMRG solver
------------
+DMRG solvers
+------------
 
 Density matrix renormalization group (DMRG) theory is a powerful
 method for solving ab initio quantum chemistry problems. PySCF can be
-used with two implementations of DMRG: Block
-(https://sanshar.github.io/Block) and CheMPS2
-(http://sebwouters.github.io/CheMPS2/index.html).  `Installing Block
-<https://sanshar.github.io/Block/build.html>`_ requires a C++11
+used with three implementations of DMRG: Block
+(https://sanshar.github.io/Block), block2
+(https://block2.readthedocs.io/en/latest), and CheMPS2
+(http://sebwouters.github.io/CheMPS2/index.html).
+
+`Installing Block <https://sanshar.github.io/Block/build.html>`_ requires a C++11
 compiler.  If C++11 is not supported by your compiler, you can
-register and download the precompiled Block binary from
-https://sanshar.github.io/Block/build.html.  Before using Block or
-CheMPS2, you need create a configuration file
+download the precompiled Block binary from https://sanshar.github.io/Block/build.html.
+
+``block2`` can be easily installed via ``pip install block2`` or ``pip install block2-mpi``,
+or `building from source <https://block2.readthedocs.io/en/latest/user/installation.html>`_.
+
+Before using Block or CheMPS2, you need create a configuration file
 ``pyscf/dmrgscf/settings.py`` (as shown by settings.py.example) to
 store the path where the DMRG solver was installed.
 
@@ -518,9 +526,11 @@ algorithm for performing tensor contraction for arbitrarily
 high-dimensional tensors. The native algorithm in TBLIS does not need
 to transform tensors into matrices by permutations, then call BLAS for
 the the matrix contraction, and back-permute the results. This means
-that tensor transposes and data moves are largely avoided by TBLIS.
+that tensor transposes and data moves are largely avoided by TBLIS. This
+leads to speedups in many correlated quantum chemistry methods in PySCF, such as
+the coupled cluster methods.
 The interface to TBLIS offers an efficient implementation for
-:func:`numpy.einsum` style tensor contraction.  The tlibs-einsum
+:func:`numpy.einsum` style tensor contraction.  The tblis-einsum
 plugin can be enabled with::
 
   $ pip install pyscf-tblis

@@ -24,6 +24,7 @@ import math
 import numpy
 import scipy.linalg
 from pyscf.tools import molden
+from functools import reduce
 
 #------------------------------------------------
 # Initialization

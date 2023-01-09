@@ -1,14 +1,14 @@
 .. _user_lo:
 
-**********************
-Localized Orbitals
-**********************
+******************
+Localized orbitals
+******************
 
 *Modules*: :mod:`lo`
 
 Introduction
 ============
-A molecular orbital is usually delocalized, i.e. it has non-negligible amplitude over the whole system rather than only around a specific region localized around some atom(s) or bond(s).
+A molecular orbital is usually delocalized, i.e. it has non-negligible amplitude over the whole system rather than only around some atom(s) or bond(s).
 However, one can choose a unitary rotation :math:`U`
 
 .. math::

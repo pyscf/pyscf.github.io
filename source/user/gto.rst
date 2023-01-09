@@ -40,7 +40,7 @@ These functions pass all the arguments to the :func:`~Mole.build` method::
   ...     basis = 'sto-3g')
 
 In any of these, you may have noticed two keywords ``atom`` and ``basis``.
-They are used to hold the molecular `geometry`_ and `basis sets`_, which 
+They are used to hold the molecular `geometry`_ and `basis sets`_, which
 can be defined along with other input options as follows.
 
 .. _geometry:
@@ -48,8 +48,8 @@ can be defined along with other input options as follows.
 Geometry
 --------
 
-The molecular geometry can be input in Cartesian format 
-with the default unit being Angstrom 
+The molecular geometry can be input in Cartesian format
+with the default unit being Angstrom
 (one can specify the unit by setting the attribute :attr:`unit`
 to either ``'Angstrom'`` or ``'Bohr'``)::
 
@@ -83,7 +83,7 @@ format::
     mol = gto.Mole()
     mol.atom = '''
         O
-        H  1  1.2  
+        H  1  1.2
         H  1  1.2  2 105
     '''
 
@@ -129,6 +129,19 @@ format::
 
   >>> mol.atom = (('O',numpy.zeros(3)), ['H', 0, 1, 0], ['H',[0, 0, 1]])
 
+You can also specify the path to an xyz file and PySCF will use the coordinates 
+from this file to build :attr:`Mole.atom`.
+::
+
+  >>> mol = gto.M(atom="my_molecule.xyz")
+
+Or::
+
+  >>> mol = gto.Mole()
+  >>> mol.atom = "my_molecule.xyz"
+  >>> mol.build()
+
+
 No matter which format or symbols are used in the input, :func:`Mole.build`
 will convert :attr:`Mole.atom` to the internal format::
 
@@ -145,7 +158,7 @@ will convert :attr:`Mole.atom` to the internal format::
 which is stored as the attribute :attr:`Mole._atom`.
 
 Once the :class:`Mole` object is built, the molecular geometry can be
-accessed through the :meth:`Mole.atom_coords` function.  
+accessed through the :meth:`Mole.atom_coords` function.
 This function returns a (N,3) array for the coordinates of each atom::
 
   >>> print(mol.atom_coords(unit='Bohr')) # unit can be "ANG" or "Bohr"
@@ -219,10 +232,102 @@ but the ``STO-3G`` basis will be used for the atom ``H2``:
 
 See :source:`examples/gto/04-input_basis.py` for more examples.
 
+Basis format
+------------
+Basis data can be a text file or a python file.
+
+The text file should store the
+basis data in NWChem format. Most basis in PySCF were downloaded from
+https://www.basissetexchange.org/ . Some basis (mostly the cc-pV*Z basis) were
+downloaded with the option "optimize general contractions" checked.
+
+The python basis format stores the basis in the internal format which looks::
+
+    [[angular, kappa, [[exp, c_1, c_2, ..],
+                       [exp, c_1, c_2, ..],
+                       ... ]],
+     [angular, kappa, [[exp, c_1, c_2, ..],
+                       [exp, c_1, c_2, ..]
+                       ... ]]]
+
+The list `[angular, kappa, [[exp, c, ...]]]` defines the angular momentum of the
+basis, the kappa value, the Gaussian exponents and basis contraction coefficients.
+`kappa` can have value :math:`-l-1` (corresponding to spinors with :math:`j=l+1/2`),
+:math:`l` (corresponding to spinors with :math:`j=l-1/2`) or 0. When kappa is 0, both
+types of spinors are assumed in the basis. A few basis for relativistic
+calculations (e.g. Dyall basis) were saved in this format. 
+
+Ordering of basis functions
+---------------------------
+GTO basis functions are stored in the following order: (1) atoms, (2) angular
+ momentum, (3) shells, (4) spherical harmonics. This means that basis functions are first
+grouped in terms of the atoms they are assigned to. On each atom, basis
+functions are grouped according to their angular momentum.
+For each value of the angular momentum, the individual shells
+are sorted from inner shells to outer shells, that is, from large exponents to small exponents.
+A shell can be a real atomic shell, formed as a linear combination of many Gaussians,
+or just a single primitive Gaussian function that may have several angular components. 
+In each shell, the spherical parts of the GTO basis follow the
+Condon-Shortley convention, with the ordering (and phase) given in 
+`the Wikipedia table of spherical harmonics <https://en.wikipedia.org/wiki/Table_of_spherical_harmonics>`, 
+except for the `p` functions for which the order of `px`, `py`, `pz` is used 
+instead of the order`py`, `pz`, `px` used in the table above.
+
+Short notations are used for basis functions of `s`, `p` and `d` shells. We use
+the label `z^2` for the `Lz=0` component of `d` function as the short name of
+`3z^2 - r^2`.  For example, after applying all the rules above, we have the following
+cc-pVTZ basis functions for carbon atom:
+
+========= ======= =================  ===============
+Atom Id   Shell   Angular momentum   Spherical part
+--------- ------- -----------------  ---------------
+0 C       1       s
+0 C       2       s
+0 C       3       s
+0 C       4       s
+0 C       2       p                  x
+0 C       2       p                  y
+0 C       2       p                  z
+0 C       3       p                  x
+0 C       3       p                  y
+0 C       3       p                  z
+0 C       4       p                  x
+0 C       4       p                  y
+0 C       4       p                  z
+0 C       3       d                  xy
+0 C       3       d                  yz
+0 C       3       d                  z^2
+0 C       3       d                  xz
+0 C       3       d                  x2-y2
+0 C       4       d                  xy
+0 C       4       d                  yz
+0 C       4       d                  z^2
+0 C       4       d                  xz
+0 C       4       d                  x2-y2
+0 C       4       f                  -3
+0 C       4       f                  -2
+0 C       4       f                  -1
+0 C       4       f                  0
+0 C       4       f                  1
+0 C       4       f                  2
+0 C       4       f                  3
+========= ======= =================  ===============
+
+The order of Cartesian GTOs is generated by the code below::
+
+  for lx in reversed(range(l + 1)):
+    for ly in reversed(range(l + 1 - lx)):
+      lz = l - lx - ly
+      basis = 'x' * lx + 'y' * ly + 'z' * lz
+
+For example, the Cartesian `d` functions are ordered as `xx`, `xy`, `xz`, `yy`, `yz`, `zz`.
+
+ The ordering of the basis functions can be verified with the method :func:`Mole.ao_labels()`.
+
 ECP
 ---
-Effective core potentials (ECPs) can be specified with the attribute :attr:`Mole.ecp`. 
-Scalar type ECPs are available for all molecular and crystal methods. 
+Effective core potentials (ECPs) can be specified with the attribute :attr:`Mole.ecp`.
+Scalar type ECPs are available for all molecular and crystal methods.
 The built-in scalar ECP datasets include
 
 ============ ========================
@@ -255,8 +360,8 @@ stuttgart
 ECP parameters can be specified directly in input script using NWChem format.
 Examples of ECP input can be found in :source:`examples/gto/05-input_ecp.py`.
 
-Spin-orbit (SO) ECP integrals can be evaluated using PySCF's integral driver. 
-However, SO-ECPs are not automatically applied to any methods in the current implementation. 
+Spin-orbit (SO) ECP integrals can be evaluated using PySCF's integral driver.
+However, SO-ECPs are not automatically applied to any methods in the current implementation.
 They need to be added to the core Hamiltonian as shown in the examples
 :source:`examples/gto/20-soc_ecp.py` and
 :source:`examples/scf/44-soc_ecp.py`.
@@ -288,8 +393,8 @@ by setting the attribute :attr:`Mole.symmetry` to ``True``::
     ...     symmetry = True
     ... )
 
-The point group symmetry information is held in the :class:`Mole` object.  
-The symmetry module (:mod:`symm`) of PySCF can detect arbitrary point groups. 
+The point group symmetry information is held in the :class:`Mole` object.
+The symmetry module (:mod:`symm`) of PySCF can detect arbitrary point groups.
 The detected point group is saved in :attr:`Mole.topgroup`,
 and the supported subgroup is saved in :attr:`Mole.groupname`::
 
@@ -358,7 +463,7 @@ in :mod:`symm`) are stored in :attr:`Mole.irrep_id`::
   B2u 6 (10, 1)
   B3u 7 (10, 1)
 
-These symmetry-adapted orbitals are used as basis functions for the 
+These symmetry-adapted orbitals are used as basis functions for the
 following SCF or post-SCF calculations::
 
   >>> mf = scf.RHF(mol)
@@ -371,21 +476,19 @@ and we can check the occupancy of the MOs in each irreducible representation::
   >>> from pyscf import symm
   >>> def myocc(mf):
   ...     mol = mf.mol
-  ...     irrep_id = mol.irrep_id
-  ...     so = mol.symm_orb
-  ...     orbsym = symm.label_orb_symm(mol, irrep_id, so, mf.mo_coeff)
+  ...     orbsym = symm.label_orb_symm(mol, mol.irrep_id, mol.symm_orb, mf.mo_coeff)
   ...     doccsym = numpy.array(orbsym)[mf.mo_occ==2]
   ...     soccsym = numpy.array(orbsym)[mf.mo_occ==1]
-  ...     for ir,irname in enumerate(mol.irrep_name):
+  ...     for ir,irname in zip(mol.irrep_id, mol.irrep_name):
   ...         print('%s, double-occ = %d, single-occ = %d' %
   ...               (irname, sum(doccsym==ir), sum(soccsym==ir)))
   >>> myocc(mf)
   Ag, double-occ = 3, single-occ = 0
-  B2g, double-occ = 0, single-occ = 0
+  B2g, double-occ = 0, single-occ = 1
   B3g, double-occ = 0, single-occ = 1
-  B1u, double-occ = 0, single-occ = 1
-  B2u, double-occ = 0, single-occ = 0
-  B3u, double-occ = 2, single-occ = 0
+  B1u, double-occ = 2, single-occ = 0
+  B2u, double-occ = 1, single-occ = 0
+  B3u, double-occ = 1, single-occ = 0
 
 To label the irreducible representation of given orbitals,
 :func:`symm.label_orb_symm` needs the information of the point group
@@ -411,11 +514,11 @@ Charge and spin multiplicity can be assigned to :class:`Mole` object::
   mol.charge = 1
   mol.spin = 1
 
-.. note:: 
+.. note::
   :attr:`Mole.spin` is the number of unpaired electrons *2S*,
   i.e. the difference between the number of alpha and beta electrons.
 
-These two attributes do not affect any other parameters 
+These two attributes do not affect any other parameters
 in the :attr:`Mole.build` initialization function.
 They can be set or modified after the
 :class:`Mole` object is initialized::
@@ -465,23 +568,23 @@ If this variable is not assigned, messages will be dumped to
 The maximum memory usage can be controlled globally::
 
   mol.max_memory = 1000 # MB
-  
+
 The default size can also be defined with the shell environment
 variable `PYSCF_MAX_MEMORY`.
 
-The attributes :attr:`~Mole.output` and :attr:`~Mole.max_memory` can also be 
+The attributes :attr:`~Mole.output` and :attr:`~Mole.max_memory` can also be
 assigned from command line::
 
   $ python input.py -o /path/to/my_log.txt -m 1000
 
 By default, command line has the highest priority, which means the
-settings in the script will be overwritten by the command line arguments.  
+settings in the script will be overwritten by the command line arguments.
 To make the input parser ignore the command line arguments, you can call the
 :func:`Mole.build` with::
 
   mol.build(0, 0)
 
-The first ``0`` prevent :func:`~Mole.build` dumping the input file. 
+The first ``0`` prevent :func:`~Mole.build` dumping the input file.
 The second ``0`` prevent :func:`~Mole.build` parsing the command line arguments.
 
 
@@ -489,7 +592,7 @@ Access AO integrals
 ===================
 
 PySCF uses `libcint <https://github.com/sunqm/libcint>`_ library as the AO
-integral engine. A simple interface function :func:`Mole.intor` is provided 
+integral engine. A simple interface function :func:`Mole.intor` is provided
 to obtain the one- and two-electron AO integrals::
 
   kin = mol.intor('int1e_kin')

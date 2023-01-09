@@ -1,44 +1,53 @@
-.. PySCF documentation master file, created by
-   sphinx-quickstart on Thu Jan 15 01:55:04 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. PySCF
 
-Welcome to PySCF documentation!
-===============================
- 
-PySCF is a collection of electronic structure programs powered by Python.
-The package aims to provide a simple, light-weight, and efficient platform for
-quantum chemistry calculations and code development.  The program is developed
-with the following principles:
+Home
+****
 
-* Easy to install, to use, to extend and to be embedded;
+.. image:: ../logo/pyscf-logo.png
+   :width: 400
 
-* Minimal requirements on libraries (no Boost or MPI) and computing
-  resources (perhaps sacrificing efficiency to reduce I/O);
+The Python-based Simulations of Chemistry Framework (PySCF) is an open-source
+collection of electronic structure modules powered by Python. The package
+provides a simple, lightweight, and efficient platform for quantum chemistry
+calculations and methodology development.
+PySCF can be used to simulate the properties of molecules, crystals, and
+custom Hamiltonians using mean-field and post-mean-field methods.
+To ensure ease of extensibility, almost all of the features in PySCF are
+implemented in Python, while computationally critical parts are
+implemented and optimized in C. Using this combined Python/C
+implementation, the package is as efficient as the best existing C or Fortran
+based quantum chemistry programs.
+In addition to its core libraries, PySCF supports a rich
+ecosystem of :ref:`installing_extproj`.
 
-* 90/10 Python/C (only computational hot spots are written in C);
+.. MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*. See :ref:`installing_extproj`.
 
-* 90/10 functional/OOP (unless performance critical, functions are pure).
+.. For installation instructions, see the :ref:`install` page.
 
-In addition to the core libraries, PySCF supports a rich
-ecosystem of plugins and external modules that, for example, provide
-MPI versions of some routines, additional quantum chemistry methods and analysis, interface with quantum computing toolkits *etc*.
-See :ref:`installing_extproj`.
+.. For a guide to performing a variety of calculations with PySCF, see the :ref:`quickstart` guide.
+
+
+.. COMMENTED OUT FOR NOW
+.. Install <install.rst>
+.. User Guide <user.rst>
+.. Developer Guide <develop.rst>
+.. API Docs <api_docs/pyscf.rst>
+.. Blog <blog_wrapper.rst>
+.. Modules <modules.rst>
+.. about.md
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
-   :numbered:
 
-   overview.rst
-   install.rst
-   quickstart.rst
-   user.rst
-   develop.rst
-   modules.rst
-   interface.rst
+   Install <install.rst>
+   Quickstart <quickstart.rst>
+   User Guide <user.rst>
+   Developer Guide <develop.rst>
+   API <pyscf_api_docs/pyscf.rst>
+   About <about.rst>
 
-You can also download the `PDF version
-<http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
+.. You can also download the `PDF version <http://www.sunqm.net/pyscf/files/pdf/PySCF-1.7.pdf>`_ of this manual.
 
 
 .. Indices and tables

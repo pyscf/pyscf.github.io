@@ -1,6 +1,6 @@
 .. _user_mrpt:
 
-Multi-Reference Perturbation Theory (MRPT)
+Multi-reference perturbation theory (MRPT)
 ******************************************
 
 *Modules*: :mod:`mrpt`
@@ -15,14 +15,15 @@ SC-NEVPT2 can be applied to CASCI/CASSCF wave functions produced by the FCI or D
 The number of the CI root needs to be specified for state-specific NEVPT2 calculations with ``mrpt.NEVPT(mc,root=Root_ID)``.
 By default, the NEVPT2 calculation is performed for the lowest root, `Root_ID=0`.
 
-A simple example of SC-NEVPT2 calculations with the FCI and DMRG solvers is given in :source:`examples/mrpt/03-dmrg_nevpt2.py`:: 
+A simple example of SC-NEVPT2 calculations with the FCI and DMRG solvers is given in :source:`examples/mrpt/03-dmrg_nevpt2.py` 
 
 .. literalinclude:: ../../examples/mrpt/03-dmrg_nevpt2.py
+
 which outputs
 
 .. code::
 
-  CI NEVPT = -0.0655571220984536 -0.0805814569225376
+  FCI NEVPT correlation E = -0.0655576579894365 -0.0913916717329482 
   MPS NEVPT correlation E = -0.0655570680554582 -0.0913913618723217
 
 namely, the second-order correlation energies for the ground and the first-excited states 
