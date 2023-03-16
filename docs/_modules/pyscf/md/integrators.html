@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.md.integrators </span>
         </div>
       </div>
@@ -186,6 +186,7 @@
             <li class="md-tabs__item"><a href="../../../about.html" class="md-tabs__link">About</a></li>
           <li class="md-tabs__item"><a href="../../index.html" class="md-tabs__link">Module code</a></li>
           <li class="md-tabs__item"><a href="../../pyscf.html" class="md-tabs__link">pyscf</a></li>
+          <li class="md-tabs__item"><a href="../md.html" class="md-tabs__link">pyscf.md</a></li>
       </ul>
     </div>
   </nav>
@@ -203,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -312,6 +313,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">data</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
@@ -351,9 +353,13 @@
 
 
 <span class="k">def</span> <span class="nf">_toframe</span><span class="p">(</span><span class="n">integrator</span><span class="p">):</span>
-    <span class="sd">'''Convert an Integrator to a Frame given current saved data.</span>
+    <span class="sd">'''Convert an _Integrator to a Frame given current saved data.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        integrator : md.integrator.Integrator object</span>
+<span class="sd">        integrator : md.integrator._Integrator object</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Frame with all data taken from the integrator.</span>
 <span class="sd">    '''</span>
     <span class="k">return</span> <span class="n">Frame</span><span class="p">(</span><span class="n">ekin</span><span class="o">=</span><span class="n">integrator</span><span class="o">.</span><span class="n">ekin</span><span class="p">,</span>
                  <span class="n">epot</span><span class="o">=</span><span class="n">integrator</span><span class="o">.</span><span class="n">epot</span><span class="p">,</span>
@@ -364,6 +370,7 @@
 
 <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">vec</span><span class="p">,</span> <span class="n">atmlst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''Format output of molecular vector quantity.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        dev : lib.logger.Logger object</span>
 <span class="sd">        mol : gto.mol object</span>
@@ -408,8 +415,9 @@
     <span class="k">return</span> <span class="n">integrator</span></div>
 
 
-<div class="viewcode-block" id="Integrator"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.Integrator">[docs]</a><span class="k">class</span> <span class="nc">Integrator</span><span class="p">:</span>
-    <span class="sd">'''Integrator base class</span>
+<span class="k">class</span> <span class="nc">_Integrator</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
+    <span class="sd">'''Integrator abstract base class. Should never be directly constructed,</span>
+<span class="sd">    but inherited from.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        method : lib.GradScanner, rhf.GradientsMixin instance, or</span>
@@ -498,9 +506,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># Cache the masses into a list, they will be in atomic units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_masses</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Integrator.kernel"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.Integrator.kernel">[docs]</a>    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">veloc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dump_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">veloc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dump_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">'''Runs the molecular dynamics simulation.</span>
 
 <span class="sd">        Args:</span>
@@ -524,7 +535,7 @@
 <span class="sd">                Print level</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Integrator with final epot, ekin, mol, and veloc of the simulation.</span>
+<span class="sd">            _Integrator with final epot, ekin, mol, and veloc of the simulation.</span>
 <span class="sd">        '''</span>
 
         <span class="k">if</span> <span class="n">veloc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -539,6 +550,12 @@
         <span class="c1"># Default velocities are 0 if none specified</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Store the masses into a cached variable,</span>
+        <span class="c1"># so we don't have to keep looking them up</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_masses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">COMMON_ISOTOPE_MASSES</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">nist</span><span class="o">.</span><span class="n">AMU2AU</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()])</span>
 
         <span class="c1"># avoid opening energy_output file twice</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_output</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
@@ -571,6 +588,7 @@
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span> <span class="o">==</span> <span class="s1">'/dev/null'</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
+
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
 
@@ -580,11 +598,9 @@
         <span class="k">if</span> <span class="n">dump_flags</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dump_input</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
-    <span class="n">run</span> <span class="o">=</span> <span class="n">kernel</span>
-
-<div class="viewcode-block" id="Integrator.dump_input"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.Integrator.dump_input">[docs]</a>    <span class="k">def</span> <span class="nf">dump_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">dump_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'******** BOMD flags ********'</span><span class="p">)</span>
@@ -593,9 +609,9 @@
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'                   Initial Velocity                  '</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'             vx              vy              vz'</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="p">)):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1">    </span><span class="si">%.8E</span><span class="s1">  </span><span class="si">%.8E</span><span class="s1">  </span><span class="si">%.8E</span><span class="s1">'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span></div>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="si">%d</span><span class="s1"> </span><span class="si">%s</span><span class="s1">    </span><span class="si">%.8E</span><span class="s1">  </span><span class="si">%.8E</span><span class="s1">  </span><span class="si">%.8E</span><span class="s1">'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="o">*</span><span class="n">v</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Integrator.check_sanity"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.Integrator.check_sanity">[docs]</a>    <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">&gt;=</span> <span class="mi">0</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">&gt;</span> <span class="mi">0</span>
@@ -603,16 +619,26 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="k">return</span> <span class="bp">self</span></div>
+        <span class="k">return</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="Integrator.compute_kinetic_energy"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.Integrator.compute_kinetic_energy">[docs]</a>    <span class="k">def</span> <span class="nf">compute_kinetic_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">compute_kinetic_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">'''Compute the kinetic energy of the current frame.'''</span>
+        <span class="c1"># TODO, can make this cleaner by removing an explicit zip and</span>
+        <span class="c1"># try to leverage numpy vectors</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">COMMON_ISOTOPE_MASSES</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
-            <span class="n">energy</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">m</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">nist</span><span class="o">.</span><span class="n">AMU2AU</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masses</span><span class="p">):</span>
+            <span class="n">energy</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">m</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
-        <span class="k">return</span> <span class="n">energy</span></div>
+        <span class="k">return</span> <span class="n">energy</span>
+
+    <span class="k">def</span> <span class="nf">temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">'''Returns the temperature of the system'''</span>
+        <span class="n">dof</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">())</span>
+
+        <span class="c1"># Temp = 2/(3*k*N_f) * KE</span>
+        <span class="c1">#      = 2/(3*k*N_f)*\sum_i (1/2 m_i v_i^2)</span>
+        <span class="k">return</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ekin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="mi">3</span> <span class="o">*</span> <span class="n">dof</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">nist</span><span class="o">.</span><span class="n">BOLTZMANN</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">nist</span><span class="o">.</span><span class="n">HARTREE2J</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="o">=</span> <span class="mi">0</span>
@@ -661,26 +687,42 @@
     <span class="k">def</span> <span class="nf">_write_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">'''Writes out the potential, kinetic, and total energy to the</span>
 <span class="sd">        self.energy_output stream. '''</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energy_output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-            <span class="s1">'</span><span class="si">%8.2f</span><span class="s1">  </span><span class="si">%.12E</span><span class="s1">  </span><span class="si">%.12E</span><span class="s1">  </span><span class="si">%.12E</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ekin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ekin</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epot</span><span class="p">))</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="s1">'</span><span class="si">%8.2f</span><span class="s1">  </span><span class="si">%.12E</span><span class="s1">  </span><span class="si">%.12E</span><span class="s1">  </span><span class="si">%.12E</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">epot</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">ekin</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">ekin</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epot</span><span class="p">)</span>
+
+        <span class="c1"># We follow OM of writing all the states at the end of the line</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scanner</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="s1">'e_states'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scanner</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">e_states</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanner</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">e_states</span><span class="p">:</span>
+                    <span class="n">output</span> <span class="o">+=</span> <span class="s1">'  </span><span class="si">%.12E</span><span class="s1">'</span> <span class="o">%</span> <span class="n">e</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+
+        <span class="c1"># If we don't flush, there is a possibility of losing data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_output</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_write_coord</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">'''Writes out the current geometry to the self.trajectroy_output</span>
+        <span class="sd">'''Writes out the current geometry to the self.trajectory_output</span>
 <span class="sd">        stream in xyz format. '''</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'</span><span class="si">%s</span><span class="se">\n</span><span class="s1">MD Time </span><span class="si">%.2f</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span>
                                      <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'raw'</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'raw'</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+
+        <span class="c1"># If we don't flush, there is a possibility of losing data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_output</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="VelocityVerlet"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.VelocityVerlet">[docs]</a><span class="k">class</span> <span class="nc">VelocityVerlet</span><span class="p">(</span><span class="n">Integrator</span><span class="p">):</span>
+<div class="viewcode-block" id="VelocityVerlet"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.md.html#pyscf.md.integrators.VelocityVerlet">[docs]</a><span class="k">class</span> <span class="nc">VelocityVerlet</span><span class="p">(</span><span class="n">_Integrator</span><span class="p">):</span>
     <span class="sd">'''Velocity Verlet algorithm</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        method : lib.GradScanner or rhf.GradientsMixin instance, or</span>
 <span class="sd">        has nuc_grad_method method.</span>
 <span class="sd">            Method by which to compute the energy gradients and energies</span>
-<span class="sd">            in order to propogate the equations of motion. Realistically,</span>
+<span class="sd">            in order to propagate the equations of motion. Realistically,</span>
 <span class="sd">            it can be any callable object such that it returns the energy</span>
 <span class="sd">            and potential energy gradient when given a mol.</span>
 
@@ -732,40 +774,22 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanner</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Gradients did not converge!'</span><span class="p">)</span>
 
-        <span class="n">a</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">(),</span> <span class="n">grad</span><span class="p">):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">COMMON_ISOTOPE_MASSES</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
-            <span class="c1"># a = - \nabla U / m</span>
-            <span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">g</span> <span class="o">/</span> <span class="n">m</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">nist</span><span class="o">.</span><span class="n">AMU2AU</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_next_atom_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">r</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
-
-    <span class="k">def</span> <span class="nf">_next_atom_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">v</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a2</span> <span class="o">+</span> <span class="n">a1</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">grad</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_masses</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">a</span>
 
     <span class="k">def</span> <span class="nf">_next_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">'''Computes the next geometry using the Velocity Verlet algorithm. The</span>
 <span class="sd">        necessary equations of motion for the position is</span>
 <span class="sd">            r(t_i+1) = r(t_i) + /delta t * v(t_i) + 0.5(/delta t)^2 a(t_i)</span>
 <span class="sd">        '''</span>
-        <span class="n">new_coords</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accel</span><span class="p">):</span>
-            <span class="n">new_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_atom_position</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_coords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span> <span class="o">+</span> \
+            <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">accel</span>
 
     <span class="k">def</span> <span class="nf">_next_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">next_accel</span><span class="p">):</span>
         <span class="sd">'''Compute the next velocity using the Velocity Verlet algorithm. The</span>
 <span class="sd">        necessary equations of motion for the velocity is</span>
 <span class="sd">            v(t_i+1) = v(t_i) + 0.5(a(t_i+1) + a(t_i))'''</span>
-        <span class="n">new_veloc</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">veloc</span><span class="p">,</span> <span class="n">next_accel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accel</span><span class="p">):</span>
-            <span class="n">new_veloc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_atom_velocity</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">a1</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_veloc</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">veloc</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accel</span> <span class="o">+</span> <span class="n">next_accel</span><span class="p">)</span></div>
 </pre></div>
 
           </article>

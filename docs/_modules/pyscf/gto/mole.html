@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.gto.mole </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -554,6 +554,22 @@
     <span class="sd">'''Real spherical to spinor transformation matrix for angular moment l'''</span>
     <span class="k">return</span> <span class="n">sph2spinor_kappa</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="ao_rotation_matrix"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.mole.ao_rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">ao_rotation_matrix</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">orientation</span><span class="p">):</span>
+    <span class="sd">'''Matrix u to rotate AO basis to a new orientation.</span>
+
+<span class="sd">    atom_new_coords = mol.atom_coords().dot(orientation.T)</span>
+<span class="sd">    new_AO = u * mol.AO</span>
+<span class="sd">    new_orbitals_coef = u.dot(orbitals_coef)</span>
+<span class="sd">    '''</span>
+    <span class="kn">from</span> <span class="nn">pyscf.symm.basis</span> <span class="kn">import</span> <span class="n">_momentum_rotation_matrices</span>
+    <span class="n">Ds</span> <span class="o">=</span> <span class="n">_momentum_rotation_matrices</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">orientation</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">bas_angular</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">bas_nctr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">u</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">Ds</span><span class="p">[</span><span class="n">l</span><span class="p">]]</span> <span class="o">*</span> <span class="n">nc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">u</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="atom_types"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.mole.atom_types">[docs]</a><span class="k">def</span> <span class="nf">atom_types</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">magmom</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''symmetry inequivalent atoms'''</span>
     <span class="n">atmgroup</span> <span class="o">=</span> <span class="p">{}</span>
@@ -689,9 +705,9 @@
         <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">unicode</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'AU'</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
             <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span>
-        <span class="k">else</span><span class="p">:</span> <span class="c1">#unit[:3].upper() == 'ANG':</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">unit</span>
@@ -1517,6 +1533,8 @@
     <span class="n">mol</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_ecpbas</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 
+    <span class="c1"># Objects related to symmetry cannot be serialized by dumps function.</span>
+    <span class="c1"># Recreate it manually</span>
     <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">_symm_orig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">symm</span>
         <span class="n">mol</span><span class="o">.</span><span class="n">_symm_orig</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_symm_orig</span><span class="p">)</span>
@@ -1625,8 +1643,8 @@
     <span class="n">l</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="n">ANG_OF</span><span class="p">]</span>
     <span class="n">kappa</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="n">KAPPA_OF</span><span class="p">]</span>
     <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="n">NCTR_OF</span><span class="p">]</span>
-    <span class="n">dims</span><span class="p">[</span><span class="n">kappa</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="n">kappa</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
-    <span class="n">dims</span><span class="p">[</span><span class="n">kappa</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="n">kappa</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">dims</span><span class="p">[</span><span class="n">kappa</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">kappa</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">kappa</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">,</span><span class="n">NCTR_OF</span><span class="p">]</span>
+    <span class="n">dims</span><span class="p">[</span><span class="n">kappa</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">kappa</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">kappa</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span><span class="n">NCTR_OF</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">dims</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
 
 <span class="c1"># nao_id0:nao_id1 corresponding to bas_id0:bas_id1</span>
@@ -2365,6 +2383,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
+<div class="viewcode-block" id="is_au"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.mole.is_au">[docs]</a><span class="k">def</span> <span class="nf">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+    <span class="sd">'''Return whether the unit is recogized as A.U. or not</span>
+<span class="sd">    '''</span>
+    <span class="k">return</span> <span class="n">unit</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'AU'</span><span class="p">))</span></div>
 
 <span class="c1">#</span>
 <span class="c1"># Mole class handles three layers: input, internal format, libcint arguments.</span>
@@ -2656,9 +2678,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">HF</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">'Mole object does not have method </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+
         <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">'Mole object has no attribute </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
 
         <span class="c1"># Initialize SCF object for post-SCF methods if applicable</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelectron</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -2851,7 +2874,7 @@
         <span class="k">return</span> <span class="bp">self</span></div>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">build</span>
 
-    <span class="k">def</span> <span class="nf">_build_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_build_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Update symmetry related attributes: topgroup, groupname, _symm_orig,</span>
 <span class="sd">        _symm_axes, irrep_id, irrep_name, symm_orb</span>
@@ -3303,9 +3326,9 @@
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms_or_coords</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">symmetry</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">unicode</span><span class="p">)):</span>
-                <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'AU'</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
                     <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span>
-                <span class="k">else</span><span class="p">:</span> <span class="c1">#unit[:3].upper() == 'ANG':</span>
+                <span class="k">else</span><span class="p">:</span>
                     <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">unit</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">unit</span>
@@ -3439,7 +3462,7 @@
 <span class="sd">        [ 0.          0.          2.07869874]</span>
 <span class="sd">        '''</span>
         <span class="n">ptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atm</span><span class="p">[</span><span class="n">atm_id</span><span class="p">,</span><span class="n">PTR_COORD</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">unit</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'ANG'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">[</span><span class="n">ptr</span><span class="p">:</span><span class="n">ptr</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">[</span><span class="n">ptr</span><span class="p">:</span><span class="n">ptr</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
@@ -3448,7 +3471,7 @@
         <span class="sd">'''np.asarray([mol.atom_coords(i) for i in range(mol.natm)])'''</span>
         <span class="n">ptr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atm</span><span class="p">[:,</span><span class="n">PTR_COORD</span><span class="p">]</span>
         <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ptr</span><span class="p">,</span><span class="n">ptr</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">ptr</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">unit</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'ANG'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
             <span class="n">c</span> <span class="o">*=</span> <span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
         <span class="k">return</span> <span class="n">c</span></div>
 
@@ -3873,6 +3896,8 @@
     <span class="n">decontract_basis</span> <span class="o">=</span> <span class="n">decontract_basis</span>
 
     <span class="fm">__add__</span> <span class="o">=</span> <span class="n">conc_mol</span>
+
+    <span class="n">ao_rotation_matrix</span> <span class="o">=</span> <span class="n">ao_rotation_matrix</span>
 
 <div class="viewcode-block" id="Mole.cart2sph_coeff"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.mole.Mole.cart2sph_coeff">[docs]</a>    <span class="k">def</span> <span class="nf">cart2sph_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="s1">'sp'</span><span class="p">):</span>
         <span class="sd">'''Transformation matrix that transforms Cartesian GTOs to spherical</span>

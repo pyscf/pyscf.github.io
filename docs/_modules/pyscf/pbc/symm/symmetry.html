@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.symm.symmetry </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -294,7 +294,7 @@
             
   <h1 id="modules-pyscf-pbc-symm-symmetry--page-root">Source code for pyscf.pbc.symm.symmetry</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2020-2023 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -313,25 +313,16 @@
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">inv</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">inv</span><span class="p">,</span> <span class="n">det</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.symm</span> <span class="kn">import</span> <span class="n">param</span>
 <span class="kn">from</span> <span class="nn">pyscf.symm.Dmatrix</span> <span class="kn">import</span> <span class="n">Dmatrix</span><span class="p">,</span> <span class="n">get_euler_angles</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.symm</span> <span class="kn">import</span> <span class="n">space_group</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.symm.space_group</span> <span class="kn">import</span> <span class="n">SYMPREC</span><span class="p">,</span> <span class="n">XYZ</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
-
-<span class="k">def</span> <span class="nf">_is_right_handed</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
-    <span class="sd">'''</span>
-<span class="sd">    Check if coordinate system is right-handed</span>
-<span class="sd">    '''</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">z</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">pbc</span> <span class="k">as</span> <span class="n">pbctools</span>
 
 <div class="viewcode-block" id="get_Dmat"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.get_Dmat">[docs]</a><span class="k">def</span> <span class="nf">get_Dmat</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
     <span class="sd">'''</span>
@@ -342,17 +333,18 @@
 <span class="sd">        l : int</span>
 <span class="sd">            angular momentum</span>
 <span class="sd">    '''</span>
+    <span class="n">fac</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">det_op</span> <span class="o">=</span> <span class="n">det</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">det_op</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># improper rotation has |R| = -1</span>
+        <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">det_op</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-9</span>
+        <span class="n">op</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">op</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">l</span>
+
     <span class="n">c1</span> <span class="o">=</span> <span class="n">XYZ</span>
-    <span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="n">op</span><span class="p">),</span> <span class="n">c1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-    <span class="n">right_handed</span> <span class="o">=</span> <span class="n">_is_right_handed</span><span class="p">(</span><span class="n">c2</span><span class="p">)</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">c1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">get_euler_angles</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">)</span>
-    <span class="n">D</span> <span class="o">=</span> <span class="n">Dmatrix</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">reorder_p</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">right_handed</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Parities for orbitals with l &gt; 7 are unknown."</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">SPHERIC_GTO_PARITY_ODD</span><span class="p">[</span><span class="n">l</span><span class="p">][</span><span class="n">m</span><span class="o">+</span><span class="n">l</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">D</span><span class="p">[:,</span> <span class="n">m</span><span class="o">+</span><span class="n">l</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">fac</span> <span class="o">*</span> <span class="n">Dmatrix</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">reorder_p</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">D</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="get_Dmat_cart"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.get_Dmat_cart">[docs]</a><span class="k">def</span> <span class="nf">get_Dmat_cart</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="n">l_max</span><span class="p">):</span>
@@ -395,6 +387,41 @@
             <span class="n">Dmats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_Dmat_cart</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">l_max</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">Dmats</span><span class="p">,</span> <span class="n">l_max</span></div>
 
+<div class="viewcode-block" id="check_mesh_symmetry"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.check_mesh_symmetry">[docs]</a><span class="k">def</span> <span class="nf">check_mesh_symmetry</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">SYMPREC</span><span class="p">,</span>
+                        <span class="n">return_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">mesh</span>
+    <span class="n">ft</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rm_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ops</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">op</span><span class="o">.</span><span class="n">trans_is_zero</span><span class="p">:</span>
+            <span class="n">ft</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">trans</span><span class="p">)</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">trans</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">round</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">rm_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rm_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mesh1</span> <span class="o">=</span> <span class="n">mesh</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ft</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">mesh1</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">ft</span><span class="p">[:,</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">round</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_mesh</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'Input mesh </span><span class="si">%s</span><span class="s1"> has lower symmetry than the lattice.</span><span class="se">\n</span><span class="s1">'</span>
+                        <span class="s1">'Some of the symmetry operations will be removed.</span><span class="se">\n</span><span class="s1">'</span>
+                        <span class="s1">'Recommended mesh is </span><span class="si">%s</span><span class="s1">.'</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_mesh</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rm_list</span><span class="p">,</span> <span class="n">mesh1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rm_list</span></div>
+
 <div class="viewcode-block" id="Symmetry"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.Symmetry">[docs]</a><span class="k">class</span> <span class="nc">Symmetry</span><span class="p">():</span>
     <span class="sd">'''</span>
 <span class="sd">    Symmetry info of a crystal.</span>
@@ -406,7 +433,7 @@
 <span class="sd">            Whether space group is symmorphic</span>
 <span class="sd">        has_inversion : bool</span>
 <span class="sd">            Whether space group contains inversion operation</span>
-<span class="sd">        ops : list of :class:`SpaceGroup_element` object</span>
+<span class="sd">        ops : list of :class:`SPGElement` object</span>
 <span class="sd">            Symmetry operators (may be a subset of the operators in the space group)</span>
 <span class="sd">        nop : int</span>
 <span class="sd">            Length of `ops`.</span>
@@ -419,33 +446,44 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">space_group</span><span class="o">.</span><span class="n">SpaceGroup_element</span><span class="p">(),]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">space_group</span><span class="o">.</span><span class="n">SPGElement</span><span class="p">(),]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">has_inversion</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Dmats</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">l_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="Symmetry.build"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.Symmetry.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space_group_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">symmorphic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">_built</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Warning: </span><span class="si">%s</span><span class="s1"> must be initialized before calling Symmetry.</span><span class="se">\n</span><span class="s1">'</span>
-                             <span class="s1">'Initialize </span><span class="si">%s</span><span class="s1"> in </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span> <span class="o">=</span> <span class="n">space_group</span><span class="o">.</span><span class="n">SpaceGroup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span> <span class="o">=</span> <span class="n">symmorphic</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Warning: setting symmorphic=True for low-dimensional system.</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="n">space_group_symmetry</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span> <span class="c1">#in case that a subset of ops is considered</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">trans_is_zero</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">rm_list</span> <span class="o">=</span> <span class="n">check_mesh_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rm_list</span><span class="p">]</span>
+<div class="viewcode-block" id="Symmetry.build"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.Symmetry.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space_group_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">symmorphic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">check_mesh_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">space_group_symmetry</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">space_group</span><span class="o">.</span><span class="n">SPGElement</span><span class="p">(),]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">space_group</span><span class="o">.</span><span class="n">SpaceGroup_element</span><span class="p">(),]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cell</span><span class="o">.</span><span class="n">_built</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Warning: </span><span class="si">%s</span><span class="s1"> must be initialized before calling Symmetry.</span><span class="se">\n</span><span class="s1">'</span>
+                                 <span class="s1">'Initialize </span><span class="si">%s</span><span class="s1"> in </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span> <span class="o">=</span> <span class="n">space_group</span><span class="o">.</span><span class="n">SpaceGroup</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_info</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span> <span class="o">=</span> <span class="n">symmorphic</span>
+            <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span><span class="p">:</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Warning: setting symmorphic=True for low-dimensional system.</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">ops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span><span class="o">.</span><span class="n">ops</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmorphic</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span> <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">trans_is_zero</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">check_mesh_symmetry</span><span class="p">:</span>
+                <span class="n">rm_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_mesh_symmetry</span><span class="p">(</span><span class="n">ops</span><span class="o">=</span><span class="n">ops</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rm_list</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="n">ops</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">nop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">has_inversion</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">op</span><span class="o">.</span><span class="n">rot_is_inversion</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">])</span>
 
@@ -456,64 +494,48 @@
                 <span class="n">l_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">auxcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">op_rot</span> <span class="o">=</span> <span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">a2r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">rot</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Dmats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_max</span> <span class="o">=</span> <span class="n">make_Dmats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">op_rot</span><span class="p">,</span> <span class="n">l_max</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Symmetry.check_mesh_symmetry"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.Symmetry.check_mesh_symmetry">[docs]</a>    <span class="k">def</span> <span class="nf">check_mesh_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">tol</span><span class="o">=</span><span class="n">SYMPREC</span><span class="p">,</span> <span class="n">return_mesh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="k">if</span> <span class="n">ops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span>
+        <span class="k">return</span> <span class="n">check_mesh_symmetry</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">return_mesh</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Symmetry.dump_info"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.Symmetry.dump_info">[docs]</a>    <span class="k">def</span> <span class="nf">dump_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spacegroup</span><span class="o">.</span><span class="n">dump_info</span><span class="p">(</span><span class="n">ops</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="check_mesh_symmetry"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.check_mesh_symmetry">[docs]</a><span class="k">def</span> <span class="nf">check_mesh_symmetry</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">SYMPREC</span><span class="p">):</span>
-    <span class="c1">#FIXME what if GDF?</span>
-    <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">mesh</span>
-    <span class="n">ft</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">rm_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">op</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ops</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">op</span><span class="o">.</span><span class="n">trans_is_zero</span><span class="p">:</span>
-            <span class="n">ft</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">trans</span><span class="p">)</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">trans</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">round</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="n">rm_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
-    <span class="n">ft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ft</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-    <span class="n">mesh1</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">tmp</span> <span class="o">=</span> <span class="n">ft</span><span class="p">[:,</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
-            <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">tmp</span> <span class="o">-</span> <span class="n">tmp</span><span class="o">.</span><span class="n">round</span><span class="p">())</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">mesh1</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">break</span>
-
-    <span class="k">if</span> <span class="n">rm_list</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'Cell.mesh has lower symmetry than the lattice.</span><span class="se">\</span>
-<span class="s1">                    </span><span class="se">\n</span><span class="s1">Some of the symmetry operations have been removed.</span><span class="se">\</span>
-<span class="s1">                    </span><span class="se">\n</span><span class="s1">Recommended mesh is </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">mesh1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rm_list</span></div>
-
-<span class="k">def</span> <span class="nf">_get_phase</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">coords_scaled</span><span class="p">,</span> <span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">ignore_phase</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">natm</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">natm</span>
-    <span class="n">phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">natm</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_get_phase</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">ignore_phase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">SYMPREC</span><span class="p">):</span>
+    <span class="n">kpt_scaled</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">a2b</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">dot_rot</span><span class="p">(</span><span class="n">kpt_scaled</span><span class="p">)</span>
+    <span class="n">coords_scaled</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">natm</span> <span class="o">=</span> <span class="n">coords_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">natm</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="n">atm_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">natm</span><span class="p">)</span>
-    <span class="n">coords0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">coords_scaled</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">SYMPREC</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
-    <span class="n">coords0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">coords0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">coords0</span> <span class="o">=</span> <span class="n">pbctools</span><span class="o">.</span><span class="n">round_to_cell0</span><span class="p">(</span><span class="n">coords_scaled</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">iatm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">natm</span><span class="p">):</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">coords_scaled</span><span class="p">[</span><span class="n">iatm</span><span class="p">]</span>
-        <span class="n">op_dot_r</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">dot_rot</span><span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">op</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span><span class="o">.</span><span class="n">trans</span><span class="p">)</span>
-        <span class="c1">#op_dot_r = op.inv().dot_rot(r) - op.inv().trans</span>
-        <span class="n">op_dot_r_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">op_dot_r</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">op_dot_r_0</span> <span class="o">=</span> <span class="n">op_dot_r_0</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">SYMPREC</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
-        <span class="n">op_dot_r_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">op_dot_r_0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki-&gt;k'</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">op_dot_r_0</span> <span class="o">-</span> <span class="n">coords0</span><span class="p">))</span>
-        <span class="n">atm_map</span><span class="p">[</span><span class="n">iatm</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">&lt;</span> <span class="n">SYMPREC</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">r_diff</span> <span class="o">=</span> <span class="n">coords_scaled</span><span class="p">[</span><span class="n">atm_map</span><span class="p">[</span><span class="n">iatm</span><span class="p">]]</span> <span class="o">-</span> <span class="n">op_dot_r</span>
-        <span class="c1">#r_diff = op_dot_r_0 - op_dot_r</span>
-        <span class="c1">#sanity check</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r_diff</span> <span class="o">-</span> <span class="n">r_diff</span><span class="o">.</span><span class="n">round</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">SYMPREC</span><span class="p">)</span>
+        <span class="n">op_dot_r</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">dot_rot</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="n">op</span><span class="o">.</span><span class="n">trans</span>
+        <span class="n">op_dot_r_0</span> <span class="o">=</span> <span class="n">pbctools</span><span class="o">.</span><span class="n">round_to_cell0</span><span class="p">(</span><span class="n">op_dot_r</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+        <span class="n">equiv_atm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">op_dot_r_0</span> <span class="o">-</span> <span class="n">coords0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">equiv_atm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">equiv_atm</span> <span class="o">=</span> <span class="n">equiv_atm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">atm_map</span><span class="p">[</span><span class="n">iatm</span><span class="p">]</span> <span class="o">=</span> <span class="n">equiv_atm</span>
+        <span class="n">Lshift</span> <span class="o">=</span> <span class="n">coords_scaled</span><span class="p">[</span><span class="n">equiv_atm</span><span class="p">]</span> <span class="o">-</span> <span class="n">op_dot_r</span>
+        <span class="c1"># Lshift is a lattice vector</span>
+        <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Lshift</span> <span class="o">-</span> <span class="n">Lshift</span><span class="o">.</span><span class="n">round</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">tol</span>
+        <span class="c1"># remove numerical noise, important for symmetry adaptation</span>
+        <span class="n">Lshift</span> <span class="o">=</span> <span class="n">Lshift</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_phase</span><span class="p">:</span>
-            <span class="n">phase</span><span class="p">[</span><span class="n">iatm</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">r_diff</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="n">phase</span><span class="p">[</span><span class="n">iatm</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">Lshift</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">atm_map</span><span class="p">,</span> <span class="n">phase</span>
 
-<span class="k">def</span> <span class="nf">_get_rotation_mat</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_scaled_ibz</span><span class="p">,</span> <span class="n">mo_coeff_or_dm</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">Dmats</span><span class="p">,</span> <span class="n">ignore_phase</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">kpt_scaled</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">a2b</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">dot_rot</span><span class="p">(</span><span class="n">kpt_scaled_ibz</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">()</span>
-    <span class="n">atm_map</span><span class="p">,</span> <span class="n">phases</span> <span class="o">=</span> <span class="n">_get_phase</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">ignore_phase</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_get_rotation_mat</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_scaled_ibz</span><span class="p">,</span> <span class="n">mo_coeff_or_dm</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">Dmats</span><span class="p">,</span>
+                      <span class="n">ignore_phase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">SYMPREC</span><span class="p">):</span>
+    <span class="n">atm_map</span><span class="p">,</span> <span class="n">phases</span> <span class="o">=</span> <span class="n">_get_phase</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">kpt_scaled_ibz</span><span class="p">,</span> <span class="n">ignore_phase</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
 
     <span class="n">dim</span> <span class="o">=</span> <span class="n">mo_coeff_or_dm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
@@ -540,20 +562,20 @@
         <span class="n">shlid_0</span> <span class="o">=</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">iatm</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">shlid_1</span> <span class="o">=</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">iatm</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">ishl</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">shlid_0</span><span class="p">,</span> <span class="n">shlid_1</span><span class="p">):</span>
-            <span class="n">l</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">ishl</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">D</span> <span class="o">=</span> <span class="n">Dmats</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">*</span> <span class="n">phase</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">bas_angular</span><span class="p">(</span><span class="n">ishl</span><span class="p">)</span>
+            <span class="n">Dmat</span> <span class="o">=</span> <span class="n">Dmats</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">*</span> <span class="n">phase</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">cell</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
-                <span class="n">nao</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">nao</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">nao</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
-            <span class="n">nz</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">ishl</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nz</span><span class="p">):</span>
-                <span class="n">mat</span><span class="p">[</span><span class="n">ao_off_i</span><span class="p">:</span><span class="n">ao_off_i</span><span class="o">+</span><span class="n">nao</span><span class="p">,</span> <span class="n">ao_off_j</span><span class="p">:</span><span class="n">ao_off_j</span><span class="o">+</span><span class="n">nao</span><span class="p">]</span> <span class="o">=</span> <span class="n">D</span>
+                <span class="n">nao</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">nc</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">bas_nctr</span><span class="p">(</span><span class="n">ishl</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="p">):</span>
+                <span class="n">mat</span><span class="p">[</span><span class="n">ao_off_j</span><span class="p">:</span><span class="n">ao_off_j</span><span class="o">+</span><span class="n">nao</span><span class="p">,</span> <span class="n">ao_off_i</span><span class="p">:</span><span class="n">ao_off_i</span><span class="o">+</span><span class="n">nao</span><span class="p">]</span> <span class="o">=</span> <span class="n">Dmat</span>
                 <span class="n">ao_off_i</span> <span class="o">+=</span> <span class="n">nao</span>
                 <span class="n">ao_off_j</span> <span class="o">+=</span> <span class="n">nao</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">ao_off_i</span> <span class="o">==</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">iatm</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
-        <span class="k">assert</span><span class="p">(</span><span class="n">ao_off_j</span> <span class="o">==</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">jatm</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">mat</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">ao_off_i</span> <span class="o">==</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">iatm</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">ao_off_j</span> <span class="o">==</span> <span class="n">aoslice</span><span class="p">[</span><span class="n">jatm</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">mat</span>
 
 <div class="viewcode-block" id="transform_mo_coeff"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.transform_mo_coeff">[docs]</a><span class="k">def</span> <span class="nf">transform_mo_coeff</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_scaled</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">Dmats</span><span class="p">):</span>
     <span class="sd">'''</span>
@@ -565,7 +587,7 @@
 <span class="sd">            scaled k-point</span>
 <span class="sd">        mo_coeff : (nao, nmo) array</span>
 <span class="sd">            MO coefficients at the input k-point</span>
-<span class="sd">        op : :class:`SpaceGroup_element` object</span>
+<span class="sd">        op : :class:`SPGElement` object</span>
 <span class="sd">            Space group operation that connects the two k-points</span>
 <span class="sd">        Dmats: list of arrays</span>
 <span class="sd">            Wigner D-matrices for op</span>
@@ -609,20 +631,6 @@
 
 <div class="viewcode-block" id="is_inversion"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.symmetry.is_inversion">[docs]</a><span class="k">def</span> <span class="nf">is_inversion</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="n">cell</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Cell</span><span class="p">()</span>
-    <span class="n">cell</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s2">"""</span>
-<span class="s2">        Si  0.0 0.0 0.0</span>
-<span class="s2">        Si  1.3467560987 1.3467560987 1.3467560987</span>
-<span class="s2">    """</span>
-    <span class="n">cell</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.6935121974</span><span class="p">,</span> <span class="mf">2.6935121974</span><span class="p">],</span>
-              <span class="p">[</span><span class="mf">2.6935121974</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.6935121974</span><span class="p">],</span>
-              <span class="p">[</span><span class="mf">2.6935121974</span><span class="p">,</span> <span class="mf">2.6935121974</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]]</span>
-    <span class="n">cell</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">5</span>
-    <span class="n">cell</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-    <span class="n">Symmetry</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </pre></div>
 
           </article>

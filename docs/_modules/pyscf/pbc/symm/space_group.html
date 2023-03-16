@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.symm.space_group </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -294,7 +294,7 @@
             
   <h1 id="modules-pyscf-pbc-symm-space-group--page-root">Source code for pyscf.pbc.symm.space_group</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2020-2023 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -317,6 +317,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.symm</span> <span class="kn">import</span> <span class="n">geom</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.symm.group</span> <span class="kn">import</span> <span class="n">PGElement</span>
 
 <span class="n">SYMPREC</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_symm_space_group_symprec'</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
 <span class="n">XYZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -345,6 +346,7 @@
 <span class="sd">    '''</span>
     <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">,(</span><span class="n">P</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">P</span><span class="p">)))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">R</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-9</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_non_integer</span><span class="p">:</span>
         <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">R</span><span class="o">-</span><span class="n">R</span><span class="o">.</span><span class="n">round</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="n">SYMPREC</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Point-group symmetries of the two coordinate systems are different."</span><span class="p">)</span>
@@ -372,65 +374,72 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SpaceGroup_element"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element">[docs]</a><span class="k">class</span> <span class="nc">SpaceGroup_element</span><span class="p">():</span>
+<div class="viewcode-block" id="SPGElement"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement">[docs]</a><span class="k">class</span> <span class="nc">SPGElement</span><span class="p">():</span>
     <span class="sd">'''</span>
 <span class="sd">    Matrix representation of space group operations</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        rot : (3,3) array</span>
+<span class="sd">        rot : (d,d) array</span>
 <span class="sd">            Rotation operator.</span>
-<span class="sd">        trans : (3,) array</span>
+<span class="sd">        trans : (d,) array</span>
 <span class="sd">            Translation operator.</span>
+<span class="sd">        dimension : int</span>
+<span class="sd">            Dimension of the space: `d`.</span>
 <span class="sd">    '''</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rot</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">trans</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">))):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">rot</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+                 <span class="n">trans</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">)),</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="n">dimension</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-<div class="viewcode-block" id="SpaceGroup_element.dot"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.dot">[docs]</a>    <span class="k">def</span> <span class="nf">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r_or_op</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.dot"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.dot">[docs]</a>    <span class="k">def</span> <span class="nf">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r_or_op</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Operates on a point or multiplication of two operators</span>
 <span class="sd">        '''</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">r_or_op</span><span class="o">.</span><span class="n">ndim</span><span class="o">==</span><span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">)</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot</span>
             <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span>
             <span class="n">alpha</span> <span class="o">=</span> <span class="n">r_or_op</span><span class="o">.</span><span class="n">rot</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">r_or_op</span><span class="o">.</span><span class="n">trans</span>
-            <span class="n">op</span> <span class="o">=</span> <span class="n">SpaceGroup_element</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">beta</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">SPGElement</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">beta</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">op</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"Input has wrong type: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">r_or_op</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.dot_rot"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.dot_rot">[docs]</a>    <span class="k">def</span> <span class="nf">dot_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.dot_rot"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.dot_rot">[docs]</a>    <span class="k">def</span> <span class="nf">dot_rot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Rotate a point (without translation)</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.inv"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.inv">[docs]</a>    <span class="k">def</span> <span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.inv"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.inv">[docs]</a>    <span class="k">def</span> <span class="nf">inv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Inverse of self</span>
 <span class="sd">        '''</span>
         <span class="n">inv_rot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span><span class="p">)</span>
         <span class="n">trans</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="n">inv_rot</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">SpaceGroup_element</span><span class="p">(</span><span class="n">inv_rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">SPGElement</span><span class="p">(</span><span class="n">inv_rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.transform"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">allow_non_integer</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.transform"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">allow_non_integer</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">'''</span>
 <span class="sd">        Transform from :math:`\mathbf{a}` basis system to :math:`\mathbf{b}` basis system.</span>
 <span class="sd">        '''</span>
         <span class="n">rot</span> <span class="o">=</span> <span class="n">transform_rot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">allow_non_integer</span><span class="p">)</span>
         <span class="n">trans</span> <span class="o">=</span> <span class="n">transform_trans</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">SpaceGroup_element</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">SPGElement</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">rot_is_eye</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">rot_is_inversion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rot</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">trans_is_zero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -451,79 +460,76 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot_is_inversion</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans_is_zero</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__lt__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__le__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SpaceGroup_element</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SPGElement</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__lt__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">rot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rot</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="mi">3</span><span class="o">**</span><span class="p">(</span><span class="mi">8</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rot</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">PGElement</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trans</span>
         <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">trans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="mf">12.</span><span class="p">))</span> <span class="o">*</span> <span class="mi">12</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="n">i</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span><span class="o">**</span><span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span><span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SpaceGroup_element.a2b"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.a2b">[docs]</a>    <span class="k">def</span> <span class="nf">a2b</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.a2b"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.a2b">[docs]</a>    <span class="k">def</span> <span class="nf">a2b</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from direct lattice system to reciprocal lattice system.</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">(),</span> <span class="n">cell</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.a2r"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.a2r">[docs]</a>    <span class="k">def</span> <span class="nf">a2r</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.a2r"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.a2r">[docs]</a>    <span class="k">def</span> <span class="nf">a2r</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from direct lattice system to Cartesian coordinate system.</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">(),</span> <span class="n">XYZ</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.b2a"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.b2a">[docs]</a>    <span class="k">def</span> <span class="nf">b2a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.b2a"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.b2a">[docs]</a>    <span class="k">def</span> <span class="nf">b2a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from reciprocal lattice system to direct lattice system.</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">(),</span> <span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.b2r"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.b2r">[docs]</a>    <span class="k">def</span> <span class="nf">b2r</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.b2r"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.b2r">[docs]</a>    <span class="k">def</span> <span class="nf">b2r</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from reciprocal lattice system to Cartesian coordinate system.</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">reciprocal_vectors</span><span class="p">(),</span> <span class="n">XYZ</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.r2a"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.r2a">[docs]</a>    <span class="k">def</span> <span class="nf">r2a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.r2a"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.r2a">[docs]</a>    <span class="k">def</span> <span class="nf">r2a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from Cartesian coordinate system to direct lattice system.</span>
 <span class="sd">        '''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">XYZ</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="SpaceGroup_element.r2b"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup_element.r2b">[docs]</a>    <span class="k">def</span> <span class="nf">r2b</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+<div class="viewcode-block" id="SPGElement.r2b"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SPGElement.r2b">[docs]</a>    <span class="k">def</span> <span class="nf">r2b</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
         <span class="sd">'''</span>
 <span class="sd">        Transform from Cartesian coordinate system to reciprocal lattice system.</span>
 <span class="sd">        '''</span>
@@ -549,7 +555,7 @@
 <span class="sd">        backend: str</span>
 <span class="sd">            Choose which backend to use for symmetry detection.</span>
 <span class="sd">            Default is `pyscf` and other choices are `spglib`.</span>
-<span class="sd">        ops : list of :class:`SpaceGroup_element` objects</span>
+<span class="sd">        ops : list of :class:`SPGElement` objects</span>
 <span class="sd">            Matrix representation of the space group operations (in direct lattice system).</span>
 <span class="sd">        nop : int</span>
 <span class="sd">            Order of the space group.</span>
@@ -586,7 +592,7 @@
             <span class="n">pg_symbol</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">'pointgroup'</span><span class="p">]</span>
             <span class="n">symmetry</span> <span class="o">=</span> <span class="n">get_symmetry</span><span class="p">(</span><span class="n">spgcell</span><span class="p">,</span> <span class="n">symprec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symprec</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">rot</span><span class="p">,</span> <span class="n">trans</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">symmetry</span><span class="p">[</span><span class="s1">'rotations'</span><span class="p">],</span> <span class="n">symmetry</span><span class="p">[</span><span class="s1">'translations'</span><span class="p">]):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpaceGroup_element</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SPGElement</span><span class="p">(</span><span class="n">rot</span><span class="p">,</span> <span class="n">trans</span><span class="p">))</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s1">'pyscf'</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">search_space_group_ops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symprec</span><span class="p">)</span>
             <span class="n">pg_symbol</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">get_crystal_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">symprec</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -604,7 +610,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">dump_info</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="SpaceGroup.dump_info"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup.dump_info">[docs]</a>    <span class="k">def</span> <span class="nf">dump_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SpaceGroup.dump_info"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.symm.html#pyscf.pbc.symm.space_group.SpaceGroup.dump_info">[docs]</a>    <span class="k">def</span> <span class="nf">dump_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">ops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
             <span class="n">gn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupname</span>
             <span class="k">if</span> <span class="n">gn</span><span class="p">[</span><span class="s1">'international_symbol'</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -612,8 +620,12 @@
                             <span class="n">gn</span><span class="p">[</span><span class="s1">'international_symbol'</span><span class="p">],</span> <span class="n">gn</span><span class="p">[</span><span class="s1">'international_number'</span><span class="p">])</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'[Cell] Point group symbol:  </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">gn</span><span class="p">[</span><span class="s1">'point_group_symbol'</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Space group symmetry operations:"</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">):</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">'Subset of space group symmetry operations:'</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="s1">'Space group symmetry operations:'</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span></div></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>

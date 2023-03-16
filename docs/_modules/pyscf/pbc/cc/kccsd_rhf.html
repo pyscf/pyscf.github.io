@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.cc.kccsd_rhf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -330,6 +330,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib.parameters</span> <span class="kn">import</span> <span class="n">LOOSE_ZERO_TOL</span><span class="p">,</span> <span class="n">LARGE_DENOM</span>  <span class="c1"># noqa</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib</span> <span class="kn">import</span> <span class="n">kpts_helper</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">gamma_point</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">GDF</span><span class="p">,</span> <span class="n">RSGDF</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">df</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
@@ -795,9 +796,11 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">))</span>
-        <span class="n">pyscf</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">ccsd</span><span class="o">.</span><span class="n">CCSD</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
+        <span class="c1"># mf.to_khf converts mf to a non-symmetry object</span>
+        <span class="n">pyscf</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">ccsd</span><span class="o">.</span><span class="n">CCSD</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_khf</span><span class="p">(),</span> <span class="n">frozen</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">khelper</span> <span class="o">=</span> <span class="n">kpts_helper</span><span class="o">.</span><span class="n">KptsHelper</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">khelper</span> <span class="o">=</span> <span class="n">kpts_helper</span><span class="o">.</span><span class="n">KptsHelper</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span>
+                                              <span class="n">init_symm_map</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ip_partition</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ea_partition</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direct</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># If possible, use GDF to compute Wvvvv on-the-fly</span>
@@ -807,13 +810,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">keep_exxdiv</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'kpts'</span><span class="p">,</span> <span class="s1">'khelper'</span><span class="p">,</span> <span class="s1">'ip_partition'</span><span class="p">,</span>
-                    <span class="s1">'ea_partition'</span><span class="p">,</span> <span class="s1">'max_space'</span><span class="p">,</span> <span class="s1">'direct'</span><span class="p">])</span>
+                    <span class="s1">'ea_partition'</span><span class="p">,</span> <span class="s1">'max_space'</span><span class="p">,</span> <span class="s1">'direct'</span><span class="p">,</span>
+                    <span class="s1">'keep_exxdiv'</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__imds__</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nkpts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="s1">'nkpts'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">))</span>
 
     <span class="n">get_normt_diff</span> <span class="o">=</span> <span class="n">get_normt_diff</span>
     <span class="n">get_nocc</span> <span class="o">=</span> <span class="n">get_nocc</span>
@@ -1068,8 +1072,9 @@
         <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">fao2mo</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span>
 
-        <span class="n">kconserv</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">khelper</span><span class="o">.</span><span class="n">kconserv</span>
         <span class="n">khelper</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">khelper</span>
+        <span class="n">kconserv</span> <span class="o">=</span> <span class="n">khelper</span><span class="o">.</span><span class="n">kconserv</span>
+        <span class="n">khelper</span><span class="o">.</span><span class="n">build_symm_map</span><span class="p">()</span>
         <span class="n">orbv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[:,:,</span><span class="n">nocc</span><span class="p">:],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">'incore'</span> <span class="ow">and</span> <span class="p">(</span><span class="n">mem_incore</span> <span class="o">+</span> <span class="n">mem_now</span> <span class="o">&lt;</span> <span class="n">cc</span><span class="o">.</span><span class="n">max_memory</span><span class="p">)</span>
@@ -1114,7 +1119,7 @@
 
             <span class="n">vvvv_required</span> <span class="o">=</span> <span class="p">((</span><span class="ow">not</span> <span class="n">cc</span><span class="o">.</span><span class="n">direct</span><span class="p">)</span>
                              <span class="c1"># cc._scf.with_df needs to be df.GDF only (not MDF)</span>
-                             <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span>
+                             <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="p">(</span><span class="n">GDF</span><span class="p">,</span> <span class="n">RSGDF</span><span class="p">))</span>
                              <span class="c1"># direct-vvvv for pbc-2D is not supported so far</span>
                              <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">vvvv_required</span><span class="p">:</span>
@@ -1236,7 +1241,7 @@
     <span class="n">nvir</span> <span class="o">=</span> <span class="n">nmo</span> <span class="o">-</span> <span class="n">nocc</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
 
-    <span class="n">kpts</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">kpts</span>
+    <span class="n">kpts</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="s1">'kpts'</span><span class="p">,</span> <span class="n">cc</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
     <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
     <span class="c1">#naux = cc._scf.with_df.get_naoaux()</span>
     <span class="k">if</span> <span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts</span><span class="p">):</span>
@@ -1246,12 +1251,18 @@
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="n">dtype</span><span class="p">,</span> <span class="o">*</span><span class="n">eris</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
     <span class="n">eris</span><span class="o">.</span><span class="n">Lpv</span> <span class="o">=</span> <span class="n">Lpv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nkpts</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">df</span><span class="o">.</span><span class="n">CDERIArray</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">)</span> <span class="k">as</span> <span class="n">cderi_array</span><span class="p">:</span>
-        <span class="n">tao</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">ao_loc</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">kj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-                <span class="n">Lpq</span> <span class="o">=</span> <span class="n">cderi_array</span><span class="p">[</span><span class="n">ki</span><span class="p">,</span><span class="n">kj</span><span class="p">]</span>
+    <span class="n">tao</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ao_loc</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1">#    with df.CDERIArray(cc._scf.with_df._cderi) as cderi_array:</span>
+<span class="c1">#        for ki in range(nkpts):</span>
+<span class="c1">#            for kj in range(nkpts):</span>
+<span class="c1">#                Lpq = cderi_array[ki,kj]</span>
+    <span class="k">for</span> <span class="n">ki</span><span class="p">,</span> <span class="n">kpti</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">kj</span><span class="p">,</span> <span class="n">kptj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts</span><span class="p">):</span>
+            <span class="n">kpti_kptj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">kpti</span><span class="p">,</span> <span class="n">kptj</span><span class="p">))</span>
+            <span class="c1"># This loader is compatible with the old GDF format</span>
+            <span class="k">with</span> <span class="n">df</span><span class="o">.</span><span class="n">_load3c</span><span class="p">(</span><span class="n">cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="s1">'j3c'</span><span class="p">,</span> <span class="n">kpti_kptj</span><span class="p">)</span> <span class="k">as</span> <span class="n">j3c</span><span class="p">:</span>
+                <span class="n">Lpq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">j3c</span><span class="p">)</span>
 
                 <span class="n">mo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">eris</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">ki</span><span class="p">],</span> <span class="n">eris</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">kj</span><span class="p">][:,</span> <span class="n">nocc</span><span class="p">:]))</span>
                 <span class="n">mo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>

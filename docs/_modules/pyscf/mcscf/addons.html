@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.addons </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -1008,6 +1008,22 @@
 <span class="sd">    '''</span>
     <span class="k">return</span> <span class="n">casscf</span><span class="o">.</span><span class="n">make_rdm1s</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="get_spin_square"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.addons.get_spin_square">[docs]</a><span class="k">def</span> <span class="nf">get_spin_square</span><span class="p">(</span><span class="n">casdm1</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">):</span>
+    <span class="c1"># DOI:10.1021/acs.jctc.1c00589 Eq (49)</span>
+    <span class="n">spin_square</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.75</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ii"</span><span class="p">,</span> <span class="n">casdm1</span><span class="p">)</span>
+                   <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ijji"</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">)</span>
+                   <span class="o">-</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"iijj"</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">spin_square</span></div>
+
+<div class="viewcode-block" id="make_spin_casdm1"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.addons.make_spin_casdm1">[docs]</a><span class="k">def</span> <span class="nf">make_spin_casdm1</span><span class="p">(</span><span class="n">casdm1</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nelec</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># DOI: 10.1002/qua.22320 Eq (3)</span>
+    <span class="k">if</span> <span class="n">spin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">spin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">get_spin_square</span><span class="p">(</span><span class="n">casdm1</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="k">if</span> <span class="n">nelec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nelec</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ii"</span><span class="p">,</span> <span class="n">casdm1</span><span class="p">)</span>
+    <span class="n">spin_casdm1</span> <span class="o">=</span> <span class="p">((</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">nelec</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="n">casdm1</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ikkj-&gt;ij'</span><span class="p">,</span> <span class="n">casdm2</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">spin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">spin_casdm1</span></div>
+
 <span class="k">def</span> <span class="nf">_is_uhf_mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">):</span>
     <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
 
@@ -1601,10 +1617,10 @@
             <span class="n">cs</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">my_args</span><span class="p">,</span> <span class="n">my_kwargs</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_solver</span><span class="p">(</span><span class="n">_state_args</span> <span class="p">(</span><span class="n">ci0</span><span class="p">))):</span>
                 <span class="n">c0</span> <span class="o">=</span> <span class="n">my_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="s1">'approx_kernel'</span><span class="p">):</span>
                     <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">approx_kernel</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nelec</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">nelec</span><span class="p">),</span> <span class="n">ci0</span><span class="o">=</span><span class="n">c0</span><span class="p">,</span>
                                                 <span class="n">orbsym</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orbsym</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">else</span><span class="p">:</span>
                     <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">h1</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nelec</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">nelec</span><span class="p">),</span> <span class="n">ci0</span><span class="o">=</span><span class="n">c0</span><span class="p">,</span>
                                          <span class="n">orbsym</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orbsym</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">solver</span><span class="o">.</span><span class="n">nroots</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>

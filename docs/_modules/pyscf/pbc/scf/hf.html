@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.hf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -533,27 +533,30 @@
 
     <span class="k">if</span> <span class="n">grids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">grids</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">UniformGrids</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
-        <span class="c1">#? FIXME: Less requirements on the density accuracy.</span>
-        <span class="c1">#ke_cutoff = gto.estimate_ke_cutoff(cell, 1e-5)</span>
-        <span class="c1">#grids.mesh = tools.cutoff_to_mesh(a, ke_cutoff)</span>
+
     <span class="k">if</span> <span class="n">rho</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">rho</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">NumInt</span><span class="p">()</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">max_memory</span><span class="p">)</span>
 
+    <span class="c1"># With the optimal origin of the unti cell, the net dipole in the unit</span>
+    <span class="c1"># cell should be strictly zero. However, the integral grids are often not</span>
+    <span class="c1"># enough to produce the zero dipole. Errors are caused by the sub-optimal</span>
+    <span class="c1"># origin and the numerial integration.</span>
     <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">origin</span> <span class="o">=</span> <span class="n">_search_dipole_gauge_origin</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
 
-    <span class="c1"># Move the cell to the position around the origin.</span>
     <span class="k">def</span> <span class="nf">shift_grids</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
-        <span class="n">r_frac</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">origin</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="c1"># Grids on the boundary (r_frac == +/-0.5) of the new cell may lead to</span>
-        <span class="c1"># unbalanced contributions to the dipole moment. Exclude them from the</span>
-        <span class="c1"># dipole and quadrupole</span>
-        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac</span><span class="o">==</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac</span><span class="o">==-</span><span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">&lt;-</span><span class="mf">0.5</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">r_frac</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">r_frac5</span> <span class="o">=</span> <span class="n">r_frac</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="c1"># With origin at the center of the unit cell Grids on the edge</span>
+        <span class="c1"># (r_frac == +/-0.5) of the new cell may lead to unbalanced</span>
+        <span class="c1"># contributions to the dipole moment.</span>
+        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac5</span><span class="o">==</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac5</span><span class="o">==-</span><span class="mf">0.5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac5</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">r_frac</span><span class="p">[</span><span class="n">r_frac5</span> <span class="o">&lt;-</span><span class="mf">0.5</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r_frac</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span>
+
     <span class="n">r</span> <span class="o">=</span> <span class="n">shift_grids</span><span class="p">(</span><span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
     <span class="n">e_dip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'g,g,gx-&gt;x'</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
 
@@ -571,94 +574,105 @@
 
 <span class="k">def</span> <span class="nf">_search_dipole_gauge_origin</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
     <span class="sd">'''Optimize the position of the unit cell in crystal. With a proper unit</span>
-<span class="sd">    cell, the nuclear charge center and the electron density center are at the</span>
-<span class="sd">    same point. This function returns the origin of such unit cell.</span>
+<span class="sd">    cell, the nuclear charge center and the electron density center can be</span>
+<span class="sd">    placed at the same point (zero net dipole). This function returns the</span>
+<span class="sd">    coordinates of the center of the unit cell.</span>
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">gen_grid</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">()</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="n">charges</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
     <span class="n">coords</span>  <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-
-    <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix-&gt;x'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="n">charges</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'Initial guess of origin center </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
     <span class="n">nelec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
 
     <span class="c1"># The dipole moment in the crystal is not uniquely defined. Depending on</span>
     <span class="c1"># the position and the shape of the unit cell, the value of dipole moment</span>
-    <span class="c1"># can be very different. The optimization below searches the boundary of</span>
+    <span class="c1"># can be very different. The optimization below searches the origin of a</span>
     <span class="c1"># cell inside which the nuclear charge center and electron density charge</span>
-    <span class="c1"># center locate at the same point. The gauge origin will be chosen at the</span>
-    <span class="c1"># center of unit cell.</span>
+    <span class="c1"># center locate at the same point.</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span>
         <span class="c1"># For orthogonal lattice only</span>
         <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="ow">and</span>
         <span class="nb">isinstance</span><span class="p">(</span><span class="n">grids</span><span class="p">,</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">UniformGrids</span><span class="p">)):</span>
-        <span class="n">gridxyz</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">grids</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
-        <span class="n">gridbase</span> <span class="o">=</span> <span class="p">(</span><span class="n">gridxyz</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">gridxyz</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">gridxyz</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+
+        <span class="n">r_nuc_frac</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">grid_frac</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">grids</span><span class="o">.</span><span class="n">mesh</span><span class="p">]</span>
         <span class="n">wxyz</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grids</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
         <span class="n">rhoxyz</span> <span class="o">=</span> <span class="n">rho</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grids</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">search_orig</span><span class="p">(</span><span class="n">ix</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">search_orig</span><span class="p">(</span><span class="n">ix</span><span class="p">):</span>
             <span class="n">nx</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
-            <span class="n">Lx</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">ix</span><span class="p">,</span><span class="n">ix</span><span class="p">]</span>
-            <span class="n">g</span> <span class="o">=</span> <span class="n">gridbase</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin</span>
-            <span class="n">g_frac</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">ix</span><span class="p">,</span><span class="n">ix</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-            <span class="n">g</span><span class="p">[</span><span class="n">g_frac</span> <span class="o">==</span> <span class="o">.</span><span class="mi">5</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">g</span><span class="p">[</span><span class="n">g_frac</span> <span class="o">==-.</span><span class="mi">5</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">g</span><span class="p">[</span><span class="n">g_frac</span> <span class="o">&gt;</span>  <span class="o">.</span><span class="mi">5</span><span class="p">]</span> <span class="o">-=</span> <span class="n">Lx</span>
-            <span class="n">g</span><span class="p">[</span><span class="n">g_frac</span> <span class="o">&lt;</span> <span class="o">-.</span><span class="mi">5</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Lx</span>
-            <span class="n">meanx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xyz,xyz-&gt;'</span><span class="o">+</span><span class="p">(</span><span class="s1">'xyz'</span><span class="p">[</span><span class="n">ix</span><span class="p">]),</span> <span class="n">rhoxyz</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">)</span> <span class="o">/</span> <span class="n">nelec</span>
-            <span class="n">ex</span> <span class="o">=</span> <span class="n">meanx</span> <span class="o">*</span> <span class="n">g</span>
+            <span class="n">den</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xyz,xyz-&gt;'</span><span class="o">+</span><span class="p">(</span><span class="s1">'xyz'</span><span class="p">[</span><span class="n">ix</span><span class="p">]),</span> <span class="n">rhoxyz</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">)</span>
 
-            <span class="n">r_nuc</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span><span class="n">ix</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin</span>
-            <span class="n">r_frac</span> <span class="o">=</span> <span class="p">(</span><span class="n">r_nuc</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">ix</span><span class="p">,</span><span class="n">ix</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-            <span class="n">r_nuc</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">==</span> <span class="o">.</span><span class="mi">5</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">r_nuc</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">==-.</span><span class="mi">5</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">r_nuc</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">&gt;</span>  <span class="o">.</span><span class="mi">5</span><span class="p">]</span> <span class="o">-=</span> <span class="n">Lx</span>
-            <span class="n">r_nuc</span><span class="p">[</span><span class="n">r_frac</span> <span class="o">&lt;</span> <span class="o">-.</span><span class="mi">5</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Lx</span>
-            <span class="n">nuc_dip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">charges</span><span class="p">,</span> <span class="n">r_nuc</span><span class="p">)</span> <span class="o">/</span> <span class="n">charges</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">nuc_x</span> <span class="o">=</span> <span class="n">r_nuc_frac</span><span class="p">[:,</span><span class="n">ix</span><span class="p">]</span>
+            <span class="n">grid_x</span> <span class="o">=</span> <span class="n">grid_frac</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
+            <span class="c1"># possible origin of the unit cell</span>
+            <span class="n">possible_orig</span> <span class="o">=</span> <span class="n">grid_x</span>
 
-            <span class="c1"># ex.sum() ~ electron dipole wrt the given origin</span>
-            <span class="n">dipx</span> <span class="o">=</span> <span class="n">nuc_dip</span> <span class="o">-</span> <span class="n">ex</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="c1"># shifts the unit cell</span>
+            <span class="n">possible_x</span> <span class="o">=</span> <span class="n">grid_x</span> <span class="o">-</span> <span class="n">possible_orig</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">possible_x</span><span class="p">[</span><span class="n">possible_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">possible_nuc_x</span> <span class="o">=</span> <span class="n">nuc_x</span> <span class="o">-</span> <span class="n">possible_orig</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">possible_nuc_x</span><span class="p">[</span><span class="n">possible_nuc_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="n">g</span> <span class="o">=</span> <span class="n">gridbase</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin</span>
-            <span class="n">sorted_meanx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">meanx</span><span class="p">[</span><span class="n">g</span> <span class="o">&gt;=</span> <span class="n">Lx</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span>
-                                      <span class="n">meanx</span><span class="p">[(</span><span class="n">g</span> <span class="o">&lt;</span> <span class="n">Lx</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">g</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">Lx</span><span class="o">/</span><span class="mi">2</span><span class="p">)],</span>
-                                      <span class="n">meanx</span><span class="p">[</span><span class="n">g</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">Lx</span><span class="o">/</span><span class="mi">2</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dipx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
-                <span class="n">offx</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">elif</span> <span class="n">dipx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># To cancel the positive dipole, move electrons to the right side</span>
-                <span class="n">rcum_dip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_meanx</span> <span class="o">*</span> <span class="n">Lx</span><span class="p">))</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rcum_dip</span> <span class="o">&gt;</span> <span class="n">dipx</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">rcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">dipx</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">rcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">rcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-                <span class="n">offx</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span> <span class="o">-</span> <span class="n">dx</span><span class="p">)</span> <span class="o">*</span> <span class="n">Lx</span><span class="o">/</span><span class="n">nx</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># To cancel the negative dipole, move electrons to the left side</span>
-                <span class="n">lcum_dip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">sorted_meanx</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">Lx</span><span class="p">))</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">lcum_dip</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">dipx</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">lcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="o">-</span><span class="n">dipx</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">lcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">lcum_dip</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-                <span class="n">offx</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">idx</span> <span class="o">-</span> <span class="n">dx</span><span class="p">)</span> <span class="o">*</span> <span class="n">Lx</span><span class="o">/</span><span class="n">nx</span>
-            <span class="k">return</span> <span class="n">origin</span> <span class="o">+</span> <span class="n">offx</span>
+            <span class="c1"># Handle the grids on the edge of a unit cell.</span>
+            <span class="n">possible_nuc_x</span><span class="p">[</span><span class="n">possible_nuc_x</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">possible_nuc_x</span><span class="p">[</span><span class="n">possible_nuc_x</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">possible_x</span><span class="p">[</span><span class="n">possible_x</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
+            <span class="n">possible_x</span><span class="p">[</span><span class="n">possible_x</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">.</span><span class="mi">5</span>
 
-        <span class="n">wbar</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-            <span class="n">orig_last</span> <span class="o">=</span> <span class="n">origin</span>
-            <span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">origin</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">origin</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">origin</span> <span class="o">-</span> <span class="n">orig_last</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">wbar</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'iter </span><span class="si">%d</span><span class="s1">: origin </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+            <span class="c1"># dip in fractional coordinates</span>
+            <span class="n">dip</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'sx,x-&gt;s'</span><span class="p">,</span> <span class="n">possible_nuc_x</span><span class="p">,</span> <span class="n">charges</span><span class="p">)</span>
+            <span class="n">dip</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'sx,x-&gt;s'</span><span class="p">,</span> <span class="n">possible_x</span><span class="p">,</span> <span class="n">den</span><span class="p">)</span>
+            <span class="c1"># Put the net charge at the center of the unit cell</span>
+            <span class="n">dip</span> <span class="o">-=</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="p">(</span><span class="n">charges</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">nelec</span><span class="p">)</span>
+
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="n">dip_min</span> <span class="o">=</span> <span class="n">dip</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">dip_min</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-4</span><span class="p">:</span>
+                <span class="n">dip_nearest1</span> <span class="o">=</span> <span class="n">dip</span><span class="p">[</span><span class="n">idx</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">dip_nearest2</span> <span class="o">=</span> <span class="n">dip</span><span class="p">[(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">nx</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">dip_nearest1</span> <span class="o">*</span> <span class="n">dip_nearest2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">dip_nearest1</span> <span class="o">*</span> <span class="n">dip_min</span> <span class="o">&gt;</span> <span class="n">dip_nearest2</span> <span class="o">*</span> <span class="n">dip_min</span><span class="p">:</span>
+                        <span class="n">idx_nearest</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">idx_nearest</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">dip_nearest1</span> <span class="o">*</span> <span class="n">dip_min</span> <span class="o">&lt;</span> <span class="n">dip_nearest2</span> <span class="o">*</span> <span class="n">dip_min</span><span class="p">:</span>
+                        <span class="n">idx_nearest</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">idx_nearest</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span>
+
+                <span class="n">dip_nearest</span> <span class="o">=</span> <span class="n">dip</span><span class="p">[</span><span class="n">idx_nearest</span><span class="o">%</span><span class="n">nx</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">dip_nearest</span> <span class="o">*</span> <span class="n">dip_min</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># extrapolation</span>
+                    <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx_nearest</span><span class="o">*</span><span class="n">dip_min</span><span class="o">-</span><span class="n">idx</span><span class="o">*</span><span class="n">dip_nearest</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">dip_min</span><span class="o">-</span><span class="n">dip_nearest</span><span class="p">)</span>
+
+            <span class="c1"># wraparound</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="n">nx</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">-=</span> <span class="n">nx</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">/</span> <span class="n">nx</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="n">ix</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">shift</span>
+
+        <span class="n">orig_x</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">orig_y</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">orig_z</span> <span class="o">=</span> <span class="n">search_orig</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">orig_x</span> <span class="o">+</span> <span class="n">orig_y</span> <span class="o">+</span> <span class="n">orig_z</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'optimized cell origin = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'  origin_x </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">orig_x</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'  origin_y </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">orig_y</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'  origin_z </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">orig_z</span><span class="p">)</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">origin</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'gauge origin = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">center</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># If the grids are non-cubic grids, regenerating the grids is expensive if</span>
         <span class="c1"># the position or the shape of the unit cell is changed. The position of</span>
         <span class="c1"># the unit cell is not optimized. The gauge origin is set to the nuclear</span>
         <span class="c1"># charge center of the original unit cell.</span>
-        <span class="k">pass</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix-&gt;x'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span> <span class="o">/</span> <span class="n">charges</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">origin</span>
+    <span class="k">return</span> <span class="n">center</span>
 
 <div class="viewcode-block" id="get_rho"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.get_rho">[docs]</a><span class="k">def</span> <span class="nf">get_rho</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''Compute density in real space</span>
@@ -1007,11 +1021,13 @@
 <div class="viewcode-block" id="SCF.dip_moment"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.SCF.dip_moment">[docs]</a>    <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">dip_moment</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">dip_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'Debye'</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">,</span>
                    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
         <span class="n">rho</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'rho'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rho</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">rho</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="k">return</span> <span class="n">dip_moment</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kpt</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

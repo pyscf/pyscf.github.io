@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.scf.hf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -449,6 +449,12 @@
         <span class="n">mf_diis</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">DIIS</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">diis_file</span><span class="p">)</span>
         <span class="n">mf_diis</span><span class="o">.</span><span class="n">space</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">diis_space</span>
         <span class="n">mf_diis</span><span class="o">.</span><span class="n">rollback</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">diis_space_rollback</span>
+
+        <span class="c1"># We get the used orthonormalized AO basis from any old eigendecomposition.</span>
+        <span class="c1"># Since the ingredients for the Fock matrix has already been built, we can</span>
+        <span class="c1"># just go ahead and use it to determine the orthonormal basis vectors.</span>
+        <span class="n">fock</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">s1e</span><span class="p">,</span> <span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">mf_diis</span><span class="o">.</span><span class="n">Corth</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">fock</span><span class="p">,</span> <span class="n">s1e</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">mf_diis</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1512,7 +1518,7 @@
         <span class="n">unit</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'unit_symbol'</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dm</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="c1"># UHF denisty matrices</span>
+        <span class="c1"># UHF density matrices</span>
         <span class="n">dm</span> <span class="o">=</span> <span class="n">dm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">dm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">with</span> <span class="n">mol</span><span class="o">.</span><span class="n">with_common_orig</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)):</span>
@@ -1723,7 +1729,7 @@
     <span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_max_cycle'</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
     <span class="n">init_guess</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_init_guess'</span><span class="p">,</span> <span class="s1">'minao'</span><span class="p">)</span>
 
-    <span class="c1"># To avoid diis pollution form previous run, self.diis should not be</span>
+    <span class="c1"># To avoid diis pollution from previous run, self.diis should not be</span>
     <span class="c1"># initialized as DIIS instance here</span>
     <span class="n">DIIS</span> <span class="o">=</span> <span class="n">diis</span><span class="o">.</span><span class="n">SCF_DIIS</span>
     <span class="n">diis</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_diis'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -1731,8 +1737,7 @@
     <span class="c1"># need &gt; 0 if initial DM is numpy.zeros array</span>
     <span class="n">diis_start_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_diis_start_cycle'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">diis_file</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1"># Give diis_space_rollback=True a trial if all other methods do not converge</span>
-    <span class="n">diis_space_rollback</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">diis_space_rollback</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">damp</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_damp'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">level_shift</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'scf_hf_SCF_level_shift'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>

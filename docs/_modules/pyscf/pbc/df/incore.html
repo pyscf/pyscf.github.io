@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.incore </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -410,7 +410,12 @@
         <span class="n">wherej</span> <span class="o">=</span> <span class="n">kptij_idx</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">kpti</span><span class="p">):]</span>
         <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
         <span class="n">kptij_idx</span> <span class="o">=</span> <span class="n">wherei</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">wherej</span>
-    <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_Int3cBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+    <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_Int3cBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="c1"># Reduce the size of supmol based on the 3-center overlaps. Otherwise the</span>
+    <span class="c1"># dfbuilder.supmol oftens two large for the calculations.</span>
+    <span class="c1"># TODO: strip supmol basis based on the intor type.</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">auxcell</span><span class="o">.</span><span class="n">bas_exps</span><span class="p">())</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">dfbuilder</span><span class="o">.</span><span class="n">supmol</span> <span class="o">=</span> <span class="n">_strip_basis</span><span class="p">(</span><span class="n">dfbuilder</span><span class="o">.</span><span class="n">supmol</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
     <span class="n">int3c</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">gen_int3c_kernel</span><span class="p">(</span><span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span>
                                        <span class="n">kptij_idx</span><span class="p">,</span> <span class="n">return_complex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">int3c</span></div>
@@ -471,16 +476,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rs_cell</span> <span class="o">=</span> <span class="n">rs_cell</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_RangeSeparatedCell</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span>
             <span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ke_cutoff</span><span class="p">,</span> <span class="n">RCUT_THRESHOLD</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
-        <span class="n">rcut</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">rcut</span>
-        <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>
-            <span class="c1"># FIXME: Is it necessary to increase rcut?</span>
-            <span class="n">exp_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">bas_exps</span><span class="p">())</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-            <span class="n">eij</span> <span class="o">=</span> <span class="n">exp_min</span> <span class="o">/</span> <span class="mi">2</span>
-            <span class="c1"># Approximate with only s functions for the lattice-sum boundary</span>
-            <span class="n">rcut</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span> <span class="o">/</span> <span class="n">eij</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">2</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'exp_min = </span><span class="si">%g</span><span class="s1">, rcut = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">exp_min</span><span class="p">,</span> <span class="n">rcut</span><span class="p">)</span>
-
-        <span class="n">supmol</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_ExtendedMole</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span><span class="n">rs_cell</span><span class="p">,</span> <span class="n">kmesh</span><span class="p">,</span> <span class="n">rcut</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+        <span class="n">supmol</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_ExtendedMole</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span><span class="n">rs_cell</span><span class="p">,</span> <span class="n">kmesh</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span>
+                                               <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxcell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">auxcell</span><span class="o">.</span><span class="n">bas_exps</span><span class="p">())</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">supmol</span> <span class="o">=</span> <span class="n">_strip_basis</span><span class="p">(</span><span class="n">supmol</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">supmol</span> <span class="o">=</span> <span class="n">supmol</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'sup-mol nbas = </span><span class="si">%d</span><span class="s1"> cGTO = </span><span class="si">%d</span><span class="s1"> pGTO = </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
                   <span class="n">supmol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">supmol</span><span class="o">.</span><span class="n">nao</span><span class="p">,</span> <span class="n">supmol</span><span class="o">.</span><span class="n">npgto_nr</span><span class="p">())</span>
@@ -879,17 +879,21 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rs_cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
         <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
-        <span class="n">supmol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supmol</span>
-        <span class="k">if</span> <span class="n">supmol</span><span class="o">.</span><span class="n">nbas</span> <span class="o">==</span> <span class="n">supmol</span><span class="o">.</span><span class="n">bas_mask</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>  <span class="c1"># supmol not stripped</span>
-            <span class="n">supmol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supmol</span><span class="o">.</span><span class="n">strip_basis</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
         <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
         <span class="n">intors</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="s1">'int3c1e'</span><span class="p">,</span> <span class="s1">'int3c1e_r2_origk'</span><span class="p">,</span>
                   <span class="s1">'int3c1e_r4_origk'</span><span class="p">,</span> <span class="s1">'int3c1e_r6_origk'</span><span class="p">)</span>
+        <span class="n">fake_cells</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp_int</span><span class="o">.</span><span class="n">fake_cell_vloc</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">cn</span><span class="p">)</span> <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
+
+        <span class="n">supmol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supmol</span>
+        <span class="k">if</span> <span class="n">supmol</span><span class="o">.</span><span class="n">nbas</span> <span class="o">==</span> <span class="n">supmol</span><span class="o">.</span><span class="n">bas_mask</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>  <span class="c1"># supmol not stripped</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">bas_exps</span><span class="p">())</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+                       <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fake_cells</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">nbas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="n">supmol</span> <span class="o">=</span> <span class="n">_strip_basis</span><span class="p">(</span><span class="n">supmol</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
         <span class="n">bufR</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">bufI</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">cn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
-            <span class="n">fake_cell</span> <span class="o">=</span> <span class="n">pp_int</span><span class="o">.</span><span class="n">fake_cell_vloc</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">cn</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cn</span><span class="p">,</span> <span class="n">fake_cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fake_cells</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">fake_cell</span><span class="o">.</span><span class="n">nbas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">int3c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_int3c_kernel</span><span class="p">(</span><span class="n">intors</span><span class="p">[</span><span class="n">cn</span><span class="p">],</span> <span class="s1">'s2'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                               <span class="n">auxcell</span><span class="o">=</span><span class="n">fake_cell</span><span class="p">,</span> <span class="n">supmol</span><span class="o">=</span><span class="n">supmol</span><span class="p">)</span>

@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.grad.rohf </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -321,7 +321,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">rhf_grad</span>
 <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">uhf</span> <span class="k">as</span> <span class="n">uhf_grad</span>
 
-<div class="viewcode-block" id="make_rdm1e"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.scf.rohf.make_rdm1e">[docs]</a><span class="k">def</span> <span class="nf">make_rdm1e</span><span class="p">(</span><span class="n">mf_grad</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">):</span>
+<div class="viewcode-block" id="make_rdm1e"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.df.grad.rohf.make_rdm1e">[docs]</a><span class="k">def</span> <span class="nf">make_rdm1e</span><span class="p">(</span><span class="n">mf_grad</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">):</span>
     <span class="sd">'''Energy weighted density matrix'''</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span>
     <span class="n">dm</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
@@ -333,7 +333,15 @@
     <span class="n">rdm1e_b</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mocc_b</span><span class="p">,</span> <span class="n">mocc_b</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fb</span><span class="p">,</span> <span class="n">mocc_b</span><span class="p">,</span> <span class="n">mocc_b</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">rdm1e_a</span><span class="p">,</span> <span class="n">rdm1e_b</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Gradients"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.scf.rohf.Gradients">[docs]</a><span class="k">class</span> <span class="nc">Gradients</span><span class="p">(</span><span class="n">rhf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_tag_rdm1</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">):</span>
+    <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">stack</span> <span class="p">((</span><span class="n">mo_coeff</span><span class="p">,</span><span class="n">mo_coeff</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">mo_occa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span> <span class="p">(</span><span class="n">mo_occ</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="n">mo_occb</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span> <span class="p">(</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">mo_occa</span><span class="o">.</span><span class="n">sum</span> <span class="p">()</span> <span class="o">+</span> <span class="n">mo_occb</span><span class="o">.</span><span class="n">sum</span> <span class="p">()</span> <span class="o">==</span> <span class="n">mo_occ</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span> <span class="p">((</span><span class="n">mo_occa</span><span class="p">,</span><span class="n">mo_occb</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span> <span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="n">mo_occ</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Gradients"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.df.grad.rohf.Gradients">[docs]</a><span class="k">class</span> <span class="nc">Gradients</span><span class="p">(</span><span class="n">rhf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="p">):</span>
     <span class="sd">'''Non-relativistic restricted open-shell Hartree-Fock gradients</span>
 <span class="sd">    '''</span>
 
@@ -341,7 +349,9 @@
 
     <span class="n">make_rdm1e</span> <span class="o">=</span> <span class="n">make_rdm1e</span>
 
-    <span class="n">grad_elec</span> <span class="o">=</span> <span class="n">uhf_grad</span><span class="o">.</span><span class="n">grad_elec</span></div>
+    <span class="n">grad_elec</span> <span class="o">=</span> <span class="n">uhf_grad</span><span class="o">.</span><span class="n">grad_elec</span>
+
+    <span class="n">_tag_rdm1</span> <span class="o">=</span> <span class="n">_tag_rdm1</span></div>
 
 <span class="n">Grad</span> <span class="o">=</span> <span class="n">Gradients</span>
 

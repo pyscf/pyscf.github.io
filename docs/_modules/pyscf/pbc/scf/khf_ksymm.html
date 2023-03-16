@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.1</span>
+          <span class="md-header-nav__topic">PySCF 2.2</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.khf_ksymm </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.1</a>
+       title="PySCF">PySCF 2.2</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -295,7 +295,7 @@
             
   <h1 id="modules-pyscf-pbc-scf-khf-ksymm--page-root">Source code for pyscf.pbc.scf.khf_ksymm</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2020-2023 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -321,6 +321,44 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">tools</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib</span> <span class="kn">import</span> <span class="n">kpts</span> <span class="k">as</span> <span class="n">libkpts</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">khf</span>
+
+<div class="viewcode-block" id="get_occ"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.get_occ">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">khf</span><span class="o">.</span><span class="n">get_occ</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">get_occ</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mo_energy_kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff_kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mo_energy_kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mo_energy_kpts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">cell</span>
+    <span class="n">kpts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">libkpts</span><span class="o">.</span><span class="n">KPoints</span><span class="p">)</span>
+
+    <span class="n">nocc</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">tot_electrons</span><span class="p">(</span><span class="n">kpts</span><span class="o">.</span><span class="n">nkpts</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">mo_energy_kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">transform_mo_energy</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">)</span>
+    <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">))</span>
+    <span class="n">fermi</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">mo_e</span> <span class="ow">in</span> <span class="n">mo_energy_kpts</span><span class="p">:</span>
+        <span class="n">mo_occ_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mo_e</span> <span class="o">&lt;=</span> <span class="n">fermi</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nocc</span> <span class="o">&lt;</span> <span class="n">mo_energy</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'HOMO = </span><span class="si">%.12g</span><span class="s1">  LUMO = </span><span class="si">%.12g</span><span class="s1">'</span><span class="p">,</span>
+                    <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mf">1e-3</span> <span class="o">&gt;</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'HOMO </span><span class="si">%.12g</span><span class="s1"> == LUMO </span><span class="si">%.12g</span><span class="s1">'</span><span class="p">,</span>
+                        <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'HOMO = </span><span class="si">%.12g</span><span class="s1">'</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'     k-point                  mo_energy'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">kpt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">get_scaled_kpts</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_in_ibz</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'  </span><span class="si">%2d</span><span class="s1"> (</span><span class="si">%6.3f</span><span class="s1"> </span><span class="si">%6.3f</span><span class="s1"> </span><span class="si">%6.3f</span><span class="s1">)   </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span>
+                         <span class="n">k</span><span class="p">,</span> <span class="n">kpt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kpt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kpt</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">mo_occ_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">]),</span>
+                         <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">mo_occ_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+    <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">check_mo_occ_symmetry</span><span class="p">(</span><span class="n">mo_occ_kpts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mo_occ_kpts</span></div>
 
 <div class="viewcode-block" id="energy_elec"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.energy_elec">[docs]</a><span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">khf</span><span class="o">.</span><span class="n">energy_elec</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">energy_elec</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h1e_kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vhf_kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -358,13 +396,43 @@
     <span class="n">dm</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">transform_dm</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">khf</span><span class="o">.</span><span class="n">get_rho</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="eig"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.eig">[docs]</a><span class="k">def</span> <span class="nf">eig</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pyscf.scf.hf_symm</span> <span class="kn">import</span> <span class="n">eig</span> <span class="k">as</span> <span class="n">eig_symm</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">cell</span>
+    <span class="n">symm_orb</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">symm_orb</span>
+    <span class="n">irrep_id</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">irrep_id</span>
+
+    <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h_kpts</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">symm_orb</span><span class="p">)</span> <span class="o">==</span> <span class="n">nkpts</span>
+    <span class="n">eig_kpts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mo_coeff_kpts</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">eig_symm</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">irrep_id</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">eig_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">mo_coeff_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">eig_kpts</span><span class="p">,</span> <span class="n">mo_coeff_kpts</span></div>
+
+<div class="viewcode-block" id="ksymm_scf_common_init"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.ksymm_scf_common_init">[docs]</a><span class="k">def</span> <span class="nf">ksymm_scf_common_init</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">use_ao_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">kmf</span><span class="o">.</span><span class="n">_kpts</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">kmf</span><span class="o">.</span><span class="n">use_ao_symmetry</span> <span class="o">=</span> <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span>
+                           <span class="n">use_ao_symmetry</span> <span class="ow">and</span>
+                           <span class="ow">not</span> <span class="n">kpts</span><span class="o">.</span><span class="n">time_reversal</span> <span class="ow">and</span>
+                           <span class="n">kpts</span><span class="o">.</span><span class="n">symmorphic</span> <span class="ow">and</span>
+                           <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="o">.</span><span class="n">little_cogroup_ops</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kmf</span><span class="o">.</span><span class="n">use_ao_symmetry</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">symm_orb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cell</span><span class="o">.</span><span class="n">_build_symmetry</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">kmf</span></div>
+
+
 <div class="viewcode-block" id="KsymAdaptedKSCF"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF">[docs]</a><span class="k">class</span> <span class="nc">KsymAdaptedKSCF</span><span class="p">(</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    KRHF with k-point symmetry</span>
 <span class="sd">    """</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">libkpts</span><span class="o">.</span><span class="n">KPoints</span><span class="p">(),</span>
-                 <span class="n">exxdiv</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_scf_SCF_exxdiv'</span><span class="p">,</span> <span class="s1">'ewald'</span><span class="p">)):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span> <span class="o">=</span> <span class="kc">None</span>
+                 <span class="n">exxdiv</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_scf_SCF_exxdiv'</span><span class="p">,</span> <span class="s1">'ewald'</span><span class="p">),</span>
+                 <span class="n">use_ao_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">ksymm_scf_common_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">use_ao_symmetry</span><span class="p">)</span>
         <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="n">exxdiv</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -508,6 +576,50 @@
                 <span class="n">fh5</span><span class="p">[</span><span class="s1">'scf/kpts'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="o">.</span><span class="n">kpts_ibz</span> <span class="c1">#FIXME Shall we rebuild kpts? If so, more info is needed.</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
+<div class="viewcode-block" id="KsymAdaptedKSCF.eig"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF.eig">[docs]</a>    <span class="k">def</span> <span class="nf">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ao_symmetry</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="KsymAdaptedKSCF.get_orbsym"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF.get_orbsym">[docs]</a>    <span class="k">def</span> <span class="nf">get_orbsym</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ao_symmetry</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"AO symmetry not initiated"</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyscf.scf.hf_symm</span> <span class="kn">import</span> <span class="n">get_orbsym</span>
+        <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
+
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="n">symm_orb</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">symm_orb</span>
+        <span class="n">irrep_id</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">irrep_id</span>
+        <span class="n">orbsym</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)):</span>
+            <span class="n">orbsym_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                                             <span class="n">symm_orb</span><span class="o">=</span><span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">irrep_id</span><span class="o">=</span><span class="n">irrep_id</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+            <span class="n">orbsym</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orbsym_k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">orbsym</span></div>
+
+    <span class="n">orbsym</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_orbsym</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ao_symmetry</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">orbsym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">mo_e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">mo_e</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">9</span><span class="p">),</span> <span class="n">kind</span><span class="o">=</span><span class="s1">'mergesort'</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span><span class="n">idx</span><span class="p">],</span> <span class="n">orbsym</span><span class="o">=</span><span class="n">orbsym</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dump_chk</span><span class="p">({</span><span class="s1">'e_tot'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="s1">'mo_energy'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">,</span>
+                       <span class="s1">'mo_coeff'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="s1">'mo_occ'</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">})</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="n">get_occ</span> <span class="o">=</span> <span class="n">get_occ</span>
     <span class="n">get_rho</span> <span class="o">=</span> <span class="n">get_rho</span>
     <span class="n">energy_elec</span> <span class="o">=</span> <span class="n">energy_elec</span>
 
