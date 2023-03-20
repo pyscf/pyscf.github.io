@@ -129,11 +129,35 @@ For example, k-point sampled RHF can be invoked as follows::
 
 More details about k-point sampling for each method can be found in the corresponding chapters.
 
+Spin
+----
+
+The attribute :attr:`spin` of :class:`Cell` class has a different meaning to the
+:attr:`spin` of :class:`Mole` class. :attr:`Mole.spin` indicates the number of
+unpaired electrons of a molecule. Most attributes of class :class:`Cell`
+represents the information of a unit cell, :attr:`Cell.spin` is used to indicate
+the number of unpaired electrons of a super cell. In a :math:`\Gamma`-point
+calculation, one can set `cell.spin` to control the unpaired electrons of the
+entire system. For calculations with k-point samplings, for example a 2x2x2
+k-point calculation, `cell.spin=1` leads to one unpaired electron rather than 8
+unpaired electrons.
+
+If wrong `cell.spin` is set, calculations will still run and a warning
+message for inconsistency between the electron number and spin may be raised.
+
+Currently, the program does not support to assign the unpaired electrons per
+unit cell. A temporary workaround is to set `cell.spin` to the product of the
+number of unpaired electrons and k-points.
+However, this setting only guarantees that the total numbers of alpha electrons
+and beta electrons agree to the `cell.spin` cross all k-points. The occupancies
+may be different at different k-points.
+
+
 Other parameters
 ----------------
-The attribute :attr:`precision` of the :class:`Cell` object determines the integral accuracy.
-The default value is ``1e-8`` hartree. Some other parameters are set automatically 
-based on the value of :attr:`precision`, which include:
+The attribute :attr:`precision` of :class:`Cell` object determines the integral accuracy.
+The default value is ``1e-8`` hartree. When calling the :func:`cell.build()` method,
+some parameters are set automatically based on the value of :attr:`precision`, including:
 
   * :attr:`mesh` -- length-3 list or 1x3 array of int
 
@@ -147,10 +171,8 @@ based on the value of :attr:`precision`, which include:
 
     - Cutoff radius (in Bohr) of the lattice summation in the integral evaluation
 
-The parameters above can also be set manually by the user.
-
-The other attributes of the :class:`Mole` class such as :attr:`verbose`,
-:attr:`max_memory`, :attr:`spin`, etc., have the same meanings in the :class:`Cell` class.
+Other attributes of the :class:`Mole` class such as :attr:`verbose`,
+:attr:`max_memory`, etc., have the same meanings in the :class:`Cell` class.
 
 .. note:: Currently, point group symmetries for crystals are not supported.
 
