@@ -114,8 +114,7 @@ for PySCF::
 
   $ cat ~/.pyscf_conf.py
   import psutil
-  total, available, percent, used, free, active, inactive, buffers, cached, shared = psutil.virtual_memory()
-  MAX_MEMORY = available
+  MAX_MEMORY = int(psutil.virtual_memory().available / 1e6)
 
 By setting ``MAX_MEMORY`` in the global configuration file, you don't need the
 statement to set the ``max_memory`` attribute in every script. The dynamically
