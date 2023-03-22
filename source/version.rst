@@ -7,6 +7,7 @@ Version history
 ===============  ============
 Version          Release date
 ===============  ============
+2.2.0_           2023-03-09
 2.1.1_           2022-09-24
 2.1.0            2022-09-03
 2.0.1_           2021-11-03
@@ -68,6 +69,7 @@ Version          Release date
 1.0 alpha 1      2015-04-07
 ===============  ============
 
+.. _2.2.0: https://github.com/pyscf/pyscf/releases/tag/v2.2.0
 .. _2.1.1: https://github.com/pyscf/pyscf/releases/tag/v2.1.1
 .. _2.0.1: https://github.com/pyscf/pyscf/releases/tag/v2.0.1
 .. _1.7.6: https://github.com/pyscf/pyscf/releases/tag/v1.7.6
