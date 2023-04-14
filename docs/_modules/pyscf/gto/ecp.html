@@ -332,6 +332,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.gto</span> <span class="kn">import</span> <span class="n">moleintor</span>
+<span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">ELEMENTS</span>
 
 <span class="n">libecp</span> <span class="o">=</span> <span class="n">moleintor</span><span class="o">.</span><span class="n">libcgto</span>
 <span class="n">libecp</span><span class="o">.</span><span class="n">ECPscalar_cache_size</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
@@ -419,7 +420,7 @@
        <span class="n">cache</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">buf</span></div>
 
-<div class="viewcode-block" id="core_configuration"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.ecp.core_configuration">[docs]</a><span class="k">def</span> <span class="nf">core_configuration</span><span class="p">(</span><span class="n">nelec_core</span><span class="p">):</span>
+<div class="viewcode-block" id="core_configuration"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.ecp.core_configuration">[docs]</a><span class="k">def</span> <span class="nf">core_configuration</span><span class="p">(</span><span class="n">nelec_core</span><span class="p">,</span> <span class="n">atom_symbol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">conf_dic</span> <span class="o">=</span> <span class="p">{</span>
         <span class="mi">0</span> <span class="p">:</span> <span class="s1">'0s0p0d0f'</span><span class="p">,</span>
         <span class="mi">2</span> <span class="p">:</span> <span class="s1">'1s0p0d0f'</span><span class="p">,</span>
@@ -434,6 +435,16 @@
         <span class="mi">78</span><span class="p">:</span> <span class="s1">'5s4p3d1f'</span><span class="p">,</span>
         <span class="mi">92</span><span class="p">:</span> <span class="s1">'5s4p3d2f'</span><span class="p">,</span>
     <span class="p">}</span>
+    <span class="c1"># Core configurations for f-in-core ECPs defined in the following references</span>
+    <span class="c1"># 10.1007/BF00528565 , 10.1007/s00214-005-0629-0 , 10.1007/s00214-009-0584-2</span>
+    <span class="n">elements_4f</span> <span class="o">=</span> <span class="n">ELEMENTS</span><span class="p">[</span><span class="mi">57</span><span class="p">:</span><span class="mi">71</span><span class="p">]</span>
+    <span class="n">elements_5f</span> <span class="o">=</span> <span class="n">ELEMENTS</span><span class="p">[</span><span class="mi">89</span><span class="p">:</span><span class="mi">103</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">atom_symbol</span> <span class="ow">in</span> <span class="n">elements_4f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">46</span><span class="p">,</span> <span class="mi">60</span><span class="p">):</span>
+            <span class="n">conf_dic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'4s3p2d1f'</span>
+    <span class="k">if</span> <span class="n">atom_symbol</span> <span class="ow">in</span> <span class="n">elements_5f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">78</span><span class="p">,</span> <span class="mi">92</span><span class="p">):</span>
+            <span class="n">conf_dic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'5s4p3d2f'</span>
     <span class="k">if</span> <span class="n">nelec_core</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">conf_dic</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Core configuration for </span><span class="si">%d</span><span class="s1"> core electrons is not available.'</span> <span class="o">%</span> <span class="n">nelec_core</span><span class="p">)</span>
     <span class="n">coreshell</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">conf_dic</span><span class="p">[</span><span class="n">nelec_core</span><span class="p">][::</span><span class="mi">2</span><span class="p">]]</span>

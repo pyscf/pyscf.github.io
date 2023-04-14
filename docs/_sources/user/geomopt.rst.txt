@@ -74,9 +74,10 @@ Constraints
 -----------
 
 ``geomeTRIC`` supports user defined constraints. The constraints can 
-be specified in a text file with the format described
-`here <https://github.com/leeping/geomeTRIC/blob/master/examples/constraints.txt>`_.
-One needs to pass the name of this file to PySCF::
+be specified in a text file. Its format can be found
+in the `online documentation <https://geometric.readthedocs.io/en/latest/constraints.html#input-format>`_
+or in the `template file <https://github.com/leeping/geomeTRIC/blob/master/examples/constraints.txt>`_.
+Then the name of the constraints file needs to be passed to PySCF::
 
     params = {"constraints": "constraints.txt",}
     mol_eq = optimize(mf, **params)
@@ -88,7 +89,9 @@ custom energy and gradient functions:
 .. literalinclude:: /../examples/geomopt/02-as_pyscf_method.py
 
 Transition state optimization
---------------
+-----------------------------
+Transition state optimization are available in ``geomeTRIC`` and ``qsdopt``.
+
 The PySCF extension `qsdopt <https://github.com/pyscf/qsdopt>`_ performs transition
 state optimizations through
 `quadratic steepest descent method <https://aip.scitation.org/doi/10.1063/1.467721>`_
@@ -122,6 +125,35 @@ Several keyword arguments can be passed to `kernel`:
 - gthres: Gradient norm to consider convergence. (Default: 1e-5)
 
 .. literalinclude:: /../examples/geomopt/16-ethane_transition_state.py
+
+When using `geomeTRIC` to search transition state, you can simply add the
+keyword `transition` in geomeTRIC input configuration to trigger the TS search
+module::
+
+    params = {'transition': True}
+    mol_ts = mf.Gradients().optimizer(solver='geomeTRIC').kernel(params)
+
+    params = {'transition': True, 'trust': 0.02, 'tmax': 0.06}
+    mol_ts = mf.Gradients().optimizer(solver='geomeTRIC').kernel(params)
+
+Keywords `trust` and `tmax` control the trust region in TS search. They are
+not mandatory input settings. The default settings in
+geomeTRIC library are chosen to maximize job success rates. Tuning trust region
+may bring small improvements to the TS optimization performance.
+For more detailed discussions of available options,
+we refer to the `online documentation of geomeTRIC transition states <https://geometric.readthedocs.io/en/latest/transition.html>`_.
+
+Except the initial step, geomeTRIC library does not support the ability to read
+analytical Hessian from quantum chemistry calculations at runtime.
+The initial Hessian can be fed to the optimizer after enabling the keyword
+`hessian`::
+
+    params = {'transition': True, 'hessian': True}
+    mol_ts = mf.Gradients().optimizer(solver='geomeTRIC').kernel(params)
+
+The interface implemented in PySCF can generate a temporary file to save the
+initial Hessian and pass to geomeTRIC. This keyword will be ignored if the
+analytical Hessian of the underlying method was not implemented.
 
 Excited states
 --------------

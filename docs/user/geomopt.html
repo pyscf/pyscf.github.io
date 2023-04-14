@@ -552,9 +552,10 @@ controlled by the following parameters:</p>
 <section id="constraints">
 <h2 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">geomeTRIC</span></code> supports user defined constraints. The constraints can
-be specified in a text file with the format described
-<a class="reference external" href="https://github.com/leeping/geomeTRIC/blob/master/examples/constraints.txt">here</a>.
-One needs to pass the name of this file to PySCF:</p>
+be specified in a text file. Its format can be found
+in the <a class="reference external" href="https://geometric.readthedocs.io/en/latest/constraints.html#input-format">online documentation</a>
+or in the <a class="reference external" href="https://github.com/leeping/geomeTRIC/blob/master/examples/constraints.txt">template file</a>.
+Then the name of the constraints file needs to be passed to PySCF:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"constraints"</span><span class="p">:</span> <span class="s2">"constraints.txt"</span><span class="p">,}</span>
 <span class="n">mol_eq</span> <span class="o">=</span> <span class="n">optimize</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 <span class="n">mol_eq</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">()</span><span class="o">.</span><span class="n">optimizer</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s1">'geomeTRIC'</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
@@ -613,6 +614,7 @@ custom energy and gradient functions:</p>
 </section>
 <section id="transition-state-optimization">
 <h2 id="transition-state-optimization">Transition state optimization<a class="headerlink" href="#transition-state-optimization" title="Permalink to this heading">¶</a></h2>
+<p>Transition state optimization are available in <code class="docutils literal notranslate"><span class="pre">geomeTRIC</span></code> and <code class="docutils literal notranslate"><span class="pre">qsdopt</span></code>.</p>
 <p>The PySCF extension <a class="reference external" href="https://github.com/pyscf/qsdopt">qsdopt</a> performs transition
 state optimizations through
 <a class="reference external" href="https://aip.scitation.org/doi/10.1063/1.467721">quadratic steepest descent method</a>
@@ -663,6 +665,33 @@ to consider convergence reached. (Default: 1e-6)</p></li>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">hess_update_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">hmin</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>When using <cite>geomeTRIC</cite> to search transition state, you can simply add the
+keyword <cite>transition</cite> in geomeTRIC input configuration to trigger the TS search
+module:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'transition'</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">mol_ts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">()</span><span class="o">.</span><span class="n">optimizer</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s1">'geomeTRIC'</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'transition'</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">'trust'</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s1">'tmax'</span><span class="p">:</span> <span class="mf">0.06</span><span class="p">}</span>
+<span class="n">mol_ts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">()</span><span class="o">.</span><span class="n">optimizer</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s1">'geomeTRIC'</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Keywords <cite>trust</cite> and <cite>tmax</cite> control the trust region in TS search. They are
+not mandatory input settings. The default settings in
+geomeTRIC library are chosen to maximize job success rates. Tuning trust region
+may bring small improvements to the TS optimization performance.
+For more detailed discussions of available options,
+we refer to the <a class="reference external" href="https://geometric.readthedocs.io/en/latest/transition.html">online documentation of geomeTRIC transition states</a>.</p>
+<p>Except the initial step, geomeTRIC library does not support the ability to read
+analytical Hessian from quantum chemistry calculations at runtime.
+The initial Hessian can be fed to the optimizer after enabling the keyword
+<cite>hessian</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'transition'</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">'hessian'</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="n">mol_ts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">()</span><span class="o">.</span><span class="n">optimizer</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s1">'geomeTRIC'</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The interface implemented in PySCF can generate a temporary file to save the
+initial Hessian and pass to geomeTRIC. This keyword will be ignored if the
+analytical Hessian of the underlying method was not implemented.</p>
 </section>
 <section id="excited-states">
 <h2 id="excited-states">Excited states<a class="headerlink" href="#excited-states" title="Permalink to this heading">¶</a></h2>

@@ -333,33 +333,49 @@
     <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">base</span>
-    <span class="n">ni</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span>
     <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">grids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">grids</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">grids</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">grids</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">grids</span>
+    <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span> <span class="o">!=</span> <span class="s1">''</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="s1">'VV10'</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">nlcgrids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">nlcgrids</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlcgrids</span>
+        <span class="k">if</span> <span class="n">nlcgrids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nlcgrids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">grids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span> <span class="o">!=</span> <span class="s1">''</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-    <span class="c1">#enabling range-separated hybrids</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span>
     <span class="n">omega</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">hyb</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">rsh_and_hybrid_coeff</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="n">mol</span><span class="o">.</span><span class="n">spin</span><span class="p">)</span>
 
     <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_memory</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">max_memory</span><span class="o">*.</span><span class="mi">9</span><span class="o">-</span><span class="n">mem_now</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">grid_response</span><span class="p">:</span>
         <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">get_vxc_full_response</span><span class="p">(</span>
-                <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+            <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+            <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">ks_grad</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span><span class="p">:</span>
+            <span class="n">enlc</span><span class="p">,</span> <span class="n">vnlc</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">get_vxc_full_response</span><span class="p">(</span>
+                <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">nlcgrids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="o">+</span><span class="s1">'__'</span><span class="o">+</span><span class="n">mf</span><span class="o">.</span><span class="n">nlc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
                 <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">ks_grad</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">exc</span> <span class="o">+=</span> <span class="n">enlc</span>
+            <span class="n">vxc</span> <span class="o">+=</span> <span class="n">vnlc</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">ks_grad</span><span class="p">,</span> <span class="s1">'sum(grids response) </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">get_vxc</span><span class="p">(</span>
-                <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+            <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+            <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">ks_grad</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span><span class="p">:</span>
+            <span class="n">enlc</span><span class="p">,</span> <span class="n">vnlc</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">get_vxc</span><span class="p">(</span>
+                <span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">nlcgrids</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="o">+</span><span class="s1">'__'</span><span class="o">+</span><span class="n">mf</span><span class="o">.</span><span class="n">nlc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
                 <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">ks_grad</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">vxc</span> <span class="o">+=</span> <span class="n">vnlc</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">ks_grad</span><span class="p">,</span> <span class="s1">'vxc'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hyb</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
         <span class="n">vj</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">get_j</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
         <span class="n">vxc</span> <span class="o">+=</span> <span class="n">vj</span>
         <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">:</span>
@@ -367,14 +383,15 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">:</span>
-            <span class="n">vk_aux</span> <span class="o">=</span> <span class="n">vk</span><span class="o">.</span><span class="n">aux</span> <span class="o">*</span> <span class="n">hyb</span>
+            <span class="n">vk</span><span class="o">.</span><span class="n">aux</span> <span class="o">*=</span> <span class="n">hyb</span>
         <span class="n">vk</span><span class="p">[:]</span> <span class="o">*=</span> <span class="n">hyb</span> <span class="c1"># Don't erase the .aux tags!</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>  <span class="c1"># For range separated Coulomb operator</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># For range separated Coulomb operator</span>
+            <span class="c1"># TODO: replaced with vk_sr which is numerically more stable for</span>
+            <span class="c1"># inv(int2c2e)</span>
             <span class="n">vk_lr</span> <span class="o">=</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">get_k</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
-            <span class="n">vk</span> <span class="o">+=</span> <span class="n">vk_lr</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">hyb</span><span class="p">)</span>
+            <span class="n">vk</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">vk_lr</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">hyb</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">:</span>
-                <span class="n">vk_aux</span> <span class="o">+=</span> <span class="n">vk_lr</span><span class="o">.</span><span class="n">aux</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">hyb</span><span class="p">)</span>
+                <span class="n">vk</span><span class="o">.</span><span class="n">aux</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">vk_lr</span><span class="o">.</span><span class="n">aux</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">hyb</span><span class="p">)</span>
         <span class="n">vxc</span> <span class="o">+=</span> <span class="n">vj</span> <span class="o">-</span> <span class="n">vk</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span>
         <span class="k">if</span> <span class="n">ks_grad</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">:</span>
             <span class="n">e1_aux</span> <span class="o">=</span> <span class="p">(</span><span class="n">vj</span><span class="o">.</span><span class="n">aux</span> <span class="o">-</span> <span class="n">vk</span><span class="o">.</span><span class="n">aux</span> <span class="o">*</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
@@ -394,61 +411,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis_response</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">rks_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">)</span>
 
-    <span class="n">get_jk</span> <span class="o">=</span> <span class="n">df_rhf_grad</span><span class="o">.</span><span class="n">get_jk</span>
-
-<div class="viewcode-block" id="Gradients.get_j"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.rks.Gradients.get_j">[docs]</a>    <span class="k">def</span> <span class="nf">get_j</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
-
-<div class="viewcode-block" id="Gradients.get_k"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.rks.Gradients.get_k">[docs]</a>    <span class="k">def</span> <span class="nf">get_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
-
+    <span class="n">get_jk</span> <span class="o">=</span> <span class="n">df_rhf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_jk</span>
+    <span class="n">get_j</span> <span class="o">=</span> <span class="n">df_rhf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_j</span>
+    <span class="n">get_k</span> <span class="o">=</span> <span class="n">df_rhf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_k</span>
     <span class="n">get_veff</span> <span class="o">=</span> <span class="n">get_veff</span>
 
 <div class="viewcode-block" id="Gradients.extra_force"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.rks.Gradients.extra_force">[docs]</a>    <span class="k">def</span> <span class="nf">extra_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
+        <span class="n">e1</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">extra_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">envs</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">:</span>
-            <span class="n">e1</span> <span class="o">=</span> <span class="n">rks_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">extra_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">envs</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">e1</span> <span class="o">+</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'vhf'</span><span class="p">]</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">atom_id</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span></div></div>
+            <span class="n">e1</span> <span class="o">+=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'vhf'</span><span class="p">]</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">atom_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">e1</span></div></div>
 
 <span class="n">Grad</span> <span class="o">=</span> <span class="n">Gradients</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">dft</span>
-
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">[</span><span class="s1">'O'</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span>     <span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span>
-        <span class="p">[</span><span class="mi">1</span>   <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.757</span> <span class="p">,</span> <span class="mf">0.587</span><span class="p">)],</span>
-        <span class="p">[</span><span class="mi">1</span>   <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span>  <span class="mf">0.757</span> <span class="p">,</span> <span class="mf">0.587</span><span class="p">)]</span> <span class="p">]</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'631g'</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="n">auxbasis</span><span class="o">=</span><span class="s1">'ccpvdz-jkfit'</span><span class="p">)</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-14</span>
-    <span class="n">e0</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf</span><span class="p">()</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">Gradients</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">auxbasis_response</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">kernel</span><span class="p">())</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.04993147565973481</span><span class="p">)</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">Gradients</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">kernel</span><span class="p">())</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.04990283616418435</span><span class="p">)</span>
-<span class="c1"># O     0.0000000000    -0.0000000000     0.0210278440</span>
-<span class="c1"># H    -0.0000000000     0.0282041778    -0.0105201841</span>
-<span class="c1"># H    -0.0000000000    -0.0282041778    -0.0105201841</span>
-    <span class="n">g</span><span class="o">.</span><span class="n">grid_response</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">kernel</span><span class="p">())</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.04990623599165457</span><span class="p">)</span>
-<span class="c1"># O     0.0000000000    -0.0000000000     0.0210353722</span>
-<span class="c1"># H    -0.0000000000     0.0282046127    -0.0105176861</span>
-<span class="c1"># H    -0.0000000000    -0.0282046127    -0.0105176861</span>
-
-    <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">'b3lypg'</span>
-    <span class="n">e0</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">Gradients</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">finger</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">kernel</span><span class="p">())</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.03562514802969775</span><span class="p">)</span>
-<span class="c1"># O     0.0000000000    -0.0000000000     0.0121660845</span>
-<span class="c1"># H     0.0000000000     0.0211156739    -0.0060869839</span>
-<span class="c1"># H    -0.0000000000    -0.0211156739    -0.0060869839</span>
-
 </pre></div>
 
           </article>

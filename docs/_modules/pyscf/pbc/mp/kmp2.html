@@ -386,7 +386,6 @@
 
     <span class="n">fao2mo</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span>
     <span class="n">kconserv</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">khelper</span><span class="o">.</span><span class="n">kconserv</span>
-    <span class="n">emp2</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">oovv_ij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nvir</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="n">mo_e_o</span> <span class="o">=</span> <span class="p">[</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">k</span><span class="p">][:</span><span class="n">nocc</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)]</span>
@@ -404,6 +403,7 @@
     <span class="k">if</span> <span class="n">with_df_ints</span><span class="p">:</span>
         <span class="n">Lov</span> <span class="o">=</span> <span class="n">_init_mp_df_eris</span><span class="p">(</span><span class="n">mp</span><span class="p">)</span>
 
+    <span class="n">emp2_ss</span> <span class="o">=</span> <span class="n">emp2_os</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="k">for</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">kj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">ka</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
@@ -435,12 +435,16 @@
                 <span class="n">t2_ijab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">oovv_ij</span><span class="p">[</span><span class="n">ka</span><span class="p">]</span><span class="o">/</span><span class="n">eijab</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">with_t2</span><span class="p">:</span>
                     <span class="n">t2</span><span class="p">[</span><span class="n">ki</span><span class="p">,</span> <span class="n">kj</span><span class="p">,</span> <span class="n">ka</span><span class="p">]</span> <span class="o">=</span> <span class="n">t2_ijab</span>
-                <span class="n">woovv</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">oovv_ij</span><span class="p">[</span><span class="n">ka</span><span class="p">]</span> <span class="o">-</span> <span class="n">oovv_ij</span><span class="p">[</span><span class="n">kb</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-                <span class="n">emp2</span> <span class="o">+=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,ijab'</span><span class="p">,</span> <span class="n">t2_ijab</span><span class="p">,</span> <span class="n">woovv</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+                <span class="n">edi</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,ijab'</span><span class="p">,</span> <span class="n">t2_ijab</span><span class="p">,</span> <span class="n">oovv_ij</span><span class="p">[</span><span class="n">ka</span><span class="p">])</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="mi">2</span>
+                <span class="n">exi</span> <span class="o">=</span> <span class="o">-</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,ijba'</span><span class="p">,</span> <span class="n">t2_ijab</span><span class="p">,</span> <span class="n">oovv_ij</span><span class="p">[</span><span class="n">kb</span><span class="p">])</span><span class="o">.</span><span class="n">real</span>
+                <span class="n">emp2_ss</span> <span class="o">+=</span> <span class="n">edi</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">exi</span>
+                <span class="n">emp2_os</span> <span class="o">+=</span> <span class="n">edi</span><span class="o">*</span><span class="mf">0.5</span>
 
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s2">"KMP2"</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
 
-    <span class="n">emp2</span> <span class="o">/=</span> <span class="n">nkpts</span>
+    <span class="n">emp2_ss</span> <span class="o">/=</span> <span class="n">nkpts</span>
+    <span class="n">emp2_os</span> <span class="o">/=</span> <span class="n">nkpts</span>
+    <span class="n">emp2</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">emp2_ss</span><span class="o">+</span><span class="n">emp2_os</span><span class="p">,</span> <span class="n">e_corr_ss</span><span class="o">=</span><span class="n">emp2_ss</span><span class="p">,</span> <span class="n">e_corr_os</span><span class="o">=</span><span class="n">emp2_os</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span></div>
 
@@ -1019,6 +1023,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
@@ -1063,7 +1069,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> \
                 <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span> <span class="n">with_t2</span><span class="o">=</span><span class="n">with_t2</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'KMP2 energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="s1">'e_corr_ss'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="s1">'e_corr_os'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_finalize</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t2</span></div></div>
 
 <span class="n">KRMP2</span> <span class="o">=</span> <span class="n">KMP2</span>
@@ -1100,7 +1112,6 @@
     <span class="n">mymp</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">KMP2</span><span class="p">(</span><span class="n">kmf</span><span class="p">)</span>
     <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">mymp</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.204721432828996</span><span class="p">)</span>
-
 </pre></div>
 
           </article>

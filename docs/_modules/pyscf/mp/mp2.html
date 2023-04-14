@@ -348,7 +348,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">t2</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">emp2</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">emp2_ss</span> <span class="o">=</span> <span class="n">emp2_os</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nocc</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eris</span><span class="o">.</span><span class="n">ovov</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">eris</span><span class="o">.</span><span class="n">ovov</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="c1"># When mf._eri is a custom integrals wiht the shape (n,n,n,n), the</span>
@@ -359,10 +359,16 @@
 
         <span class="n">gi</span> <span class="o">=</span> <span class="n">gi</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nvir</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">t2i</span> <span class="o">=</span> <span class="n">gi</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">/</span><span class="n">lib</span><span class="o">.</span><span class="n">direct_sum</span><span class="p">(</span><span class="s1">'jb+a-&gt;jba'</span><span class="p">,</span> <span class="n">eia</span><span class="p">,</span> <span class="n">eia</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">emp2</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jab'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">emp2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jba'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
+        <span class="n">edi</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jab'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">exi</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'jab,jba'</span><span class="p">,</span> <span class="n">t2i</span><span class="p">,</span> <span class="n">gi</span><span class="p">)</span>
+        <span class="n">emp2_ss</span> <span class="o">+=</span> <span class="n">edi</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">exi</span>
+        <span class="n">emp2_os</span> <span class="o">+=</span> <span class="n">edi</span><span class="o">*</span><span class="mf">0.5</span>
         <span class="k">if</span> <span class="n">with_t2</span><span class="p">:</span>
             <span class="n">t2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t2i</span>
+
+    <span class="n">emp2_ss</span> <span class="o">=</span> <span class="n">emp2_ss</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">emp2_os</span> <span class="o">=</span> <span class="n">emp2_os</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">emp2</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">emp2_ss</span><span class="o">+</span><span class="n">emp2_os</span><span class="p">,</span> <span class="n">e_corr_ss</span><span class="o">=</span><span class="n">emp2_ss</span><span class="p">,</span> <span class="n">e_corr_os</span><span class="o">=</span><span class="n">emp2_os</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">emp2</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">t2</span></div>
 
@@ -409,9 +415,12 @@
     <span class="sd">'''MP2 energy'''</span>
     <span class="n">nocc</span><span class="p">,</span> <span class="n">nvir</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
     <span class="n">eris_ovov</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eris</span><span class="o">.</span><span class="n">ovov</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
-    <span class="n">emp2</span>  <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,iajb'</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris_ovov</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">emp2</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,ibja'</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris_ovov</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">emp2</span><span class="o">.</span><span class="n">real</span></div>
+    <span class="n">ed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,iajb'</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris_ovov</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">ex</span> <span class="o">=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijab,ibja'</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris_ovov</span><span class="p">)</span>
+    <span class="n">emp2_ss</span> <span class="o">=</span> <span class="p">(</span><span class="n">ed</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">ex</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">emp2_os</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">real</span><span class="o">*</span><span class="mf">0.5</span>
+    <span class="n">emp2</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">emp2_ss</span><span class="o">+</span><span class="n">emp2_os</span><span class="p">,</span> <span class="n">e_corr_ss</span><span class="o">=</span><span class="n">emp2_ss</span><span class="p">,</span> <span class="n">e_corr_os</span><span class="o">=</span><span class="n">emp2_os</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">emp2</span></div>
 
 <div class="viewcode-block" id="update_amps"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mp.html#pyscf.cc.ccsd.update_amps">[docs]</a><span class="k">def</span> <span class="nf">update_amps</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris</span><span class="p">):</span>
     <span class="sd">'''Update non-canonical MP2 amplitudes'''</span>
@@ -760,6 +769,8 @@
 
 <span class="sd">        e_corr : float</span>
 <span class="sd">            MP2 correlation correction</span>
+<span class="sd">        e_corr_ss/os : float</span>
+<span class="sd">            Same-spin and opposite-spin component of the MP2 correlation energy</span>
 <span class="sd">        e_tot : float</span>
 <span class="sd">            Total MP2 energy (HF + correlation)</span>
 <span class="sd">        t2 :</span>
@@ -795,6 +806,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
@@ -845,8 +858,18 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">emp2_scs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># J. Chem. Phys. 118, 9095 (2003)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span><span class="o">*</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span><span class="o">*</span><span class="mf">1.2</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">e_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">e_tot_scs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># J. Chem. Phys. 118, 9095 (2003)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">emp2_scs</span>
 
 <div class="viewcode-block" id="MP2.kernel"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mp.html#pyscf.cc.ccsd.MP2.kernel">[docs]</a>    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_t2</span><span class="o">=</span><span class="n">WITH_T2</span><span class="p">):</span>
         <span class="sd">'''</span>
@@ -869,13 +892,22 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> <span class="n">_iterative_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="s1">'e_corr_ss'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="s1">'e_corr_os'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_finalize</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t2</span></div>
 
     <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">'''Hook for dumping results and clearing up the object.'''</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'E(</span><span class="si">%s</span><span class="s1">) = </span><span class="si">%.15g</span><span class="s1">  E_corr = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">'E(</span><span class="si">%s</span><span class="s1">) = </span><span class="si">%.15g</span><span class="s1">  E_corr = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">'E(SCS-</span><span class="si">%s</span><span class="s1">) = </span><span class="si">%.15g</span><span class="s1">  E_corr = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot_scs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">emp2_scs</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'E_corr(same-spin) = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_ss</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'E_corr(oppo-spin) = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr_os</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="MP2.ao2mo"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mp.html#pyscf.cc.ccsd.MP2.ao2mo">[docs]</a>    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

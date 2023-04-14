@@ -808,13 +808,30 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span> <span class="ow">or</span> <span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">)):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Invalid basis name </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">filename_or_basisname</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span> <span class="k">as</span> <span class="n">basis_err</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Invalid basis name </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
+        <span class="kn">from</span> <span class="nn">pyscf.basis</span> <span class="kn">import</span> <span class="n">bse</span>
+        <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
+                    <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">symb</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_orbital_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">raise</span> <span class="n">basis_err</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span><span class="p">:</span>
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -860,8 +877,33 @@
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span><span class="p">:</span>
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load_ecp</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span></div>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span> <span class="k">as</span> <span class="n">basis_err</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Invalid basis name </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
+    <span class="kn">from</span> <span class="nn">pyscf.basis</span> <span class="kn">import</span> <span class="n">bse</span>
+    <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
+                <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">symb</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_ecp_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">raise</span> <span class="n">basis_err</span></div>
 
 <span class="k">def</span> <span class="nf">_format_basis_name</span><span class="p">(</span><span class="n">basisname</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">basisname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">' '</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>

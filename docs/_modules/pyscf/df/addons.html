@@ -319,6 +319,7 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.data</span> <span class="kn">import</span> <span class="n">elements</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib.exceptions</span> <span class="kn">import</span> <span class="n">BasisNotFoundError</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">DFBASIS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_addons_aug_etb_beta'</span><span class="p">,</span> <span class="s1">'weigend'</span><span class="p">)</span>
@@ -465,10 +466,16 @@
                     <span class="n">auxb</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">balias</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">auxb</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">balias</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">auxb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
-                    <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">auxb</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Default auxbasis </span><span class="si">%s</span><span class="s1"> is used for </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span>
-                                <span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">_basis</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">auxb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># Test if basis auxb for element k is available</span>
+                        <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">auxb</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Default auxbasis </span><span class="si">%s</span><span class="s1"> is used for </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span>
+                                    <span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">_basis</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_basis</span><span class="p">):</span>
         <span class="c1"># Some AO basis not found in DEFAULT_AUXBASIS</span>
@@ -514,6 +521,8 @@
         <span class="n">_basis</span> <span class="o">=</span> <span class="n">auxbasis</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span> <span class="o">=</span> <span class="n">pmol</span><span class="o">.</span><span class="n">format_basis</span><span class="p">(</span><span class="n">_basis</span><span class="p">)</span>
 
+    <span class="c1"># Note: To pass parameters like gauge origin, rsh-omega to auxmol,</span>
+    <span class="c1"># mol._env[:PTR_ENV_START] must be copied to auxmol._env</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">pmol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">pmol</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> \
             <span class="n">pmol</span><span class="o">.</span><span class="n">make_env</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">,</span> <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">[:</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_ENV_START</span><span class="p">])</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">True</span>

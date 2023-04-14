@@ -497,7 +497,7 @@
     <span class="n">nb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">hdiag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">hdiag</span> <span class="o">=</span> <span class="n">make_hdiag</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">eri</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">np</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="p">:</span>
         <span class="n">addr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hdiag</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
@@ -848,9 +848,9 @@
                 <span class="k">return</span> <span class="n">pw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">ecore</span><span class="p">,</span> <span class="n">civec</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">nb</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">FCIvector</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
         <span class="n">addr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">pw</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pw</span> <span class="o">=</span> <span class="n">pv</span> <span class="o">=</span> <span class="n">h0</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">precond</span> <span class="o">=</span> <span class="n">fci</span><span class="o">.</span><span class="n">make_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">pw</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+    <span class="n">precond</span> <span class="o">=</span> <span class="n">fci</span><span class="o">.</span><span class="n">make_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)</span>
 
     <span class="n">h2e</span> <span class="o">=</span> <span class="n">fci</span><span class="o">.</span><span class="n">absorb_h1e</span><span class="p">(</span><span class="n">h1e</span><span class="p">,</span> <span class="n">eri</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">hop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -918,7 +918,7 @@
         <span class="n">x1</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">e1</span><span class="o">*</span><span class="n">x0</span>
         <span class="c1">#pspace_x1 = x1[addr].copy()</span>
         <span class="n">x1</span> <span class="o">*=</span> <span class="n">hdiaginv</span>
-<span class="c1"># pspace (h0-e0)^{-1} cause diverging?</span>
+        <span class="c1"># pspace (h0-e0)^{-1} cause diverging?</span>
         <span class="c1">#x1[addr] = numpy.linalg.solve(h0e0, pspace_x1)</span>
         <span class="k">return</span> <span class="n">x1</span>
     <span class="k">return</span> <span class="n">precond</span></div>
@@ -992,7 +992,8 @@
     <span class="n">conv_tol_residual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'fci_direct_spin1_FCI_conv_tol_residual'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">lindep</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'fci_direct_spin1_FCI_lindep'</span><span class="p">,</span> <span class="mf">1e-14</span><span class="p">)</span>
 
-    <span class="c1"># level shift in precond</span>
+    <span class="c1"># level shift in preconditioner is helpful to avoid singularity and linear</span>
+    <span class="c1"># dependence basis in davidson diagonalization solver</span>
     <span class="n">level_shift</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'fci_direct_spin1_FCI_level_shift'</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
 
     <span class="c1"># force the diagonlization use davidson iteration.  When the CI space</span>
@@ -1098,11 +1099,12 @@
             <span class="n">ci</span> <span class="o">=</span> <span class="n">ci</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">ci</span></div>
 
-<div class="viewcode-block" id="FCIBase.make_precond"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.direct_spin1.FCIBase.make_precond">[docs]</a>    <span class="k">def</span> <span class="nf">make_precond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">,</span> <span class="n">pspaceig</span><span class="p">,</span> <span class="n">pspaceci</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+<div class="viewcode-block" id="FCIBase.make_precond"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.direct_spin1.FCIBase.make_precond">[docs]</a>    <span class="k">def</span> <span class="nf">make_precond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">,</span> <span class="n">pspaceig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pspaceci</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">pspaceig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">make_diag_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">pspaceig</span><span class="p">,</span> <span class="n">pspaceci</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">level_shift</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Note: H0 in pspace may break symmetry.</span>
             <span class="k">return</span> <span class="n">make_pspace_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">pspaceig</span><span class="p">,</span> <span class="n">pspaceci</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span>
                                        <span class="bp">self</span><span class="o">.</span><span class="n">level_shift</span><span class="p">)</span></div>
 

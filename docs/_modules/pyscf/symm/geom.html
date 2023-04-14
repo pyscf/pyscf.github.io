@@ -413,34 +413,32 @@
         <span class="n">new_axes</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[[</span><span class="n">y_id</span><span class="p">,</span><span class="n">x_id</span><span class="p">,</span><span class="n">z_id</span><span class="p">]]</span>
     <span class="k">return</span> <span class="n">new_axes</span></div>
 
-<span class="k">def</span> <span class="nf">_adjust_planar_c2v</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_adjust_planar_c2v</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
     <span class="sd">'''Adjust axes for planar molecules'''</span>
     <span class="c1"># Following http://iopenshell.usc.edu/resources/howto/symmetry/</span>
     <span class="c1"># See also dicussions in issue #1201</span>
     <span class="c1"># * planar C2v molecules should be oriented such that the X axis is perpendicular</span>
     <span class="c1"># to the plane of the molecule, and the Z axis is the axis of symmetry;</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">atom_coords</span> <span class="o">-</span> <span class="n">center</span>
     <span class="n">natm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
     <span class="n">tol</span> <span class="o">=</span> <span class="n">TOLERANCE</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">natm</span><span class="p">)</span>
-    <span class="n">atoms_on_xz</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="n">tol</span>
+    <span class="n">atoms_on_xz</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">atom_coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="n">tol</span>
     <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">atoms_on_xz</span><span class="p">):</span>
         <span class="c1"># rotate xy</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
     <span class="k">return</span> <span class="n">axes</span>
 
-<span class="k">def</span> <span class="nf">_adjust_planar_d2h</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_adjust_planar_d2h</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
     <span class="sd">'''Adjust axes for planar molecules'''</span>
     <span class="c1"># Following http://iopenshell.usc.edu/resources/howto/symmetry/</span>
     <span class="c1"># See also dicussions in issue #1201</span>
     <span class="c1"># * planar D2h molecules should be oriented such that the X axis is</span>
     <span class="c1"># perpendicular to the plane of the molecule, and the Z axis passes through</span>
     <span class="c1"># the greatest number of atoms.</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">atom_coords</span> <span class="o">-</span> <span class="n">center</span>
     <span class="n">natm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
     <span class="n">tol</span> <span class="o">=</span> <span class="n">TOLERANCE</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">natm</span><span class="p">)</span>
-    <span class="n">natm_with_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
-    <span class="n">natm_with_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
-    <span class="n">natm_with_z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="n">natm_with_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">atom_coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="n">natm_with_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">atom_coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
+    <span class="n">natm_with_z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">atom_coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">natm_with_z</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># atoms on xy plane</span>
         <span class="k">if</span> <span class="n">natm_with_x</span> <span class="o">&gt;=</span> <span class="n">natm_with_y</span><span class="p">:</span>  <span class="c1"># atoms-on-y &gt;= atoms-on-x</span>
             <span class="c1"># rotate xz</span>
@@ -587,7 +585,7 @@
                 <span class="k">if</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_icenter</span><span class="p">():</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'D2h'</span>
                     <span class="c1"># _adjust_planar_d2h is unlikely to be called</span>
-                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_d2h</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">charge_center</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_d2h</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'D2'</span>
                 <span class="n">axes</span> <span class="o">=</span> <span class="n">alias_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
@@ -600,7 +598,7 @@
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2h'</span>
                 <span class="k">elif</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">has_mirror</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2v'</span>
-                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_c2v</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">charge_center</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+                    <span class="n">axes</span> <span class="o">=</span> <span class="n">_adjust_planar_c2v</span><span class="p">(</span><span class="n">rawsys</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">gpname</span> <span class="o">=</span> <span class="s1">'C2'</span>
             <span class="k">else</span><span class="p">:</span>
@@ -744,8 +742,8 @@
              <span class="s1">'C2x'</span><span class="p">:</span> <span class="n">opc2x</span><span class="p">,</span>
              <span class="s1">'C2y'</span><span class="p">:</span> <span class="n">opc2y</span><span class="p">,</span>
              <span class="s1">'i'</span>  <span class="p">:</span> <span class="n">opi</span><span class="p">,</span>
-             <span class="s1">'sz'</span> <span class="p">:</span> <span class="n">opcsz</span><span class="p">,</span>
-             <span class="s1">'sx'</span> <span class="p">:</span> <span class="n">opcsx</span><span class="p">,</span>
+             <span class="s1">'sz'</span> <span class="p">:</span> <span class="n">opcsz</span><span class="p">,</span>  <span class="c1"># the mirror perpendicular to z</span>
+             <span class="s1">'sx'</span> <span class="p">:</span> <span class="n">opcsx</span><span class="p">,</span>  <span class="c1"># the mirror perpendicular to x</span>
              <span class="s1">'sy'</span> <span class="p">:</span> <span class="n">opcsy</span><span class="p">,}</span>
     <span class="k">return</span> <span class="n">opdic</span></div>
 

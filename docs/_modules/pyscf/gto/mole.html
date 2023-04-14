@@ -1211,11 +1211,15 @@
 <div class="viewcode-block" id="make_bas_env"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.html#pyscf.gto.mole.make_bas_env">[docs]</a><span class="k">def</span> <span class="nf">make_bas_env</span><span class="p">(</span><span class="n">basis_add</span><span class="p">,</span> <span class="n">atom_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ptr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">'''Convert :attr:`Mole.basis` to the argument ``bas`` for ``libcint`` integrals</span>
 <span class="sd">    '''</span>
+    <span class="c1"># First sort basis accroding to l. This is important for method</span>
+    <span class="c1"># decontract_basis, which assumes that basis functions with the same angular</span>
+    <span class="c1"># momentum are grouped together</span>
+    <span class="n">basis_add</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">basis_add</span> <span class="k">if</span> <span class="n">b</span><span class="p">]</span>
+    <span class="n">basis_add</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">basis_add</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
     <span class="n">_bas</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">_env</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">basis_add</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">b</span><span class="p">:</span>  <span class="c1"># == []</span>
-            <span class="k">continue</span>
         <span class="n">angl</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">angl</span> <span class="o">&gt;</span> <span class="mi">14</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Warning: integral library does not support basis '</span>
@@ -1811,7 +1815,7 @@
         <span class="k">if</span> <span class="n">nelec_ecp</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">shl_start</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="n">ia</span><span class="p">,</span><span class="n">l</span><span class="p">]</span><span class="o">+</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">coreshl</span> <span class="o">=</span> <span class="n">core_configuration</span><span class="p">(</span><span class="n">nelec_ecp</span><span class="p">)</span>
+            <span class="n">coreshl</span> <span class="o">=</span> <span class="n">core_configuration</span><span class="p">(</span><span class="n">nelec_ecp</span><span class="p">,</span> <span class="n">atom_symbol</span><span class="o">=</span><span class="n">symb</span><span class="p">)</span>
             <span class="n">shl_start</span> <span class="o">=</span> <span class="n">coreshl</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">+</span><span class="n">count</span><span class="p">[</span><span class="n">ia</span><span class="p">,</span><span class="n">l</span><span class="p">]</span><span class="o">+</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span>
         <span class="n">count</span><span class="p">[</span><span class="n">ia</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">+=</span> <span class="n">nc</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">shl_start</span><span class="p">,</span> <span class="n">shl_start</span><span class="o">+</span><span class="n">nc</span><span class="p">):</span>
