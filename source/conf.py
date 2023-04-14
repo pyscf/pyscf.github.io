@@ -183,7 +183,24 @@ extensions = [
     "pyscfdocext",
     # "ablog",
 ]
-bibtex_bibfiles = []
+bibtex_bibfiles = [
+    './user/ref_mcscf.bib',
+    './user/ref_adc.bib',
+    './user/ref_agf2.bib',
+    './user/ref_ci.bib',
+    './user/ref_df.bib',
+    './user/ref_dft.bib',
+    './user/ref_eph.bib',
+    './user/ref_gw.bib',
+    './user/ref_lo.bib',
+    './user/ref_mp.bib',
+    './user/ref_mrpt.bib',
+    './user/ref_pbc.bib',
+    './user/ref_scf.bib',
+    './user/ref_sgx.bib',
+    './user/ref_solvent.bib',
+    './user/ref_tddft.bib'
+]
 myst_update_mathjax = False
 
 
