@@ -1,14 +1,13 @@
 .. _installing:
 
-Installation
-************
+Install PySCF
+*************
 
-Installation with pip
-=====================
+1) Install with `pip` (easiest method)
+======================================
+This is the recommended way to install PySCF for non-developers::
 
-This is the recommended way to install PySCF::
-
-  $ pip install pyscf
+  $ pip install --prefer-binary pyscf
 
 The pip package provides a precompiled PySCF code (python wheel) which
 works on almost all Linux systems, and most of Mac OS X systems, and
@@ -17,26 +16,15 @@ PySCF via pip, you can upgrade it to the new version with::
 
   $ pip install --upgrade pyscf
 
-Since PySCF version 2.0, some modules are developed independently; see
-:ref:`installing_extproj`. Individual extension modules (for example
-the geometry optimization module) can be installed using pip's extra
-dependency mechanism::
-
-  $ pip install pyscf[geomopt]
-
-All extension modules can be installed with::
-
-  $ pip install pyscf[all]
-
-The extension modules can be found in `https://github.com/pyscf` (see
-also :ref:`installing_extproj`).
-
 .. note::
    Since PySCF version 2.1, the Linux wheels require manylinux2010 (for x86_64) or manylinux2014 (for aarch64). So the pip version should >= 19.3 for installing on Linux.
 
-Installing the latest code on GitHub with pip
----------------------------------------------
-The latest code on github can be installed with::
+
+2) Build from source with `pip`
+===============================
+
+If you're interested in a new feature, that's not included in the latest release or you simply 
+want the latest and greatest PySCF you can build from source using pip.::
 
   $ pip install git+https://github.com/pyscf/pyscf
 
@@ -45,83 +33,31 @@ To install the features developed on a particular branch use::
   $ pip install git+https://github.com/pyscf/pyscf@<branch_name>
 
 This install method compiles and links C extensions against the
-libraries in your system. It requires CMake, a BLAS library and the
-GCC compiler (more details of the prerequisites can be found in
-:ref:`compile_c_extensions`). The C extensions are compiled with the
-default settings specified in the `CMakeLists.txt` file. If you would
-like to tune the CMake compilation parameters, you can set them with
-the environment variable `CMAKE_CONFIGURE_ARGS`. The contents of this
-environment variable will be passed in full to CMake. For example, if
-you have multiple BLAS libraries available in your system, and MKL is
-the one you would like to use, you can accomplish this by specifying
-the environment variable (see also :ref:`installing_blas`) as::
+libraries in your system. See :ref:`compile_c_extensions` for a full 
+list of prerequisites. If you would like to tune the CMake compilation 
+parameters, you can set them with the environment variable `CMAKE_CONFIGURE_ARGS`, 
+for example:: 
 
-  $ export CMAKE_CONFIGURE_ARGS="-DBLA_VENDOR=Intel10_64lp_seq"
+  $ export CMAKE_CONFIGURE_ARGS="-DBUILD_MARCH_NATIVE=ON"
 
-To install the latest versions of the extension modules from GitHub,
-you can place the GitHub repo url with a `git+` prefix in the argument
-list of the pip command::
-
-  $ pip install git+https://github.com/pyscf/geomopt
-
-
-Installation on Fedora
-======================
-
-If you are running Fedora Linux, you can install PySCF as a
-distribution package::
-
-  # dnf install python3-pyscf
-
-If you are running on an X86-64 platform, dnf should automatically
-install the optimized integral library, qcint, instead of the
-cross-platform libcint library.
-
-Extension modules are not available in the Fedora package.
-
-Installation with conda
-=======================
-
-If you have a `Conda <https://conda.io/docs/>`_ (or `Anaconda
-<https://www.continuum.io/downloads#linux>`_) environment, PySCF
-package can be installed from the Conda cloud::
-
-  $ conda install -c pyscf pyscf
-
-Extension modules are not available on the Conda cloud. They should be
-installed either with pip, or through the environment variable
-`PYSCF_EXT_PATH` (see the section :ref:`installing_extproj`).
-
-
-PySCF docker image
-==================
-
-The following command starts a container with the jupyter notebook
-server that listens for HTTP connections on port 8888::
-
-  $ docker run -it -p 8888:8888 pyscf/pyscf:latest
-
-Now, you can visit ``https://localhost:8888`` with your browser to use
-PySCF in the notebook.
-
-Another way to use PySCF in a docker container is to start an Ipython
-shell::
-
-  $ docker run -it pyscf/pyscf:latest start.sh ipython
-
+See :ref:`cmake_options` for more details about CMake configuration.
 
 .. _compile_c_extensions:
 
-Compiling from source code
-==========================
+3) Build from source
+====================
 
 Prerequisites for manual install are
 
-* CMake >= 3.10
-* Python >= 3.6
-* Numpy >= 1.13
-* Scipy >= 0.19
-* h5py >= 2.7
+.. note::
+
+  * C compiler
+  * C++ compiler (optional, but required for XCFun and some extensions)
+  * CMake >= 3.10
+  * Python >= 3.6
+  * Numpy >= 1.13
+  * Scipy >= 0.19
+  * h5py >= 2.7
 
 You can download the latest version of PySCF (or the development
 branch) from github::
@@ -154,35 +90,67 @@ shell, and type::
 
   >>> import pyscf
 
-For Mac OS X/macOS, you may get an import error if your OS X/macOS
-version is 10.11 or newer::
-
-    OSError: dlopen(xxx/pyscf/pyscf/lib/libcgto.dylib, 6): Library not loaded: libcint.3.0.dylib
-    Referenced from: xxx/pyscf/pyscf/lib/libcgto.dylib
-    Reason: unsafe use of relative rpath libcint.3.0.dylib in xxx/pyscf/pyscf/lib/libcgto.dylib with restricted binary
-
-This is caused by the incorrect RPATH.  The script
-``pyscf/lib/_runme_to_fix_dylib_osx10.11.sh`` in the ``pyscf/lib``
-directory can be used to fix this problem::
-
-    cd pyscf/lib
-    sh _runme_to_fix_dylib_osx10.11.sh
-
-.. note::
-
-  RPATH has been built in the dynamic library.  This may cause library
-  loading error on some systems.  You can run
-  ``pyscf/lib/_runme_to_remove_rpath.sh`` to remove the rpath code
-  from the library head.  Another workaround is to set
-  ``-DCMAKE_SKIP_RPATH=1`` and ``-DCMAKE_MACOSX_RPATH=0`` in the CMake
-  command line.  When the RPATH was removed, you need to add
-  ``pyscf/lib`` and ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
+See :ref:`cmake_options` for details about CMake configuration.
 
 
-CMake options and compiling flags
----------------------------------
+
+4) Installation with conda
+==========================
+
+If you have a `Conda <https://conda.io/docs/>`_ (or `Anaconda
+<https://www.continuum.io/downloads#linux>`_) environment, PySCF
+package can be installed from the Conda cloud::
+
+  $ conda install -c pyscf pyscf
+
+Extension modules are not available on the Conda cloud. They should be
+installed either with pip, or through the environment variable
+`PYSCF_EXT_PATH` (see the section :ref:`installing_extproj`).
+
+
+5) Installation on Fedora
+==========================
+
+If you are running Fedora Linux, you can install PySCF as a
+distribution package::
+
+  # dnf install python3-pyscf
+
+If you are running on an X86-64 platform, dnf should automatically
+install the optimized integral library, qcint, instead of the
+cross-platform libcint library.
+
+Extension modules are not available in the Fedora package.
+
+
+
+6) PySCF docker image
+=====================
+
+The following command starts a container with the jupyter notebook
+server that listens for HTTP connections on port 8888::
+
+  $ docker run -it -p 8888:8888 pyscf/pyscf:latest
+
+Now, you can visit ``https://localhost:8888`` with your browser to use
+PySCF in the notebook.
+
+Another way to use PySCF in a docker container is to start an Ipython
+shell::
+
+  $ docker run -it pyscf/pyscf:latest start.sh ipython
+
+
+Advanced build options
+**********************
+
+.. _cmake_options:
+
+CMake options
+=============
+
 A full build of PySCF may take a long time to finish.
-`XCFun` may fail to build a proper C++ compiler is not available, such as on certain old operating systems.
+`XCFun` may fail to build if a proper C++ compiler is not available, such as on certain old operating systems.
 The CMake options listed below can be used to speed up compilation or omit extensions that fail to compile.
 Note:  If both `-DENABLE_LIBXC=OFF` and `-DENABLE_XCFUN=OFF` are set, importing the dft module will lead to an `ImportError`.
 
@@ -406,6 +374,9 @@ URL of the integral library in lib/CMakeLists.txt file::
 
 .. _installing_extproj:
 
+Install PySCF extensions
+************************
+
 Extension modules
 =================
 
@@ -431,6 +402,26 @@ shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
 tblis               https://github.com/pyscf/pyscf-tblis
 =================== =========================================================
+
+Install extensions
+==================
+
+Since PySCF version 2.0, some modules are developed independently; see
+:ref:`installing_extproj`. Individual extension modules (for example
+the geometry optimization module) can be installed using pip's extra
+dependency mechanism::
+
+  $ pip install pyscf[geomopt]
+
+All extension modules can be installed with::
+
+  $ pip install pyscf[all]
+
+The extension modules can be found in `https://github.com/pyscf` (see
+also :ref:`installing_extproj`).
+
+Install extensions (advanced)
+=============================
 
 Based on the technique of namespace packages specified in `PEP 420
 <https://www.python.org/dev/peps/pep-0420/>`_, PySCF has developed a
@@ -534,3 +525,58 @@ The interface to TBLIS offers an efficient implementation for
 plugin can be enabled with::
 
   $ pip install pyscf-tblis
+
+Troubleshooting
+***************
+
+`error: command 'cmake' failed`
+===============================
+
+In some cases, users who install PySCF with `pip install pyscf` may see an error like the following::
+
+  Building wheels for collected packages: pyscf
+    Building wheel for pyscf (setup.py) ... error
+    error: subprocess-exited-with-error
+    × python setup.py bdist_wheel did not run successfully.
+    │ exit code: 1
+    ╰─> [7 lines of output]
+        scipy>1.1.0 may crash when calling scipy.linalg.eigh. (Issues https://github.com/scipy/scipy/issues/15362 https://github.com/scipy/scipy/issues/16151)
+        running bdist_wheel
+        running build
+        running build_ext
+        Configuring extensions
+        cmake -S/Users/<user>/personal/codes/chemistry/pyscf/pyscf/lib -Bbuild/temp.macosx-12-x86_64-cpython-310
+        error: command 'cmake' failed: No such file or directory
+        [end of output]
+
+Here, `pip` chose not to install a binary wheel and is trying to build from source. 
+If that's not your intention, you should install with the command `pip install --prefer-binary pyscf`.
+On the other hand, if you are intentionally trying to build from source, you're missing the required `cmake` program.
+See the docs for building from source above and issue `1684 <https://github.com/pyscf/pyscf/issues/1684>`_ for more details.
+
+MacOS: `Library not loaded`
+===========================
+
+For Mac OS X/macOS, you may get an import error if your OS X/macOS
+version is 10.11 or newer::
+
+    OSError: dlopen(xxx/pyscf/pyscf/lib/libcgto.dylib, 6): Library not loaded: libcint.3.0.dylib
+    Referenced from: xxx/pyscf/pyscf/lib/libcgto.dylib
+    Reason: unsafe use of relative rpath libcint.3.0.dylib in xxx/pyscf/pyscf/lib/libcgto.dylib with restricted binary
+
+This is caused by the incorrect RPATH.  The script
+``pyscf/lib/_runme_to_fix_dylib_osx10.11.sh`` in the ``pyscf/lib``
+directory can be used to fix this problem::
+
+    cd pyscf/lib
+    sh _runme_to_fix_dylib_osx10.11.sh
+
+.. note::
+
+  RPATH has been built in the dynamic library.  This may cause library
+  loading error on some systems.  You can run
+  ``pyscf/lib/_runme_to_remove_rpath.sh`` to remove the rpath code
+  from the library head.  Another workaround is to set
+  ``-DCMAKE_SKIP_RPATH=1`` and ``-DCMAKE_MACOSX_RPATH=0`` in the CMake
+  command line.  When the RPATH was removed, you need to add
+  ``pyscf/lib`` and ``pyscf/lib/deps/lib`` in ``LD_LIBRARY_PATH``.
