@@ -4,7 +4,7 @@
 SCF and DFT methods
 *******************
 
-*Modules*: :mod:`scf`, :mod:`dft`, :mod:`pbc.scf`, :mod:`pbc.dft`
+*Modules*: :py:mod:`pyscf.pbc.scf`, :py:mod:`pyscf.pbc.dft`
 
 Introduction
 ============

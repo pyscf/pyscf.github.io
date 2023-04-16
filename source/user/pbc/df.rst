@@ -3,7 +3,7 @@
 Density fitting for crystalline calculations
 ********************************************
 
-*Modules*: :mod:`df`, :mod:`pbc.df`
+*Modules*: :py:mod:`pyscf.pbc.df`
 
 Introduction
 ============
