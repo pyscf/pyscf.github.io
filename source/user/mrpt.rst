@@ -3,7 +3,7 @@
 Multi-reference perturbation theory (MRPT)
 ******************************************
 
-*Modules*: :mod:`mrpt`
+*Modules*: :py:mod:`pyscf.mrpt`
 
 Introduction
 ============
@@ -39,9 +39,3 @@ the bond dimension in the DMRG energy optimization to avoid the bottleneck.
 It can be specified by ``mrpt.NEVPT(mc,root=Root_ID).compress_approx(maxM=M')``.
 
 More information can be found in Reference :cite:`Guo2016` 
-
-References
-==========
-
-.. bibliography:: ref_mrpt.bib
-   :style: unsrt

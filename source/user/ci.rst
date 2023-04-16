@@ -2,7 +2,7 @@
 
 Configuration interaction (CISD and FCI)
 ****************************************
-*Modules*: :mod:`ci`, :mod:`fci`, :mod:`pbc.ci`
+*Modules*: :py:mod:`pyscf.ci`, :py:mod:`pyscf.fci`, :py:mod:`pyscf.pbc.ci`
 
 PySCF has separate molecular implementations for configuration
 interaction singles and doubles (CISD) (:mod:`ci`) and full
@@ -179,10 +179,3 @@ Properties
 Reduced density matrices can be evaluated, see the following example:
 
 .. literalinclude:: ../../examples/fci/14-density_matrix.py
-
-
-References
-==========
-
-.. bibliography:: ref_ci.bib
-   :style: unsrt

@@ -4,7 +4,7 @@
 Auxiliary second-order Green's function perturbation theory (AGF2)
 ******************************************************************
 
-*Modules*: :mod:`agf2`
+*Modules*: :py:mod:`pyscf.agf2`
 
 Introduction
 ============
@@ -130,9 +130,3 @@ Furthermore, the dominant scaling step is embarrassingly parallel.
 Distribution of computational load is handled by the optional dependency 
 ``mpi4py``, and will run without MPI using OpenMP threads if an installation
 cannot be found.
-
-References
-==========
-
-.. bibliography:: ref_agf2.bib
-    :style: unsrt

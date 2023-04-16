@@ -155,9 +155,3 @@ methods, please refer to our paper :cite:`Backhouse2020a`.
 An example of higher-order AGF2 calculations can be found in
 :source:`pyscf/examples/agf2/05-agf2_moments.py`, with a connection to the 
 algebraic diagrammatic construction method.
-
-References
-==========
-
-.. bibliography:: ../user/ref_agf2.bib
-    :style: unsrt

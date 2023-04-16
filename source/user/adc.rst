@@ -4,7 +4,7 @@
 Algebraic diagrammatic construction (ADC) 
 *****************************************
 
-*Modules*: :mod:`adc`
+*Modules*: :py:mod:`pyscf.adc`
 
 Introduction
 =============================
@@ -177,9 +177,3 @@ the available memory controlled by the ``max_memory`` keyword:
 
 More examples can be found in:
 :source:`examples/adc/06-dfadc.py`.
-
-
-References
-==========
-.. bibliography:: ref_adc.bib
-   :style: unsrt

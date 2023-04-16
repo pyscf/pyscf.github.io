@@ -3,7 +3,7 @@
 Molecular structure
 *******************
 
-*Modules*: :mod:`gto`
+*Modules*: :py:mod:`pyscf.gto`
 
 Initializing a molecule
 =======================
@@ -166,10 +166,10 @@ This function returns a (N,3) array for the coordinates of each atom::
    [0. 1. 0.]
    [0. 0. 1.]]
 
-.. _basis sets:
-
 Ghost atoms can also be specified when inputting the geometry.
 See :source:`examples/gto/03-ghost_atom.py` for examples.
+
+.. _basis sets:
 
 Basis set
 ---------
@@ -208,7 +208,7 @@ if the basis set does not match the element::
   mol.basis = {'H': gto.basis.load('sto3g', 'C')}
 
 Both :func:`gto.basis.parse` and :func:`gto.basis.load` return the basis set in the
-internal format (see :ref:`gto_basis`).
+internal format (see :ref:`Basis format`).
 
 The basis parser also supports ghost atoms::
 
@@ -600,4 +600,4 @@ to obtain the one- and two-electron AO integrals::
   overlap = mol.intor('int1e_ovlp')
   eri = mol.intor('int2e')
 
-For a full list of supported AO integrals, see :ref:`gto_moleintor`.
+For a full list of supported AO integrals, see :ref:`pyscf.gto.moleintor module`.
