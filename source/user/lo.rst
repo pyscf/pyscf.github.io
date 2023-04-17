@@ -4,7 +4,7 @@
 Localized orbitals
 ******************
 
-*Modules*: :mod:`lo`
+*Modules*: :py:mod:`pyscf.lo`
 
 Introduction
 ============
@@ -99,9 +99,3 @@ of the original atomic orbitals)::
     
     # C matrix stores the AO to localized orbital coefficients
     C = lo.orth_ao(mf, 'nao')
-
-References
-==========
-
-.. bibliography:: ref_lo.bib
-  :style: unsrt

@@ -3,7 +3,7 @@
 Crystal structure
 *****************
 
-*Modules*: :mod:`pbc.gto`
+*Modules*: :py:mod:`pyscf.pbc.gto`
 
 Initializing a crystal
 ======================
@@ -70,7 +70,7 @@ can be used in solid calculations as well.
 In addition, the predefined basis sets include 
 valence basis sets that are optimized for the GTH pseudopotentials 
 (a whole list can be found in :source:`pyscf/pbc/gto/basis` and :source:`pyscf/pbc/gto/pseudo`).
-The input format of :ref:`basis sets` for the :class:`Cell` object is the same
+The input format of :ref:`basis sets<basis sets>` for the :class:`Cell` object is the same
 as that for the :class:`Mole` object.
 
 .. literalinclude:: /../examples/pbc/05-input_pp.py

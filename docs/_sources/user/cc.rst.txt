@@ -4,7 +4,7 @@
 Coupled-cluster theory 
 **********************
 
-*Modules*: :mod:`cc`, :mod:`pbc.cc`
+*Modules*: :py:mod:`pyscf.cc`, :py:mod:`pyscf.pbc.cc`
 
 The MP2 and coupled-cluster functionalities of PySCF are similar.  See
 also :ref:`user_mp2`.

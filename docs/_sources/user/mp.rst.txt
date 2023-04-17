@@ -3,7 +3,7 @@
 Second-order Møller–Plesset perturbation theory (MP2)
 *****************************************************
 
-*Modules*: :mod:`mp`, :mod:`pbc.mp`
+*Modules*: :py:mod:`pyscf.mp`, :py:mod:`pyscf.pbc.mp`
 
 The MP2 and coupled-cluster functionalities of PySCF are similar.  See
 also :ref:`user_cc`.
@@ -222,10 +222,3 @@ inside the respective modules. The default scaling factors can be changed to arb
   from pyscf.mp.dfmp2_native import SCSMP2
   pt = SCSMP2(mf, ps=6/5, pt=1/3)
   pt.kernel()
-
-
-References
-==========
-
-.. bibliography:: ref_mp.bib
-   :style: unsrt

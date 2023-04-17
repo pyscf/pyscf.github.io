@@ -3,7 +3,7 @@
 Seminumerical exchange (SGX)
 ****************************
 
-*Modules*: :mod:`sgx`
+*Modules*: :py:mod:`pyscf.sgx`
 
 The SGX module implements seminumerical computation of the exchange matrix.
 
@@ -61,9 +61,3 @@ Calling the :attr:`sgx_fit` function on an :attr:`scf.hf.SCF` object returns an 
 
 * :attr:`direct_scf_sgx`: Whether to use direct SCF within the SGX module, meaning that the J and K matrices are evaluated from the difference in the density matrix from the previous iteration.
 * :attr:`rebuild_nsteps`: Rebuild the SGX JK matrix from scratch every :attr:`rebuild_nsteps` steps (default 5). Set to 0 to turn off rebuilding the JK matrix (Warning: This can cause creeping numerical error).
-
-References
-==========
-
-.. bibliography:: ref_sgx.bib
-   :style: unsrt

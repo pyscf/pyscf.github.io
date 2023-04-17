@@ -3,7 +3,7 @@
 Geometry optimization
 *********************
 
-*Modules*: :mod:`geomopt`
+*Modules*: :py:mod:`pyscf.geomopt`
 
 Basics
 ------

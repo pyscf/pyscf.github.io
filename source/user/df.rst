@@ -3,7 +3,7 @@
 Density fitting (DF)
 ********************
 
-*Modules*: :mod:`df`, :mod:`pbc.df`
+*Modules*: :py:mod:`pyscf.df`, :py:mod:`pyscf.pbc.df`
 
 .. module:: df
    :synopsis: Density fitting and RI approximation
@@ -159,10 +159,3 @@ More advanced examples of using the :mod:`df` module include
 * Generating analytical gradients for DF integrals: :source:`examples/df/41-df_integrals_gradients.py`.
 
 * Customizing the :func:`get_jk` method of a SCF class using DF: :source:`examples/df/42-overwrite_get_jk.py`.
-
-
-References
-==========
-
-.. bibliography:: ref_df.bib
-   :style: unsrt

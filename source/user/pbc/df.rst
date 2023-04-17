@@ -3,7 +3,7 @@
 Density fitting for crystalline calculations
 ********************************************
 
-*Modules*: :mod:`df`, :mod:`pbc.df`
+*Modules*: :py:mod:`pyscf.pbc.df`
 
 Introduction
 ============
@@ -149,10 +149,3 @@ Computational resources
 * GDF requires **enough disk space** to hold the pre-computed CDERIs. The size of these integrals grows quickly with the system size and scales as :math:`O(N_k^2 n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, where :math:`N_k` is the number of k-points, :math:`n_{\mathrm{AO}}` is the number of AOs per unit cell, and :math:`n_{\mathrm{aux}}` is the number of auxiliary basis functions per unit cell. Note that for DFT calculations using pure exchange-correlation functionals (LDA and GGA), the storage requirement is reduced to :math:`O(N_k n_{\mathrm{AO}}^2 n_{\mathrm{aux}})`, which is much more modest.
 
 * MDF requires both :math:`O(N_k^2 n_{\mathrm{AO}}^2 n_{\mathrm{aux}})` disk space to store pre-computed integrals of the GTO part of the auxiliary basis and :math:`O(N_k n_{\mathrm{AO}}^2 N_{\mathrm{PW}})` memory for the PW part. However, both :math:`n_{\mathrm{aux}}` and :math:`N_{\mathrm{PW}}` here are smaller than that required by GDF and FFTDF, respectively.
-
-
-References
-==========
-
-.. bibliography:: ../ref_df.bib
-   :style: unsrt
