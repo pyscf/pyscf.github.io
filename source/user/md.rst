@@ -3,7 +3,7 @@
 Molecular Dynamics
 ******************
 
-*Modules*: :mod:`md`
+*Modules*: :py:mod:`pyscf.md`
 
 Introduction
 ============

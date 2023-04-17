@@ -4,7 +4,7 @@
 SCF and DFT methods
 *******************
 
-*Modules*: :mod:`scf`, :mod:`dft`, :mod:`pbc.scf`, :mod:`pbc.dft`
+*Modules*: :py:mod:`pyscf.pbc.scf`, :py:mod:`pyscf.pbc.dft`
 
 Introduction
 ============
@@ -186,6 +186,7 @@ Periodic SCF solutions can be checked with stability analysis::
     kmf.stability()
 
 .. _user_pbc_multigrid:
+
 Multigrid
 ---------
 For pure DFT calculations, multi-grid algorithm becomes efficient if the size of
@@ -199,14 +200,15 @@ implemented in the :mod:`pyscf.pbc.dft.multigrid` module::
 
 More examples can be found
 
-.. literalinclude:: ../../examples/pbc/27-multigrid.py
+.. literalinclude:: ../../../examples/pbc/27-multigrid.py
 
 The multi-grid algorithm does not support exact exchange.
 
 .. _user_pbc_rsjk:
+
 Range-separation integration
 ----------------------------
- This algorithm computes most of the four-center integrals in real space. For small
+This algorithm computes most of the four-center integrals in real space. For small
 systems, it is less efficient than most density fitting algorithms. When you
 need to handle a huge unit cell, or to compute exact exchange for many k points,
 or to use all-electron basis sets, you can consider to invoke this algorithm.
@@ -223,6 +225,7 @@ density fitting methods.
 
 
 .. _user_pbc_df_comparison:
+
 How to choose integral scheme
 =============================
 
@@ -277,9 +280,3 @@ MDF           Well supported   High           Medium     Moderate        Huge
 Multi-grid    Limited cases    Low            High       High            None
 RS            Well supported   Low            High       Low             None
 ============= ================ ============== ========== =============== ============
-
-References
-==========
-
-.. bibliography:: ../ref_pbc.bib
-   :style: unsrt

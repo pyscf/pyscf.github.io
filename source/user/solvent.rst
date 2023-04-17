@@ -4,7 +4,7 @@
 Solvation models
 ****************
 
-*Modules*: :mod:`solvent`
+*Modules*: :py:mod:`pyscf.solvent`
 
 .. module:: solvent
    :synopsis: Solvation models and solvent effects
@@ -365,10 +365,3 @@ calculations::
   mf = mol.RKS(xc='b3lyp')
   mf = pyscf.solvent.PE(mf, 'potfile')
   mf.run()
-
-
-References
-==========
-
-.. bibliography:: ref_solvent.bib
-   :style: unsrt

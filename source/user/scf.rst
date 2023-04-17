@@ -4,7 +4,7 @@
 Self-consistent field (SCF) methods
 ***********************************
 
-*Modules*: :mod:`scf`, :mod:`pbc.scf`, :mod:`soscf`
+*Modules*: :py:mod:`pyscf.scf`, :py:mod:`pyscf.pbc.scf`, :py:mod:`pyscf.soscf`
 
 Introduction
 ============
@@ -452,10 +452,3 @@ To turn it off explicitly, one can do::
 
 More examples can be found in 
 :source:`examples/scf/21-x2c.py`.
-
-
-References
-==========
-
-.. bibliography:: ref_scf.bib
-   :style: unsrt

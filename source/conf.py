@@ -183,7 +183,7 @@ extensions = [
     "pyscfdocext",
     # "ablog",
 ]
-bibtex_bibfiles = []
+bibtex_bibfiles = ['user/ref.bib']
 myst_update_mathjax = False
 
 

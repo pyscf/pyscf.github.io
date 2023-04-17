@@ -4,7 +4,7 @@
 Electron-phonon coupling
 ************************
 
-*Modules*: :mod:`eph`, :mod:`pbc.eph`
+*Modules*: :py:mod:`pyscf.eph`, :py:mod:`pyscf.pbc.eph`
 
 Introduction
 ============
@@ -101,9 +101,3 @@ The eph matrix is computed in the atomic orbital (AO) basis by default. One can 
 
     myeph = eph.EPH(mf)
     ephmat, omega = myeph.kernel(mo_rep=True)
-
-References
-==========
-
-.. bibliography:: ref_eph.bib
-  :style: unsrt

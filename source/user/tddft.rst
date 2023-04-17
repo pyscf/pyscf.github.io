@@ -3,7 +3,7 @@
 Time-dependent Hartree-Fock and density functional theory
 *********************************************************
 
-*Modules*: :mod:`tdscf`, :mod:`pbc.tdscf`
+*Modules*: :py:mod:`pyscf.tdscf`, :py:mod:`pyscf.pbc.tdscf`
 
 Introduction
 ============
@@ -157,8 +157,3 @@ In PySCF, these orbitals can be obtained as follows::
 
 where ``nto_coeff`` are the coefficients for NTOs represented in AO basis,
 and they are ordered as occupied orbitals followed by virtual orbitals.
-
-References
-==========
-.. bibliography:: ref_tddft.bib
-   :style: unsrt

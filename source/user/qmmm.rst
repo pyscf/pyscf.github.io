@@ -4,7 +4,7 @@
 QM/MM methods
 *************
 
-*Modules*: :mod:`qmmm`
+*Modules*: :py:mod:`pyscf.qmmm`
 
 Introduction
 ============

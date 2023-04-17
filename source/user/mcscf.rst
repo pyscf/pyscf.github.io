@@ -3,7 +3,7 @@
 Multi-configuration self-consistent field (MCSCF)
 *************************************************
 
-*Modules*: :mod:`mcscf`
+*Modules*: :py:mod:`pyscf.mcscf`
 
 
 Introduction
@@ -399,11 +399,3 @@ The user may request the active orbitals to be transformed to the so-called natu
   mycas = mcscf.CASSCF(myhf, 6, 8)
   mycas.natorb = True
   mycas.kernel()
-
-
-
-References
-----------
-
-.. bibliography:: ref_mcscf.bib
-   :style: unsrt

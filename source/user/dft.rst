@@ -4,7 +4,7 @@
 Density functional theory (DFT)
 *******************************
 
-*Modules*: :mod:`dft`, :mod:`pbc.dft`
+*Modules*: :py:mod:`pyscf.dft`, :py:mod:`pyscf.pbc.dft`
 
 .. _user_dft_intro:
 
@@ -45,7 +45,7 @@ Here, :math:`T_s` is the noninteracting kinetic energy, :math:`E_{\rm ext}` is t
 * hybrid density functionals (a fraction of exact exchange is used), and
 * long-range corrected density functionals (exact exchange is used with a modified interaction kernel)
 
-Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :ref:`theory_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
+Variationally minimizing the total energy with respect to the density yields the KS equations for the non-interacting reference orbitals, on par with HF theory, and these have the same general form as the Fock equations in :ref:`user_scf`. However, the exact exchange, :math:`\hat{K}`, is replaced by the *xc* potential, :math:`\hat{v}_{\rm xc}=\delta E_{\rm xc}/\delta \rho`. For hybrid and meta-GGA calculations, PySCF uses the generalized KS formalism :cite:`GKS`, in which the so-called generalized KS equations minimize the total energy with respect to the orbitals themselves.
 
 .. _user_dft_predef_func:
 
@@ -205,9 +205,3 @@ Periodic Boundary Conditions
 ============================
 
 Besides finite-sized systems, PySCF further supports KS-DFT calculations with PBCs for performing solid-state calculations. The APIs for molecular and crystalline KS-DFT calculations have deliberately been made to align to the greatest extent possible, and an all-electron KS-DFT calculation for an initialized ``Cell`` object at either the :math:`\Gamma`-point or with k-point sampling may be run through :mod:`dft` and :mod:`pbc.dft`, respectively. For more details on PBC functionalities, please see the dedicated sections on :ref:`PBC-KS-DFT <user_pbc>`.
-
-References
-==========
-
-.. bibliography:: ref_dft.bib
-   :style: unsrt
