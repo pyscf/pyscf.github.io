@@ -99,7 +99,8 @@ See :ref:`cmake_options` for details about CMake configuration.
 
 If you have a `Conda <https://conda.io/docs/>`_ (or `Anaconda
 <https://www.continuum.io/downloads#linux>`_) environment, PySCF
-package can be installed from the Conda cloud::
+package can be installed from the Conda cloud
+(for Linux and Mac OS X systems)::
 
   $ conda install -c pyscf pyscf
 
@@ -549,8 +550,8 @@ In some cases, users who install PySCF with `pip install pyscf` may see an error
         error: command 'cmake' failed: No such file or directory
         [end of output]
 
-Here, `pip` chose not to install a binary wheel and is trying to build from source. 
-If that's not your intention, you should install with the command `pip install --prefer-binary pyscf`.
+Here, ``pip`` chose not to install a binary wheel and is trying to build from source. 
+If that's not your intention, you should install with the command ``pip install --prefer-binary pyscf``.
 On the other hand, if you are intentionally trying to build from source, you're missing the required `cmake` program.
 See the docs for building from source above and issue `1684 <https://github.com/pyscf/pyscf/issues/1684>`_ for more details.
 
