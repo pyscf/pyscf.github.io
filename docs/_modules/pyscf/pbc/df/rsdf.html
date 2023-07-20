@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.rsdf </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -369,12 +369,11 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">rsdf_helper</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">rsdf_builder</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">gdf_builder</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.incore</span> <span class="kn">import</span> <span class="n">_Int3cBuilder</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.incore</span> <span class="kn">import</span> <span class="n">Int3cBuilder</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.outcore</span> <span class="kn">import</span> <span class="n">_guess_shell_ranges</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">k2gamma</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="p">(</span><span class="n">is_zero</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span>
-                                       <span class="n">unique_with_wrap_around</span><span class="p">,</span>
-                                       <span class="n">group_by_conj_pairs</span><span class="p">,</span> <span class="n">KPT_DIFF_TOL</span><span class="p">)</span>
+                                       <span class="n">members_with_wrap_around</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.addons</span> <span class="kn">import</span> <span class="n">make_auxmol</span>
 
 
@@ -605,7 +604,9 @@
             <span class="n">kpts_union</span> <span class="o">=</span> <span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts_band</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_RSGDFBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">kpts_union</span><span class="p">)</span>
         <span class="n">dfbuilder</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_j_only</span><span class="p">,</span> <span class="n">kptij_lst</span><span class="o">=</span><span class="n">kptij_lst</span><span class="p">)</span>
+        <span class="n">j_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_only</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts_union</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="n">j_only</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">,</span>
+                           <span class="n">kptij_lst</span><span class="o">=</span><span class="n">kptij_lst</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RSGDF.build"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.rsdf.RSGDF.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_j3c</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># formatting k-points</span>
@@ -639,8 +640,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ke_cutoff</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bvk_kmesh</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supmol_ft</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">_Int3cBuilder</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="n">Int3cBuilder</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
 
         <span class="c1"># set True to force calculating j2c^(-1/2) using eigenvalue</span>
         <span class="c1"># decomposition (ED); otherwise, Cholesky decomposition (CD) is used</span>
@@ -656,8 +658,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">bvk_kmesh</span> <span class="o">=</span> <span class="n">kmesh</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">kpts_to_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'kmesh for bvk-cell = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">kmesh</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">rs_cell</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_RangeSeparatedCell</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rs_cell</span> <span class="o">=</span> <span class="n">rs_cell</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_RangeSeparatedCell</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span>
             <span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ke_cutoff</span><span class="p">,</span> <span class="n">rsdf_builder</span><span class="o">.</span><span class="n">RCUT_THRESHOLD</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+
+        <span class="n">rcut</span> <span class="o">=</span> <span class="n">rsdf_builder</span><span class="o">.</span><span class="n">estimate_ft_rcut</span><span class="p">(</span><span class="n">rs_cell</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span>
+                                             <span class="n">exclude_dd_block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">rsdf_builder</span><span class="o">.</span><span class="n">_ExtendedMoleFT</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span><span class="n">rs_cell</span><span class="p">,</span> <span class="n">kmesh</span><span class="p">,</span>
+                                                           <span class="n">rcut</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">log</span><span class="p">)</span>
+        <span class="n">supmol_ft</span><span class="o">.</span><span class="n">exclude_dd_block</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">strip_basis</span><span class="p">(</span><span class="n">rcut</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'sup-mol-ft nbas = </span><span class="si">%d</span><span class="s1"> cGTO = </span><span class="si">%d</span><span class="s1"> pGTO = </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span>
+                  <span class="n">supmol_ft</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">nao</span><span class="p">,</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">npgto_nr</span><span class="p">())</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">get_2c2e</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uniq_kpts</span><span class="p">):</span>
@@ -749,8 +760,7 @@
         <span class="n">GauxI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Gaux</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">GauxR</span><span class="p">,</span> <span class="n">GauxI</span>
 
-    <span class="k">def</span> <span class="nf">gen_j3c_loader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">ijlst_mapping</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span>
-                       <span class="n">dataname</span><span class="o">=</span><span class="s1">'j3c'</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">gen_j3c_loader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5group</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">ijlst_mapping</span><span class="p">,</span> <span class="n">aosym</span><span class="p">):</span>
         <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
         <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
@@ -765,14 +775,28 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ovlp</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ovlp</span><span class="p">]</span>
 
-        <span class="n">nsegs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">dataname</span><span class="si">}</span><span class="s1">-junk/0'</span><span class="p">])</span>
+        <span class="c1"># TODO: Store rs_density_fit cderi tensor in v1 format for the moment.</span>
+        <span class="c1"># It should be changed to 'v2' format in the future.</span>
+        <span class="k">if</span> <span class="n">ijlst_mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_version</span> <span class="o">=</span> <span class="s1">'v2'</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_version</span> <span class="o">=</span> <span class="s1">'v1'</span>
+
+        <span class="k">if</span> <span class="n">data_version</span> <span class="o">==</span> <span class="s1">'v1'</span><span class="p">:</span>
+            <span class="n">nsegs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'j3c-junk/</span><span class="si">{</span><span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpt_ij_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="si">}</span><span class="s1">'</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nsegs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'j3c-junk/</span><span class="si">{</span><span class="n">kpt_ij_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">'</span><span class="p">])</span>
 
         <span class="k">def</span> <span class="nf">load_j3c</span><span class="p">(</span><span class="n">col0</span><span class="p">,</span> <span class="n">col1</span><span class="p">):</span>
             <span class="n">j3cR</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">j3cI</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="n">kpt_ij_idx</span><span class="p">:</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">dataname</span><span class="si">}</span><span class="s1">-junk/</span><span class="si">{</span><span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="n">col0</span><span class="p">:</span><span class="n">col1</span><span class="p">]</span>
-                               <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsegs</span><span class="p">)])</span>
+                <span class="k">if</span> <span class="n">data_version</span> <span class="o">==</span> <span class="s1">'v1'</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'j3c-junk/</span><span class="si">{</span><span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kk</span><span class="p">]</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="n">col0</span><span class="p">:</span><span class="n">col1</span><span class="p">]</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsegs</span><span class="p">)])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">h5group</span><span class="p">[</span><span class="sa">f</span><span class="s1">'j3c-junk/</span><span class="si">{</span><span class="n">kk</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">'</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span><span class="n">col0</span><span class="p">:</span><span class="n">col1</span><span class="p">]</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsegs</span><span class="p">)])</span>
                 <span class="n">vR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
                 <span class="n">kj</span> <span class="o">=</span> <span class="n">kk</span> <span class="o">%</span> <span class="n">nkpts</span>
                 <span class="k">if</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpt</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpts</span><span class="p">[</span><span class="n">kj</span><span class="p">]):</span>
@@ -813,10 +837,6 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">ish0</span><span class="p">,</span> <span class="n">ish1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span>
 
-        <span class="k">def</span> <span class="nf">members</span><span class="p">(</span><span class="n">kptis</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
-            <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">kptis</span><span class="p">[:,</span><span class="kc">None</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">&lt;</span> <span class="n">KPT_DIFF_TOL</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-
         <span class="c1"># ijlst_mapping maps the [nkpts x nkpts] kpts-pair to kpts-pair in</span>
         <span class="c1"># kptij_lst. Value -1 in ijlst_mapping means the kpts-pair does not</span>
         <span class="c1"># exist in kptij_lst</span>
@@ -827,24 +847,26 @@
                 <span class="n">kpti_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)</span>
                 <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kpti_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">kpti_idx</span>
                 <span class="n">kptij_lst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">kpts</span><span class="p">[:,</span><span class="kc">None</span><span class="p">,:],</span> <span class="n">kpts</span><span class="p">[:,</span><span class="kc">None</span><span class="p">,:]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">kk_idx</span> <span class="o">=</span> <span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kpti_idx</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">kpti_idx</span><span class="p">,</span> <span class="n">kptj_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)</span>
                 <span class="n">nkpts_pair</span> <span class="o">=</span> <span class="n">kpti_idx</span><span class="o">.</span><span class="n">size</span>
                 <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nkpts_pair</span><span class="p">)</span>
                 <span class="n">kptij_lst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">kpts</span><span class="p">[</span><span class="n">kpti_idx</span><span class="p">,</span><span class="kc">None</span><span class="p">,:],</span>
                                             <span class="n">kpts</span><span class="p">[</span><span class="n">kptj_idx</span><span class="p">,</span><span class="kc">None</span><span class="p">,:]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">kk_idx</span> <span class="o">=</span> <span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">kpti_idx</span> <span class="o">=</span> <span class="n">members</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">kpts</span><span class="p">)</span>
-            <span class="n">kptj_idx</span> <span class="o">=</span> <span class="n">members</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">kpts</span><span class="p">)</span>
+            <span class="n">kpti_idx</span> <span class="o">=</span> <span class="n">members_with_wrap_around</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">kpts</span><span class="p">)</span>
+            <span class="n">kptj_idx</span> <span class="o">=</span> <span class="n">members_with_wrap_around</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">kpts</span><span class="p">)</span>
             <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">))</span>
+            <span class="n">kk_idx</span> <span class="o">=</span> <span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span>
 
         <span class="n">fswap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcore_auxe2</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span>
-                                   <span class="n">kptij_lst</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">dataname</span><span class="si">}</span><span class="s1">-junk'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">)</span>
+                                   <span class="n">kptij_lst</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span> <span class="s1">'j3c-junk'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">)</span>
         <span class="n">cpu1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'3c2e'</span><span class="p">,</span> <span class="o">*</span><span class="n">cpu1</span><span class="p">)</span>
 
-        <span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">_ExtendedMole</span><span class="o">.</span><span class="n">from_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rs_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bvk_kmesh</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-        <span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">strip_basis</span><span class="p">()</span>
-        <span class="n">ft_kern</span> <span class="o">=</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">gen_ft_kernel</span><span class="p">(</span><span class="n">aosym</span><span class="p">,</span> <span class="n">return_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+        <span class="n">ft_kern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">supmol_ft</span><span class="o">.</span><span class="n">gen_ft_kernel</span><span class="p">(</span><span class="n">aosym</span><span class="p">,</span> <span class="n">return_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                               <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
         <span class="c1"># recompute g0 and Gvectors for j3c</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_compact</span>
@@ -856,21 +878,32 @@
         <span class="n">tspans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>    <span class="c1"># lr, j2c_inv, j2c_cntr</span>
         <span class="n">tspannames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ftaop+pw"</span><span class="p">,</span> <span class="s2">"j2c_inv"</span><span class="p">,</span> <span class="s2">"j2c_cntr"</span><span class="p">]</span>
         <span class="n">feri</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
-        <span class="n">feri</span><span class="p">[</span><span class="s1">'j3c-kptij'</span><span class="p">]</span> <span class="o">=</span> <span class="n">kptij_lst</span>
+
+        <span class="c1"># TODO: Store rs_density_fit cderi tensor in v1 format for the moment.</span>
+        <span class="c1"># It should be changed to 'v2' format in the future.</span>
+        <span class="n">data_version</span> <span class="o">=</span> <span class="s1">'v1'</span>
+        <span class="k">if</span> <span class="n">data_version</span> <span class="o">==</span> <span class="s1">'v1'</span><span class="p">:</span>
+            <span class="n">feri</span><span class="p">[</span><span class="s1">'j3c-kptij'</span><span class="p">]</span> <span class="o">=</span> <span class="n">kptij_lst</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">feri</span><span class="p">[</span><span class="s1">'kpts'</span><span class="p">]</span> <span class="o">=</span> <span class="n">kpts</span>
+            <span class="n">ijlst_mapping</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">def</span> <span class="nf">make_cderi</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">j2c</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'make_cderi for </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">kpt</span><span class="p">)</span>
-            <span class="n">input_kptij_idx</span> <span class="o">=</span> <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpt_ij_idx</span><span class="p">]</span>
-            <span class="c1"># filter kpt_ij_idx, keeps only the kpts-pair in kptij_lst</span>
-            <span class="n">kpt_ij_idx</span> <span class="o">=</span> <span class="n">kpt_ij_idx</span><span class="p">[</span><span class="n">input_kptij_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="c1"># input_kptij_idx saves the indices of remaining kpts-pair in kptij_lst</span>
-            <span class="n">input_kptij_idx</span> <span class="o">=</span> <span class="n">input_kptij_idx</span><span class="p">[</span><span class="n">input_kptij_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'kpt_ij_idx = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">)</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'input_kptij_idx = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">input_kptij_idx</span><span class="p">)</span>
+            <span class="n">kptjs</span> <span class="o">=</span> <span class="n">kpts</span><span class="p">[</span><span class="n">kpt_ij_idx</span> <span class="o">%</span> <span class="n">nkpts</span><span class="p">]</span>
+            <span class="n">nkptj</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kptjs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data_version</span> <span class="o">==</span> <span class="s1">'v1'</span><span class="p">:</span>
+                <span class="n">input_kptij_idx</span> <span class="o">=</span> <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpt_ij_idx</span><span class="p">]</span>
+                <span class="c1"># filter kpt_ij_idx, keeps only the kpts-pair in kptij_lst</span>
+                <span class="n">kpt_ij_idx</span> <span class="o">=</span> <span class="n">kpt_ij_idx</span><span class="p">[</span><span class="n">input_kptij_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># input_kptij_idx saves the indices of remaining kpts-pair in kptij_lst</span>
+                <span class="n">input_kptij_idx</span> <span class="o">=</span> <span class="n">input_kptij_idx</span><span class="p">[</span><span class="n">input_kptij_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'kpt_ij_idx = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'input_kptij_idx = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">input_kptij_idx</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">input_kptij_idx</span> <span class="o">=</span> <span class="n">kpt_ij_idx</span>
             <span class="k">if</span> <span class="n">kpt_ij_idx</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span>
 
-            <span class="n">kptjs</span> <span class="o">=</span> <span class="n">kpts</span><span class="p">[</span><span class="n">kpt_ij_idx</span> <span class="o">%</span> <span class="n">nkpts</span><span class="p">]</span>
-            <span class="n">nkptj</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kptjs</span><span class="p">)</span>
             <span class="n">Gaux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_ft_ao</span><span class="p">(</span><span class="n">kpt</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpt</span><span class="p">):</span>  <span class="c1"># kpti == kptj</span>
@@ -931,7 +964,8 @@
                 <span class="n">tick_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()))</span>
                 <span class="n">tspans</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">tick_</span> <span class="o">-</span> <span class="n">tock_</span>
 
-        <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">cd_j2c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_uniq_kpts_groups</span><span class="p">(</span><span class="n">j_only</span><span class="p">,</span> <span class="n">fswap</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">cd_j2c</span> \
+                <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_uniq_kpts_groups</span><span class="p">(</span><span class="n">j_only</span><span class="p">,</span> <span class="n">fswap</span><span class="p">,</span> <span class="n">kk_idx</span><span class="o">=</span><span class="n">kk_idx</span><span class="p">):</span>
             <span class="n">make_cderi</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">cd_j2c</span><span class="p">)</span>
 
         <span class="n">feri</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>

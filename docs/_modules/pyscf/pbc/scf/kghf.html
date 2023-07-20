@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.kghf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -340,6 +340,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
+<span class="kn">import</span> <span class="nn">pyscf.scf.hf</span> <span class="k">as</span> <span class="nn">mol_hf</span>  <span class="c1"># noqa</span>
 <span class="kn">import</span> <span class="nn">pyscf.scf.ghf</span> <span class="k">as</span> <span class="nn">mol_ghf</span>  <span class="c1"># noqa</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
@@ -446,6 +447,19 @@
 
     <span class="k">return</span> <span class="n">mo_occ_kpts</span></div>
 
+<span class="k">def</span> <span class="nf">_cast_mol_init_guess</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fn_init_guess</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">cell</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">cell</span>
+        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">kpts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">mol_ghf</span><span class="o">.</span><span class="n">_from_rhf_init_dm</span><span class="p">(</span><span class="n">fn</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">dm</span><span class="p">]</span> <span class="o">*</span> <span class="n">nkpts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dm_kpts</span>
+    <span class="n">fn_init_guess</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">fn_init_guess</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">'Generates initial guess density matrix and the orbitals of the initial '</span>
+        <span class="s1">'guess DM '</span> <span class="o">+</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fn_init_guess</span>
 
 <div class="viewcode-block" id="KGHF"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf.KGHF">[docs]</a><span class="k">class</span> <span class="nc">KGHF</span><span class="p">(</span><span class="n">pbcghf</span><span class="o">.</span><span class="n">GHF</span><span class="p">,</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
     <span class="sd">'''GHF class for PBCs.</span>
@@ -509,8 +523,6 @@
 <span class="sd">        '''</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-    <span class="n">get_init_guess</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">get_init_guess</span>
-
     <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'converged SCF energy = </span><span class="si">%.15g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
@@ -525,6 +537,11 @@
         <span class="n">addons</span><span class="o">.</span><span class="n">convert_to_ghf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
+    <span class="n">get_init_guess</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KRHF</span><span class="o">.</span><span class="n">get_init_guess</span>
+    <span class="n">init_guess_by_minao</span> <span class="o">=</span> <span class="n">_cast_mol_init_guess</span><span class="p">(</span><span class="n">mol_hf</span><span class="o">.</span><span class="n">init_guess_by_minao</span><span class="p">)</span>
+    <span class="n">init_guess_by_atom</span> <span class="o">=</span> <span class="n">_cast_mol_init_guess</span><span class="p">(</span><span class="n">mol_hf</span><span class="o">.</span><span class="n">init_guess_by_atom</span><span class="p">)</span>
+    <span class="n">init_guess_by_chkfile</span> <span class="o">=</span> <span class="n">mol_ghf</span><span class="o">.</span><span class="n">init_guess_by_chkfile</span>
+
     <span class="n">density_fit</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">density_fit</span>
     <span class="n">rs_density_fit</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">rs_density_fit</span>
     <span class="n">newton</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">newton</span>
@@ -533,11 +550,8 @@
         <span class="sd">'''X2C with spin-orbit coupling effects in spin-orbital basis'''</span>
         <span class="kn">from</span> <span class="nn">pyscf.pbc.x2c.x2c1e</span> <span class="kn">import</span> <span class="n">x2c1e_gscf</span>
         <span class="k">return</span> <span class="n">x2c1e_gscf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-
     <span class="n">x2c</span> <span class="o">=</span> <span class="n">x2c1e</span>
-    <span class="n">sfx2c1e</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">sfx2c1e</span>
-    <span class="n">stability</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">nuc_grad_method</span> <span class="o">=</span> <span class="kc">None</span></div>
+    <span class="n">sfx2c1e</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">sfx2c1e</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>

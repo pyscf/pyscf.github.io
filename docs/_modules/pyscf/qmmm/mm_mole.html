@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.qmmm.mm_mole </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -338,7 +338,9 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.mole</span> <span class="kn">import</span> <span class="n">is_au</span>
 <span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">charge</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">param</span>
 
 <div class="viewcode-block" id="Mole"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.mm_mole.Mole">[docs]</a><span class="k">class</span> <span class="nc">Mole</span><span class="p">(</span><span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
     <span class="sd">'''Mole class for MM particles.</span>
@@ -352,13 +354,18 @@
 <span class="sd">            |  [atomN, (x, y, z)]]</span>
 
 <span class="sd">    Kwargs:</span>
-<span class="sd">        charges : fractional charges of MM particles</span>
+<span class="sd">        charges : 1D array</span>
+<span class="sd">            fractional charges of MM particles</span>
+<span class="sd">        zeta : 1D array</span>
+<span class="sd">            Gaussian charge distribution parameter.</span>
+<span class="sd">            rho(r) = charge * Norm * exp(-zeta * r^2)</span>
 
 <span class="sd">    '''</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom</span> <span class="o">=</span> <span class="n">atoms</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">'Bohr'</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">=</span> <span class="s1">'point'</span>
 
         <span class="c1"># Initialize ._atm and ._env to save the coordinates and charges and</span>
         <span class="c1"># other info of MM particles</span>
@@ -377,13 +384,38 @@
                                  <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">coords</span><span class="p">,</span> <span class="n">charges</span><span class="p">))</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
         <span class="n">_atm</span><span class="p">[:,</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_COORD</span><span class="p">]</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">PTR_ENV_START</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">natm</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
         <span class="n">_atm</span><span class="p">[:,</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_FRAC_CHARGE</span><span class="p">]</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">PTR_ENV_START</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">natm</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">3</span>
+
+        <span class="k">if</span> <span class="n">zeta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">=</span> <span class="s1">'gaussian'</span>
+            <span class="n">zeta</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">zeta</span><span class="p">)</span>
+            <span class="n">_atm</span><span class="p">[:,</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_ZETA</span><span class="p">]</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">PTR_ENV_START</span> <span class="o">+</span> <span class="n">natm</span><span class="o">*</span><span class="mi">4</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">natm</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_atm</span> <span class="o">=</span> <span class="n">_atm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">True</span></div>
+<div class="viewcode-block" id="Mole.get_zetas"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.mm_mole.Mole.get_zetas">[docs]</a>    <span class="k">def</span> <span class="nf">get_zetas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">==</span> <span class="s1">'gaussian'</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_env</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_atm</span><span class="p">[:,</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_ZETA</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1e16</span></div></div>
 
-<div class="viewcode-block" id="create_mm_mol"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.mm_mole.create_mm_mol">[docs]</a><span class="k">def</span> <span class="nf">create_mm_mol</span><span class="p">(</span><span class="n">atoms_or_coords</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'Angstrom'</span><span class="p">):</span>
+<div class="viewcode-block" id="create_mm_mol"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.mm_mole.create_mm_mol">[docs]</a><span class="k">def</span> <span class="nf">create_mm_mol</span><span class="p">(</span><span class="n">atoms_or_coords</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">radii</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'Angstrom'</span><span class="p">):</span>
     <span class="sd">'''Create an MM object based on the given coordinates and charges of MM</span>
 <span class="sd">    particles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        atoms_or_coords : array-like</span>
+<span class="sd">            Cartesian coordinates of MM atoms, in the form of a 2D array:</span>
+<span class="sd">            [(x1, y1, z1), (x2, y2, z2), ...]</span>
+
+<span class="sd">    Kwargs:</span>
+<span class="sd">        charges : 1D array</span>
+<span class="sd">            The charges of MM atoms.</span>
+<span class="sd">        radii : 1D array</span>
+<span class="sd">            The Gaussian charge distribuction radii of MM atoms.</span>
+<span class="sd">        unit : string</span>
+<span class="sd">            The unit of the input. Default is 'Angstrom'.</span>
 <span class="sd">    '''</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atoms_or_coords</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="c1"># atoms_or_coords == np.array([(xx, xx, xx)])</span>
@@ -398,8 +430,15 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms_or_coords</span>
     <span class="n">atoms</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">format_atom</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Mole</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="p">)</span></div>
 
+    <span class="k">if</span> <span class="n">radii</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">zeta</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">radii</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">radii</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+            <span class="n">radii</span> <span class="o">=</span> <span class="n">radii</span> <span class="o">/</span> <span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
+        <span class="n">zeta</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">radii</span><span class="o">**</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">Mole</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="n">charges</span><span class="p">,</span> <span class="n">zeta</span><span class="o">=</span><span class="n">zeta</span><span class="p">)</span></div>
 </pre></div>
 
           </article>

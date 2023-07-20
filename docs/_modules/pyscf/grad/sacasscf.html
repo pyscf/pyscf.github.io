@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.grad.sacasscf </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -689,13 +689,13 @@
                 <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span>
             <span class="n">mc_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
             <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_mcscf'</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_mcscf</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_mcscf</span>
             <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_states'</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
             <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -763,10 +763,33 @@
         <span class="k">return</span> <span class="n">xorb</span><span class="p">,</span> <span class="n">xci</span></div>
 
 <div class="viewcode-block" id="Gradients.make_fcasscf"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.sacasscf.Gradients.make_fcasscf">[docs]</a>    <span class="k">def</span> <span class="nf">make_fcasscf</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">casscf_attr</span><span class="o">=</span><span class="p">{},</span> <span class="n">fcisolver_attr</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="sd">''' Make a fake CASSCF object for ostensible single-state calculations '''</span>
+        <span class="sd">''' SA-CASSCF nuclear gradients require 1) first derivatives wrt wave function variables</span>
+<span class="sd">        and nuclear shifts of the target state's energy, AND 2) first and second derivatives of the</span>
+<span class="sd">        objective function used to determine the MO coefficients and CI vectors. This function</span>
+<span class="sd">        addresses 1).</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            state : integer</span>
+<span class="sd">                The specific state whose energy is being differentiated. This kwarg is necessary</span>
+<span class="sd">                in the context of state_average_mix, where the number of electrons and the</span>
+<span class="sd">                make_rdm* functions differ from state to state.</span>
+<span class="sd">            casscf_attr : dictionary</span>
+<span class="sd">                Extra attributes to apply to fcasscf. Relevant to child methods (i.e., MC-PDFT;</span>
+<span class="sd">                NACs)</span>
+<span class="sd">            fcisolver_attr : dictionary</span>
+<span class="sd">                Extra attributes to apply to fcasscf.fcisolver. Relevant to child methods (i.e.,</span>
+<span class="sd">                MC-PDFT; NACs)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fcasscf : object of :class:`mc1step.CASSCF`</span>
+<span class="sd">                Set up to evaluate first derivatives of state "state". Only functions, classes,</span>
+<span class="sd">                and the nelecas variable are set up; the caller should assign MO coefficients</span>
+<span class="sd">                and CI vectors explicitly post facto.</span>
+<span class="sd">        '''</span>
         <span class="n">fcasscf</span> <span class="o">=</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">CASSCF</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ncas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">nelecas</span><span class="p">)</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
+        <span class="n">nelecas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">nelecas</span>
         <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">StateAverageFCISolver</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">StateAverageMixFCISolver</span><span class="p">):</span>
                 <span class="n">p0</span> <span class="o">=</span> <span class="mi">0</span>
@@ -775,6 +798,7 @@
                     <span class="k">if</span> <span class="n">p0</span> <span class="o">&lt;=</span> <span class="n">state</span> <span class="o">&lt;</span> <span class="n">p1</span><span class="p">:</span>
                         <span class="n">solver_class</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="vm">__class__</span>
                         <span class="n">solver_obj</span> <span class="o">=</span> <span class="n">solver</span>
+                        <span class="n">nelecas</span> <span class="o">=</span> <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">_get_nelec</span> <span class="p">(</span><span class="n">solver_obj</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">)</span>
                         <span class="k">break</span>
                     <span class="n">p0</span> <span class="o">=</span> <span class="n">p1</span>
             <span class="k">else</span><span class="p">:</span>
@@ -789,13 +813,30 @@
             <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">)</span>
             <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">casscf_attr</span><span class="p">)</span>
+        <span class="n">fcasscf</span><span class="o">.</span><span class="n">nelecas</span> <span class="o">=</span> <span class="n">nelecas</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">fcisolver_attr</span><span class="p">)</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span> <span class="n">fcasscf</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">_tag_gfock_ov_nonzero</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">fcasscf</span></div>
 
 <div class="viewcode-block" id="Gradients.make_fcasscf_sa"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.sacasscf.Gradients.make_fcasscf_sa">[docs]</a>    <span class="k">def</span> <span class="nf">make_fcasscf_sa</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">casscf_attr</span><span class="o">=</span><span class="p">{},</span> <span class="n">fcisolver_attr</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="sd">''' Make a fake SA-CASSCF object to get around weird inheritance conflicts '''</span>
+        <span class="sd">''' SA-CASSCF nuclear gradients require 1) first derivatives wrt wave function variables</span>
+<span class="sd">        and nuclear shifts of the target state's energy, AND 2) first and second derivatives of the</span>
+<span class="sd">        objective function used to determine the MO coefficients and CI vectors. This function</span>
+<span class="sd">        addresses 2). Note that penalty methods etc. must be removed, and that child methods such</span>
+<span class="sd">        as MC-PDFT which do not reoptimize the orbitals also do not alter this function.</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            casscf_attr : dictionary</span>
+<span class="sd">                Extra attributes to apply to fcasscf. Just in case.</span>
+<span class="sd">            fcisolver_attr : dictionary</span>
+<span class="sd">                Extra attributes to apply to fcasscf.fcisolver. Just in case.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fcasscf : object of :class:`StateAverageMCSCFSolver`</span>
+<span class="sd">                Set up to evaluate second derivatives of SA-CASSCF average energy in the</span>
+<span class="sd">                absence of (i.e., spin) penalties.</span>
+<span class="sd">        '''</span>
         <span class="n">fcasscf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_fcasscf</span> <span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">casscf_attr</span><span class="o">=</span><span class="p">{},</span> <span class="n">fcisolver_attr</span><span class="o">=</span><span class="p">{})</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>

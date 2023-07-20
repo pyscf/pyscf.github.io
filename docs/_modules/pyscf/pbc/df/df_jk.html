@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.df_jk </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -394,7 +394,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'DF integrals for band k-points were not found </span><span class="si">%s</span><span class="s1">. '</span>
                      <span class="s1">'DF integrals will be rebuilt to include band k-points.'</span><span class="p">,</span>
                      <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span><span class="p">)</span>
-        <span class="n">mydf</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
+        <span class="n">mydf</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">j_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'Init get_j_kpts'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
 
     <span class="n">dm_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm_kpts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
@@ -437,12 +437,18 @@
     <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">nkpts</span>
     <span class="n">rhoR</span> <span class="o">*=</span> <span class="n">weight</span>
     <span class="n">rhoI</span> <span class="o">*=</span> <span class="n">weight</span>
-    <span class="n">vjR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
-    <span class="n">vjI</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">hermi</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">aos2symm</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">vjR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">vjI</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aos2symm</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">vjR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
+        <span class="n">vjI</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">):</span>
         <span class="n">kptii</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">kpt</span><span class="p">,</span><span class="n">kpt</span><span class="p">))</span>
         <span class="n">p1</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span><span class="p">,</span> <span class="n">sign</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">sr_loop</span><span class="p">(</span><span class="n">kptii</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span><span class="p">,</span> <span class="n">sign</span> <span class="ow">in</span> <span class="n">mydf</span><span class="o">.</span><span class="n">sr_loop</span><span class="p">(</span><span class="n">kptii</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">,</span> <span class="n">aos2symm</span><span class="p">):</span>
             <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p1</span><span class="o">+</span><span class="n">LpqR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1">#:Lpq = (LpqR + LpqI*1j)#.reshape(-1,nao,nao)</span>
             <span class="c1">#:vjR[:,k] += numpy.dot(rho[:,p0:p1], Lpq).real</span>
@@ -460,7 +466,8 @@
         <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">vjR</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">vjR</span> <span class="o">+</span> <span class="n">vjI</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span>
-    <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">vj_kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">aos2symm</span><span class="p">:</span>
+        <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">vj_kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">))</span>
     <span class="n">vj_kpts</span> <span class="o">=</span> <span class="n">vj_kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nset</span><span class="p">,</span><span class="n">nband</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
 
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'get_j'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
@@ -871,6 +878,16 @@
 <div class="viewcode-block" id="get_jk"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df_jk.get_jk">[docs]</a><span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
            <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">'''JK for given k-point'''</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">mydf</span><span class="o">.</span><span class="n">has_kpts</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'DF integrals for band k-points were not found </span><span class="si">%s</span><span class="s1">. '</span>
+                     <span class="s1">'DF integrals will be rebuilt to include band k-points.'</span><span class="p">,</span>
+                     <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span><span class="p">)</span>
+        <span class="n">mydf</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">j_only</span><span class="o">=</span><span class="ow">not</span> <span class="n">with_k</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'Init get_jk'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
+
     <span class="n">vj</span> <span class="o">=</span> <span class="n">vk</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">kpts_band</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">kpt</span><span class="o">-</span><span class="n">kpts_band</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
         <span class="n">kpt</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
@@ -881,16 +898,6 @@
         <span class="k">return</span> <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span>
 
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
-    <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">mydf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">mydf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">mydf</span><span class="o">.</span><span class="n">has_kpts</span><span class="p">(</span><span class="n">kpts_band</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'DF integrals for band k-points were not found </span><span class="si">%s</span><span class="s1">. '</span>
-                     <span class="s1">'DF integrals will be rebuilt to include band k-points.'</span><span class="p">,</span>
-                     <span class="n">mydf</span><span class="o">.</span><span class="n">_cderi</span><span class="p">)</span>
-        <span class="n">mydf</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
-        <span class="n">t0</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'Init get_jk'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
-
     <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="n">dms</span> <span class="o">=</span> <span class="n">_format_dms</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="p">[</span><span class="n">kpt</span><span class="p">])</span>
     <span class="n">nset</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>

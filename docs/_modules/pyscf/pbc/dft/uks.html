@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.dft.uks </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -347,6 +347,7 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">uhf</span> <span class="k">as</span> <span class="n">pbcuhf</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">uks</span> <span class="k">as</span> <span class="n">mol_uks</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">gen_grid</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">rks</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">multigrid</span>
@@ -363,7 +364,11 @@
     <span class="k">if</span> <span class="n">kpt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">kpt</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">kpt</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
 
-    <span class="n">hybrid</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span>
+    <span class="n">ni</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">_numint</span>
+    <span class="k">if</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlc</span> <span class="ow">or</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'NLC functional </span><span class="si">{</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">ks</span><span class="o">.</span><span class="n">nlc</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="n">hybrid</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">hybrid</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="n">multigrid</span><span class="o">.</span><span class="n">MultiGridFFTDF</span><span class="p">):</span>
         <span class="n">n</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">multigrid</span><span class="o">.</span><span class="n">nr_uks</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
@@ -445,6 +450,9 @@
         <span class="n">pbcuhf</span><span class="o">.</span><span class="n">UHF</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="n">rks</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="n">get_vsap</span> <span class="o">=</span> <span class="n">mol_uks</span><span class="o">.</span><span class="n">UKS</span><span class="o">.</span><span class="n">get_vsap</span>
+    <span class="n">init_guess_by_vsap</span> <span class="o">=</span> <span class="n">mol_uks</span><span class="o">.</span><span class="n">UKS</span><span class="o">.</span><span class="n">init_guess_by_vsap</span>
 
     <span class="n">get_veff</span> <span class="o">=</span> <span class="n">get_veff</span>
     <span class="n">energy_elec</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">dft</span><span class="o">.</span><span class="n">uks</span><span class="o">.</span><span class="n">energy_elec</span>

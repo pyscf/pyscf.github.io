@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.umc1step </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -347,7 +347,7 @@
 <span class="kn">import</span> <span class="nn">pyscf.scf</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf</span> <span class="kn">import</span> <span class="n">ucasci</span>
-<span class="kn">from</span> <span class="nn">pyscf.mcscf.mc1step</span> <span class="kn">import</span> <span class="n">expmat</span><span class="p">,</span> <span class="n">rotate_orb_cc</span>
+<span class="kn">from</span> <span class="nn">pyscf.mcscf.mc1step</span> <span class="kn">import</span> <span class="n">expmat</span><span class="p">,</span> <span class="n">rotate_orb_cc</span><span class="p">,</span> <span class="n">max_stepsize_scheduler</span><span class="p">,</span> <span class="n">as_scanner</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf</span> <span class="kn">import</span> <span class="n">umc_ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf</span> <span class="kn">import</span> <span class="n">chkfile</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
@@ -1120,15 +1120,8 @@
         <span class="c1">#return max(self.max_cycle_micro, int(self.max_cycle_micro-1-log_norm_ddm))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle_micro</span></div>
 
-<div class="viewcode-block" id="UCASSCF.max_stepsize_scheduler"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.umc1step.UCASSCF.max_stepsize_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">max_stepsize_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span>
-        <span class="k">if</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'de'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">:</span>  <span class="c1"># Avoid total energy increasing</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">*=</span> <span class="o">.</span><span class="mi">5</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'set max_stepsize to </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span></div>
+    <span class="n">max_stepsize_scheduler</span><span class="o">=</span><span class="n">max_stepsize_scheduler</span>
+    <span class="n">as_scanner</span><span class="o">=</span><span class="n">as_scanner</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">max_orb_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
@@ -1136,7 +1129,11 @@
     <span class="nd">@max_orb_stepsize</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">max_orb_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'WARN: Attribute "max_orb_stepsize" was replaced by "max_stepsize"</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span> <span class="o">=</span> <span class="n">x</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span> <span class="o">=</span> <span class="n">x</span>
+
+<div class="viewcode-block" id="UCASSCF.reset"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.umc1step.UCASSCF.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">ucasci</span><span class="o">.</span><span class="n">UCASCI</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="kc">None</span></div></div>
 
 <span class="n">CASSCF</span> <span class="o">=</span> <span class="n">UCASSCF</span>
 

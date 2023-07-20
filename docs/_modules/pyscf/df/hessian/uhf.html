@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.df.hessian.uhf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -514,15 +514,7 @@
         <span class="n">rhok0b_P__</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'plj,li-&gt;pij'</span><span class="p">,</span> <span class="n">rhok0b_Pl_</span><span class="p">,</span> <span class="n">moccb</span><span class="p">)</span>
         <span class="n">rho2c_0</span>  <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pij,qij-&gt;pq'</span><span class="p">,</span> <span class="n">rhok0a_P__</span><span class="p">,</span> <span class="n">rhok0a_P__</span><span class="p">)</span>
         <span class="n">rho2c_0</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pij,qij-&gt;pq'</span><span class="p">,</span> <span class="n">rhok0b_P__</span><span class="p">,</span> <span class="n">rhok0b_P__</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">int2c_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">int2c</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-            <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">int2c</span><span class="p">)</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="n">LINEAR_DEP_THRESHOLD</span>
-            <span class="n">v1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span><span class="n">mask</span><span class="p">]</span>
-            <span class="n">int2c_inv</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="o">/</span><span class="n">w</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">v1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-            <span class="n">v1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">int2c_inv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">int2c</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">)</span>
         <span class="n">int2c_ipip1</span> <span class="o">=</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2c2e_ipip1'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">)</span>
         <span class="n">int2c_ip_ip</span>  <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qr,ysr-&gt;xyps'</span><span class="p">,</span> <span class="n">int2c_ip1</span><span class="p">,</span> <span class="n">int2c_inv</span><span class="p">,</span> <span class="n">int2c_ip1</span><span class="p">)</span>
         <span class="n">int2c_ip_ip</span> <span class="o">-=</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2c2e_ip1ip2'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">naux</span><span class="p">,</span><span class="n">naux</span><span class="p">)</span>

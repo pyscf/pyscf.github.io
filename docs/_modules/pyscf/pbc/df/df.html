@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.df </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -362,17 +362,18 @@
 <span class="kn">from</span> <span class="nn">pyscf.df.outcore</span> <span class="kn">import</span> <span class="n">_guess_shell_ranges</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.gto.cell</span> <span class="kn">import</span> <span class="n">_estimate_rcut</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">tools</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">incore</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">outcore</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">df_jk</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">df_ao2mo</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.aft</span> <span class="kn">import</span> <span class="n">estimate_eta</span><span class="p">,</span> <span class="n">get_nuc</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.aft</span> <span class="kn">import</span> <span class="n">estimate_eta</span><span class="p">,</span> <span class="n">_check_kpts</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.df_jk</span> <span class="kn">import</span> <span class="n">zdotCN</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="p">(</span><span class="n">is_zero</span><span class="p">,</span> <span class="n">gamma_point</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span>
                                        <span class="n">KPT_DIFF_TOL</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.gdf_builder</span> <span class="kn">import</span> <span class="n">libpbc</span><span class="p">,</span> <span class="n">_CCGDFBuilder</span><span class="p">,</span> <span class="n">_guess_eta</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.gdf_builder</span> <span class="kn">import</span> <span class="n">libpbc</span><span class="p">,</span> <span class="n">_CCGDFBuilder</span><span class="p">,</span> <span class="n">_CCNucBuilder</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span><span class="p">,</span> <span class="n">_RSNucBuilder</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">LINEAR_DEP_THR</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_df_df_DF_lindep'</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">)</span>
@@ -386,7 +387,7 @@
 <span class="sd">    compensated charge algorithm, they are normalized against</span>
 <span class="sd">    \int (r^l e^{-ar^2} r^2 dr</span>
 <span class="sd">    '''</span>
-    <span class="n">auxcell</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">make_auxmol</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span>
+    <span class="n">auxcell</span> <span class="o">=</span> <span class="n">incore</span><span class="o">.</span><span class="n">make_auxcell</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span>
 
 <span class="c1"># Note libcint library will multiply the norm of the integration over spheric</span>
 <span class="c1"># part sqrt(4pi) to the basis.</span>
@@ -420,7 +421,7 @@
 <span class="c1"># half_sph_norm here to normalize the monopole (charge).  This convention can</span>
 <span class="c1"># simplify the formulism of \int \bar{\rho}, see function auxbar.</span>
             <span class="n">cs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pi,i-&gt;pi'</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">half_sph_norm</span><span class="o">/</span><span class="n">s</span><span class="p">)</span>
-            <span class="n">_env</span><span class="p">[</span><span class="n">ptr</span><span class="p">:</span><span class="n">ptr</span><span class="o">+</span><span class="n">np</span><span class="o">*</span><span class="n">nc</span><span class="p">]</span> <span class="o">=</span> <span class="n">cs</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">_env</span><span class="p">[</span><span class="n">ptr</span><span class="p">:</span><span class="n">ptr</span><span class="o">+</span><span class="n">np</span><span class="o">*</span><span class="n">nc</span><span class="p">]</span> <span class="o">=</span> <span class="n">cs</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
             <span class="n">steep_shls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ib</span><span class="p">)</span>
 
@@ -500,7 +501,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auxcell</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">TMPDIR</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -540,9 +540,6 @@
             <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'    kpts_band = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts_band</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="GDF.check_sanity"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.check_sanity">[docs]</a>    <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="GDF.build"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_j3c</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">j_only</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_j_only</span> <span class="o">=</span> <span class="n">j_only</span>
@@ -561,7 +558,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">auxcell</span> <span class="o">=</span> <span class="n">make_modrho_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis</span><span class="p">,</span>
                                          <span class="bp">self</span><span class="o">.</span><span class="n">exp_to_discard</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">with_j3c</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">with_j3c</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">cderi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span>
             <span class="k">else</span><span class="p">:</span>
@@ -602,7 +599,8 @@
         <span class="n">dfbuilder</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span>
         <span class="n">dfbuilder</span><span class="o">.</span><span class="n">linear_dep_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_dep_threshold</span>
         <span class="n">j_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_only</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts_union</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="n">j_only</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">)</span>
+        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="n">j_only</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">,</span>
+                           <span class="n">kptij_lst</span><span class="o">=</span><span class="n">kptij_lst</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GDF.cderi_array"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.cderi_array">[docs]</a>    <span class="k">def</span> <span class="nf">cderi_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">'''</span>
@@ -648,7 +646,7 @@
             <span class="n">b0</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">aux_slice</span>
             <span class="n">naux</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">-</span> <span class="n">b0</span>
             <span class="k">if</span> <span class="n">is_real</span><span class="p">:</span>
-                <span class="n">LpqR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">j3c</span><span class="p">[</span><span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">])</span>
+                <span class="n">LpqR</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">j3c</span><span class="p">[</span><span class="n">b0</span><span class="p">:</span><span class="n">b1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">compact</span> <span class="ow">and</span> <span class="n">LpqR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">:</span>
                     <span class="n">LpqR</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">pack_tril</span><span class="p">(</span><span class="n">LpqR</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">naux</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">unpack</span> <span class="ow">and</span> <span class="n">LpqR</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">:</span>
@@ -683,9 +681,35 @@
                     <span class="k">yield</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
                     <span class="n">LpqR</span> <span class="o">=</span> <span class="n">LpqI</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-    <span class="n">_int_nuc_vloc</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">_int_nuc_vloc</span>
-    <span class="n">get_nuc</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">get_nuc</span>  <span class="c1"># noqa: F811</span>
-    <span class="n">get_pp</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">get_pp</span>
+<div class="viewcode-block" id="GDF.get_pp"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.get_pp">[docs]</a>    <span class="k">def</span> <span class="nf">get_pp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">'''Get the periodic pseudotential nuc-el AO matrix, with G=0 removed.</span>
+<span class="sd">        '''</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">_check_kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefer_ccdf</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># For long-range integrals _CCGDFBuilder is the only option</span>
+            <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_CCNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_RSNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">vpp</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">get_pp</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_single_kpt</span><span class="p">:</span>
+            <span class="n">vpp</span> <span class="o">=</span> <span class="n">vpp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">vpp</span></div>
+
+<div class="viewcode-block" id="GDF.get_nuc"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.get_nuc">[docs]</a>    <span class="k">def</span> <span class="nf">get_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">'''Get the periodic nuc-el AO matrix, with G=0 removed.</span>
+<span class="sd">        '''</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">_check_kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefer_ccdf</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># For long-range integrals _CCGDFBuilder is the only option</span>
+            <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_CCNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">_RSNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">nuc</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">get_nuc</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_single_kpt</span><span class="p">:</span>
+            <span class="n">nuc</span> <span class="o">=</span> <span class="n">nuc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">nuc</span></div>
 
     <span class="c1"># Note: Special exxdiv by default should not be used for an arbitrary</span>
     <span class="c1"># input density matrix. When the df object was used with the molecular</span>
@@ -709,23 +733,16 @@
                 <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">'inf_vacuum'</span><span class="p">):</span>
                 <span class="n">mydf</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
                 <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">estimate_ke_cutoff_for_omega</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
-                <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">(),</span> <span class="n">ke_cutoff</span><span class="p">)</span>
+                <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">ke_cutoff</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mydf</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">with</span> <span class="n">mydf</span><span class="o">.</span><span class="n">range_coulomb</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span> <span class="k">as</span> <span class="n">rsh_df</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">rsh_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span>
                                      <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="n">exxdiv</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="c1"># Gamma-point calculation by default</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
-        <span class="n">kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">kpts</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-            <span class="k">return</span> <span class="n">df_jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span>
+        <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">_check_kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_single_kpt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">df_jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span>
                                 <span class="n">with_k</span><span class="p">,</span> <span class="n">exxdiv</span><span class="p">)</span>
 
         <span class="n">vj</span> <span class="o">=</span> <span class="n">vk</span> <span class="o">=</span> <span class="kc">None</span>
@@ -779,23 +796,39 @@
 <span class="c1"># object when self._cderi is provided.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-        <span class="c1"># self._cderi['j3c/k_id/seg_id']</span>
-        <span class="k">with</span> <span class="n">addons</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">/0'</span><span class="p">)</span> <span class="k">as</span> <span class="n">feri</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feri</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
-                <span class="n">naux</span> <span class="o">=</span> <span class="n">feri</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">naux</span> <span class="o">=</span> <span class="n">feri</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">'inf_vacuum'</span> <span class="ow">and</span>
-            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-            <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">feri</span><span class="p">:</span>
-                <span class="k">if</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">-/0'</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">:</span>
-                    <span class="n">dat</span> <span class="o">=</span> <span class="n">feri</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">-/0'</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
-                        <span class="n">naux</span> <span class="o">+=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">naux</span> <span class="o">+=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="c1"># self._cderi is likely offered by user. Ensure</span>
+            <span class="c1"># cderi.shape = (nkpts,naux,nao_pair)</span>
+            <span class="n">nao</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nao</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">nao</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span>
+                <span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">nao</span><span class="o">*</span><span class="p">(</span><span class="n">nao</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+                <span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'cderi shape'</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">naux</span>
+
+        <span class="c1"># self._cderi['j3c/k_id/seg_id']</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">feri</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">feri</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">feri</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
+                <span class="n">naux</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">naux</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">'inf_vacuum'</span> <span class="ow">and</span>
+                <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">-'</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">):</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">feri</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">-'</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+                <span class="n">dat</span> <span class="o">=</span> <span class="n">feri</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">-/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
+                    <span class="n">naux</span> <span class="o">+=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">naux</span> <span class="o">+=</span> <span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">naux</span></div></div>
 
 <span class="n">DF</span> <span class="o">=</span> <span class="n">GDF</span>
@@ -831,7 +864,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">j3c</span> <span class="o">=</span> <span class="n">data_group</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">data_group</span><span class="p">[</span><span class="s1">'kpts'</span><span class="p">][:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nkpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">nao_pair</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">j3c</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naux</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">nao_pair</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">j3c</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">nao_pair</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dat</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">naux</span> <span class="o">=</span> <span class="n">dat</span><span class="p">[</span><span class="s1">'0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">break</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aosym</span> <span class="o">==</span> <span class="s1">'s1'</span><span class="p">:</span>
             <span class="n">nao</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nao_pair</span> <span class="o">**</span> <span class="o">.</span><span class="mi">5</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">nao</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">==</span> <span class="n">nao_pair</span>
@@ -840,7 +878,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nao</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">nao_pair</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">j3c</span><span class="p">[</span><span class="s1">'0/0'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_is_h5obj</span><span class="p">:</span>

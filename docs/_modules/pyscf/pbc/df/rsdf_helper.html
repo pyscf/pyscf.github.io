@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.rsdf_helper </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -342,7 +342,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib.parameters</span> <span class="kn">import</span> <span class="n">BOHR</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span> <span class="k">as</span> <span class="n">mol_gto</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.gdf_builder</span> <span class="kn">import</span> <span class="n">_round_off_to_odd_mesh</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_round_off_to_odd_mesh</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.incore</span> <span class="kn">import</span> <span class="n">libpbc</span><span class="p">,</span> <span class="n">make_auxcell</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span><span class="p">,</span> <span class="n">gamma_point</span><span class="p">,</span> <span class="n">unique</span><span class="p">,</span> <span class="n">KPT_DIFF_TOL</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">pbc</span> <span class="k">as</span> <span class="n">pbctools</span>
@@ -352,6 +352,20 @@
 
 <span class="sd">""" General helper functions</span>
 <span class="sd">"""</span>
+<div class="viewcode-block" id="MoleNoBasSort"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.rsdf_helper.MoleNoBasSort">[docs]</a><span class="k">class</span> <span class="nc">MoleNoBasSort</span><span class="p">(</span><span class="n">mol_gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
+<div class="viewcode-block" id="MoleNoBasSort.build"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.rsdf_helper.MoleNoBasSort.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mol_gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">Mole</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># sort self._bas</span>
+        <span class="n">_bas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">iatm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
+            <span class="n">atm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="n">iatm</span><span class="p">)</span>
+            <span class="n">basin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis</span><span class="p">[</span><span class="n">atm</span><span class="p">]</span>
+            <span class="n">bas_ls</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">basin</span><span class="p">]</span>
+            <span class="n">ls_uniq</span><span class="p">,</span> <span class="n">ls_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">bas_ls</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ls_inv</span><span class="o">==</span><span class="n">l</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">ls_uniq</span><span class="p">]))</span>
+            <span class="n">_bas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bas</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bas</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">iatm</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="n">order</span><span class="p">]]</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">_bas</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div></div>
 <span class="k">def</span> <span class="nf">_remove_exp_basis_</span><span class="p">(</span><span class="n">bold</span><span class="p">,</span> <span class="n">amin</span><span class="p">,</span> <span class="n">amax</span><span class="p">):</span>
     <span class="n">bnew</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bold</span><span class="p">:</span>
@@ -701,8 +715,8 @@
     <span class="k">if</span> <span class="n">keep1ctr</span><span class="p">:</span>
         <span class="n">bas_lst</span> <span class="o">=</span> <span class="n">get1ctr</span><span class="p">(</span><span class="n">bas_lst</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dijs_lst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">MoleNoBasSort</span><span class="p">()</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">nbas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span>
         <span class="n">intor</span> <span class="o">=</span> <span class="s2">"int2c2e"</span>
         <span class="n">Qs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbas</span><span class="p">)</span>
@@ -716,8 +730,8 @@
             <span class="k">return</span> <span class="n">_get_norm</span><span class="p">(</span>
                         <span class="n">_fintor_sreri</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">safe</span><span class="p">)</span>
                     <span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
-        <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0; H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">MoleNoBasSort</span><span class="p">()</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">nbas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="o">//</span><span class="mi">2</span>
         <span class="n">n2</span> <span class="o">=</span> <span class="n">nbas</span><span class="o">*</span><span class="p">(</span><span class="n">nbas</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dijs_lst</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n2</span><span class="p">:</span>
@@ -744,8 +758,8 @@
 <span class="sd">    Return:</span>
 <span class="sd">        1d array of length nbas*(nbas+1)//2 with nbas=len(bas_lst).</span>
 <span class="sd">    """</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0; H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">)</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">MoleNoBasSort</span><span class="p">()</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0; H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">)</span>
     <span class="n">nbas</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bas_lst</span><span class="p">)</span>
     <span class="n">n2</span> <span class="o">=</span> <span class="n">nbas</span><span class="o">*</span><span class="p">(</span><span class="n">nbas</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
 
@@ -980,15 +994,15 @@
         <span class="n">mol</span> <span class="o">=</span> <span class="n">bas_lst_or_mol</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">bas_lst</span> <span class="o">=</span> <span class="n">bas_lst_or_mol</span>
-        <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">MoleNoBasSort</span><span class="p">()</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">bas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxbas_lst_or_auxmol</span><span class="p">,</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
         <span class="n">auxmol</span> <span class="o">=</span> <span class="n">auxbas_lst_or_auxmol</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">auxbas_lst</span> <span class="o">=</span> <span class="n">auxbas_lst_or_auxmol</span>
-        <span class="n">auxmol</span> <span class="o">=</span> <span class="n">mol_gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-        <span class="n">auxmol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">auxbas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">auxmol</span> <span class="o">=</span> <span class="n">MoleNoBasSort</span><span class="p">()</span>
+        <span class="n">auxmol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dump_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">atom</span><span class="o">=</span><span class="s2">"H 0 0 0"</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="n">auxbas_lst</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="n">nbas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span>
 

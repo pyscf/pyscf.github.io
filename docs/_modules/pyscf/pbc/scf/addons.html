@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.addons </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -346,6 +346,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">addons</span> <span class="k">as</span> <span class="n">mol_addons</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts</span> <span class="kn">import</span> <span class="n">KPoints</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">k2gamma</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">SMEARING_METHOD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_scf_addons_smearing_method'</span><span class="p">,</span> <span class="s1">'fermi'</span><span class="p">)</span>
@@ -365,16 +366,29 @@
     <span class="n">s22</span> <span class="o">=</span> <span class="n">cell2</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
     <span class="n">s21</span> <span class="o">=</span> <span class="n">pbcgto</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">cell2</span><span class="p">,</span> <span class="n">cell1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">numpy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>  <span class="c1"># A single k-point</span>
-        <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">s22</span><span class="p">,</span> <span class="n">s21</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">),</span> <span class="n">sym_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">s22</span><span class="p">,</span> <span class="n">s21</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">),</span> <span class="n">assume_a</span><span class="o">=</span><span class="s1">'pos'</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">mo1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">s22</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s21</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span> <span class="n">sym_pos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">s22</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s21</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span> <span class="n">assume_a</span><span class="o">=</span><span class="s1">'pos'</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts</span><span class="p">)]</span></div>
 
+<div class="viewcode-block" id="project_dm_k2k"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.addons.project_dm_k2k">[docs]</a><span class="k">def</span> <span class="nf">project_dm_k2k</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">kpts1</span><span class="p">,</span> <span class="n">kpts2</span><span class="p">):</span>
+    <span class="sd">'''Project density matrix from k-point mesh 1 to k-point mesh 2'''</span>
+    <span class="n">bvk_mesh</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">kpts_to_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts1</span><span class="p">)</span>
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">translation_vectors_for_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">bvk_mesh</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_k2k_projection</span><span class="p">(</span><span class="n">kpts1</span><span class="p">,</span> <span class="n">kpts2</span><span class="p">,</span> <span class="n">Ls</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'km,kuv-&gt;muv'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_k2k_projection</span><span class="p">(</span><span class="n">kpts1</span><span class="p">,</span> <span class="n">kpts2</span><span class="p">,</span> <span class="n">Ls</span><span class="p">):</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+    <span class="n">expRk1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">kpts1</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">expRk2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">kpts2</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">expRk1</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">expRk2</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">c</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <div class="viewcode-block" id="smearing_"><a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.addons.smearing_">[docs]</a><span class="k">def</span> <span class="nf">smearing_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">SMEARING_METHOD</span><span class="p">,</span> <span class="n">mu0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_spin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">'''Fermi-Dirac or Gaussian smearing'''</span>
-    <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">uhf</span>
+    <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">uhf</span><span class="p">,</span> <span class="n">rohf</span>
     <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">ghf</span>
     <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">khf</span>
     <span class="n">mf_class</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span>
@@ -382,9 +396,12 @@
     <span class="n">is_ghf</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="p">)</span>
     <span class="n">is_rhf</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_uhf</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_ghf</span><span class="p">)</span>
     <span class="n">is_khf</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">)</span>
+    <span class="n">is_rohf</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_rohf</span><span class="p">:</span>
+        <span class="n">is_rhf</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="n">fix_spin</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_uhf</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"fix_spin only supports UHF."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fix_spin</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">is_uhf</span> <span class="ow">or</span> <span class="n">is_rohf</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"fix_spin only supports UHF and ROHF."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fix_spin</span> <span class="ow">and</span> <span class="n">mu0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"fix_spin does not support fix mu0"</span><span class="p">)</span>
 
@@ -410,6 +427,8 @@
 
 <span class="sd">        This is a k-point version of scf.hf.SCF.get_occ</span>
 <span class="sd">        '''</span>
+        <span class="k">if</span> <span class="n">is_rohf</span> <span class="ow">and</span> <span class="n">fix_spin</span><span class="p">:</span>
+            <span class="n">mo_energy_kpts</span><span class="o">=</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">,</span><span class="n">mo_energy_kpts</span><span class="p">)</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'kpts'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
             <span class="n">mo_energy_kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">transform_mo_energy</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">)</span>
@@ -430,7 +449,7 @@
             <span class="n">nelectron</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">tot_electrons</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nelectron</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">tot_electrons</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">is_uhf</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_uhf</span> <span class="ow">or</span> <span class="p">(</span><span class="n">is_rohf</span> <span class="ow">and</span> <span class="n">fix_spin</span><span class="p">):</span>
             <span class="n">nocc</span> <span class="o">=</span> <span class="n">nelectron</span>
             <span class="k">if</span> <span class="n">fix_spin</span><span class="p">:</span>
                 <span class="n">nocc</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">nelec</span>
@@ -467,7 +486,7 @@
         <span class="k">if</span> <span class="n">mu0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">nelec_cost_fn</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_mo_es</span><span class="p">,</span> <span class="n">_nelectron</span><span class="p">):</span>
                 <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">is_rhf</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">is_rhf</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_rohf</span><span class="p">:</span>
                     <span class="n">mo_occ_kpts</span> <span class="o">*=</span> <span class="mi">2</span>
                 <span class="k">return</span> <span class="p">(</span><span class="n">mo_occ_kpts</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">_nelectron</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
             <span class="k">if</span> <span class="n">fix_spin</span><span class="p">:</span>
@@ -561,6 +580,8 @@
             <span class="n">tools</span><span class="o">.</span><span class="n">print_mo_energy_occ_kpts</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span><span class="n">mo_energy_kpts</span><span class="p">,</span><span class="n">mo_occ_kpts</span><span class="p">,</span><span class="n">is_uhf</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tools</span><span class="o">.</span><span class="n">print_mo_energy_occ</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span><span class="n">mo_energy_kpts</span><span class="p">,</span><span class="n">mo_occ_kpts</span><span class="p">,</span><span class="n">is_uhf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_rohf</span> <span class="ow">and</span> <span class="n">fix_spin</span><span class="p">:</span>
+            <span class="n">mo_occ_kpts</span><span class="o">=</span><span class="n">mo_occ_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">mo_occ_kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">mo_occ_kpts</span>
 
     <span class="k">def</span> <span class="nf">get_grad_tril</span><span class="p">(</span><span class="n">mo_coeff_kpts</span><span class="p">,</span> <span class="n">mo_occ_kpts</span><span class="p">,</span> <span class="n">fock</span><span class="p">):</span>

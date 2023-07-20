@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.cc.bccd </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -395,6 +395,8 @@
         <span class="n">umat_vir_b</span> <span class="o">=</span> <span class="n">umat_b</span><span class="p">[</span><span class="n">nocc_b</span><span class="p">:,</span> <span class="n">nocc_b</span><span class="p">:]</span>
         <span class="n">t2_bo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ijab, iI, jJ, aA, bB -&gt; IJAB"</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">umat_occ_a</span><span class="p">,</span>
                           <span class="n">umat_occ_b</span><span class="p">,</span> <span class="n">umat_vir_a</span><span class="p">,</span> <span class="n">umat_vir_b</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># (T) need a continuous array</span>
+        <span class="n">t2_bo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t2_bo</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span> <span class="c1"># UHF</span>
         <span class="n">t2_bo</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
         <span class="n">t2_bo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">transform_t2_to_bo</span><span class="p">(</span><span class="n">t2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">umat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -445,7 +447,7 @@
         <span class="k">return</span> <span class="n">rv</span> <span class="o">@</span> <span class="n">ld</span> <span class="o">@</span> <span class="n">rv</span><span class="o">.</span><span class="n">T</span></div>
 
 <div class="viewcode-block" id="bccd_kernel_"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.cc.html#pyscf.cc.bccd.bccd_kernel_">[docs]</a><span class="k">def</span> <span class="nf">bccd_kernel_</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conv_tol_normu</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">diis</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">verbose</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+                 <span class="n">canonicalization</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Brueckner coupled-cluster wrapper, using an outer-loop algorithm.</span>
 
@@ -455,10 +457,12 @@
 <span class="sd">        conv_tol_normu: convergence tolerance for u matrix.</span>
 <span class="sd">        max_cycle: Maximum number of BCC cycles.</span>
 <span class="sd">        diis: whether perform DIIS.</span>
+<span class="sd">        canonicalization: whether to semi-canonicalize the Brueckner orbitals.</span>
 <span class="sd">        verbose: verbose for CCSD inner iterations.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        mycc: a modified CC object with t1 vanished.</span>
+<span class="sd">              mycc._scf and mycc will be modified.</span>
 <span class="sd">    """</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"BCCD loop starts."</span><span class="p">)</span>
@@ -573,6 +577,58 @@
             <span class="n">u</span> <span class="o">=</span> <span class="n">get_umat_from_t1</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">t1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"BCC: not converged, max_cycle reached."</span><span class="p">)</span>
+
+    <span class="c1"># semi-canonicalization</span>
+    <span class="k">if</span> <span class="n">canonicalization</span><span class="p">:</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mycc</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">)</span>
+        <span class="n">vhf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_veff</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">fockao</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">vhf</span><span class="o">=</span><span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="n">dm</span><span class="p">)</span>
+        <span class="n">e_corr</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">e_corr</span>
+
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">fock</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">fockao</span> <span class="o">@</span> <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span>
+            <span class="n">fock_xcore</span> <span class="o">=</span> <span class="n">fock</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">frozen_mask</span><span class="p">,</span> <span class="n">frozen_mask</span><span class="p">)]</span>
+            <span class="n">foo</span> <span class="o">=</span> <span class="n">fock_xcore</span><span class="p">[:</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">,</span> <span class="p">:</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">]</span>
+            <span class="n">fvv</span> <span class="o">=</span> <span class="n">fock_xcore</span><span class="p">[</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">:,</span> <span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">:]</span>
+            <span class="n">ew_o</span><span class="p">,</span> <span class="n">ev_o</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+            <span class="n">ew_v</span><span class="p">,</span> <span class="n">ev_v</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">fvv</span><span class="p">)</span>
+            <span class="n">umat_xcore</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">block_diag</span><span class="p">(</span><span class="n">ev_o</span><span class="p">,</span> <span class="n">ev_v</span><span class="p">)</span>
+            <span class="n">umat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">umat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">frozen_mask</span><span class="p">,</span> <span class="n">frozen_mask</span><span class="p">)]</span> <span class="o">=</span> <span class="n">umat_xcore</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">@</span> <span class="n">umat</span>
+            <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">umat</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">umat_xcore</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="n">fock</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">fockao</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">@</span> <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">s</span><span class="p">]</span>
+                <span class="n">fock_xcore</span> <span class="o">=</span> <span class="n">fock</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">frozen_mask</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">frozen_mask</span><span class="p">[</span><span class="n">s</span><span class="p">])]</span>
+                <span class="n">foo</span> <span class="o">=</span> <span class="n">fock_xcore</span><span class="p">[:</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="p">:</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="n">s</span><span class="p">]]</span>
+                <span class="n">fvv</span> <span class="o">=</span> <span class="n">fock_xcore</span><span class="p">[</span><span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="n">s</span><span class="p">]:,</span> <span class="n">mycc</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="n">s</span><span class="p">]:]</span>
+                <span class="n">ew_o</span><span class="p">,</span> <span class="n">ev_o</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+                <span class="n">ew_v</span><span class="p">,</span> <span class="n">ev_v</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">fvv</span><span class="p">)</span>
+                <span class="n">umat_xcore</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">block_diag</span><span class="p">(</span><span class="n">ev_o</span><span class="p">,</span> <span class="n">ev_v</span><span class="p">))</span>
+                <span class="n">umat_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">umat_s</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">frozen_mask</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">frozen_mask</span><span class="p">[</span><span class="n">s</span><span class="p">])]</span> <span class="o">=</span> <span class="n">umat_xcore</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">umat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">umat_s</span><span class="p">)</span>
+
+            <span class="n">umat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">umat</span><span class="p">)</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'spm, smn -&gt; spn'</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">umat</span><span class="p">)</span>
+            <span class="n">mycc</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">transform_t1_to_bo</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">t1</span><span class="p">,</span> <span class="n">umat_xcore</span><span class="p">)</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">transform_t2_to_bo</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">t2</span><span class="p">,</span> <span class="n">umat_xcore</span><span class="p">)</span>
+
+        <span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">energy_tot</span><span class="p">()</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">get_e_hf</span><span class="p">()</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> <span class="n">e_corr</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="n">frozen</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">level_shift</span> <span class="o">=</span> <span class="n">level_shift</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">t1</span> <span class="o">=</span> <span class="n">t1</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">t2</span> <span class="o">=</span> <span class="n">t2</span>
+
     <span class="k">return</span> <span class="n">mycc</span></div>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
@@ -593,11 +649,15 @@
     <span class="n">rdm1_mf</span> <span class="o">=</span> <span class="n">myhf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
 
     <span class="n">mycc</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">CCSD</span><span class="p">(</span><span class="n">myhf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1">#mycc.frozen = [0]</span>
     <span class="n">mycc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="n">mycc</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
     <span class="n">mycc</span> <span class="o">=</span> <span class="n">bccd_kernel_</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">diis</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">e_r</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">e_tot</span>
+    <span class="n">e_ccsd_t</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">ccsd_t</span><span class="p">()</span>
+    <span class="c1"># PSI4 reference</span>
+    <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">e_ccsd_t</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.002625521337000</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-5</span>
 
     <span class="nb">print</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">t1</span><span class="p">))</span>
     <span class="k">assert</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">t1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-5</span>

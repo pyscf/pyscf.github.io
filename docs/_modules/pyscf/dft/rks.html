@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.dft.rks </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -395,13 +395,18 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">max_memory</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">n</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">nr_rks</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">grids</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlc</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="s1">'VV10'</span> <span class="ow">in</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlc</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">enlc</span><span class="p">,</span> <span class="n">vnlc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">nr_rks</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlcgrids</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="o">+</span><span class="s1">'__'</span><span class="o">+</span><span class="n">ks</span><span class="o">.</span><span class="n">nlc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
-                                      <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'nelec by numeric integration = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlc</span> <span class="ow">or</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
+                <span class="n">xc</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">xc</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">nlc</span><span class="p">)</span>
+                <span class="n">xc</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlc</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">enlc</span><span class="p">,</span> <span class="n">vnlc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">nr_nlc_vxc</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">nlcgrids</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+                                          <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)</span>
             <span class="n">exc</span> <span class="o">+=</span> <span class="n">enlc</span>
             <span class="n">vxc</span> <span class="o">+=</span> <span class="n">vnlc</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'nelec by numeric integration = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'nelec with nlc grids = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s1">'vxc'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
@@ -573,21 +578,7 @@
 
 
 <span class="k">def</span> <span class="nf">_dft_common_init_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s1">'LDA,VWN'</span><span class="p">):</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">nlc</span> <span class="o">=</span> <span class="s1">''</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">Grids</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_grids_level'</span><span class="p">,</span>
-                             <span class="n">mf</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">Grids</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_nlcgrids_level'</span><span class="p">,</span>
-                                <span class="n">mf</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-    <span class="c1"># Use rho to filter grids</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">small_rho_cutoff</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_small_rho_cutoff'</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
-<span class="c1">##################################################</span>
-<span class="c1"># don't modify the following attributes, they are not input options</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">NumInt</span><span class="p">()</span>
-    <span class="n">mf</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'nlc'</span><span class="p">,</span> <span class="s1">'omega'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'nlcgrids'</span><span class="p">,</span>
-                               <span class="s1">'small_rho_cutoff'</span><span class="p">])</span>
+    <span class="k">raise</span> <span class="ne">DeprecationWarning</span>
 
 <div class="viewcode-block" id="KohnShamDFT"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.dks.KohnShamDFT">[docs]</a><span class="k">class</span> <span class="nc">KohnShamDFT</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">'''</span>
@@ -646,7 +637,23 @@
 <span class="sd">    -76.415443079840458</span>
 <span class="sd">    '''</span>
 
-    <span class="fm">__init__</span> <span class="o">=</span> <span class="n">_dft_common_init_</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s1">'LDA,VWN'</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span> <span class="o">=</span> <span class="s1">''</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">Grids</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_grids_level'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">Grids</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_nlcgrids_level'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+        <span class="c1"># Use rho to filter grids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">small_rho_cutoff</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="n">__config__</span><span class="p">,</span> <span class="s1">'dft_rks_RKS_small_rho_cutoff'</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
+<span class="c1">##################################################</span>
+<span class="c1"># don't modify the following attributes, they are not input options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">numint</span><span class="o">.</span><span class="n">NumInt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span>
+            <span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'nlc'</span><span class="p">,</span> <span class="s1">'omega'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">,</span> <span class="s1">'nlcgrids'</span><span class="p">,</span> <span class="s1">'small_rho_cutoff'</span><span class="p">])</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">omega</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -667,12 +674,14 @@
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">libxc</span><span class="p">,</span> <span class="s1">'xc_reference'</span><span class="p">):</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">xc_reference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)),</span> <span class="s1">'    '</span><span class="p">))</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span><span class="o">!=</span><span class="s1">''</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'NLC functional = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span><span class="o">!=</span><span class="s1">''</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'** Following is NLC Grids **'</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'** Following is NLC and NLC Grids **'</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'NLC functional = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'NLC functional = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
 
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'small_rho_cutoff = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">small_rho_cutoff</span><span class="p">)</span>
@@ -795,17 +804,17 @@
                                                     <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="p">)</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'setting up grids'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span> <span class="o">!=</span> <span class="s1">''</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">small_rho_cutoff</span> <span class="o">&gt;</span> <span class="mf">1e-20</span> <span class="ow">and</span>
-                    <span class="c1"># dm.ndim == 2 indicates ground state</span>
-                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dm</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
-                    <span class="c1"># Filter grids the first time setup grids</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">prune_small_rho_grids_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
-                                                           <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="p">)</span>
-                <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'setting up nlc grids'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
+        <span class="n">is_nlc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlc</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numint</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">is_nlc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_nlc</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">small_rho_cutoff</span> <span class="o">&gt;</span> <span class="mf">1e-20</span> <span class="ow">and</span>
+                <span class="c1"># dm.ndim == 2 indicates ground state</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dm</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="c1"># Filter grids the first time setup grids</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span> <span class="o">=</span> <span class="n">prune_small_rho_grids_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">nlcgrids</span><span class="p">)</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'setting up nlc grids'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div></div>
 
 <span class="c1"># Update the KohnShamDFT label in scf.hf module</span>

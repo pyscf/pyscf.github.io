@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.mdf </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -338,8 +338,6 @@
 <span class="sd">J. Chem. Phys. 147, 164119 (2017)</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
@@ -348,13 +346,13 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">zdotCN</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.outcore</span> <span class="kn">import</span> <span class="n">_guess_shell_ranges</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">pbc</span> <span class="k">as</span> <span class="n">pbctools</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">outcore</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">df</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.aft</span> <span class="kn">import</span> <span class="n">_check_kpts</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.gdf_builder</span> <span class="kn">import</span> <span class="n">_CCGDFBuilder</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span><span class="p">,</span> <span class="n">_round_off_to_odd_mesh</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.incore</span> <span class="kn">import</span> <span class="n">libpbc</span><span class="p">,</span> <span class="n">make_auxcell</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">unique</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">mdf_jk</span>
@@ -392,6 +390,9 @@
 
         <span class="c1"># tends to call _CCMDFBuilder if applicable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prefer_ccdf</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># TODO: More tests are needed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_reversal_symmetry</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># The following attributes are not input options.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exxdiv</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># to mimic KRHF/KUHF object in function get_coulG</span>
@@ -441,10 +442,14 @@
         <span class="n">dfbuilder</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span>
         <span class="n">dfbuilder</span><span class="o">.</span><span class="n">linear_dep_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_dep_threshold</span>
         <span class="n">j_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j_only</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts_union</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="n">j_only</span><span class="p">)</span>
+        <span class="n">dfbuilder</span><span class="o">.</span><span class="n">make_j3c</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="n">j_only</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">,</span>
+                           <span class="n">kptij_lst</span><span class="o">=</span><span class="n">kptij_lst</span><span class="p">)</span>
 
-        <span class="c1"># mdf.mesh must be the same to the mesh used in generating cderi</span>
+        <span class="c1"># mdf.mesh must be the mesh to generate cderi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">mesh</span>
+
+    <span class="n">get_pp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="o">.</span><span class="n">get_pp</span>
+    <span class="n">get_nuc</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">GDF</span><span class="o">.</span><span class="n">get_nuc</span>
 
     <span class="c1"># Note: Special exxdiv by default should not be used for an arbitrary</span>
     <span class="c1"># input density matrix. When the df object was used with the molecular</span>
@@ -468,23 +473,16 @@
                 <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">'inf_vacuum'</span><span class="p">):</span>
                 <span class="n">mydf</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
                 <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">estimate_ke_cutoff_for_omega</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
-                <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">pbctools</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">(),</span> <span class="n">ke_cutoff</span><span class="p">)</span>
+                <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">ke_cutoff</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mydf</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">with</span> <span class="n">mydf</span><span class="o">.</span><span class="n">range_coulomb</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span> <span class="k">as</span> <span class="n">rsh_df</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">rsh_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="p">,</span>
                                      <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="n">exxdiv</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="c1"># Gamma-point calculation by default</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
-        <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">kpts</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-            <span class="k">return</span> <span class="n">mdf_jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span>
+        <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">_check_kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_single_kpt</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">mdf_jk</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="p">,</span>
                                  <span class="n">with_k</span><span class="p">,</span> <span class="n">exxdiv</span><span class="p">)</span>
 
         <span class="n">vj</span> <span class="o">=</span> <span class="n">vk</span> <span class="o">=</span> <span class="kc">None</span>
@@ -586,9 +584,9 @@
                 <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
                     <span class="n">auxG_sr</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">ft_ao</span><span class="p">(</span><span class="n">auxcell_c</span><span class="p">,</span> <span class="n">Gv</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">gxyz</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kpt</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
                     <span class="k">if</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpt</span><span class="p">):</span>
-                        <span class="n">sr_j2c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">auxG_sr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="n">coulG_sr</span><span class="p">,</span> <span class="n">auxG_sr</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+                        <span class="n">sr_j2c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">auxG_sr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="n">coulG_sr</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">auxG_sr</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">sr_j2c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">auxG_sr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="n">coulG_sr</span><span class="p">,</span> <span class="n">auxG_sr</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                        <span class="n">sr_j2c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">auxG_sr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="n">coulG_sr</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">auxG_sr</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
                     <span class="n">auxG_sr</span> <span class="o">=</span> <span class="kc">None</span>
 
                 <span class="n">j2c_k</span> <span class="o">=</span> <span class="n">recontract_2d</span><span class="p">(</span><span class="n">j2c_k</span><span class="p">,</span> <span class="n">sr_j2c</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
@@ -599,11 +597,11 @@
 
     <span class="k">def</span> <span class="nf">outcore_auxe2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">j_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="s1">'j3c'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">fft_dd_block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                      <span class="n">fft_dd_block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kk_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># dd_block from real-space integrals will be cancelled by AFT part</span>
         <span class="c1"># anyway. It's safe to omit dd_block when computing real-space int3c2e</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">outcore_auxe2</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span>
-                                     <span class="n">dataname</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">fft_dd_block</span><span class="p">)</span>
+                                     <span class="n">dataname</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">fft_dd_block</span><span class="p">,</span> <span class="n">kk_idx</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">weighted_ft_ao</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpt</span><span class="p">):</span>
         <span class="sd">'''exp(-i*(G + k) dot r) * Coulomb_kernel'''</span>
@@ -683,9 +681,9 @@
 
     <span class="k">def</span> <span class="nf">outcore_auxe2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">j_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="s1">'j3c'</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                      <span class="n">fft_dd_block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                      <span class="n">fft_dd_block</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kk_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">outcore_auxe2</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span>
-                                     <span class="n">dataname</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">fft_dd_block</span><span class="p">)</span>
+                                     <span class="n">dataname</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">fft_dd_block</span><span class="p">,</span> <span class="n">kk_idx</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">weighted_ft_ao</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpt</span><span class="p">):</span>
         <span class="n">fused_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fused_cell</span>

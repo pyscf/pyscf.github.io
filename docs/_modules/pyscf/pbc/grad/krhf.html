@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.grad.krhf </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -528,8 +528,13 @@
     <span class="sd">'''</span>
 <span class="sd">    Derivatives of nuclear repulsion energy wrt nuclear coordinates</span>
 <span class="sd">    '''</span>
-    <span class="n">ew_eta</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_ewald_params</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">chargs</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+    <span class="n">ew_eta</span><span class="p">,</span> <span class="n">ew_cut</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_ewald_params</span><span class="p">()</span>
+    <span class="n">log_precision</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">precision</span> <span class="o">/</span> <span class="p">(</span><span class="n">chargs</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">*</span><span class="mi">16</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">ew_eta</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">log_precision</span>
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">ke_cutoff</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'mesh for ewald </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
+
     <span class="n">coords</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
     <span class="n">Lall</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">()</span>
     <span class="n">natom</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chargs</span><span class="p">)</span>
@@ -550,7 +555,6 @@
             <span class="n">ewovrl_grad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span> <span class="n">qi</span> <span class="o">*</span> <span class="n">qj</span> <span class="o">/</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">r1</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ew_eta</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span>
                                      <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ew_eta</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">),</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">_cut_mesh_for_ewald</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">absG2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'gi,gi-&gt;g'</span><span class="p">,</span> <span class="n">Gv</span><span class="p">,</span> <span class="n">Gv</span><span class="p">)</span>
     <span class="n">absG2</span><span class="p">[</span><span class="n">absG2</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e200</span>

@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.mc1step </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -866,6 +866,7 @@
             <span class="c1"># may be created for mc separately, e.g. when mcscf.approx_hessian is</span>
             <span class="c1"># called. For safety, the code below explicitly resets these</span>
             <span class="c1"># properties.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span> <span class="p">(</span><span class="n">mol</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'with_df'</span><span class="p">,</span> <span class="s1">'with_x2c'</span><span class="p">,</span> <span class="s1">'with_solvent'</span><span class="p">,</span> <span class="s1">'with_dftd3'</span><span class="p">):</span>
                 <span class="n">sub_mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">sub_mod</span><span class="p">:</span>
@@ -883,6 +884,20 @@
             <span class="k">return</span> <span class="n">e_tot</span>
     <span class="k">return</span> <span class="n">CASSCF_Scanner</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="max_stepsize_scheduler"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.scf.hf.max_stepsize_scheduler">[docs]</a><span class="k">def</span> <span class="nf">max_stepsize_scheduler</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">WITH_STEPSIZE_SCHEDULER</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">casscf</span><span class="o">.</span><span class="n">max_stepsize</span>
+
+    <span class="n">_max_stepsize</span> <span class="o">=</span> <span class="n">envs</span><span class="o">.</span><span class="n">get</span> <span class="p">(</span><span class="s1">'max_stepsize'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_max_stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_max_stepsize</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">max_stepsize</span>
+    <span class="k">if</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'de'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">casscf</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">:</span>  <span class="c1"># Avoid total energy increasing</span>
+        <span class="n">_max_stepsize</span> <span class="o">*=</span> <span class="o">.</span><span class="mi">3</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="s1">'set max_stepsize to </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="n">_max_stepsize</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_max_stepsize</span> <span class="o">=</span> <span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">max_stepsize</span><span class="o">*</span><span class="n">_max_stepsize</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
+    <span class="n">casscf</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="n">_max_stepsize</span> <span class="c1"># for inspection by user</span>
+    <span class="k">return</span> <span class="n">_max_stepsize</span></div>
 
 <span class="c1"># To extend CASSCF for certain CAS space solver, it can be done by assign an</span>
 <span class="c1"># object or a module to CASSCF.fcisolver.  The fcisolver object or module</span>
@@ -1547,18 +1562,7 @@
         <span class="n">log_norm_ddm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">envs</span><span class="p">[</span><span class="s1">'norm_ddm'</span><span class="p">])</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle_micro</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle_micro</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">log_norm_ddm</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="CASSCF.max_stepsize_scheduler"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.scf.hf.CASSCF.max_stepsize_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">max_stepsize_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">WITH_STEPSIZE_SCHEDULER</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span>
-        <span class="k">if</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'de'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">:</span>  <span class="c1"># Avoid total energy increasing</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">*=</span> <span class="o">.</span><span class="mi">3</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'set max_stepsize to </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span><span class="p">)</span><span class="o">**.</span><span class="mi">5</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span></div>
+    <span class="n">max_stepsize_scheduler</span><span class="o">=</span><span class="n">max_stepsize_scheduler</span>
 
 <div class="viewcode-block" id="CASSCF.ah_scheduler"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.scf.hf.CASSCF.ah_scheduler">[docs]</a>    <span class="k">def</span> <span class="nf">ah_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
         <span class="k">pass</span></div>
@@ -1611,7 +1615,11 @@
             <span class="c1"># FIXME: (QS) Should not need to pass wfnsym for general CASSCF object.</span>
             <span class="n">wfnsym</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'wfnsym'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="n">mc1</span> <span class="o">=</span> <span class="n">mc1</span><span class="o">.</span><span class="n">state_average_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mc1</span></div></div>
+        <span class="k">return</span> <span class="n">mc1</span></div>
+
+<div class="viewcode-block" id="CASSCF.reset"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.scf.hf.CASSCF.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="kc">None</span></div></div>
 
 <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">CASSCF</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="o">.</span><span class="n">CASSCF</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">CASSCF</span><span class="p">)</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="o">.</span><span class="n">CASSCF</span> <span class="o">=</span> <span class="kc">None</span>

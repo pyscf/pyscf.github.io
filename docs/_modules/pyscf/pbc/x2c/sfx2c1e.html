@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.pbc.x2c.sfx2c1e </span>
         </div>
       </div>
@@ -203,7 +203,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -351,9 +351,9 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft_jk</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">incore</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">gdf_builder</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">ghf</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 
@@ -570,13 +570,17 @@
     <span class="n">eta</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="n">gdf_builder</span><span class="o">.</span><span class="n">_guess_eta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">'get_pnucp eta = </span><span class="si">%s</span><span class="s1"> mesh = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
 
-    <span class="n">nuccell</span> <span class="o">=</span> <span class="n">incore</span><span class="o">.</span><span class="n">_compensate_nuccell</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
-    <span class="n">wj</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">_int_nuc_vloc</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span> <span class="s1">'int3c2e_pvp1'</span><span class="p">)</span>
+    <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">gdf_builder</span><span class="o">.</span><span class="n">_CCNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
+    <span class="n">dfbuilder</span><span class="o">.</span><span class="n">exclude_dd_block</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">dfbuilder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">fakenuc</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">_fake_nuc</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">with_pseudo</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">_pseudo</span><span class="p">)</span>
+    <span class="n">wj</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">_int_nuc_vloc</span><span class="p">(</span><span class="n">fakenuc</span><span class="p">,</span> <span class="s1">'int3c2e_pvp1'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">)</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'pnucp pass1: analytic int'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
 
     <span class="n">charge</span> <span class="o">=</span> <span class="o">-</span><span class="n">cell</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span> <span class="c1"># Apply Koseki effective charge?</span>
     <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="n">nucbar</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">z</span><span class="o">/</span><span class="n">nuccell</span><span class="o">.</span><span class="n">bas_exp</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charge</span><span class="p">)])</span>
+        <span class="n">mod_cell</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">modchg_cell</span>
+        <span class="n">nucbar</span> <span class="o">=</span> <span class="p">(</span><span class="n">charge</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mod_cell</span><span class="o">.</span><span class="n">bas_exps</span><span class="p">()))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">nucbar</span> <span class="o">*=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span>
 
         <span class="n">ovlp</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_kin'</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">HERMITIAN</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span>
@@ -585,10 +589,9 @@
             <span class="c1"># *2 due to the factor 1/2 in T</span>
             <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">nucbar</span><span class="o">*</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s</span>
 
-    <span class="n">dfbuilder</span> <span class="o">=</span> <span class="n">incore</span><span class="o">.</span><span class="n">_IntNucBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-    <span class="n">supmol_ft</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">supmol</span><span class="o">.</span><span class="n">strip_basis</span><span class="p">()</span>
-    <span class="n">ft_kern</span> <span class="o">=</span> <span class="n">supmol_ft</span><span class="o">.</span><span class="n">gen_ft_kernel</span><span class="p">(</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'GTO_ft_pdotp'</span><span class="p">,</span>
-                                      <span class="n">return_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+    <span class="n">ft_kern</span> <span class="o">=</span> <span class="n">dfbuilder</span><span class="o">.</span><span class="n">supmol_ft</span><span class="o">.</span><span class="n">gen_ft_kernel</span><span class="p">(</span>
+        <span class="s1">'s2'</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'GTO_ft_pdotp'</span><span class="p">,</span> <span class="n">return_complex</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">kpts</span><span class="o">=</span><span class="n">kpts_lst</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
     <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kws</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">gxyz</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">cartesian_prod</span><span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Gvbase</span><span class="p">])</span>
@@ -596,7 +599,7 @@
     <span class="n">kpt_allow</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">Gv</span><span class="o">=</span><span class="n">Gv</span><span class="p">)</span>
     <span class="n">coulG</span> <span class="o">*=</span> <span class="n">kws</span>
-    <span class="n">aoaux</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">ft_ao</span><span class="p">(</span><span class="n">nuccell</span><span class="p">,</span> <span class="n">Gv</span><span class="p">)</span>
+    <span class="n">aoaux</span> <span class="o">=</span> <span class="n">ft_ao</span><span class="o">.</span><span class="n">ft_ao</span><span class="p">(</span><span class="n">dfbuilder</span><span class="o">.</span><span class="n">modchg_cell</span><span class="p">,</span> <span class="n">Gv</span><span class="p">)</span>
     <span class="n">vG</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,xi-&gt;x'</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">aoaux</span><span class="p">)</span> <span class="o">*</span> <span class="n">coulG</span>
     <span class="n">vGR</span> <span class="o">=</span> <span class="n">vG</span><span class="o">.</span><span class="n">real</span>
     <span class="n">vGI</span> <span class="o">=</span> <span class="n">vG</span><span class="o">.</span><span class="n">imag</span>
@@ -609,12 +612,12 @@
     <span class="n">buf</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">Gblksize</span><span class="p">,</span> <span class="n">nao_pair</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">Gblksize</span><span class="p">):</span>
         <span class="c1"># shape of Gpq (nkpts, nGv, nao_pair)</span>
-        <span class="n">Gpq</span> <span class="o">=</span> <span class="n">ft_kern</span><span class="p">(</span><span class="n">Gv</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">gxyz</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">kpts_lst</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span>
+        <span class="n">Gpq</span> <span class="o">=</span> <span class="n">ft_kern</span><span class="p">(</span><span class="n">Gv</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">gxyz</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kpt_allow</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">GpqR</span><span class="p">,</span> <span class="n">GpqI</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Gpq</span><span class="p">)):</span>
             <span class="n">vR</span>  <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGR</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqR</span><span class="p">)</span>
             <span class="n">vR</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGI</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqI</span><span class="p">)</span>
             <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vR</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">aft_jk</span><span class="o">.</span><span class="n">gamma_point</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
                 <span class="n">vI</span>  <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGR</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqI</span><span class="p">)</span>
                 <span class="n">vI</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'k,kx-&gt;x'</span><span class="p">,</span> <span class="n">vGI</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">GpqR</span><span class="p">)</span>
                 <span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vI</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span>
@@ -622,7 +625,7 @@
 
     <span class="n">wj_kpts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kpt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpts_lst</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">aft_jk</span><span class="o">.</span><span class="n">gamma_point</span><span class="p">(</span><span class="n">kpt</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpt</span><span class="p">):</span>
             <span class="n">wj_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">wj_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">wj</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>

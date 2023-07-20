@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.scf.uhf </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -466,7 +466,7 @@
 <span class="c1"># passed to functions like get_jk, get_vxc.  These functions may take the tags</span>
 <span class="c1"># (mo_coeff, mo_occ) to compute the potential if tags were found in the DM</span>
 <span class="c1"># arrays and modifications to DM arrays may be ignored.</span>
-    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">dm_a</span><span class="p">,</span> <span class="n">dm_b</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">((</span><span class="n">dm_a</span><span class="p">,</span> <span class="n">dm_b</span><span class="p">),</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="n">mo_occ</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="make_rdm2"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.pbc.scf.kuhf.make_rdm2">[docs]</a><span class="k">def</span> <span class="nf">make_rdm2</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">):</span>
     <span class="sd">'''Two-particle density matrix in AO representation</span>
@@ -1146,6 +1146,15 @@
         <span class="k">return</span> <span class="n">make_rdm2</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="n">energy_elec</span> <span class="o">=</span> <span class="n">energy_elec</span>
+
+<div class="viewcode-block" id="UHF.get_init_guess"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.pbc.scf.kuhf.UHF.get_init_guess">[docs]</a>    <span class="k">def</span> <span class="nf">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'minao'</span><span class="p">):</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG1</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
+            <span class="n">nelec</span> <span class="o">=</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji'</span><span class="p">,</span> <span class="n">dm</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji'</span><span class="p">,</span> <span class="n">dm</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Nelec from initial guess = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">nelec</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dm</span></div>
 
 <div class="viewcode-block" id="UHF.init_guess_by_minao"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.pbc.scf.kuhf.UHF.init_guess_by_minao">[docs]</a>    <span class="k">def</span> <span class="nf">init_guess_by_minao</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">breaksym</span><span class="o">=</span><span class="n">BREAKSYM</span><span class="p">):</span>
         <span class="sd">'''Initial guess in terms of the overlap to minimal basis.'''</span>

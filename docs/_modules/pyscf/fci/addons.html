@@ -96,7 +96,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.2</span>
+          <span class="md-header-nav__topic">PySCF 2.3</span>
           <span class="md-header-nav__topic"> pyscf.fci.addons </span>
         </div>
       </div>
@@ -204,7 +204,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.2</a>
+       title="PySCF">PySCF 2.3</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -350,7 +350,8 @@
     <span class="n">neleca</span><span class="p">,</span> <span class="n">nelecb</span> <span class="o">=</span> <span class="n">_unpack_nelec</span><span class="p">(</span><span class="n">nelec</span><span class="p">)</span>
     <span class="n">na</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
     <span class="n">nb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">ci</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">na</span> <span class="o">*</span> <span class="n">nb</span>
+    <span class="n">ci</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span><span class="p">)</span>
     <span class="n">addra</span><span class="p">,</span> <span class="n">addrb</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">ci</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">addra</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># No large CI coefficient &gt; tol, search for the largest coefficient</span>
@@ -400,116 +401,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        CI coefficients 2D array which has the target symmetry.</span>
 <span class="sd">    '''</span>
-    <span class="n">neleca</span><span class="p">,</span> <span class="n">nelecb</span> <span class="o">=</span> <span class="n">_unpack_nelec</span><span class="p">(</span><span class="n">nelec</span><span class="p">)</span>
-    <span class="n">orbsym</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">orbsym</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'TODO: convert irrep symbol to irrep id'</span><span class="p">)</span>
-
-    <span class="n">na</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
-    <span class="n">nb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
-    <span class="n">ci1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span><span class="n">nb</span><span class="p">))</span>
-
-<span class="c1">########################</span>
-<span class="c1"># pass 1: The fixed occs</span>
-    <span class="n">orbleft</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="n">stra</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="n">strb</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">irrep_nelec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">n</span> <span class="ow">in</span> <span class="n">irrep_nelec</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">orbleft</span><span class="p">[</span><span class="n">orbsym</span><span class="o">==</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbsym</span><span class="o">==</span><span class="n">k</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:</span><span class="n">n</span><span class="o">//</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">stra</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">strb</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">na</span><span class="p">,</span> <span class="n">nb</span> <span class="o">=</span> <span class="n">n</span>
-                <span class="n">stra</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbsym</span><span class="o">==</span><span class="n">k</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:</span><span class="n">na</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">strb</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbsym</span><span class="o">==</span><span class="n">k</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:</span><span class="n">nb</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">na</span><span class="o">-</span><span class="n">nb</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">:</span>
-                    <span class="n">wfnsym</span> <span class="o">^=</span> <span class="n">k</span>
-
-    <span class="n">orbleft</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">orbleft</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">neleca_left</span> <span class="o">=</span> <span class="n">neleca</span> <span class="o">-</span> <span class="n">stra</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">nelecb_left</span> <span class="o">=</span> <span class="n">nelecb</span> <span class="o">-</span> <span class="n">strb</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">spin</span> <span class="o">=</span> <span class="n">neleca_left</span> <span class="o">-</span> <span class="n">nelecb_left</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">neleca_left</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">nelecb_left</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">spin</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
-
-<span class="c1">########################</span>
-<span class="c1"># pass 2: search pattern</span>
-    <span class="k">def</span> <span class="nf">gen_str_iter</span><span class="p">(</span><span class="n">orb_list</span><span class="p">,</span> <span class="n">nelec</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">nelec</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">orb_list</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="n">nelec</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">orb_list</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">orb_list</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">restorb</span> <span class="o">=</span> <span class="n">orb_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-            <span class="c1">#yield from gen_str_iter(restorb, nelec)</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gen_str_iter</span><span class="p">(</span><span class="n">restorb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">x</span>
-            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gen_str_iter</span><span class="p">(</span><span class="n">restorb</span><span class="p">,</span> <span class="n">nelec</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="p">[</span><span class="n">orb_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">x</span>
-
-    <span class="c1"># search for alpha and beta pattern which match to the required symmetry</span>
-    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">nelec_atmost</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">):</span>
-        <span class="n">norb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">excite_level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nelec_atmost</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">beta_only</span> <span class="ow">in</span> <span class="n">gen_str_iter</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">)),</span> <span class="n">excite_level</span><span class="p">):</span>
-                <span class="n">alpha_allow</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">beta_only</span><span class="p">]</span>
-                <span class="n">alpha_orbsym</span> <span class="o">=</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">alpha_allow</span><span class="p">]</span>
-                <span class="n">alpha_target</span> <span class="o">=</span> <span class="n">target</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">beta_only</span><span class="p">:</span>
-                    <span class="n">alpha_target</span> <span class="o">^=</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                <span class="n">alpha_only</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">alpha_target</span><span class="p">,</span> <span class="n">spin</span><span class="o">+</span><span class="n">excite_level</span><span class="p">,</span> <span class="n">alpha_orbsym</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">alpha_only</span><span class="p">:</span>
-                    <span class="n">alpha_only</span> <span class="o">=</span> <span class="p">[</span><span class="n">alpha_allow</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">alpha_only</span><span class="p">]</span>
-                    <span class="k">return</span> <span class="n">alpha_only</span><span class="p">,</span> <span class="n">beta_only</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'No pattern found for wfn irrep </span><span class="si">%s</span><span class="s1"> over orbsym </span><span class="si">%s</span><span class="s1">'</span>
-                           <span class="o">%</span> <span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">))</span>
-
-    <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">aonly</span> <span class="o">=</span> <span class="n">bonly</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">wfnsym</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">aonly</span><span class="p">,</span> <span class="n">bonly</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="n">neleca_left</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">orbleft</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># 1. assume "nelecb_left" doubly occupied orbitals</span>
-        <span class="c1"># search for alpha pattern which match to the required symmetry</span>
-        <span class="n">aonly</span><span class="p">,</span> <span class="n">bonly</span> <span class="o">=</span> <span class="n">orbleft</span><span class="p">[</span><span class="n">symm</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">orbleft</span><span class="p">])],</span> <span class="p">[]</span>
-        <span class="c1"># dcompose doubly occupied orbitals, search for alpha and beta pattern</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">aonly</span><span class="p">)</span> <span class="o">!=</span> <span class="n">spin</span><span class="p">:</span>
-            <span class="n">aonly</span><span class="p">,</span> <span class="n">bonly</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="n">neleca_left</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">orbleft</span><span class="p">])</span>
-
-    <span class="n">ndocc</span> <span class="o">=</span> <span class="n">neleca_left</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">aonly</span><span class="p">)</span> <span class="c1"># == nelecb_left - len(bonly)</span>
-    <span class="n">docc_allow</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orbleft</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-    <span class="n">docc_allow</span><span class="p">[</span><span class="n">aonly</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">docc_allow</span><span class="p">[</span><span class="n">bonly</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">docclst</span> <span class="o">=</span> <span class="n">orbleft</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">docc_allow</span><span class="p">)[</span><span class="mi">0</span><span class="p">]][:</span><span class="n">ndocc</span><span class="p">]</span>
-    <span class="n">stra</span><span class="p">[</span><span class="n">docclst</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">strb</span><span class="p">[</span><span class="n">docclst</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">def</span> <span class="nf">find_addr_</span><span class="p">(</span><span class="n">stra</span><span class="p">,</span> <span class="n">aonly</span><span class="p">,</span> <span class="n">nelec</span><span class="p">):</span>
-        <span class="n">stra</span><span class="p">[</span><span class="n">orbleft</span><span class="p">[</span><span class="n">aonly</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="n">cistring</span><span class="o">.</span><span class="n">str2addr</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="p">(</span><span class="s1">'</span><span class="si">%i</span><span class="s1">'</span><span class="o">*</span><span class="n">norb</span><span class="p">)</span><span class="o">%</span><span class="nb">tuple</span><span class="p">(</span><span class="n">stra</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">if</span> <span class="n">bonly</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">spin</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">aonly</span><span class="p">,</span> <span class="n">socc_only</span> <span class="o">=</span> <span class="n">aonly</span><span class="p">[:</span><span class="o">-</span><span class="n">spin</span><span class="p">],</span> <span class="n">aonly</span><span class="p">[</span><span class="o">-</span><span class="n">spin</span><span class="p">:]</span>
-            <span class="n">stra</span><span class="p">[</span><span class="n">orbleft</span><span class="p">[</span><span class="n">socc_only</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">stra1</span> <span class="o">=</span> <span class="n">stra</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">strb1</span> <span class="o">=</span> <span class="n">strb</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-        <span class="n">addra</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">stra</span><span class="p">,</span> <span class="n">aonly</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
-        <span class="n">addrb</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">strb</span><span class="p">,</span> <span class="n">bonly</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
-        <span class="n">addra1</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">stra1</span><span class="p">,</span> <span class="n">bonly</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
-        <span class="n">addrb1</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">strb1</span><span class="p">,</span> <span class="n">aonly</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
-        <span class="n">ci1</span><span class="p">[</span><span class="n">addra</span><span class="p">,</span><span class="n">addrb</span><span class="p">]</span> <span class="o">=</span> <span class="n">ci1</span><span class="p">[</span><span class="n">addra1</span><span class="p">,</span><span class="n">addrb1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">addra</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">stra</span><span class="p">,</span> <span class="n">aonly</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
-        <span class="n">addrb</span> <span class="o">=</span> <span class="n">find_addr_</span><span class="p">(</span><span class="n">strb</span><span class="p">,</span> <span class="n">bonly</span><span class="p">,</span> <span class="n">nelecb</span><span class="p">)</span>
-        <span class="n">ci1</span><span class="p">[</span><span class="n">addra</span><span class="p">,</span><span class="n">addrb</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-    <span class="k">return</span> <span class="n">ci1</span></div>
+    <span class="k">raise</span> <span class="ne">DeprecationWarning</span></div>
 
 
 <div class="viewcode-block" id="cylindrical_init_guess"><a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.cylindrical_init_guess">[docs]</a><span class="k">def</span> <span class="nf">cylindrical_init_guess</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">singlet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -563,9 +455,9 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="n">orb_lz</span> <span class="o">=</span> <span class="n">wfn_lz</span> <span class="o">=</span> <span class="n">d2h_wfnsym_id</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">occslsta</span> <span class="o">=</span> <span class="n">occslstb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">_gen_occslst</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">neleca</span><span class="p">)</span>
+    <span class="n">occslsta</span> <span class="o">=</span> <span class="n">occslstb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">gen_occslst</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">neleca</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">neleca</span> <span class="o">!=</span> <span class="n">nelecb</span><span class="p">:</span>
-        <span class="n">occslstb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">_gen_occslst</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">nelecb</span><span class="p">)</span>
+        <span class="n">occslstb</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">gen_occslst</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">nelecb</span><span class="p">)</span>
     <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">occslsta</span><span class="p">)</span>
     <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">occslsta</span><span class="p">)</span>
 
@@ -964,6 +856,9 @@
 <span class="sd">            A modified FCI object based on fciobj.</span>
 <span class="sd">    '''</span>
     <span class="kn">import</span> <span class="nn">types</span>
+    <span class="kn">from</span> <span class="nn">pyscf.fci</span> <span class="kn">import</span> <span class="n">direct_uhf</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">direct_uhf</span><span class="o">.</span><span class="n">FCISolver</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">if</span> <span class="s1">'ss_value'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'fix_spin_: kwarg "ss_value" will be removed in future release. '</span>
