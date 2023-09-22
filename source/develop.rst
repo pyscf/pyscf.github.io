@@ -11,6 +11,7 @@ back soon.
 
    code-rule.rst
    contributing.rst
+   develop/ci_developer.rst
 .. develop/gto_developer.rst
 .. develop/scf_developer.rst
 .. develop/dft_developer.rst
