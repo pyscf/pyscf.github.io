@@ -70,8 +70,8 @@ Version          Release date
 1.0 alpha 1      2015-04-07
 ===============  ============
 
-.. _2.2.0: https://github.com/pyscf/pyscf/releases/tag/v2.2.0
 .. _2.3.0: https://github.com/pyscf/pyscf/releases/tag/v2.3.0
+.. _2.2.0: https://github.com/pyscf/pyscf/releases/tag/v2.2.0
 .. _2.1.1: https://github.com/pyscf/pyscf/releases/tag/v2.1.1
 .. _2.0.1: https://github.com/pyscf/pyscf/releases/tag/v2.0.1
 .. _1.7.6: https://github.com/pyscf/pyscf/releases/tag/v1.7.6
