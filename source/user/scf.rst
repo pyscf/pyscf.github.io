@@ -307,6 +307,7 @@ functions, for example,
 Also several response properties are available in PySCF, see the
 examples in :source:`examples/prop/17-stability.py`.
     
+.. _user_scf_restrict:
 
 Spin-restricted, spin-unrestricted, restricted open-shell, and generalized calculations
 =======================================================================================
