@@ -377,6 +377,10 @@
         <li class="md-nav__item"><a href="#user-md--page-root" class="md-nav__link">Molecular Dynamics</a><nav class="md-nav">
               <ul class="md-nav__list">
         <li class="md-nav__item"><a href="#introduction" class="md-nav__link">Introduction</a>
+        </li>
+        <li class="md-nav__item"><a href="#integrators" class="md-nav__link">Integrators</a>
+        </li>
+        <li class="md-nav__item"><a href="#initial-velocity" class="md-nav__link">Initial Velocity</a>
         </li></ul>
             </nav>
         </li>
@@ -477,6 +481,10 @@
         <li class="md-nav__item"><a href="#user-md--page-root" class="md-nav__link">Molecular Dynamics</a><nav class="md-nav">
               <ul class="md-nav__list">
         <li class="md-nav__item"><a href="#introduction" class="md-nav__link">Introduction</a>
+        </li>
+        <li class="md-nav__item"><a href="#integrators" class="md-nav__link">Integrators</a>
+        </li>
+        <li class="md-nav__item"><a href="#initial-velocity" class="md-nav__link">Initial Velocity</a>
         </li></ul>
             </nav>
         </li>
@@ -500,14 +508,7 @@
 <section id="introduction">
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
 <p>Using any available method for computing gradients, molecular dynamics can be run to evolve the nuclei along their potential energy surfaces.
-The MD module in PySCF supports the Velocity-Verlet integration scheme in the NVE ensemble. The positions are evolved according to:</p>
-<div class="math notranslate nohighlight">
-\[\mathbf{r}(t_{i+1}) = \mathbf{r}(t_i) + (\delta t) \mathbf{v}(t_i) + \frac{1}{2}(\delta t)^2 \mathbf{a}(t_i)\]</div>
-<p>and the velocities are evolved as</p>
-<div class="math notranslate nohighlight">
-\[\mathbf{v}(t_{i+1}) = \mathbf{v}(t_i) + (\delta t) \frac{\mathbf{a}(t_{i+1}) + \mathbf{a}(t_i)}{2}\]</div>
-<p>Note that to compute the acceleration, the most common isotope masses are used (rather than the average isotope mass).
-A simple example of a Born-Oppenheimer MD simulation with CASSCF is given in <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/md/00-simple_nve.py">examples/md/00-simple_nve.py</a></p>
+The MD module in PySCF supports both NVE and NVT ensemble integrations. A simple example of an NVE Born-Oppenheimer MD simulation with CASSCF is given in <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/md/00-simple_nve.py">examples/md/00-simple_nve.py</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 
 <span class="sd">'''</span>
@@ -534,7 +535,7 @@ A simple example of a Born-Oppenheimer MD simulation with CASSCF is given in <a 
 <span class="n">myintegrator</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">NVE</span><span class="p">(</span><span class="n">myscanner</span><span class="p">,</span>
                             <span class="n">dt</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                             <span class="n">steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                            <span class="n">energy_output</span><span class="o">=</span><span class="s2">"BOMD.md.energies"</span><span class="p">,</span>
+                            <span class="n">data_output</span><span class="o">=</span><span class="s2">"BOMD.md.data"</span><span class="p">,</span>
                             <span class="n">trajectory_output</span><span class="o">=</span><span class="s2">"BOMD.md.xyz"</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <span class="c1"># Note that we can also just pass the CASSCF object directly to</span>
@@ -542,23 +543,23 @@ A simple example of a Born-Oppenheimer MD simulation with CASSCF is given in <a 
 <span class="c1"># myintegrator = pyscf.md.NVE(mycas, dt=5, steps=100)</span>
 
 <span class="c1"># Close the file streams for the energy and trajectory.</span>
-<span class="n">myintegrator</span><span class="o">.</span><span class="n">energy_output</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">myintegrator</span><span class="o">.</span><span class="n">data_output</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="n">myintegrator</span><span class="o">.</span><span class="n">trajectory_output</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>This will create 2 files, BOMD.md.energies and BOMD.md.xyz that will contain the energy and structures for each frame along the trajectory.
-The BOMD.md.energies will look like</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">time</span>          <span class="n">Epot</span>                 <span class="n">Ekin</span>                 <span class="n">Etot</span>
- <span class="mf">0.00</span>  <span class="o">-</span><span class="mf">1.497083671814E+02</span>  <span class="mf">0.000000000000E+00</span>  <span class="o">-</span><span class="mf">1.497083671814E+02</span>
- <span class="mf">5.00</span>  <span class="o">-</span><span class="mf">1.497083678220E+02</span>  <span class="mf">6.403560409065E-07</span>  <span class="o">-</span><span class="mf">1.497083671817E+02</span>
-<span class="mf">10.00</span>  <span class="o">-</span><span class="mf">1.497083697402E+02</span>  <span class="mf">2.557810719094E-06</span>  <span class="o">-</span><span class="mf">1.497083671824E+02</span>
-<span class="mf">15.00</span>  <span class="o">-</span><span class="mf">1.497083729250E+02</span>  <span class="mf">5.741509150521E-06</span>  <span class="o">-</span><span class="mf">1.497083671835E+02</span>
-<span class="mf">20.00</span>  <span class="o">-</span><span class="mf">1.497083773584E+02</span>  <span class="mf">1.017340316838E-05</span>  <span class="o">-</span><span class="mf">1.497083671850E+02</span>
-<span class="mf">25.00</span>  <span class="o">-</span><span class="mf">1.497083830154E+02</span>  <span class="mf">1.582841563588E-05</span>  <span class="o">-</span><span class="mf">1.497083671870E+02</span>
-<span class="mf">30.00</span>  <span class="o">-</span><span class="mf">1.497083898640E+02</span>  <span class="mf">2.267458853778E-05</span>  <span class="o">-</span><span class="mf">1.497083671894E+02</span>
-<span class="mf">35.00</span>  <span class="o">-</span><span class="mf">1.497083978654E+02</span>  <span class="mf">3.067323581032E-05</span>  <span class="o">-</span><span class="mf">1.497083671922E+02</span>
-<span class="mf">40.00</span>  <span class="o">-</span><span class="mf">1.497084069752E+02</span>  <span class="mf">3.977943396938E-05</span>  <span class="o">-</span><span class="mf">1.497083671958E+02</span>
-<span class="mf">45.00</span>  <span class="o">-</span><span class="mf">1.497084171413E+02</span>  <span class="mf">4.994201038141E-05</span>  <span class="o">-</span><span class="mf">1.497083671993E+02</span>
+<p>This will create 2 files, BOMD.md.data and BOMD.md.xyz that will contain the energy and structures for each frame along the trajectory.
+The BOMD.md.data will look like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">time</span>          <span class="n">Epot</span>                 <span class="n">Ekin</span>                 <span class="n">Etot</span>               <span class="n">T</span>
+    <span class="mf">0.00</span>  <span class="o">-</span><span class="mf">1.497083671804E+02</span>  <span class="mf">0.000000000000E+00</span>  <span class="o">-</span><span class="mf">1.497083671804E+02</span>   <span class="mf">0.0000</span>
+    <span class="mf">5.00</span>  <span class="o">-</span><span class="mf">1.497083678218E+02</span>  <span class="mf">6.402095343905E-07</span>  <span class="o">-</span><span class="mf">1.497083671816E+02</span>   <span class="mf">0.0674</span>
+   <span class="mf">10.00</span>  <span class="o">-</span><span class="mf">1.497083697399E+02</span>  <span class="mf">2.557532001000E-06</span>  <span class="o">-</span><span class="mf">1.497083671823E+02</span>   <span class="mf">0.2692</span>
+   <span class="mf">15.00</span>  <span class="o">-</span><span class="mf">1.497083729245E+02</span>  <span class="mf">5.741058994089E-06</span>  <span class="o">-</span><span class="mf">1.497083671835E+02</span>   <span class="mf">0.6043</span>
+   <span class="mf">20.00</span>  <span class="o">-</span><span class="mf">1.497083773578E+02</span>  <span class="mf">1.017280141026E-05</span>  <span class="o">-</span><span class="mf">1.497083671850E+02</span>   <span class="mf">1.0708</span>
+   <span class="mf">25.00</span>  <span class="o">-</span><span class="mf">1.497083830147E+02</span>  <span class="mf">1.582769986352E-05</span>  <span class="o">-</span><span class="mf">1.497083671870E+02</span>   <span class="mf">1.6660</span>
+   <span class="mf">30.00</span>  <span class="o">-</span><span class="mf">1.497083898631E+02</span>  <span class="mf">2.267377586371E-05</span>  <span class="o">-</span><span class="mf">1.497083671893E+02</span>   <span class="mf">2.3866</span>
+   <span class="mf">35.00</span>  <span class="o">-</span><span class="mf">1.497083978644E+02</span>  <span class="mf">3.067236427680E-05</span>  <span class="o">-</span><span class="mf">1.497083671921E+02</span>   <span class="mf">3.2285</span>
+   <span class="mf">40.00</span>  <span class="o">-</span><span class="mf">1.497084069741E+02</span>  <span class="mf">3.977851890862E-05</span>  <span class="o">-</span><span class="mf">1.497083671956E+02</span>   <span class="mf">4.1870</span>
+   <span class="mf">45.00</span>  <span class="o">-</span><span class="mf">1.497084171401E+02</span>  <span class="mf">4.994098786544E-05</span>  <span class="o">-</span><span class="mf">1.497083671991E+02</span>   <span class="mf">5.2567</span>
 </pre></div>
 </div>
 <p>and the BOMD.md.xyz will look like</p>
@@ -604,6 +605,41 @@ The BOMD.md.energies will look like</p>
 <span class="n">O</span>          <span class="o">-</span><span class="mf">0.00000</span>       <span class="o">-</span><span class="mf">0.00000</span>        <span class="mf">1.20050</span>
 </pre></div>
 </div>
+</section>
+<section id="integrators">
+<h2 id="integrators">Integrators<a class="headerlink" href="#integrators" title="Link to this heading">¶</a></h2>
+<p>The NVE ensemble uses the Velocity-Verlet integration scheme. The positions are evolved according to:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{r}(t_{i+1}) = \mathbf{r}(t_i) + (\delta t) \mathbf{v}(t_i) + \frac{1}{2}(\delta t)^2 \mathbf{a}(t_i)\]</div>
+<p>and the velocities are evolved as</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}(t_{i+1}) = \mathbf{v}(t_i) + (\delta t) \frac{\mathbf{a}(t_{i+1}) + \mathbf{a}(t_i)}{2}\]</div>
+<p>Note that to compute the acceleration, the most common isotope masses are used (rather than the average isotope mass).</p>
+<p>The NVT ensemble only has the Berendsen thermostat implemented. The Berendsen thermostat updates the velocities by weakly coupling the system to a heat bath at some temperature (<span class="math notranslate nohighlight">\(T_0\)</span>). The temperature is therefore corrected such that the deviation exponentially decays with some time constant <span class="math notranslate nohighlight">\(\tau\)</span>. <span class="math notranslate nohighlight">\(\tau\)</span> can also be understood as the strength of the coupling between the system and bath.</p>
+<div class="math notranslate nohighlight">
+\[\frac{dT}{dt} = \frac{T_0 - T}{\tau}\]</div>
+<p>At each time step, the velocities are rescaled according to</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{v}_\mathrm{scaled}(t) = \mathbf{v}(t)\lambda\]</div>
+<p>where <span class="math notranslate nohighlight">\(\lambda\)</span> is given as</p>
+<div class="math notranslate nohighlight">
+\[\lambda = \sqrt{1 + \frac{\delta t}{\tau}\left(\frac{T_0}{T} - 1\right)}\]</div>
+<p>Note that we limit <span class="math notranslate nohighlight">\(\lambda\)</span> to reasonable values. That is, if <span class="math notranslate nohighlight">\(\lambda\)</span> is less 0.9, we set it to 0.9; and if <span class="math notranslate nohighlight">\(\lambda\)</span> is greater than 1.1, we set it to 1.1. See <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/md/04-mb_nvt_berendson.py">examples/md/04-mb_nvt_berendson.py</a> for an example of how to use the Berendson theromstat.</p>
+</section>
+<section id="initial-velocity">
+<h2 id="initial-velocity">Initial Velocity<a class="headerlink" href="#initial-velocity" title="Link to this heading">¶</a></h2>
+<p>The initial velocity for the system can be set through the <cite>veloc</cite> kwarg in the construction of the integrator such as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">integrator</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">NVE</span><span class="p">(</span><span class="n">hf</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">veloc</span><span class="o">=</span><span class="n">init_veloc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This can be useful for restarting a dynamics simulation with a prior velocity, or starting a simulation with a specific temperature. Additionally, the MD module also contains a function to sample the velocities from a Maxwell-Boltzmann distribution at a given temperature (in Kelvin).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">init_veloc</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">MaxwellBotlzmannVelocity</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The Maxwell-Botlzmann distribution at a specific temperature <span class="math notranslate nohighlight">\(T\)</span> for a particle of mass <span class="math notranslate nohighlight">\(m\)</span> is given as</p>
+<div class="math notranslate nohighlight">
+\[f(v)dv = \sqrt{\frac{m}{2\pi k T}}\exp\left(-\frac{mv^2}{2kT}\right)\]</div>
+<p>Since all of the distributions use the same pseudo-random number generator, the specific seed used can be set with the <cite>md.set_seed()</cite> function. The seed can also be set within the <cite>PYSCF_CONFIG_FILE</cite> as the <cite>SEED</cite> variable.</p>
 </section>
 </section>
 
