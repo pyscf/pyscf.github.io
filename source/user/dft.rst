@@ -199,6 +199,13 @@ Alternatively, non-local correlation may be added through the VV10 functional :c
   
 It's important to keep in mind that the evaluation of the VV10 functional involves a double grid integration, so differences in grid size can make an enormous difference in time.
 
+.. _user_dft_collinear:
+
+Generalized KS and collinearity
+======================================
+
+When the Hamiltonian does not commute with :math:`\hat{S}_z`, e.g. in the presence of spin-orbit coupling, generalized Kohn-Sham theory (GKS) can be invoked by ``mf = dft.GKS(mol)``, cf. :ref:`generalized calculations <user_scf_restrict>` and :source:`examples/dft/02-gks.py`. A molecular orbital from GKS may contain both spin-up and spin-down components. As a result, the spin magnetization vector may no longer be in the collinear form :math:`\mathbf{m} = (0,0,m_z)` that an unrestricted calculation yields and which widely used collinear `xc` functionals assume. To handle any spin configuration, PySCF supports the non-collinear `xc` functionals from `mcfun <https://github.com/Multi-collinear/MCfun>`_ :cite:`pu2023` via setting the DFT attribute ``collinear = 'mcol'`` , cf. :source:`examples/dft/14-collinear_gks.py`. Such a non-collinear functional generalizes the widely used collinear functionals that depend on :math:`m_z` to depend on :math:`\mathbf{m}`. It preserves the invariance with respect to global rotations while maintaining the sensitivity to local spin rotations. It additionally has the advantage of well-defined functional derivatives, satisfying no net torque globally from the self-consistent xc magnetic field and retaining the local torque crucial to spin dynamics. For LDA functional, PySCF also implemented a non-collinear version that is accessible via ``collinear = 'ncol'``.
+
 .. _user_dft_pbc:
 
 Periodic Boundary Conditions
