@@ -54,7 +54,7 @@ Prerequisites for manual install are
   * C compiler
   * C++ compiler (optional, but required for XCFun and some extensions)
   * CMake >= 3.10
-  * Python >= 3.6
+  * Python >= 3.7
   * Numpy >= 1.13
   * Scipy >= 0.19
   * h5py >= 2.7
