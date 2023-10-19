@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.fci.addons </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -327,7 +327,6 @@
 <span class="c1"># limitations under the License.</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
@@ -862,61 +861,35 @@
 
 <div class="viewcode-block" id="SpinPenaltyFCISolver">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.SpinPenaltyFCISolver">[docs]</a>
-<span class="k">class</span> <span class="nc">SpinPenaltyFCISolver</span> <span class="p">():</span>
-    <span class="k">pass</span></div>
+<span class="k">class</span> <span class="nc">SpinPenaltyFCISolver</span><span class="p">:</span>
+    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">'SpinPenalty'</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s1">'ss_value'</span><span class="p">,</span> <span class="s1">'ss_penalty'</span><span class="p">,</span> <span class="s1">'base'</span><span class="p">))</span>
 
-<div class="viewcode-block" id="SpinPenaltyMod">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.SpinPenaltyMod">[docs]</a>
-<span class="k">class</span> <span class="nc">SpinPenaltyMod</span> <span class="p">():</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fcibase</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">ss_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">fcibase</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">fcibase</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="n">shift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">davidson_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">davidson_only</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="SpinPenaltyFCISolver.undo_fix_spin">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.SpinPenaltyFCISolver.undo_fix_spin">[docs]</a>
+    <span class="k">def</span> <span class="nf">undo_fix_spin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">))</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">base</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">ss_value</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">ss_penalty</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
 
 
+<div class="viewcode-block" id="SpinPenaltyFCISolver.base_contract_2e">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.SpinPenaltyFCISolver.base_contract_2e">[docs]</a>
+    <span class="k">def</span> <span class="nf">base_contract_2e</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">contract_2e</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="fix_spin_">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.fix_spin_">[docs]</a>
-<span class="k">def</span> <span class="nf">fix_spin_</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">PENALTY</span><span class="p">,</span> <span class="n">ss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">'''If FCI solver cannot stay on spin eigenfunction, this function can</span>
-<span class="sd">    add a shift to the states which have wrong spin.</span>
 
-<span class="sd">    .. math::</span>
-
-<span class="sd">        (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        fciobj : An instance of :class:`FCISolver`</span>
-
-<span class="sd">    Kwargs:</span>
-<span class="sd">        shift : float</span>
-<span class="sd">            Level shift for states which have different spin</span>
-<span class="sd">        ss : number</span>
-<span class="sd">            S^2 expection value == s*(s+1)</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">            A modified FCI object based on fciobj.</span>
-<span class="sd">    '''</span>
-    <span class="kn">import</span> <span class="nn">types</span>
-    <span class="kn">from</span> <span class="nn">pyscf.fci</span> <span class="kn">import</span> <span class="n">direct_uhf</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">direct_uhf</span><span class="o">.</span><span class="n">FCISolver</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-    <span class="k">if</span> <span class="s1">'ss_value'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'fix_spin_: kwarg "ss_value" will be removed in future release. '</span>
-                         <span class="s1">'It was replaced by "ss"</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-        <span class="n">ss_value</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'ss_value'</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">):</span>
-        <span class="c1"># recursion avoidance</span>
-        <span class="n">fciobj</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="n">shift</span>
-        <span class="n">fciobj</span><span class="o">.</span><span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss</span>
-        <span class="k">return</span> <span class="n">fciobj</span>
-    <span class="n">ismodule</span> <span class="o">=</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">ismodule</span> <span class="ow">and</span> <span class="s1">'contract_2e'</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="s1">'__dict__'</span><span class="p">,</span> <span class="p">{})):</span>
-        <span class="k">del</span> <span class="n">fciobj</span><span class="o">.</span><span class="n">contract_2e</span>  <span class="c1"># To avoid initialize twice</span>
-
+<div class="viewcode-block" id="SpinPenaltyFCISolver.contract_2e">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.SpinPenaltyFCISolver.contract_2e">[docs]</a>
     <span class="k">def</span> <span class="nf">contract_2e</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eri</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">link_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nelec</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
             <span class="n">sz</span> <span class="o">=</span> <span class="p">(</span><span class="n">nelec</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">.5</span>
@@ -941,46 +914,66 @@
             <span class="n">tmp</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">ci1</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ss_penalty</span>
 
-        <span class="n">ci0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_contract_2e</span> <span class="p">(</span><span class="n">eri</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">link_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ci0</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">contract_2e</span> <span class="p">(</span><span class="n">eri</span><span class="p">,</span> <span class="n">fcivec</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">link_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">ci1</span> <span class="o">+=</span> <span class="n">ci0</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">fcivec</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ci1</span>
+        <span class="k">return</span> <span class="n">ci1</span></div>
+</div>
 
-    <span class="k">if</span> <span class="n">ismodule</span><span class="p">:</span>
-        <span class="n">base_contract_2e</span> <span class="o">=</span> <span class="n">fciobj</span><span class="o">.</span><span class="n">contract_2e</span>
-        <span class="bp">self</span> <span class="o">=</span> <span class="n">SpinPenaltyMod</span> <span class="p">(</span><span class="n">ss_penalty</span><span class="o">=</span><span class="n">shift</span><span class="p">,</span> <span class="n">ss_value</span><span class="o">=</span><span class="n">ss_value</span><span class="p">,</span>
-                               <span class="n">contract_ss</span><span class="o">=</span><span class="n">fciobj</span><span class="o">.</span><span class="n">contract_ss</span><span class="p">,</span>
-                               <span class="n">base_contract_2e</span><span class="o">=</span><span class="n">base_contract_2e</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-        <span class="n">fciobj</span><span class="o">.</span><span class="n">davidson_only</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">fciobj</span><span class="o">.</span><span class="n">contract_2e</span> <span class="o">=</span> <span class="n">partial</span> <span class="p">(</span><span class="n">contract_2e</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">fciobj</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">fciobj_class</span> <span class="o">=</span> <span class="n">fciobj</span><span class="o">.</span><span class="vm">__class__</span>
-
-    <span class="k">class</span> <span class="nc">FCISolver</span> <span class="p">(</span><span class="n">fciobj_class</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">):</span>
-
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fcibase</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span> <span class="p">(</span><span class="n">fcibase</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">fcibase</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss_value</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="n">shift</span>
-            <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span> <span class="p">((</span><span class="s1">'ss_value'</span><span class="p">,</span> <span class="s1">'ss_penalty'</span><span class="p">,</span> <span class="s1">'base'</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span> <span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">davidson_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">davidson_only</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="k">def</span> <span class="nf">base_contract_2e</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">contract_2e</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">FCISolver</span><span class="o">.</span><span class="n">contract_2e</span> <span class="o">=</span> <span class="n">contract_2e</span>
-    <span class="n">new_fciobj</span> <span class="o">=</span> <span class="n">FCISolver</span> <span class="p">(</span><span class="n">fciobj</span><span class="p">)</span>
-    <span class="n">fciobj</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">new_fciobj</span><span class="o">.</span><span class="vm">__class__</span>
-    <span class="n">fciobj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">new_fciobj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">fciobj</span></div>
 
 <div class="viewcode-block" id="fix_spin">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.fix_spin">[docs]</a>
-<span class="k">def</span> <span class="nf">fix_spin</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">.1</span><span class="p">,</span> <span class="n">ss</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">fix_spin_</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">fciobj</span><span class="p">),</span> <span class="n">shift</span><span class="p">,</span> <span class="n">ss</span><span class="p">)</span></div>
+<span class="k">def</span> <span class="nf">fix_spin</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">PENALTY</span><span class="p">,</span> <span class="n">ss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">'''If FCI solver cannot stay on spin eigenfunction, this function can</span>
+<span class="sd">    add a shift to the states which have wrong spin.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fciobj : An instance of :class:`FCISolver`</span>
+
+<span class="sd">    Kwargs:</span>
+<span class="sd">        shift : float</span>
+<span class="sd">            Level shift for states which have different spin</span>
+<span class="sd">        ss : number</span>
+<span class="sd">            S^2 expection value == s*(s+1)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">            A modified FCI object based on fciobj.</span>
+<span class="sd">    '''</span>
+    <span class="kn">import</span> <span class="nn">types</span>
+    <span class="kn">from</span> <span class="nn">pyscf.fci</span> <span class="kn">import</span> <span class="n">direct_uhf</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">direct_uhf</span><span class="o">.</span><span class="n">FCISolver</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">ModuleType</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">'fix_spin should be applied on FCI object only'</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">'ss_value'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'fix_spin_: kwarg "ss_value" will be removed in future release. '</span>
+                         <span class="s1">'It was replaced by "ss"</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">ss_value</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'ss_value'</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">):</span>
+        <span class="c1"># recursion avoidance</span>
+        <span class="n">fciobj</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="n">shift</span>
+        <span class="n">fciobj</span><span class="o">.</span><span class="n">ss_value</span> <span class="o">=</span> <span class="n">ss_value</span>
+        <span class="k">return</span> <span class="n">fciobj</span>
+
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">SpinPenaltyFCISolver</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">ss_value</span><span class="p">),</span>
+                         <span class="p">(</span><span class="n">SpinPenaltyFCISolver</span><span class="p">,</span> <span class="n">fciobj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="fix_spin_">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.addons.fix_spin_">[docs]</a>
+<span class="k">def</span> <span class="nf">fix_spin_</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">.1</span><span class="p">,</span> <span class="n">ss</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">sp_fci</span> <span class="o">=</span> <span class="n">fix_spin</span><span class="p">(</span><span class="n">fciobj</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">ss</span><span class="p">)</span>
+    <span class="n">fciobj</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">sp_fci</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="n">fciobj</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">sp_fci</span><span class="o">.</span><span class="vm">__dict__</span>
+    <span class="k">return</span> <span class="n">fciobj</span></div>
 
 
 <div class="viewcode-block" id="transform_ci_for_orbital_rotation">
@@ -1106,7 +1099,6 @@
     <span class="k">return</span> <span class="n">nelec</span>
 
 <span class="k">del</span> <span class="p">(</span><span class="n">LARGE_CI_TOL</span><span class="p">,</span> <span class="n">RETURN_STRS</span><span class="p">,</span> <span class="n">PENALTY</span><span class="p">)</span>
-
 </pre></div>
 
           </article>

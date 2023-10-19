@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.rsjk </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -337,7 +337,6 @@
 <span class="sd">    Q. Sun, arXiv:2302.11307</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
@@ -366,6 +365,13 @@
 <div class="viewcode-block" id="RangeSeparatedJKBuilder">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.rsjk.RangeSeparatedJKBuilder">[docs]</a>
 <span class="k">class</span> <span class="nc">RangeSeparatedJKBuilder</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span>
+        <span class="s1">'cell'</span><span class="p">,</span> <span class="s1">'mesh'</span><span class="p">,</span> <span class="s1">'kpts'</span><span class="p">,</span> <span class="s1">'purify'</span><span class="p">,</span> <span class="s1">'omega'</span><span class="p">,</span> <span class="s1">'rs_cell'</span><span class="p">,</span> <span class="s1">'cell_d'</span><span class="p">,</span>
+        <span class="s1">'bvk_kmesh'</span><span class="p">,</span> <span class="s1">'supmol_sr'</span><span class="p">,</span> <span class="s1">'supmol_ft'</span><span class="p">,</span> <span class="s1">'supmol_d'</span><span class="p">,</span> <span class="s1">'cell0_basis_mask'</span><span class="p">,</span>
+        <span class="s1">'ke_cutoff'</span><span class="p">,</span> <span class="s1">'direct_scf_tol'</span><span class="p">,</span> <span class="s1">'time_reversal_symmetry'</span><span class="p">,</span>
+        <span class="s1">'exclude_dd_block'</span><span class="p">,</span> <span class="s1">'allow_drv_nodddd'</span><span class="p">,</span> <span class="s1">'approx_vk_lr_missing_mo'</span><span class="p">,</span>
+    <span class="p">))</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stdout</span>
@@ -404,8 +410,6 @@
         <span class="c1"># TODO: incrementally build SR part</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_vs</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_qindex</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
 <div class="viewcode-block" id="RangeSeparatedJKBuilder.has_long_range">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.rsjk.RangeSeparatedJKBuilder.has_long_range">[docs]</a>
@@ -531,14 +535,14 @@
         <span class="n">qindex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">nbas</span><span class="p">,</span><span class="n">nbas</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
         <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">supmol_sr</span><span class="o">.</span><span class="n">ao_loc</span>
         <span class="k">with</span> <span class="n">supmol_sr</span><span class="o">.</span><span class="n">with_integral_screen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">direct_scf_tol</span><span class="o">**</span><span class="mi">2</span><span class="p">):</span>
-            <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCVHFsetnr_direct_scf</span><span class="p">(</span>
+            <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCVHFnr_int2e_q_cond</span><span class="p">(</span>
                 <span class="n">libpbc</span><span class="o">.</span><span class="n">int2e_sph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cintopt</span><span class="p">,</span>
                 <span class="n">qindex</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
                 <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
                 <span class="n">supmol_sr</span><span class="o">.</span><span class="n">_atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">supmol_sr</span><span class="o">.</span><span class="n">natm</span><span class="p">),</span>
                 <span class="n">supmol_sr</span><span class="o">.</span><span class="n">_bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">supmol_sr</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>
                 <span class="n">supmol_sr</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">))</span>
-        <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCVHFsetnr_sindex</span><span class="p">(</span>
+        <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCVHFnr_sindex</span><span class="p">(</span>
             <span class="n">qindex</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
             <span class="n">supmol_sr</span><span class="o">.</span><span class="n">_atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">supmol_sr</span><span class="o">.</span><span class="n">natm</span><span class="p">),</span>
             <span class="n">supmol_sr</span><span class="o">.</span><span class="n">_bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">supmol_sr</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.symm.addons </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -478,11 +478,45 @@
     <span class="k">return</span> <span class="n">mo1</span></div>
 
 
+
+<div class="viewcode-block" id="find_symmetric_mo">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.addons.find_symmetric_mo">[docs]</a>
+<span class="k">def</span> <span class="nf">find_symmetric_mo</span><span class="p">(</span><span class="n">moso</span><span class="p">,</span> <span class="n">ovlpso</span><span class="p">,</span> <span class="n">thr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Find the list of MO of that thransform like particular irrep</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        moso : 2D float array</span>
+<span class="sd">            Overlap matrix of symmetry-adapted AO and MO, it can be obtained</span>
+<span class="sd">            by reduce(numpy.dot, (csym.T.conj(), s, mo)), where csym taken from</span>
+<span class="sd">            mol.symm_orb, and s is the AO overlap matrix</span>
+<span class="sd">        ovlpso : 2D float array</span>
+<span class="sd">            Overlap matrix between symmetry-adapted AO, it can be obtained</span>
+<span class="sd">            by reduce(numpy.dot, (csym.T.conj(), s, csym))</span>
+
+<span class="sd">    Kwargs:</span>
+<span class="sd">        thr : float</span>
+<span class="sd">            Threshold to consider MO symmetry-adapted</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        1D bool array to select symmetry adapted MO</span>
+<span class="sd">'''</span>
+    <span class="n">irrep_dim</span> <span class="o">=</span> <span class="n">ovlpso</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">diag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,ki-&gt;i'</span><span class="p">,</span> <span class="n">moso</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">ovlpso</span><span class="p">,</span> <span class="n">moso</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+        <span class="n">ovlpso</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">diag_indices</span><span class="p">(</span><span class="n">irrep_dim</span><span class="p">)]</span> <span class="o">+=</span> <span class="mf">1e-12</span>
+        <span class="n">diag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,ki-&gt;i'</span><span class="p">,</span> <span class="n">moso</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">ovlpso</span><span class="p">,</span> <span class="n">moso</span><span class="p">))</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">diag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">thr</span>
+    <span class="k">return</span> <span class="n">idx</span></div>
+
+
+
 <div class="viewcode-block" id="symmetrize_space">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.addons.symmetrize_space">[docs]</a>
 <span class="k">def</span> <span class="nf">symmetrize_space</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">check</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_check'</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-                     <span class="n">tol</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_tol'</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)):</span>
+                     <span class="n">tol</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_tol'</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">),</span>
+                     <span class="n">clean</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_clean'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)):</span>
 <span class="w">    </span><span class="sd">'''Symmetrize the given orbital space.</span>
 
 <span class="sd">    This function is different to the :func:`symmetrize_orb`:  In this function,</span>
@@ -490,12 +524,20 @@
 <span class="sd">    projects out non-symmetric components for each orbital.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        mol : an instance of :class:`Mole`</span>
+
 <span class="sd">        mo : 2D float array</span>
 <span class="sd">            The orbital space to symmetrize</span>
 
 <span class="sd">    Kwargs:</span>
 <span class="sd">        s : 2D float array</span>
 <span class="sd">            Overlap matrix.  If not given, overlap is computed with the input mol.</span>
+<span class="sd">        check : bool</span>
+<span class="sd">            Whether to check orthogonality of input orbitals and try to fix it</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Orthogonality tolerance</span>
+<span class="sd">        clean : bool</span>
+<span class="sd">            Whether to zero out symmetry forbidden orbital coefficients</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        2D orbital coefficients</span>
@@ -512,12 +554,24 @@
 <span class="sd">    ['A', 'A', 'A', 'B1', 'B1', 'B2', 'B2', 'B3', 'B3']</span>
 <span class="sd">    '''</span>
     <span class="kn">from</span> <span class="nn">pyscf.tools</span> <span class="kn">import</span> <span class="n">mo_mapping</span>
+    <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">orth</span>
+
     <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
     <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">s_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">check</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s_mo</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Orbitals are not orthogonalized'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">moso</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">))</span>
+        <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of input orbitals before symmetrization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Input orbitals are not orthogonal, perform Lowdin orthogonalization'</span><span class="p">)</span>
+            <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso</span><span class="p">))</span>
+            <span class="n">s_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">)</span>
+            <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">))</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of orbitals before symmetrization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Input orbitals are not orthogonalized'</span><span class="p">)</span>
 
     <span class="n">mo1</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">csym</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">symm_orb</span><span class="p">):</span>
@@ -525,30 +579,203 @@
         <span class="n">ovlpso</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">csym</span><span class="p">))</span>
 
         <span class="c1"># excluding orbitals which are already symmetrized</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">diag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,ki-&gt;i'</span><span class="p">,</span> <span class="n">moso</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">ovlpso</span><span class="p">,</span> <span class="n">moso</span><span class="p">))</span>
-        <span class="k">except</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-            <span class="n">ovlpso</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">diag_indices</span><span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">+=</span> <span class="mf">1e-12</span>
-            <span class="n">diag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,ki-&gt;i'</span><span class="p">,</span> <span class="n">moso</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">lib</span><span class="o">.</span><span class="n">cho_solve</span><span class="p">(</span><span class="n">ovlpso</span><span class="p">,</span> <span class="n">moso</span><span class="p">))</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">diag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-8</span>
-        <span class="n">orb_exclude</span> <span class="o">=</span> <span class="n">mo</span><span class="p">[:,</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">mo1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orb_exclude</span><span class="p">)</span>
-        <span class="n">moso1</span> <span class="o">=</span> <span class="n">moso</span><span class="p">[:,</span><span class="o">~</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">find_symmetric_mo</span><span class="p">(</span><span class="n">moso</span><span class="p">,</span> <span class="n">ovlpso</span><span class="p">)</span>
+        <span class="n">orb_irrep</span> <span class="o">=</span> <span class="n">mo</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="c1"># rotate MO to symm-adapted AO and back to zero-out non-symmetric part</span>
+            <span class="n">SALC_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orb_irrep</span><span class="p">)</span>
+            <span class="n">orb_irrep</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="p">,</span> <span class="n">SALC_mo</span><span class="p">)</span>
+        <span class="n">moso1</span> <span class="o">=</span> <span class="n">moso</span><span class="p">[:,</span> <span class="o">~</span><span class="n">idx</span><span class="p">]</span>
         <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">moso1</span><span class="p">,</span> <span class="n">moso1</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
 
-        <span class="k">if</span> <span class="n">dm</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-8</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dm</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-8</span> <span class="ow">and</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'</span><span class="si">%5d</span><span class="s1"> orbital(s) symmetrized in irrep </span><span class="si">%3d</span><span class="s1">'</span><span class="p">,</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">e</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">ovlpso</span><span class="p">)</span>
-            <span class="n">mo1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="p">,</span> <span class="n">u</span><span class="p">[:,</span><span class="nb">abs</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">e</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">]))</span>
+            <span class="n">orb_symmetrized</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="p">,</span> <span class="n">u</span><span class="p">[:,</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">e</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">])</span>
+            <span class="n">orb_irrep</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">orb_irrep</span><span class="p">,</span> <span class="n">orb_symmetrized</span><span class="p">])</span>
+
+        <span class="n">moso</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orb_irrep</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">orb_irrep</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">moso</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">moso</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality in irrep </span><span class="si">%3d</span><span class="s1"> after symmetrization: </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Symmetrized orbitals in irrep </span><span class="si">%3d</span><span class="s1"> not orthogonal, perform Lowdin orthogonalization'</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">orb_irrep</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orb_irrep</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso</span><span class="p">))</span>
+            <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orb_irrep</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">orb_irrep</span><span class="p">))</span>
+                               <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">orb_irrep</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality in irrep </span><span class="si">%3d</span><span class="s1"> after symmetrization and orthogonalizastion: </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span>
+                         <span class="n">i</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="n">mo1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orb_irrep</span><span class="p">)</span>
     <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mo1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">nmo</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'mo1.shape[1] != nmo: </span><span class="si">%d</span><span class="s1"> != </span><span class="si">%d</span><span class="s1"> The input orbital space is not symmetrized.</span><span class="se">\n</span><span class="s1"> One '</span>
                          <span class="s1">'possible reason is that the input mol and orbitals '</span>
                          <span class="s1">'are of different orientation.'</span> <span class="o">%</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nmo</span><span class="p">))</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">check</span> <span class="ow">and</span>
-        <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">))</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Orbitals are not orthogonalized'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">moso1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">))</span>
+        <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso1</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of output orbitals after symmetrization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Symmetrized output orbitals are not orthogonalized, perform Lowdin orthogonalization'</span><span class="p">)</span>
+            <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso1</span><span class="p">))</span>
+            <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">))</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of output orbitals after orthogonalization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Output orbitals are not orthogonalized'</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">mo_mapping</span><span class="o">.</span><span class="n">mo_1to1map</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">mo1</span><span class="p">[:,</span><span class="n">idx</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">mo1</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="symmetrize_multidim">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.addons.symmetrize_multidim">[docs]</a>
+<span class="k">def</span> <span class="nf">symmetrize_multidim</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">check</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_check'</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                        <span class="n">tol</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_space_tol'</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">),</span>
+                        <span class="n">keep_phase</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'symm_addons_symmetrize_multidim_keep_phase'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">'''Symmetrize orbitals with respect to multidimensional irreps.</span>
+
+<span class="sd">    Make coefficients of partner functions of multidimensional irreps to be the same.</span>
+<span class="sd">    The functions uses the convention of the libmsym interface, that introduces underscores to</span>
+<span class="sd">    the labels of multidimensional irreps partners.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mol : an instance of :class:`Mole`</span>
+<span class="sd">            Symmetry-adapted basis with multidimensional irreps should be generated by libmsym</span>
+<span class="sd">        mo : 2D float array</span>
+<span class="sd">            The orbital space to symmetrize</span>
+
+<span class="sd">    Kwargs:</span>
+<span class="sd">        s : 2D float array</span>
+<span class="sd">            Overlap matrix.  If not given, overlap is computed with the input mol.</span>
+<span class="sd">        check : bool</span>
+<span class="sd">            Whether to check orthogonality of input orbitals and try to fix it</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Orthogonality tolerance</span>
+<span class="sd">        keep_phase : bool</span>
+<span class="sd">            Whether to keep original orbital phases, rather then make them coherent with the first partner</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        2D orbital coefficients</span>
+
+<span class="sd">    '''</span>
+    <span class="kn">from</span> <span class="nn">pyscf.tools</span> <span class="kn">import</span> <span class="n">mo_mapping</span>
+    <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">orth</span>
+
+    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
+    <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">)</span>
+    <span class="n">mo1</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">moso</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">))</span>
+        <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of input orbitals </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">mo_lowdin</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso</span><span class="p">))</span>
+            <span class="n">max_non_orth_lowdin</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_lowdin</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo_lowdin</span><span class="p">))</span> <span class="o">-</span>
+                                      <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality after Lowdin orthogonalization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">max_non_orth_lowdin</span> <span class="o">-</span> <span class="n">max_non_orth</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="o">/</span><span class="mi">100</span><span class="p">:</span>
+                <span class="n">mo</span> <span class="o">=</span> <span class="n">mo_lowdin</span>
+                <span class="n">s_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">mo</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Use Lowdin-orthogonalizied input orbitals'</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Use original input orbitals'</span><span class="p">)</span>
+    <span class="n">irreps_mdim</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">irreps_1dim</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">irrep</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">irrep_name</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">in</span> <span class="n">irrep</span><span class="p">:</span>
+            <span class="n">added</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">irrep</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">partners</span> <span class="ow">in</span> <span class="n">irreps_mdim</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">base</span> <span class="ow">in</span> <span class="n">elem</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">partners</span><span class="p">):</span>
+                    <span class="n">partners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span>
+                    <span class="n">added</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">added</span><span class="p">:</span>
+                <span class="c1"># new base</span>
+                <span class="n">irreps_mdim</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">irrep</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">irreps_1dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">irrep</span> <span class="ow">in</span> <span class="n">irreps_1dim</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">irrep_name</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span>
+        <span class="n">csym</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">symm_orb</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">moso</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s_mo</span><span class="p">)</span>
+        <span class="n">ovlpso</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">csym</span><span class="p">))</span>
+        <span class="c1"># find MO that thransform like irrep</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">find_symmetric_mo</span><span class="p">(</span><span class="n">moso</span><span class="p">,</span> <span class="n">ovlpso</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">!=</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Number of symmetry-adapted MOs in not equal to dimensionality '</span>
+                             <span class="s1">'of irrep </span><span class="si">%s</span><span class="s1">: </span><span class="si">%d</span><span class="s1"> != </span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">irrep_name</span><span class="p">[</span><span class="n">irrep</span><span class="p">],</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">)))</span>
+        <span class="n">mo1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mo</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">partners</span> <span class="ow">in</span> <span class="n">irreps_mdim</span><span class="p">:</span>
+        <span class="n">SALC_ao_partners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">SALC_ov_partners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">SALC_mo_partners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">irrep</span> <span class="ow">in</span> <span class="n">partners</span><span class="p">:</span>
+            <span class="n">csym</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">symm_orb</span><span class="p">[</span><span class="n">mol</span><span class="o">.</span><span class="n">irrep_name</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">irrep</span><span class="p">)]</span>
+            <span class="n">SALC_ao_partners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csym</span><span class="p">)</span>
+            <span class="n">moso</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s_mo</span><span class="p">)</span>
+            <span class="n">ovlpso</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">csym</span><span class="p">))</span>
+            <span class="n">SALC_ov_partners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ovlpso</span><span class="p">)</span>
+            <span class="c1"># find MO that thransform like irrep</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">find_symmetric_mo</span><span class="p">(</span><span class="n">moso</span><span class="p">,</span> <span class="n">ovlpso</span><span class="p">)</span>
+            <span class="n">mo_irrep</span> <span class="o">=</span> <span class="n">mo</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">!=</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Number of symmetry-adapted MOs in not equal to dimensionality '</span>
+                                 <span class="s1">'of irrep </span><span class="si">%s</span><span class="s1">: </span><span class="si">%d</span><span class="s1"> != </span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">irrep_name</span><span class="p">[</span><span class="n">irrep</span><span class="p">],</span> <span class="n">csym</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">sum</span><span class="p">(</span><span class="n">idx</span><span class="p">)))</span>
+            <span class="c1"># rotate MO to symm-adapted AO</span>
+            <span class="n">SALC_mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">mo_irrep</span><span class="p">)</span>
+            <span class="n">SALC_mo_partners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SALC_mo</span><span class="p">)</span>
+        <span class="n">irrep_dim</span> <span class="o">=</span> <span class="n">SALC_mo_partners</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">phases</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">irrep_dim</span><span class="p">)]</span>
+        <span class="n">idxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">irrep_dim</span><span class="p">))]</span>
+        <span class="n">SALC_mo_average</span> <span class="o">=</span> <span class="n">SALC_mo_partners</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">partners</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">SALC_ov_partners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">SALC_ov_partners</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Symmetry-adapted AO of partner functions </span><span class="si">%s</span><span class="s1"> and </span><span class="si">%s</span><span class="s1"> are not compatible'</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">partners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">partners</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">ov_0i</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">SALC_mo_partners</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span>
+                                       <span class="n">SALC_ov_partners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="n">SALC_mo_partners</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">mo_mapping</span><span class="o">.</span><span class="n">mo_1to1map</span><span class="p">(</span><span class="n">ov_0i</span><span class="p">)</span>
+            <span class="n">idxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">ov_0i</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]))</span>
+            <span class="n">phases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+            <span class="n">partners_mo_i</span> <span class="o">=</span> <span class="n">phase</span><span class="o">*</span><span class="n">SALC_mo_partners</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="n">SALC_mo_average</span> <span class="o">+=</span> <span class="n">partners_mo_i</span>
+        <span class="n">SALC_mo_average</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">partners</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">csym</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">SALC_mo</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">SALC_ao_partners</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">SALC_mo_partners</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">keep_phase</span><span class="p">:</span>
+                <span class="n">SALC_mo</span> <span class="o">=</span> <span class="n">phase</span><span class="o">*</span><span class="n">SALC_mo_average</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">SALC_mo</span> <span class="o">=</span> <span class="n">SALC_mo_average</span>
+            <span class="n">orb_done</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">csym</span><span class="p">,</span> <span class="n">SALC_mo</span><span class="p">)</span>
+            <span class="n">moso1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">orb_done</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">orb_done</span><span class="p">))</span>
+            <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso1</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">moso1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality after symmetrization of </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">partners</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="n">orb_done</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orb_done</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso1</span><span class="p">))</span>
+                <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orb_done</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">orb_done</span><span class="p">))</span>
+                                   <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">orb_done</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'After additional orthogonalization: </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="n">mo1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orb_done</span><span class="p">)</span>
+    <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">moso1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">))</span>
+        <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">moso1</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of output orbitals after symmetrization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Output orbitals are not orthogonalized, perform Lowdin orthogonalization'</span><span class="p">)</span>
+            <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo1</span><span class="p">,</span> <span class="n">orth</span><span class="o">.</span><span class="n">lowdin</span><span class="p">(</span><span class="n">moso1</span><span class="p">))</span>
+            <span class="n">max_non_orth</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">))</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nmo</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'Non-orthogonality of output orbitals after orthogonalization </span><span class="si">%8.2e</span><span class="s1">'</span><span class="p">,</span> <span class="n">max_non_orth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_non_orth</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Output orbitals are not orthogonalized'</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">mo_mapping</span><span class="o">.</span><span class="n">mo_1to1map</span><span class="p">(</span><span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="n">mo1</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">mo1</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span></div>
+
 
 
 <div class="viewcode-block" id="std_symb">

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.gto.basis.parse_nwchem </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -312,7 +312,7 @@
             
   <h1 id="modules-pyscf-gto-basis-parse-nwchem--page-root">Source code for pyscf.gto.basis.parse_nwchem</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2023 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -343,16 +343,13 @@
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">_std_symbol</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib.exceptions</span> <span class="kn">import</span> <span class="n">BasisNotFoundError</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis.parse_nwchem_ecp</span> <span class="kn">import</span> <span class="n">DISABLE_EVAL</span><span class="p">,</span> <span class="n">MAXL</span><span class="p">,</span> <span class="n">SPDF</span><span class="p">,</span> <span class="n">MAPSPDF</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis.parse_nwchem_ecp</span> <span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">parse_ecp</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis.parse_nwchem_ecp</span> <span class="kn">import</span> <span class="n">load</span> <span class="k">as</span> <span class="n">load_ecp</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis.parse_nwchem_ecp</span> <span class="kn">import</span> <span class="n">convert_ecp_to_nwchem</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
-<span class="n">DISABLE_EVAL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'DISABLE_EVAL'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-
-<span class="n">MAXL</span> <span class="o">=</span> <span class="mi">15</span>
-<span class="n">SPDF</span> <span class="o">=</span> <span class="s1">'SPDFGHIKLMNORTU'</span>
-<span class="n">MAPSPDF</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">l</span> <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">SPDF</span><span class="p">)}</span>
-
 <span class="n">BASIS_SET_DELIMITER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'# *BASIS SET.*</span><span class="se">\n</span><span class="s1">|END</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-<span class="n">ECP_DELIMITER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> *ECP *</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
 
 <div class="viewcode-block" id="parse">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.parse">[docs]</a>
@@ -415,6 +412,7 @@
 <div class="viewcode-block" id="load">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.load">[docs]</a>
 <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Load basis for atom of symb from file'''</span>
     <span class="n">raw_basis</span> <span class="o">=</span> <span class="n">search_seg</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">raw_basis</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span></div>
 
@@ -427,28 +425,34 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dat</span> <span class="ow">or</span> <span class="n">dat</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'#'</span><span class="p">):</span>
             <span class="k">continue</span>
         <span class="k">elif</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'SP'</span><span class="p">:</span>
                 <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
                 <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">MAPSPDF</span><span class="p">:</span>
                 <span class="n">l</span> <span class="o">=</span> <span class="n">MAPSPDF</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
                 <span class="n">current_basis</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="p">]</span>
                 <span class="n">basis_parsed</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_basis</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Not basis data'</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'D'</span><span class="p">,</span><span class="s1">'e'</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">dat</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">DISABLE_EVAL</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Failed to parse basis </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Failed to parse </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">dat</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="s1">','</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dat</span><span class="p">)))</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span>
                                          <span class="s1">'</span><span class="se">\n</span><span class="s1">or the required basis file not existed.'</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Failed to parse basis'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Not basis data'</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'SP'</span><span class="p">:</span>
                 <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
                 <span class="n">basis_parsed</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dat</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
@@ -456,92 +460,13 @@
                 <span class="n">current_basis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
     <span class="n">basis_sorted</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">bs</span> <span class="ow">in</span> <span class="n">basis_parsed</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bs</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">basis_sorted</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Basis data not found in "</span><span class="si">{</span><span class="n">raw_basis</span><span class="si">}</span><span class="s1">"'</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Basis data not found'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">optimize</span><span class="p">:</span>
         <span class="n">basis_sorted</span> <span class="o">=</span> <span class="n">optimize_contraction</span><span class="p">(</span><span class="n">basis_sorted</span><span class="p">)</span>
 
     <span class="n">basis_sorted</span> <span class="o">=</span> <span class="n">remove_zero</span><span class="p">(</span><span class="n">basis_sorted</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">basis_sorted</span>
-
-<div class="viewcode-block" id="parse_ecp">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.parse_ecp">[docs]</a>
-<span class="k">def</span> <span class="nf">parse_ecp</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">symb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">symb</span> <span class="o">=</span> <span class="n">_std_symbol</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
-        <span class="n">raw_data</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">raw_data</span><span class="p">):</span>
-            <span class="n">dat0</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">dat0</span> <span class="ow">and</span> <span class="n">dat0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symb</span><span class="p">:</span>
-                <span class="k">break</span>
-        <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'ECP not found for  </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">symb</span><span class="p">)</span>
-        <span class="n">seg</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">i</span><span class="p">:]:</span>
-            <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">dat</span><span class="p">:</span> <span class="c1"># remove empty lines</span>
-                <span class="k">if</span> <span class="p">((</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="ow">and</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">symb</span><span class="o">.</span><span class="n">upper</span><span class="p">())):</span>
-                    <span class="k">break</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">seg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">seg</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-
-    <span class="n">ecptxt</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">seg</span><span class="p">:</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'#'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="n">dat_upper</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">dat</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dat_upper</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'END'</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">dat_upper</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'ECP'</span><span class="p">)):</span>
-            <span class="n">ecptxt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_parse_ecp</span><span class="p">(</span><span class="n">ecptxt</span><span class="p">)</span></div>
-
-
-<span class="k">def</span> <span class="nf">_parse_ecp</span><span class="p">(</span><span class="n">raw_ecp</span><span class="p">):</span>
-    <span class="n">ecp_add</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">nelec</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">raw_ecp</span><span class="p">:</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">dat</span> <span class="ow">or</span> <span class="n">dat</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'#'</span><span class="p">):</span> <span class="c1"># comment line</span>
-            <span class="k">continue</span>
-        <span class="k">elif</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'NELEC'</span><span class="p">:</span>
-                <span class="n">nelec</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
-                <span class="k">continue</span>
-            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">'UL'</span><span class="p">:</span>
-                <span class="n">ecp_add</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">ecp_add</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">MAPSPDF</span><span class="p">[</span><span class="n">key</span><span class="p">]])</span>
-            <span class="c1"># up to r^6</span>
-            <span class="n">by_ang</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
-            <span class="n">ecp_add</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">by_ang</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">line</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'D'</span><span class="p">,</span><span class="s1">'e'</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-            <span class="n">l</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">coef</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">DISABLE_EVAL</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Failed to parse ecp </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">line</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">coef</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="s1">','</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span>
-            <span class="n">by_ang</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">nelec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[]</span>
-
-    <span class="n">bsort</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">MAXL</span><span class="p">):</span>
-        <span class="n">bsort</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">ecp_add</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">l</span><span class="p">])</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">bsort</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'ECP data not found in "</span><span class="si">{</span><span class="n">raw_ecp</span><span class="si">}</span><span class="s1">"'</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">nelec</span><span class="p">,</span> <span class="n">bsort</span><span class="p">]</span>
-
-<div class="viewcode-block" id="load_ecp">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.load_ecp">[docs]</a>
-<span class="k">def</span> <span class="nf">load_ecp</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_parse_ecp</span><span class="p">(</span><span class="n">search_ecp</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">))</span></div>
-
 
 <span class="k">def</span> <span class="nf">search_seg</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
     <span class="n">symb</span> <span class="o">=</span> <span class="n">_std_symbol</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
@@ -558,29 +483,6 @@
             <span class="n">raw_basis</span> <span class="o">=</span> <span class="n">dat</span>
             <span class="k">break</span>
     <span class="k">return</span> <span class="n">raw_basis</span>
-
-<span class="k">def</span> <span class="nf">search_ecp</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
-    <span class="n">symb</span> <span class="o">=</span> <span class="n">_std_symbol</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
-        <span class="n">fdata</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ECP_DELIMITER</span><span class="p">,</span> <span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fdata</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">[]</span>
-
-    <span class="n">fdata</span> <span class="o">=</span> <span class="n">fdata</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fdata</span><span class="p">):</span>
-        <span class="n">dat0</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">dat0</span> <span class="ow">and</span> <span class="n">dat0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symb</span><span class="p">:</span>
-            <span class="k">break</span>
-    <span class="n">seg</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">fdata</span><span class="p">[</span><span class="n">i</span><span class="p">:]:</span>
-        <span class="n">dat</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">dat</span><span class="p">:</span>  <span class="c1"># remove empty lines</span>
-            <span class="k">if</span> <span class="p">((</span><span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="ow">and</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="n">symb</span><span class="o">.</span><span class="n">upper</span><span class="p">())):</span>
-                <span class="k">return</span> <span class="n">seg</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">seg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">[]</span>
-
 
 <div class="viewcode-block" id="convert_basis_to_nwchem">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.convert_basis_to_nwchem">[docs]</a>
@@ -612,25 +514,6 @@
         <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'</span><span class="si">%-2s</span><span class="s1">    </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">symb</span><span class="p">,</span> <span class="n">SPDF</span><span class="p">[</span><span class="n">bas</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
         <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">bas</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'</span><span class="si">%15.9f</span><span class="s1">'</span><span class="o">%</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">))</span>
-    <span class="k">return</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="convert_ecp_to_nwchem">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_nwchem.convert_ecp_to_nwchem">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_ecp_to_nwchem</span><span class="p">(</span><span class="n">symb</span><span class="p">,</span> <span class="n">ecp</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">'''Convert the internal ecp format to NWChem format string'''</span>
-    <span class="n">symb</span> <span class="o">=</span> <span class="n">_std_symbol</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'</span><span class="si">%-2s</span><span class="s1"> nelec </span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">symb</span><span class="p">,</span> <span class="n">ecp</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
-
-    <span class="k">for</span> <span class="n">ecp_block</span> <span class="ow">in</span> <span class="n">ecp</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">ecp_block</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'</span><span class="si">%-2s</span><span class="s1"> ul'</span> <span class="o">%</span> <span class="n">symb</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'</span><span class="si">%-2s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">symb</span><span class="p">,</span> <span class="n">SPDF</span><span class="p">[</span><span class="n">l</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
-        <span class="k">for</span> <span class="n">r_order</span><span class="p">,</span> <span class="n">dat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ecp_block</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="k">for</span> <span class="n">e</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="n">dat</span><span class="p">:</span>
-                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'</span><span class="si">%d</span><span class="s1">    </span><span class="si">%15.9f</span><span class="s1">  </span><span class="si">%15.9f</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">r_order</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
     <span class="k">return</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
 
 

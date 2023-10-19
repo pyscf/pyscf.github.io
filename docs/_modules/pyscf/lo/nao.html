@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.lo.nao </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -335,7 +335,7 @@
 <span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">lru_cache</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
@@ -347,7 +347,7 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="c1"># Note the valence space for Li, Be may need include 2p, Al..Cl may need 3d ...</span>
-<span class="c1"># This is No. of shells, not the atomic configuations</span>
+<span class="c1"># This is No. of shells, not the atomic configurations</span>
 <span class="c1">#     core       core+valence</span>
 <span class="c1"># core+valence = lambda nuc, l: \</span>
 <span class="c1">#            int(numpy.ceil(elements.CONFIGURATION[nuc][l]/(4*l+2.)))</span>
@@ -389,6 +389,11 @@
     <span class="n">pre_occ</span><span class="p">,</span> <span class="n">pre_nao</span> <span class="o">=</span> <span class="n">_prenao_sub</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
     <span class="n">cnao</span> <span class="o">=</span> <span class="n">_nao_sub</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">pre_occ</span><span class="p">,</span> <span class="n">pre_nao</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">restore</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
+            <span class="c1"># The atomic natural character for Cartesian basis is not clearly</span>
+            <span class="c1"># defined. Skip restore.</span>
+            <span class="k">return</span> <span class="n">cnao</span>
+
         <span class="c1"># restore natural character</span>
         <span class="n">p_nao</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">cnao</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cnao</span><span class="p">))</span>
         <span class="n">s_nao</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">p_nao</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -416,10 +421,12 @@
 
             <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
                 <span class="n">degen</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="n">p_frag</span> <span class="o">=</span> <span class="n">_cart_average_mat</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="n">s_frag</span> <span class="o">=</span> <span class="n">_cart_average_mat</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">degen</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="n">p_frag</span> <span class="o">=</span> <span class="n">_spheric_average_mat</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">degen</span><span class="p">)</span>
-            <span class="n">s_frag</span> <span class="o">=</span> <span class="n">_spheric_average_mat</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">degen</span><span class="p">)</span>
+                <span class="n">p_frag</span> <span class="o">=</span> <span class="n">_sph_average_mat</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="n">s_frag</span> <span class="o">=</span> <span class="n">_sph_average_mat</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
             <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">p_frag</span><span class="p">,</span> <span class="n">s_frag</span><span class="p">)</span>
             <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -505,12 +512,24 @@
         <span class="n">count</span><span class="p">[</span><span class="n">ia</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">+=</span> <span class="n">nc</span>
     <span class="k">return</span> <span class="n">core_lst</span><span class="p">,</span> <span class="n">val_lst</span><span class="p">,</span> <span class="n">rydbg_lst</span>
 
-<span class="k">def</span> <span class="nf">_spheric_average_mat</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="n">degen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">degen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">degen</span> <span class="o">=</span> <span class="n">l</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="n">nd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">//</span> <span class="n">degen</span>
-    <span class="n">mat_frag</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">lst</span><span class="p">][:,</span><span class="n">lst</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nd</span><span class="p">,</span><span class="n">degen</span><span class="p">,</span><span class="n">nd</span><span class="p">,</span><span class="n">degen</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'imjn-&gt;ij'</span><span class="p">,</span> <span class="n">mat_frag</span><span class="p">)</span> <span class="o">/</span> <span class="n">degen</span>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_cart_averge_wt</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Weight matrix for spherical symmetry averaging in Cartesian GTOs'''</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">mole</span><span class="o">.</span><span class="n">cart2sph</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="s1">'sp'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pi,qi-&gt;pq'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_cart_average_mat</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lst</span><span class="p">):</span>
+    <span class="n">degen</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">nshl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">//</span> <span class="n">degen</span>
+    <span class="n">submat</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">lst</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">lst</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nshl</span><span class="p">,</span><span class="n">degen</span><span class="p">,</span><span class="n">nshl</span><span class="p">,</span><span class="n">degen</span><span class="p">)</span>
+    <span class="n">wt</span> <span class="o">=</span> <span class="n">_cart_averge_wt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'imjn,mn-&gt;ij'</span><span class="p">,</span> <span class="n">submat</span><span class="p">,</span> <span class="n">wt</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_sph_average_mat</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">lst</span><span class="p">):</span>
+    <span class="n">degen</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">nshl</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">//</span> <span class="n">degen</span>
+    <span class="n">submat</span> <span class="o">=</span> <span class="n">mat</span><span class="p">[</span><span class="n">lst</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">lst</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nshl</span><span class="p">,</span><span class="n">degen</span><span class="p">,</span><span class="n">nshl</span><span class="p">,</span><span class="n">degen</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'imjm-&gt;ij'</span><span class="p">,</span> <span class="n">submat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="set_atom_conf">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.nao.set_atom_conf">[docs]</a>

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.newton_ah </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -337,6 +337,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.scf</span> <span class="kn">import</span> <span class="n">_response_functions</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">newton_ah</span>
 
 <div class="viewcode-block" id="gen_g_hop_rhf">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.newton_ah.gen_g_hop_rhf">[docs]</a>
@@ -515,11 +516,71 @@
         <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vo</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nv</span><span class="p">,</span><span class="n">no</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">z</span>
 
+<span class="k">class</span> <span class="nc">_SecondOrderKRHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
+    <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_rhf</span>
+
+    <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">p0</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">occ</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">):</span>
+            <span class="n">occidx</span> <span class="o">=</span> <span class="n">occ</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">viridx</span> <span class="o">=</span> <span class="o">~</span><span class="n">occidx</span>
+            <span class="n">nocc</span> <span class="o">=</span> <span class="n">occidx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">nvir</span> <span class="o">=</span> <span class="n">viridx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">nmo</span> <span class="o">=</span> <span class="n">nocc</span> <span class="o">+</span> <span class="n">nvir</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dx</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">dr</span><span class="p">[</span><span class="n">viridx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">occidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p0</span><span class="o">+</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">]</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">-</span> <span class="n">dr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">p0</span> <span class="o">+=</span> <span class="n">nocc</span> <span class="o">*</span> <span class="n">nvir</span>
+
+            <span class="n">u1</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">u0</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">u1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)])</span>
+
+<span class="k">class</span> <span class="nc">_SecondOrderKUHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
+    <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_uhf</span>
+
+    <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">p0</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">occ</span> <span class="ow">in</span> <span class="n">mo_occ</span><span class="p">:</span>
+            <span class="n">ua</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
+                <span class="n">occidx</span> <span class="o">=</span> <span class="n">occ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="n">viridx</span> <span class="o">=</span> <span class="o">~</span><span class="n">occidx</span>
+                <span class="n">nocc</span> <span class="o">=</span> <span class="n">occidx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">nvir</span> <span class="o">=</span> <span class="n">viridx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">nmo</span> <span class="o">=</span> <span class="n">nocc</span> <span class="o">+</span> <span class="n">nvir</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dx</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">dr</span><span class="p">[</span><span class="n">viridx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">occidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p0</span><span class="o">+</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">]</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">-</span> <span class="n">dr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">p0</span> <span class="o">+=</span> <span class="n">nocc</span> <span class="o">*</span> <span class="n">nvir</span>
+                <span class="n">u1</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">u0</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">ua</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ua</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">u1</span><span class="p">))</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ua</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
+              <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_SecondOrderKROHF</span><span class="p">(</span><span class="n">_SecondOrderKRHF</span><span class="p">):</span>
+    <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_rohf</span>
 
 <div class="viewcode-block" id="newton">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.newton_ah.newton">[docs]</a>
 <span class="k">def</span> <span class="nf">newton</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">newton_ah</span>
     <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span> <span class="k">as</span> <span class="n">pscf</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">pscf</span><span class="o">.</span><span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="p">):</span>
         <span class="c1"># Note for single k-point other than gamma point (mf.kpt != 0) mf object,</span>
@@ -529,96 +590,15 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">mf</span>
 
-    <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mf_doc</span> <span class="o">=</span> <span class="s1">''</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">mf_doc</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__doc__</span>
-
-    <span class="k">class</span> <span class="nc">SecondOrderKRHF</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
-        <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">mf_doc</span> <span class="o">+</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="vm">__doc__</span>
-        <span class="fm">__init__</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="fm">__init__</span>
-        <span class="n">dump_flags</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">dump_flags</span>
-        <span class="n">build</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">build</span>
-        <span class="n">kernel</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">kernel</span>
-
-        <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_rhf</span>
-
-        <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="n">p0</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">occ</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">):</span>
-                <span class="n">occidx</span> <span class="o">=</span> <span class="n">occ</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                <span class="n">viridx</span> <span class="o">=</span> <span class="o">~</span><span class="n">occidx</span>
-                <span class="n">nocc</span> <span class="o">=</span> <span class="n">occidx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                <span class="n">nvir</span> <span class="o">=</span> <span class="n">viridx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                <span class="n">nmo</span> <span class="o">=</span> <span class="n">nocc</span> <span class="o">+</span> <span class="n">nvir</span>
-                <span class="n">dr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dx</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-                <span class="n">dr</span><span class="p">[</span><span class="n">viridx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">occidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p0</span><span class="o">+</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">]</span>
-                <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">-</span> <span class="n">dr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-                <span class="n">p0</span> <span class="o">+=</span> <span class="n">nocc</span> <span class="o">*</span> <span class="n">nvir</span>
-
-                <span class="n">u1</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">u0</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">u1</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)])</span>
-
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">pscf</span><span class="o">.</span><span class="n">kuhf</span><span class="o">.</span><span class="n">KUHF</span><span class="p">):</span>
-        <span class="k">class</span> <span class="nc">SecondOrderKUHF</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
-            <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">mf_doc</span> <span class="o">+</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="vm">__doc__</span>
-            <span class="fm">__init__</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="fm">__init__</span>
-            <span class="n">dump_flags</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">dump_flags</span>
-            <span class="n">build</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">build</span>
-            <span class="n">kernel</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="o">.</span><span class="n">kernel</span>
-
-            <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_uhf</span>
-
-            <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="n">p0</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">occ</span> <span class="ow">in</span> <span class="n">mo_occ</span><span class="p">:</span>
-                    <span class="n">ua</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-                        <span class="n">occidx</span> <span class="o">=</span> <span class="n">occ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                        <span class="n">viridx</span> <span class="o">=</span> <span class="o">~</span><span class="n">occidx</span>
-                        <span class="n">nocc</span> <span class="o">=</span> <span class="n">occidx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                        <span class="n">nvir</span> <span class="o">=</span> <span class="n">viridx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                        <span class="n">nmo</span> <span class="o">=</span> <span class="n">nocc</span> <span class="o">+</span> <span class="n">nvir</span>
-                        <span class="n">dr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dx</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-                        <span class="n">dr</span><span class="p">[</span><span class="n">viridx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">occidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p0</span><span class="o">+</span><span class="n">nocc</span><span class="o">*</span><span class="n">nvir</span><span class="p">]</span>
-                        <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">-</span> <span class="n">dr</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-                        <span class="n">p0</span> <span class="o">+=</span> <span class="n">nocc</span> <span class="o">*</span> <span class="n">nvir</span>
-                        <span class="n">u1</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">u0</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">ua</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u1</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">ua</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">u1</span><span class="p">))</span>
-                    <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ua</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-
-            <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">mo</span> <span class="o">=</span> <span class="p">([</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span>
-                      <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">mo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
-                <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">SecondOrderKUHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_SecondOrderKUHF</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">pscf</span><span class="o">.</span><span class="n">krohf</span><span class="o">.</span><span class="n">KROHF</span><span class="p">):</span>
-        <span class="k">class</span> <span class="nc">SecondOrderKROHF</span><span class="p">(</span><span class="n">SecondOrderKRHF</span><span class="p">):</span>
-            <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_rohf</span>
-
-        <span class="k">return</span> <span class="n">SecondOrderKROHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_SecondOrderKROHF</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">pscf</span><span class="o">.</span><span class="n">kghf</span><span class="o">.</span><span class="n">KGHF</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">SecondOrderKRHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_SecondOrderKRHF</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">mf</span><span class="p">),</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
@@ -646,8 +626,6 @@
     <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">pscf</span><span class="o">.</span><span class="n">newton</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-
-
 </pre></div>
 
           </article>

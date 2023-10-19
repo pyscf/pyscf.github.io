@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.ci.cisd </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -336,6 +336,7 @@
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.cc</span> <span class="kn">import</span> <span class="n">ccsd</span>
@@ -1133,32 +1134,37 @@
         <span class="k">return</span> <span class="n">ci</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="s1">'Set </span><span class="si">%s</span><span class="s1"> as a scanner'</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="n">CISD_Scanner</span><span class="o">.</span><span class="n">__name_mixin__</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">CISD_Scanner</span><span class="p">(</span><span class="n">ci</span><span class="p">),</span> <span class="p">(</span><span class="n">CISD_Scanner</span><span class="p">,</span> <span class="n">ci</span><span class="o">.</span><span class="vm">__class__</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
 
-    <span class="k">class</span> <span class="nc">CISD_Scanner</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">SinglePointScanner</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
-        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">ci0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+<div class="viewcode-block" id="CISD_Scanner">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.ci.html#pyscf.ci.cisd.CISD_Scanner">[docs]</a>
+<span class="k">class</span> <span class="nc">CISD_Scanner</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">SinglePointScanner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ci</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">ci</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
 
-            <span class="n">mf_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
-            <span class="n">mf_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="o">.</span><span class="n">mo_coeff</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="o">.</span><span class="n">mo_occ</span>
-            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span> <span class="s1">'size'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_size</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">ci0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># FIXME: Whether to use the initial guess from last step?</span>
-                <span class="c1"># If root flips, large errors may be found in the solutions</span>
-                <span class="n">ci0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">ci0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span>
-    <span class="k">return</span> <span class="n">CISD_Scanner</span><span class="p">(</span><span class="n">ci</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">ci0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="n">mf_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
+        <span class="n">mf_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="o">.</span><span class="n">mo_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="o">.</span><span class="n">mo_occ</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span> <span class="s1">'size'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_size</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ci0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># FIXME: Whether to use the initial guess from last step?</span>
+            <span class="c1"># If root flips, large errors may be found in the solutions</span>
+            <span class="n">ci0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">ci0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span></div>
 
 
 
@@ -1217,17 +1223,20 @@
     <span class="n">direct</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'ci_cisd_CISD_direct'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">async_io</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'ci_cisd_CISD_async_io'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span>
+        <span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'max_cycle'</span><span class="p">,</span> <span class="s1">'max_space'</span><span class="p">,</span> <span class="s1">'lindep'</span><span class="p">,</span>
+        <span class="s1">'level_shift'</span><span class="p">,</span> <span class="s1">'direct'</span><span class="p">,</span> <span class="s1">'async_io'</span><span class="p">,</span> <span class="s1">'mol'</span><span class="p">,</span> <span class="s1">'max_memory'</span><span class="p">,</span>
+        <span class="s1">'nroots'</span><span class="p">,</span> <span class="s1">'frozen'</span><span class="p">,</span> <span class="s1">'chkfile'</span><span class="p">,</span> <span class="s1">'converged'</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="s1">'mo_occ'</span><span class="p">,</span>
+        <span class="s1">'e_hf'</span><span class="p">,</span> <span class="s1">'e_corr'</span><span class="p">,</span> <span class="s1">'emp2'</span><span class="p">,</span> <span class="s1">'ci'</span><span class="p">,</span>
+    <span class="p">))</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">hf</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'CISD Warning: The first argument mf is a DFT object. '</span>
-                               <span class="s1">'CISD calculation should be initialized with HF object.</span><span class="se">\n</span><span class="s1">'</span>
-                               <span class="s1">'DFT object can be converted to HF object with '</span>
-                               <span class="s1">'the code below:</span><span class="se">\n</span><span class="s1">'</span>
-                               <span class="s1">'    mf_hf = scf.RHF(mol)</span><span class="se">\n</span><span class="s1">'</span>
-                               <span class="s1">'    if getattr(mf_dft, "with_x2c", False):</span><span class="se">\n</span><span class="s1">'</span>
-                               <span class="s1">'        mf_hf = mf_hf.x2c()</span><span class="se">\n</span><span class="s1">'</span>
-                               <span class="s1">'    mf_hf.__dict__.update(mf_dft.__dict__)</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s1">'CISD Warning: The first argument mf is a DFT object. '</span>
+                <span class="s1">'CISD calculation should be initialized with HF object.</span><span class="se">\n</span><span class="s1">'</span>
+                <span class="s1">'DFT can be converted to HF object with the mf.to_hf() method</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
         <span class="k">if</span> <span class="n">mo_occ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_occ</span>   <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
@@ -1253,10 +1262,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nocc</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'max_cycle'</span><span class="p">,</span> <span class="s1">'max_space'</span><span class="p">,</span> <span class="s1">'lindep'</span><span class="p">,</span>
-                    <span class="s1">'level_shift'</span><span class="p">,</span> <span class="s1">'direct'</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
 
 <div class="viewcode-block" id="CISD.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.ci.html#pyscf.ci.cisd.CISD.dump_flags">[docs]</a>
@@ -1547,7 +1552,6 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
@@ -1576,7 +1580,6 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">ecisd</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span> <span class="o">-</span> <span class="n">mol</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span>   <span class="c1"># = 0</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rdm1</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijkk-&gt;ji'</span><span class="p">,</span> <span class="n">rdm2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">nelectron</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-
 </pre></div>
 
           </article>

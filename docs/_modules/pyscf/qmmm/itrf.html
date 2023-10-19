@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.qmmm.itrf </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -401,110 +401,156 @@
 
 <div class="viewcode-block" id="qmmm_for_scf">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.qmmm_for_scf">[docs]</a>
-<span class="k">def</span> <span class="nf">qmmm_for_scf</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">qmmm_for_scf</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Add the potential of MM particles to SCF (HF and DFT) method or CASCI</span>
 <span class="sd">    method then generate the corresponding QM/MM method for the QM system.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        mm_mol : MM Mole object</span>
 <span class="sd">    '''</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">,</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="p">)))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">,</span> <span class="n">mcscf</span><span class="o">.</span><span class="n">casci</span><span class="o">.</span><span class="n">CASBase</span><span class="p">)))</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">):</span>
-        <span class="c1"># Avoid to initialize _QMMM twice</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="n">_QMMM</span><span class="p">):</span>
-            <span class="n">scf_method</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
-            <span class="k">return</span> <span class="n">scf_method</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">):</span>
+        <span class="c1"># Avoid to initialize QMMM twice</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">QMMM</span><span class="p">):</span>
+            <span class="n">method</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
+            <span class="k">return</span> <span class="n">method</span>
 
-        <span class="n">method_class</span> <span class="o">=</span> <span class="n">scf_method</span><span class="o">.</span><span class="vm">__class__</span>
-
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">QMMMSCF</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">_QMMM</span><span class="p">):</span>
-            <span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
-            <span class="k">return</span> <span class="n">scf_method</span>
+        <span class="c1"># post-HF methods</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">QMMM</span><span class="p">):</span>
+            <span class="n">method</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
+            <span class="k">return</span> <span class="n">method</span>
 
-        <span class="n">method_class</span> <span class="o">=</span> <span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">QMMMPostSCF</span>
 
-    <span class="k">class</span> <span class="nc">QMMM</span><span class="p">(</span><span class="n">_QMMM</span><span class="p">,</span> <span class="n">method_class</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf_method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scf_method</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s1">'mm_mol'</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">),</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
 
-        <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="n">method_class</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'** Add background charges for </span><span class="si">%s</span><span class="s1"> **'</span><span class="p">,</span>
-                        <span class="n">method_class</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Charge      Location'</span><span class="p">)</span>
-                <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-                <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charges</span><span class="p">):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'</span><span class="si">%.9g</span><span class="s1">    </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="k">return</span> <span class="bp">self</span>
 
-        <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
-            <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span>
+<div class="viewcode-block" id="QMMM">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMM">[docs]</a>
+<span class="k">class</span> <span class="nc">QMMM</span><span class="p">:</span>
+    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">'QMMM'</span></div>
 
-            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method_class</span><span class="p">,</span> <span class="s1">'get_hcore'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="n">h1e</span> <span class="o">=</span> <span class="n">method_class</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># DO NOT modify post-HF objects to avoid the MM charges applied twice</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'mm_charge function cannot be applied on post-HF methods'</span><span class="p">)</span>
 
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-            <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-            <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
-            <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">==</span> <span class="s1">'gaussian'</span><span class="p">:</span>
-                <span class="n">expnts</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">get_zetas</span><span class="p">()</span>
+<span class="n">_QMMM</span> <span class="o">=</span> <span class="n">QMMM</span>
 
-                <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
-                    <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_cart'</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_sph'</span>
-                <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span>
-                                                     <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                    <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">expnts</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                    <span class="n">j3c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="n">intor</span><span class="p">,</span>
-                                           <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2ij'</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
-                    <span class="n">v</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xk,k-&gt;x'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="o">-</span><span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="n">h1e</span> <span class="o">+=</span> <span class="n">v</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                    <span class="n">j3c</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_grids'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                    <span class="n">h1e</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kpq,k-&gt;pq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="o">-</span><span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">h1e</span>
+<div class="viewcode-block" id="QMMMSCF">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF">[docs]</a>
+<span class="k">class</span> <span class="nc">QMMMSCF</span><span class="p">(</span><span class="n">QMMM</span><span class="p">):</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'mm_mol'</span><span class="p">])</span>
 
-        <span class="k">def</span> <span class="nf">energy_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="c1"># interactions between QM nuclei and MM particles</span>
-            <span class="n">nuc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mm_mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mm_mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span> <span class="o">=</span> <span class="n">mm_mol</span>
+
+<div class="viewcode-block" id="QMMMSCF.undo_qmmm">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF.undo_qmmm">[docs]</a>
+    <span class="k">def</span> <span class="nf">undo_qmmm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">QMMM</span><span class="p">))</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">mm_mol</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="QMMMSCF.dump_flags">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF.dump_flags">[docs]</a>
+    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'** Add background charges for </span><span class="si">%s</span><span class="s1"> **'</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Charge      Location'</span><span class="p">)</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
             <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
-                <span class="n">q2</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r2</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">nuc</span> <span class="o">+=</span> <span class="n">q2</span><span class="o">*</span><span class="p">(</span><span class="n">charges</span><span class="o">/</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">nuc</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charges</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'</span><span class="si">%.9g</span><span class="s1">    </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-        <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="n">scf_grad</span> <span class="o">=</span> <span class="n">method_class</span><span class="o">.</span><span class="n">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">qmmm_grad_for_scf</span><span class="p">(</span><span class="n">scf_grad</span><span class="p">)</span>
-        <span class="n">Gradients</span> <span class="o">=</span> <span class="n">nuc_grad_method</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">QMMM</span><span class="p">(</span><span class="n">scf_method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>  <span class="c1"># post-HF methods</span>
-        <span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">QMMM</span><span class="p">(</span><span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-        <span class="n">scf_method</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span>
-        <span class="n">scf_method</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="n">scf_method</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span>
-        <span class="k">return</span> <span class="n">scf_method</span></div>
+<div class="viewcode-block" id="QMMMSCF.get_hcore">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF.get_hcore">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
+        <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span>
+
+        <span class="n">h1e</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
+        <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">==</span> <span class="s1">'gaussian'</span><span class="p">:</span>
+            <span class="n">expnts</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">get_zetas</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
+                <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_cart'</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_sph'</span>
+            <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span>
+                                                 <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
+                <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">expnts</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+                <span class="n">j3c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="n">intor</span><span class="p">,</span>
+                                       <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2ij'</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
+                <span class="n">v</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xk,k-&gt;x'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="o">-</span><span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">unpack_tril</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">h1e</span> <span class="o">+=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
+                <span class="n">j3c</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_grids'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+                <span class="n">h1e</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kpq,k-&gt;pq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="o">-</span><span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">h1e</span></div>
+
+
+<div class="viewcode-block" id="QMMMSCF.energy_nuc">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF.energy_nuc">[docs]</a>
+    <span class="k">def</span> <span class="nf">energy_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># interactions between QM nuclei and MM particles</span>
+        <span class="n">nuc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
+            <span class="n">q2</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r2</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">nuc</span> <span class="o">+=</span> <span class="n">q2</span><span class="o">*</span><span class="p">(</span><span class="n">charges</span><span class="o">/</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">nuc</span></div>
+
+
+<div class="viewcode-block" id="QMMMSCF.nuc_grad_method">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMSCF.nuc_grad_method">[docs]</a>
+    <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scf_grad</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">nuc_grad_method</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">qmmm_grad_for_scf</span><span class="p">(</span><span class="n">scf_grad</span><span class="p">)</span></div>
+
+
+    <span class="n">Gradients</span> <span class="o">=</span> <span class="n">nuc_grad_method</span></div>
+
+
+<div class="viewcode-block" id="QMMMPostSCF">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMPostSCF">[docs]</a>
+<span class="k">class</span> <span class="nc">QMMMPostSCF</span><span class="p">(</span><span class="n">QMMM</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">mm_mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">qmmm_for_scf</span><span class="p">(</span><span class="n">method</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">mm_mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">mf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
+
+<div class="viewcode-block" id="QMMMPostSCF.undo_qmmm">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMPostSCF.undo_qmmm">[docs]</a>
+    <span class="k">def</span> <span class="nf">undo_qmmm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">QMMM</span><span class="p">))</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">undo_qmmm</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="add_mm_charges_grad">
@@ -565,148 +611,165 @@
     <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="s1">'with_x2c'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'X2C with QM/MM charges'</span><span class="p">)</span>
 
-    <span class="c1"># Avoid to initialize _QMMMGrad twice</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_grad</span><span class="p">,</span> <span class="n">_QMMMGrad</span><span class="p">):</span>
+    <span class="c1"># Avoid to initialize QMMMGrad twice</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_grad</span><span class="p">,</span> <span class="n">QMMMGrad</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">scf_grad</span>
 
     <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">)</span> <span class="ow">and</span>
-           <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">_QMMM</span><span class="p">))</span>
+           <span class="nb">isinstance</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">QMMM</span><span class="p">))</span>
 
-    <span class="n">grad_class</span> <span class="o">=</span> <span class="n">scf_grad</span><span class="o">.</span><span class="vm">__class__</span>
-    <span class="k">class</span> <span class="nc">QMMM</span><span class="p">(</span><span class="n">_QMMMGrad</span><span class="p">,</span> <span class="n">grad_class</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf_grad</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">scf_grad</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">make_class</span><span class="p">((</span><span class="n">QMMMGrad</span><span class="p">,</span> <span class="n">scf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)))</span></div>
 
-        <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="n">grad_class</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'** Add background charges for </span><span class="si">%s</span><span class="s1"> **'</span><span class="p">,</span> <span class="n">grad_class</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG1</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Charge      Location'</span><span class="p">)</span>
-                <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-                <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charges</span><span class="p">):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'</span><span class="si">%.9g</span><span class="s1">    </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="k">return</span> <span class="bp">self</span>
 
-        <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">''' (QM 1e grad) + &lt;-d/dX i|q_mm/r_mm|j&gt;'''</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
-            <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-            <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+<div class="viewcode-block" id="QMMMGrad">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad">[docs]</a>
+<span class="k">class</span> <span class="nc">QMMMGrad</span><span class="p">:</span>
+    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">'QMMM'</span>
 
-            <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
-            <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">g_qm</span> <span class="o">=</span> <span class="n">grad_class</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">==</span> <span class="s1">'gaussian'</span><span class="p">:</span>
-                <span class="n">expnts</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">get_zetas</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
-                    <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip1_cart'</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip1_sph'</span>
-                <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span>
-                                                     <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                    <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">expnts</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                    <span class="n">j3c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span>
-                                           <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
-                    <span class="n">v</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ipqk,k-&gt;ipq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                <span class="n">g_qm</span> <span class="o">+=</span> <span class="n">v</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-                    <span class="n">j3c</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_grids_ip'</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-                    <span class="n">g_qm</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ikpq,k-&gt;ipq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">g_qm</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf_grad</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">scf_grad</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">grad_hcore_mm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sa">r</span><span class="sd">'''Nuclear gradients of the electronic energy</span>
-<span class="sd">            with respect to MM atoms:</span>
+<div class="viewcode-block" id="QMMMGrad.dump_flags">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad.dump_flags">[docs]</a>
+    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'** Add background charges for </span><span class="si">%s</span><span class="s1"> **'</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Charge      Location'</span><span class="p">)</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+            <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">charges</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'</span><span class="si">%.9g</span><span class="s1">    </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-<span class="sd">            ... math::</span>
-<span class="sd">                g = \sum_{ij} \frac{\partial hcore_{ij}}{\partial R_{I}} P_{ji},</span>
 
-<span class="sd">            where I represents MM atoms.</span>
+<div class="viewcode-block" id="QMMMGrad.get_hcore">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad.get_hcore">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hcore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">''' (QM 1e grad) + &lt;-d/dX i|q_mm/r_mm|j&gt;'''</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
+        <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
 
-<span class="sd">            Args:</span>
-<span class="sd">                dm : array</span>
-<span class="sd">                    The QM density matrix.</span>
-<span class="sd">            '''</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
-            <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
-
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-            <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
+        <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">g_qm</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">charge_model</span> <span class="o">==</span> <span class="s1">'gaussian'</span><span class="p">:</span>
             <span class="n">expnts</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">get_zetas</span><span class="p">()</span>
-
-            <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip2'</span>
-            <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
-            <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">cart</span><span class="p">:</span>
+                <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip1_cart'</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip1_sph'</span>
             <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span>
                                                  <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
-
-            <span class="n">g</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
                 <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">expnts</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
                 <span class="n">j3c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span>
                                        <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
-                <span class="n">g</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ipqk,qp-&gt;ik'</span><span class="p">,</span> <span class="n">j3c</span> <span class="o">*</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">dm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-            <span class="k">return</span> <span class="n">g</span>
+                <span class="n">v</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ipqk,k-&gt;ipq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+            <span class="n">g_qm</span> <span class="o">+=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
+                <span class="n">j3c</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int1e_grids_ip'</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+                <span class="n">g_qm</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ikpq,k-&gt;ipq'</span><span class="p">,</span> <span class="n">j3c</span><span class="p">,</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">g_qm</span></div>
 
-        <span class="n">contract_hcore_mm</span> <span class="o">=</span> <span class="n">grad_hcore_mm</span> <span class="c1"># for backward compatibility</span>
 
-        <span class="k">def</span> <span class="nf">grad_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">atmlst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-            <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+<div class="viewcode-block" id="QMMMGrad.grad_hcore_mm">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad.grad_hcore_mm">[docs]</a>
+    <span class="k">def</span> <span class="nf">grad_hcore_mm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">'''Nuclear gradients of the electronic energy</span>
+<span class="sd">        with respect to MM atoms:</span>
 
-            <span class="n">g_qm</span> <span class="o">=</span> <span class="n">grad_class</span><span class="o">.</span><span class="n">grad_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">atmlst</span><span class="p">)</span>
+<span class="sd">        ... math::</span>
+<span class="sd">            g = \sum_{ij} \frac{\partial hcore_{ij}}{\partial R_{I}} P_{ji},</span>
+
+<span class="sd">        where I represents MM atoms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dm : array</span>
+<span class="sd">                The QM density matrix.</span>
+<span class="sd">        '''</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
+        <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
+
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="n">expnts</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">get_zetas</span><span class="p">()</span>
+
+        <span class="n">intor</span> <span class="o">=</span> <span class="s1">'int3c2e_ip2'</span>
+        <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
+        <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span>
+                                             <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">charges</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
+            <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">expnts</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+            <span class="n">j3c</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span>
+                                   <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
+            <span class="n">g</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ipqk,qp-&gt;ik'</span><span class="p">,</span> <span class="n">j3c</span> <span class="o">*</span> <span class="n">charges</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">],</span> <span class="n">dm</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">g</span></div>
+
+
+    <span class="n">contract_hcore_mm</span> <span class="o">=</span> <span class="n">grad_hcore_mm</span> <span class="c1"># for backward compatibility</span>
+
+<div class="viewcode-block" id="QMMMGrad.grad_nuc">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad.grad_nuc">[docs]</a>
+    <span class="k">def</span> <span class="nf">grad_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">atmlst</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+
+        <span class="n">g_qm</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">grad_nuc</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">atmlst</span><span class="p">)</span>
 <span class="c1"># nuclei lattice interaction</span>
-            <span class="n">g_mm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
-                <span class="n">q1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="n">r1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">g_mm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">q1</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix,i-&gt;x'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">atmlst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">g_mm</span> <span class="o">=</span> <span class="n">g_mm</span><span class="p">[</span><span class="n">atmlst</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">g_qm</span> <span class="o">+</span> <span class="n">g_mm</span>
-
-        <span class="k">def</span> <span class="nf">grad_nuc_mm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">'''Nuclear gradients of the QM-MM nuclear energy</span>
-<span class="sd">            (in the form of point charge Coulomb interactions)</span>
-<span class="sd">            with respect to MM atoms.</span>
-<span class="sd">            '''</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
-            <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-            <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-            <span class="n">g_mm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
-                <span class="n">q1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="n">r1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">g_mm</span> <span class="o">+=</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix,i-&gt;ix'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">g_mm</span>
-    <span class="k">return</span> <span class="n">QMMM</span><span class="p">(</span><span class="n">scf_grad</span><span class="p">)</span></div>
+        <span class="n">g_mm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">r1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">g_mm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">q1</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix,i-&gt;x'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">atmlst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">g_mm</span> <span class="o">=</span> <span class="n">g_mm</span><span class="p">[</span><span class="n">atmlst</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">g_qm</span> <span class="o">+</span> <span class="n">g_mm</span></div>
 
 
-<span class="c1"># A tag to label the derived class</span>
-<span class="k">class</span> <span class="nc">_QMMM</span><span class="p">:</span>
-    <span class="k">pass</span>
-<span class="k">class</span> <span class="nc">_QMMMGrad</span><span class="p">:</span>
-    <span class="k">pass</span>
+<div class="viewcode-block" id="QMMMGrad.grad_nuc_mm">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.qmmm.html#pyscf.qmmm.itrf.QMMMGrad.grad_nuc_mm">[docs]</a>
+    <span class="k">def</span> <span class="nf">grad_nuc_mm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">'''Nuclear gradients of the QM-MM nuclear energy</span>
+<span class="sd">        (in the form of point charge Coulomb interactions)</span>
+<span class="sd">        with respect to MM atoms.</span>
+<span class="sd">        '''</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
+        <span class="n">mm_mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mm_mol</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="n">charges</span> <span class="o">=</span> <span class="n">mm_mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="n">g_mm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
+            <span class="n">q1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">r1</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">g_mm</span> <span class="o">+=</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'i,ix,i-&gt;ix'</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">r1</span><span class="o">-</span><span class="n">coords</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g_mm</span></div>
+</div>
+
+
+<span class="n">_QMMMGrad</span> <span class="o">=</span> <span class="n">QMMMGrad</span>
 
 <span class="c1"># Inject QMMM interface wrapper to other modules</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">QMMM</span> <span class="o">=</span> <span class="n">mm_charge</span>
-<span class="n">mcscf</span><span class="o">.</span><span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="n">QMMM</span> <span class="o">=</span> <span class="n">mm_charge</span>
+<span class="n">mcscf</span><span class="o">.</span><span class="n">casci</span><span class="o">.</span><span class="n">CASBase</span><span class="o">.</span><span class="n">QMMM</span> <span class="o">=</span> <span class="n">mm_charge</span>
 <span class="n">grad</span><span class="o">.</span><span class="n">rhf</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">QMMM</span> <span class="o">=</span> <span class="n">mm_charge_grad</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
@@ -746,7 +809,6 @@
 <span class="s1">             H                 -0.00000000   -0.84695236    0.59109389</span>
 <span class="s1">             H                 -0.00000000    0.89830571    0.52404783 '''</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">((</span><span class="n">e1</span> <span class="o">-</span> <span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="mf">0.002</span> <span class="o">*</span> <span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">BOHR</span><span class="p">,</span> <span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-
 </pre></div>
 
           </article>

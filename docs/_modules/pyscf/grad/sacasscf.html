@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.grad.sacasscf </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -326,11 +326,12 @@
 <span class="c1"># limitations under the License.</span>
 <span class="c1">#</span>
 
-<span class="kn">import</span> <span class="nn">copy</span><span class="o">,</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">gc</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">lagrange</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">,</span> <span class="n">StateAverageFCISolver</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMixFCISolver</span><span class="p">,</span> <span class="n">state_average_mix_</span>
@@ -672,7 +673,6 @@
 <span class="sd">    &gt;&gt;&gt; etot, grad = mc_grad_scanner(gto.M(atom='N 0 0 0; N 0 0 1.1'))</span>
 <span class="sd">    &gt;&gt;&gt; etot, grad = mc_grad_scanner(gto.M(atom='N 0 0 0; N 0 0 1.5'))</span>
 <span class="sd">    '''</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">mcscf_grad</span>
 
@@ -680,38 +680,59 @@
     <span class="c1">#    return casscf_grad.as_scanner (mcscf_grad)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">,</span> <span class="s1">'Create scanner for </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="n">CASSCF_GradScanner</span><span class="o">.</span><span class="n">__name_mixin__</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">,</span> <span class="n">state</span><span class="p">),</span>
+                         <span class="p">(</span><span class="n">CASSCF_GradScanner</span><span class="p">,</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
 
-    <span class="k">class</span> <span class="nc">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
-            <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">state</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
-        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span>
-            <span class="n">mc_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
-            <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_mcscf'</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_mcscf</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_mcscf</span>
-            <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_states'</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
-            <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">de</span>
 
-    <span class="k">return</span> <span class="n">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">)</span></div>
+<div class="viewcode-block" id="CASSCF_GradScanner">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.sacasscf.CASSCF_GradScanner">[docs]</a>
+<span class="k">class</span> <span class="nc">CASSCF_GradScanner</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">MoleBase</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">mol_or_geom</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span>
+        <span class="n">mc_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
+        <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_mcscf'</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_mcscf</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_mcscf</span>
+        <span class="k">if</span> <span class="nb">hasattr</span> <span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="s1">'e_states'</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">'state'</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+        <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">de</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span>
+    <span class="nd">@converged</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_converged</span> <span class="o">=</span> <span class="n">x</span></div>
 
 
 
 <div class="viewcode-block" id="Gradients">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.sacasscf.Gradients">[docs]</a>
 <span class="k">class</span> <span class="nc">Gradients</span> <span class="p">(</span><span class="n">lagrange</span><span class="o">.</span><span class="n">Gradients</span><span class="p">):</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">'ngorb'</span><span class="p">,</span> <span class="s1">'nroots'</span><span class="p">,</span> <span class="s1">'spin_states'</span><span class="p">,</span> <span class="s1">'na_states'</span><span class="p">,</span> <span class="s1">'nb_states'</span><span class="p">,</span> <span class="s1">'nroots'</span><span class="p">,</span>
+        <span class="s1">'nci'</span><span class="p">,</span> <span class="s1">'state'</span><span class="p">,</span> <span class="s1">'eris'</span><span class="p">,</span> <span class="s1">'weights'</span><span class="p">,</span> <span class="s1">'e_states'</span><span class="p">,</span> <span class="s1">'max_cycle'</span><span class="p">,</span> <span class="s1">'ncas'</span><span class="p">,</span>
+        <span class="s1">'e_cas'</span><span class="p">,</span> <span class="s1">'nelecas'</span><span class="p">,</span> <span class="s1">'mo_occ'</span><span class="p">,</span> <span class="s1">'mo_energy'</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="s1">'callback'</span><span class="p">,</span>
+        <span class="s1">'chkfile'</span><span class="p">,</span> <span class="s1">'nlag'</span><span class="p">,</span> <span class="s1">'frozen'</span><span class="p">,</span> <span class="s1">'level_shift'</span><span class="p">,</span> <span class="s1">'extrasym'</span><span class="p">,</span> <span class="s1">'fcisolver'</span><span class="p">,</span>
+    <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
@@ -819,14 +840,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">solver_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">_base_class</span>
                 <span class="n">solver_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">fcisolver</span>
-            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">solver_class</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
-            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">solver_obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">solver_obj</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">solver_class</span><span class="p">)</span>
             <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="c1"># Spin penalty method is inapplicable to response calc'ns</span>
         <span class="c1"># It must be deactivated for Lagrange multipliers to converge</span>
         <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">):</span>
-            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">)</span>
-            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">undo_fix_spin</span><span class="p">()</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">casscf_attr</span><span class="p">)</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">nelecas</span> <span class="o">=</span> <span class="n">nelecas</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">fcisolver_attr</span><span class="p">)</span>
@@ -859,8 +878,7 @@
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">StateAverageMixFCISolver</span><span class="p">):</span>
-                <span class="n">fcisolvers</span> <span class="o">=</span> <span class="p">[</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span> <span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span>
-                              <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">fcisolvers</span><span class="p">]</span>
+                <span class="n">fcisolvers</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">fcisolvers</span><span class="p">]</span>
                 <span class="c1"># Spin penalty method is inapplicable to response calc'ns</span>
                 <span class="c1"># It must be deactivated for Lagrange multipliers to converge</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="nb">len</span> <span class="p">(</span><span class="n">fcisolvers</span><span class="p">)):</span>
@@ -873,7 +891,7 @@
         <span class="c1"># Spin penalty method is inapplicable to response calc'ns</span>
         <span class="c1"># It must be deactivated for Lagrange multipliers to converge</span>
         <span class="k">if</span> <span class="nb">isinstance</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">SpinPenaltyFCISolver</span><span class="p">):</span>
-            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span> <span class="p">(</span><span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">)</span>
+            <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span> <span class="o">=</span> <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">ss_penalty</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">casscf_attr</span><span class="p">)</span>
         <span class="n">fcasscf</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span> <span class="p">(</span><span class="n">fcisolver_attr</span><span class="p">)</span>
@@ -893,7 +911,6 @@
             <span class="n">eris</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eris</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">ao2mo</span> <span class="p">(</span><span class="n">mo</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mf_grad</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mf_grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">nuc_grad_method</span> <span class="p">()</span>
         <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">return</span> <span class="n">casscf_grad</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span> <span class="p">(</span>
                 <span class="n">mo_coeff</span><span class="o">=</span><span class="n">mo</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="n">ci</span><span class="p">,</span> <span class="n">atmlst</span><span class="o">=</span><span class="n">atmlst</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">e_states</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1132,6 +1149,11 @@
 <span class="sd">        note: right-hand bra and R_I factor not included due to storage considerations</span>
 <span class="sd">        Make the operand's matrix element with &lt;K|Rci(I) before taking the dot product!</span>
 <span class="sd">'''</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">'level_shift'</span><span class="p">,</span> <span class="s1">'nroots'</span><span class="p">,</span> <span class="s1">'nlag'</span><span class="p">,</span> <span class="s1">'ngorb'</span><span class="p">,</span> <span class="s1">'spin_states'</span><span class="p">,</span> <span class="s1">'na_states'</span><span class="p">,</span>
+        <span class="s1">'nb_states'</span><span class="p">,</span> <span class="s1">'grad_method'</span><span class="p">,</span> <span class="s1">'Rorb'</span><span class="p">,</span> <span class="s1">'ci'</span><span class="p">,</span> <span class="s1">'Rci'</span><span class="p">,</span> <span class="s1">'Rci_sa'</span><span class="p">,</span>
+    <span class="p">}</span>
 
     <span class="c1"># TODO: fix me (subclass me? wrap me?) for state_average_mix</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Adiag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level_shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ci</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grad_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

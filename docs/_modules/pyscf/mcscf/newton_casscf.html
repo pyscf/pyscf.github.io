@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.newton_casscf </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -334,7 +334,6 @@
 <span class="sd">'''</span>
 
 
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
@@ -608,7 +607,8 @@
 <span class="c1">#    h_diag[ncore:nocc,ncore:nocc] -= v_diag[:,ncore:nocc]*2</span>
     <span class="n">h_diag</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">h_diag</span><span class="p">)</span>
 
-    <span class="n">hci_diag</span> <span class="o">=</span> <span class="p">[</span><span class="n">hd</span> <span class="o">-</span> <span class="n">ec</span> <span class="o">-</span> <span class="n">gc</span><span class="o">*</span><span class="n">c</span><span class="o">*</span><span class="mi">4</span> <span class="k">for</span> <span class="n">hd</span><span class="p">,</span> <span class="n">ec</span><span class="p">,</span> <span class="n">gc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">_Hdiag</span> <span class="p">(</span><span class="n">h1cas_0</span><span class="p">,</span> <span class="n">eri_cas</span><span class="p">),</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">gci</span><span class="p">,</span> <span class="n">ci0</span><span class="p">)]</span>
+    <span class="c1"># Fix intermediate normalization? - MRH 2023/09/15</span>
+    <span class="n">hci_diag</span> <span class="o">=</span> <span class="p">[</span><span class="n">hd</span> <span class="o">-</span> <span class="n">ec</span> <span class="o">-</span> <span class="n">gc</span><span class="o">*</span><span class="n">c</span><span class="o">*</span><span class="mi">2</span> <span class="k">for</span> <span class="n">hd</span><span class="p">,</span> <span class="n">ec</span><span class="p">,</span> <span class="n">gc</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">_Hdiag</span> <span class="p">(</span><span class="n">h1cas_0</span><span class="p">,</span> <span class="n">eri_cas</span><span class="p">),</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">gci</span><span class="p">,</span> <span class="n">ci0</span><span class="p">)]</span>
     <span class="n">hci_diag</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span> <span class="o">*</span> <span class="n">w</span> <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">hci_diag</span><span class="p">,</span> <span class="n">weights</span><span class="p">)]</span>
     <span class="n">hdiag_all</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">h_diag</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">_pack_ci</span> <span class="p">(</span><span class="n">hci_diag</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span>
 
@@ -623,9 +623,10 @@
         <span class="n">ci1</span> <span class="o">=</span> <span class="n">_unpack_ci</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">ngorb</span><span class="p">:])</span>
 
         <span class="c1"># H_cc</span>
+        <span class="c1"># Fix intermediate normalization? - MRH 2023/09/15</span>
         <span class="n">hci1</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc1</span> <span class="o">-</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">ec0</span> <span class="k">for</span> <span class="n">hc1</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">ec0</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">_Hci</span> <span class="p">(</span><span class="n">h1cas_0</span><span class="p">,</span> <span class="n">eri_cas</span><span class="p">,</span> <span class="n">ci1</span><span class="p">),</span> <span class="n">ci1</span><span class="p">,</span> <span class="n">eci0</span><span class="p">)]</span>
-        <span class="n">hci1</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc1</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">hc0</span> <span class="o">-</span> <span class="n">c0</span><span class="o">*</span><span class="n">ec0</span><span class="p">)</span><span class="o">*</span><span class="n">c0</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="k">for</span> <span class="n">hc1</span><span class="p">,</span> <span class="n">hc0</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">ec0</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">hci1</span><span class="p">,</span> <span class="n">hci0</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">ci1</span><span class="p">)]</span>
-        <span class="n">hci1</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc1</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">c0</span><span class="o">*</span><span class="p">(</span><span class="n">hc0</span> <span class="o">-</span> <span class="n">c0</span><span class="o">*</span><span class="n">ec0</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="k">for</span> <span class="n">hc1</span><span class="p">,</span> <span class="n">hc0</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">ec0</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">hci1</span><span class="p">,</span> <span class="n">hci0</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">ci1</span><span class="p">)]</span>
+        <span class="n">hci1</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc1</span> <span class="o">-</span> <span class="p">(</span><span class="n">hc0</span> <span class="o">-</span> <span class="n">c0</span><span class="o">*</span><span class="n">ec0</span><span class="p">)</span><span class="o">*</span><span class="n">c0</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="k">for</span> <span class="n">hc1</span><span class="p">,</span> <span class="n">hc0</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">ec0</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">hci1</span><span class="p">,</span> <span class="n">hci0</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">ci1</span><span class="p">)]</span>
+        <span class="n">hci1</span> <span class="o">=</span> <span class="p">[</span><span class="n">hc1</span> <span class="o">-</span> <span class="n">c0</span><span class="o">*</span><span class="p">(</span><span class="n">hc0</span> <span class="o">-</span> <span class="n">c0</span><span class="o">*</span><span class="n">ec0</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c1</span><span class="p">)</span> <span class="k">for</span> <span class="n">hc1</span><span class="p">,</span> <span class="n">hc0</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">ec0</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">zip</span> <span class="p">(</span><span class="n">hci1</span><span class="p">,</span> <span class="n">hci0</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">eci0</span><span class="p">,</span> <span class="n">ci1</span><span class="p">)]</span>
 
         <span class="c1"># H_co</span>
         <span class="n">rc</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">]</span>
@@ -974,7 +975,7 @@
 <div class="viewcode-block" id="CASSCF">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.newton_casscf.CASSCF">[docs]</a>
 <span class="k">class</span> <span class="nc">CASSCF</span><span class="p">(</span><span class="n">mc1step</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">):</span>
-    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s1">'''CASSCF</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">CASBase</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="s1">'''CASSCF</span>
 
 <span class="s1">    Extra attributes for CASSCF:</span>
 
@@ -1054,8 +1055,9 @@
 <span class="s1">    &gt;&gt;&gt; mc.kernel()[0]</span>
 <span class="s1">    -109.044401882238134</span>
 <span class="s1">    '''</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
+        <span class="n">casci</span><span class="o">.</span><span class="n">CASBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="n">frozen</span>
 <span class="c1"># the max orbital rotation and CI increment, prefer small step size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_stepsize</span> <span class="o">=</span> <span class="mf">.03</span>
@@ -1076,8 +1078,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">kf_interval</span> <span class="o">=</span> <span class="mi">5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">internal_rotation</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">chkfile</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chk_ci</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="mi">25</span>
@@ -1092,8 +1092,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
 <div class="viewcode-block" id="CASSCF.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.newton_casscf.CASSCF.dump_flags">[docs]</a>
@@ -1133,7 +1131,7 @@
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'Orbital for CASCI is not specified.  You probably need '</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'Orbital for CASSCF is not specified.  You probably need '</span>
                      <span class="s1">'call SCF.kernel() to initialize orbitals.'</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -1148,12 +1146,7 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.newton_casscf.CASSCF.casci">[docs]</a>
     <span class="k">def</span> <span class="nf">casci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">envs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eris</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">fcasci</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="n">fcasci</span><span class="o">.</span><span class="n">ao2mo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_h2cas</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fcasci</span> <span class="o">=</span> <span class="n">mc1step</span><span class="o">.</span><span class="n">_fake_h_for_fast_casci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
-
+        <span class="n">fcasci</span> <span class="o">=</span> <span class="n">mc1step</span><span class="o">.</span><span class="n">_fake_h_for_fast_casci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
         <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">fcivec</span> <span class="o">=</span> <span class="n">casci</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">fcasci</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span>
                                             <span class="n">envs</span><span class="o">=</span><span class="n">envs</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e_cas</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
@@ -1199,18 +1192,6 @@
     <span class="k">def</span> <span class="nf">update_ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">'update_ao2mo was obseleted since pyscf v1.0.  '</span>
                                  <span class="s1">'Use .ao2mo method instead'</span><span class="p">)</span></div>
-
-
-    <span class="c1"># Don't remove the two functions.  They are used in df/approx_hessian code</span>
-<div class="viewcode-block" id="CASSCF.get_h2eff">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.newton_casscf.CASSCF.get_h2eff">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_h2eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_h2cas</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="CASSCF.get_h2cas">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.newton_casscf.CASSCF.get_h2cas">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_h2cas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">casci</span><span class="o">.</span><span class="n">CASCI</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span></div>
 </div>
 
 

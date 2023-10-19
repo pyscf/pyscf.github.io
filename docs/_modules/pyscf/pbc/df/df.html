@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.df </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -342,7 +342,6 @@
 <span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -453,6 +452,11 @@
     <span class="c1"># If True, force using denisty matrix-based K-build</span>
     <span class="n">force_dm_kbuild</span> <span class="o">=</span> <span class="kc">False</span>
 
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span>
+        <span class="s1">'blockdim'</span><span class="p">,</span> <span class="s1">'force_dm_kbuild'</span><span class="p">,</span> <span class="s1">'cell'</span><span class="p">,</span> <span class="s1">'kpts'</span><span class="p">,</span> <span class="s1">'kpts_band'</span><span class="p">,</span> <span class="s1">'eta'</span><span class="p">,</span>
+        <span class="s1">'mesh'</span><span class="p">,</span> <span class="s1">'exp_to_discard'</span><span class="p">,</span> <span class="s1">'exxdiv'</span><span class="p">,</span> <span class="s1">'auxcell'</span><span class="p">,</span> <span class="s1">'linear_dep_threshold'</span><span class="p">,</span>
+    <span class="p">))</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stdout</span>
@@ -485,7 +489,6 @@
 <span class="c1"># If _cderi is specified, the 3C-integral tensor will be read from this file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Range separated Coulomb DF objects</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">auxbasis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -642,7 +645,7 @@
 <div class="viewcode-block" id="GDF.sr_loop">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.sr_loop">[docs]</a>
     <span class="k">def</span> <span class="nf">sr_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpti_kptj</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-                <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">compact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aux_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">'''Short range part'''</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -684,7 +687,10 @@
             <span class="k">return</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span>
 
         <span class="k">with</span> <span class="n">_load3c</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">,</span> <span class="n">kpti_kptj</span><span class="p">)</span> <span class="k">as</span> <span class="n">j3c</span><span class="p">:</span>
-            <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j3c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">blksize</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">aux_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j3c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">blksize</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="o">*</span><span class="n">aux_slice</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">map_with_prefetch</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">slices</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span><span class="p">,</span> <span class="mi">1</span>
                 <span class="n">LpqR</span> <span class="o">=</span> <span class="n">LpqI</span> <span class="o">=</span> <span class="kc">None</span>
@@ -694,7 +700,10 @@
             <span class="c1"># CDERI tensor of negative part.</span>
             <span class="k">with</span> <span class="n">_load3c</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="o">+</span><span class="s1">'-'</span><span class="p">,</span> <span class="n">kpti_kptj</span><span class="p">,</span>
                          <span class="n">ignore_key_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">j3c</span><span class="p">:</span>
-                <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j3c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">blksize</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">aux_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">j3c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">blksize</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">slices</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="o">*</span><span class="n">aux_slice</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">map_with_prefetch</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">slices</span><span class="p">):</span>
                     <span class="k">yield</span> <span class="n">LpqR</span><span class="p">,</span> <span class="n">LpqI</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
                     <span class="n">LpqR</span> <span class="o">=</span> <span class="n">LpqI</span> <span class="o">=</span> <span class="kc">None</span></div>
@@ -787,7 +796,7 @@
 <div class="viewcode-block" id="GDF.update_mp">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.df.GDF.update_mp">[docs]</a>
     <span class="k">def</span> <span class="nf">update_mp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">mf</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">return</span> <span class="n">mf</span></div>
 
@@ -1143,7 +1152,7 @@
     <span class="n">dat</span> <span class="o">=</span> <span class="n">_load_and_unpack</span><span class="p">(</span><span class="n">h5group</span><span class="p">[</span><span class="n">key</span><span class="p">],</span><span class="n">hermi</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dat</span>
 
-<span class="k">class</span> <span class="nc">_load_and_unpack</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_load_and_unpack</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">'''</span>
 <span class="sd">    This class returns an array-like object to an hdf5 file that can</span>
 <span class="sd">    be sliced, to allow for lazy loading</span>

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.df.df </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -334,7 +334,6 @@
 <span class="sd">'''</span>
 
 
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
@@ -395,6 +394,8 @@
     <span class="n">_compatible_format</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_df_DF_compatible_format'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">_dataname</span> <span class="o">=</span> <span class="s1">'j3c'</span>
 
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s1">'mol'</span><span class="p">,</span> <span class="s1">'auxmol'</span><span class="p">))</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">stdout</span>
@@ -406,12 +407,11 @@
 <span class="c1"># Following are not input options</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">auxmol</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="c1"># If _cderi_to_save is specified, the 3C-integral tensor will be saved in this file.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">TMPDIR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="c1"># If _cderi is specified, the 3C-integral tensor will be read from this file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vjopt</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Range separated Coulomb DF objects</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">auxbasis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -435,10 +435,6 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'_cderi = </span><span class="si">%s</span><span class="s1">  where DF integrals are loaded (readonly).'</span><span class="p">,</span>
                      <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'_cderi_to_save = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'_cderi_to_save = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -450,6 +446,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxmol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'Skip DF.build(). Tensor _cderi will be used.'</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
 
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">auxmol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxmol</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">make_auxmol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis</span><span class="p">)</span>
@@ -466,15 +465,20 @@
                                               <span class="n">auxmol</span><span class="o">=</span><span class="n">auxmol</span><span class="p">,</span>
                                               <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_custom_storage</span><span class="p">:</span>
-                <span class="n">cderi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cderi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">lib</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">TMPDIR</span><span class="p">)</span>
+            <span class="n">cderi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi_to_save</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">is_custom_storage</span><span class="p">:</span>
+                <span class="n">cderi_name</span> <span class="o">=</span> <span class="n">cderi</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cderi_name</span> <span class="o">=</span> <span class="n">cderi</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'_cderi_to_save = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">cderi_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># If cderi needs to be saved in</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'Value of _cderi is ignored. DF integrals will be '</span>
-                         <span class="s1">'saved in file </span><span class="si">%s</span><span class="s1"> .'</span><span class="p">,</span> <span class="n">cderi</span><span class="p">)</span>
+                         <span class="s1">'saved in file </span><span class="si">%s</span><span class="s1"> .'</span><span class="p">,</span> <span class="n">cderi_name</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compatible_format</span><span class="p">:</span>
                 <span class="n">outcore</span><span class="o">.</span><span class="n">cholesky_eri</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">cderi</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="p">,</span>
@@ -503,7 +507,7 @@
 <span class="w">        </span><span class="sd">'''Reset mol and clean up relevant attributes for scanner mode'''</span>
         <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">auxmol</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">auxmol</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cderi</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vjopt</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>
@@ -619,11 +623,13 @@
 <span class="w">        </span><span class="sd">'''Creates a temporary density fitting object for RSH-DF integrals.</span>
 <span class="sd">        In this context, only LR or SR integrals for mol and auxmol are computed.</span>
 <span class="sd">        '''</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">key</span> <span class="o">=</span> <span class="s1">'</span><span class="si">%.6f</span><span class="s1">'</span> <span class="o">%</span> <span class="n">omega</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span><span class="p">:</span>
             <span class="n">rsh_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">rsh_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="n">rsh_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'_dataname'</span><span class="p">):</span>
                 <span class="n">rsh_df</span><span class="o">.</span><span class="n">_dataname</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dataname</span><span class="si">}</span><span class="s1">/lr/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Create RSH-DF object </span><span class="si">%s</span><span class="s1"> for omega=</span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">rsh_df</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>

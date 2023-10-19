@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.solvent.ddcosmo_grad </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -372,39 +372,56 @@
     <span class="k">if</span> <span class="n">grad_method</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">frozen</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Frozen solvent model is not avialbe for energy gradients'</span><span class="p">)</span>
 
-    <span class="n">grad_method_class</span> <span class="o">=</span> <span class="n">grad_method</span><span class="o">.</span><span class="vm">__class__</span>
-    <span class="k">class</span> <span class="nc">WithSolventGrad</span><span class="p">(</span><span class="n">grad_method_class</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_method</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">grad_method</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'de_solvent'</span><span class="p">,</span> <span class="s1">'de_solute'</span><span class="p">])</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_method</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="o">+</span> <span class="n">grad_method</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">WithSolventGrad</span><span class="p">(</span><span class="n">grad_method</span><span class="p">),</span>
+                         <span class="p">(</span><span class="n">WithSolventGrad</span><span class="p">,</span> <span class="n">grad_method</span><span class="o">.</span><span class="vm">__class__</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
 
-        <span class="c1"># TODO: if moving to python3, change signature to</span>
-        <span class="c1"># def kernel(self, *args, dm=None, atmlst=None, **kwargs):</span>
-        <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">dm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">'dm'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">dm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">ao_repr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">=</span> <span class="n">grad_method_class</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span>
+<div class="viewcode-block" id="WithSolventGrad">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.ddcosmo_grad.WithSolventGrad">[docs]</a>
+<span class="k">class</span> <span class="nc">WithSolventGrad</span><span class="p">:</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'de_solvent'</span><span class="p">,</span> <span class="s1">'de_solute'</span><span class="p">])</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> (+</span><span class="si">%s</span><span class="s1">) gradients ---------------'</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
-                <span class="n">rhf_grad</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">de</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmlst</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">de</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_method</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">grad_method</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="c1"># disable _finalize. It is called in grad_method.kernel method</span>
-            <span class="c1"># where self.de was not yet initialized.</span>
-            <span class="k">pass</span>
+<div class="viewcode-block" id="WithSolventGrad.undo_solvent">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.ddcosmo_grad.WithSolventGrad.undo_solvent">[docs]</a>
+    <span class="k">def</span> <span class="nf">undo_solvent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="n">name_mixin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">WithSolventGrad</span><span class="p">,</span> <span class="n">name_mixin</span><span class="p">))</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">de_solvent</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">de_solute</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
 
-    <span class="k">return</span> <span class="n">WithSolventGrad</span><span class="p">(</span><span class="n">grad_method</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WithSolventGrad.kernel">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.ddcosmo_grad.WithSolventGrad.kernel">[docs]</a>
+    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">ao_repr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">de_solute</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">de_solvent</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'--------------- </span><span class="si">%s</span><span class="s1"> (+</span><span class="si">%s</span><span class="s1">) gradients ---------------'</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">rhf_grad</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">de</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atmlst</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'----------------------------------------------'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">de</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># disable _finalize. It is called in grad_method.kernel method</span>
+        <span class="c1"># where self.de was not yet initialized.</span>
+        <span class="k">pass</span></div>
 
 
 

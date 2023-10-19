@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.df.outcore </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -340,6 +340,7 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo</span> <span class="kn">import</span> <span class="n">_ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo.outcore</span> <span class="kn">import</span> <span class="n">_load_from_h5g</span>
+<span class="kn">from</span> <span class="nn">pyscf.df.incore</span> <span class="kn">import</span> <span class="n">_eig_decompose</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.addons</span> <span class="kn">import</span> <span class="n">make_auxmol</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
@@ -417,9 +418,20 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.df.html#pyscf.df.outcore.cholesky_eri_b">[docs]</a>
 <span class="k">def</span> <span class="nf">cholesky_eri_b</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">erifile</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="s1">'weigend+etb'</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="s1">'j3c'</span><span class="p">,</span>
                    <span class="n">int3c</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2ij'</span><span class="p">,</span> <span class="n">int2c</span><span class="o">=</span><span class="s1">'int2c2e'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                   <span class="n">max_memory</span><span class="o">=</span><span class="n">MAX_MEMORY</span><span class="p">,</span> <span class="n">auxmol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">):</span>
+                   <span class="n">max_memory</span><span class="o">=</span><span class="n">MAX_MEMORY</span><span class="p">,</span> <span class="n">auxmol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">decompose_j2c</span><span class="o">=</span><span class="s1">'CD'</span><span class="p">,</span>
+                   <span class="n">lindep</span><span class="o">=</span><span class="n">LINEAR_DEP_THR</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''3-center 2-electron DF tensor. Similar to cholesky_eri while this</span>
 <span class="sd">    function stores DF tensor in blocks.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataname: string</span>
+<span class="sd">            Dataset label of the DF tensor in HDF5 file.</span>
+<span class="sd">        decompose_j2c: string</span>
+<span class="sd">            The method to decompose the metric defined by int2c. It can be set</span>
+<span class="sd">            to CD (cholesky decomposition) or ED (eigenvalue decomposition).</span>
+<span class="sd">        lindep : float</span>
+<span class="sd">            The threshold to discard linearly dependent basis when decompose_j2c</span>
+<span class="sd">            is set to ED.</span>
 <span class="sd">    '''</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">aosym</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'s1'</span><span class="p">,</span> <span class="s1">'s2ij'</span><span class="p">))</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
@@ -430,15 +442,16 @@
     <span class="n">j2c</span> <span class="o">=</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="n">int2c</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">'size of aux basis </span><span class="si">%d</span><span class="s1">'</span><span class="p">,</span> <span class="n">j2c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">time1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'2c2e'</span><span class="p">,</span> <span class="o">*</span><span class="n">time0</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">low</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">j2c</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">tag</span> <span class="o">=</span> <span class="s1">'cd'</span>
-    <span class="k">except</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
-        <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">j2c</span><span class="p">)</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="n">LINEAR_DEP_THR</span>
-        <span class="n">low</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">[:,</span><span class="n">idx</span><span class="p">]</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">tag</span> <span class="o">=</span> <span class="s1">'eig'</span>
+    <span class="n">decompose_j2c</span> <span class="o">=</span> <span class="n">decompose_j2c</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">decompose_j2c</span> <span class="o">!=</span> <span class="s1">'CD'</span><span class="p">:</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">_eig_decompose</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">j2c</span><span class="p">,</span> <span class="n">lindep</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">j2c</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">decompose_j2c</span> <span class="o">=</span> <span class="s1">'CD'</span>
+        <span class="k">except</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="n">_eig_decompose</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">j2c</span><span class="p">,</span> <span class="n">lindep</span><span class="p">)</span>
+            <span class="n">decompose_j2c</span> <span class="o">=</span> <span class="s1">'ED'</span>
     <span class="n">j2c</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">naoaux</span><span class="p">,</span> <span class="n">naux</span> <span class="o">=</span> <span class="n">low</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">time1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'Cholesky 2c2e'</span><span class="p">,</span> <span class="o">*</span><span class="n">time1</span><span class="p">)</span>
@@ -474,13 +487,13 @@
             <span class="n">b</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">naoaux</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">naoaux</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">if</span> <span class="n">tag</span> <span class="o">==</span> <span class="s1">'cd'</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">c_contiguous</span><span class="p">:</span>
-                <span class="n">b</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-            <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                                 <span class="n">overwrite_b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">low</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">decompose_j2c</span> <span class="o">!=</span> <span class="s1">'CD'</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">c_contiguous</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                             <span class="n">overwrite_b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">sh_range</span><span class="p">):</span>
         <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span><span class="p">,</span> <span class="n">nrow</span> <span class="o">=</span> <span class="n">sh_range</span>
@@ -593,6 +606,10 @@
         <span class="k">return</span> <span class="n">balance_partition</span><span class="p">(</span><span class="n">ao_loc</span><span class="o">*</span><span class="n">nao</span><span class="p">,</span> <span class="n">buflen</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_create_h5file</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="n">dataname</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'name'</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># The TemporaryFile and H5Tmpfile</span>
+        <span class="n">erifile</span> <span class="o">=</span> <span class="n">erifile</span><span class="o">.</span><span class="n">name</span>
+
     <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">erifile</span><span class="p">):</span>
         <span class="n">feri</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dataname</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">:</span>
@@ -631,7 +648,6 @@
             <span class="n">max_memory</span><span class="o">=</span><span class="mf">.2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">'cderi.dat'</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">feri</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">feri</span><span class="p">[</span><span class="s1">'j3c'</span><span class="p">],</span> <span class="n">cderi0</span><span class="p">))</span>
-
 </pre></div>
 
           </article>

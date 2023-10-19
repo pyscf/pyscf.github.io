@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.x2c.newton_ah </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -330,6 +330,7 @@
 <span class="sd">'''</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">hf</span>
 <span class="kn">from</span> <span class="nn">pyscf.x2c</span> <span class="kn">import</span> <span class="n">x2c</span>
 <span class="c1"># To ensure .gen_response() methods are registered</span>
@@ -356,37 +357,58 @@
         <span class="k">return</span> <span class="n">mf</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">x2c</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
-        <span class="k">class</span> <span class="nc">SecondOrderX2CHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
-            <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_x2chf</span>
-
-            <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_occ</span><span class="o">.</span><span class="n">size</span>
-                <span class="n">nocc</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">)</span>
-                <span class="n">nvir</span> <span class="o">=</span> <span class="n">nmo</span> <span class="o">-</span> <span class="n">nocc</span>
-                <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nvir</span><span class="p">,</span> <span class="n">nocc</span><span class="p">)</span>
-                <span class="n">dx_aa</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[::</span><span class="mi">2</span><span class="p">,::</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">dr_aa</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">dx_aa</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">mo_occ</span><span class="p">[::</span><span class="mi">2</span><span class="p">])</span>
-                <span class="n">u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span> <span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dr_aa</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-                <span class="c1"># Allows only the rotation within the up-up space and down-down space</span>
-                <span class="n">u</span><span class="p">[::</span><span class="mi">2</span><span class="p">,::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr_aa</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-
-            <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">mo</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">SecondOrderX2CRHF</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">class</span> <span class="nc">SecondOrderX2CHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
-            <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_x2chf</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">SecondOrderX2CUHF</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">mf</span><span class="p">),</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
 
-            <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">dr</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span>
 
-            <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">mo</span>
+<div class="viewcode-block" id="SecondOrderX2CRHF">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CRHF">[docs]</a>
+<span class="k">class</span> <span class="nc">SecondOrderX2CRHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
+    <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_x2chf</span>
 
-    <span class="k">return</span> <span class="n">SecondOrderX2CHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+<div class="viewcode-block" id="SecondOrderX2CRHF.update_rotate_matrix">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CRHF.update_rotate_matrix">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_occ</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">nocc</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">)</span>
+        <span class="n">nvir</span> <span class="o">=</span> <span class="n">nmo</span> <span class="o">-</span> <span class="n">nocc</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nvir</span><span class="p">,</span> <span class="n">nocc</span><span class="p">)</span>
+        <span class="n">dx_aa</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[::</span><span class="mi">2</span><span class="p">,::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">dr_aa</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">dx_aa</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">mo_occ</span><span class="p">[::</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span> <span class="n">nmo</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dr_aa</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="c1"># Allows only the rotation within the up-up space and down-down space</span>
+        <span class="n">u</span><span class="p">[::</span><span class="mi">2</span><span class="p">,::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr_aa</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SecondOrderX2CRHF.rotate_mo">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CRHF.rotate_mo">[docs]</a>
+    <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mo</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SecondOrderX2CUHF">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CUHF">[docs]</a>
+<span class="k">class</span> <span class="nc">SecondOrderX2CUHF</span><span class="p">(</span><span class="n">newton_ah</span><span class="o">.</span><span class="n">_CIAH_SOSCF</span><span class="p">):</span>
+    <span class="n">gen_g_hop</span> <span class="o">=</span> <span class="n">gen_g_hop_x2chf</span>
+
+<div class="viewcode-block" id="SecondOrderX2CUHF.update_rotate_matrix">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CUHF.update_rotate_matrix">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_rotate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">u0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">hf</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">expmat</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SecondOrderX2CUHF.rotate_mo">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.x2c.html#pyscf.x2c.newton_ah.SecondOrderX2CUHF.rotate_mo">[docs]</a>
+    <span class="k">def</span> <span class="nf">rotate_mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mo</span></div>
+</div>
 
 </pre></div>
 

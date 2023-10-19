@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.gto.basis </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -311,7 +311,7 @@
             
   <h1 id="modules-pyscf-gto-basis--page-root">Source code for pyscf.gto.basis</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2020 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2023 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -328,14 +328,18 @@
 <span class="c1"># Author: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'ALIAS'</span><span class="p">,</span> <span class="s1">'GTH_ALIAS'</span><span class="p">,</span> <span class="s1">'PP_ALIAS'</span><span class="p">,</span>
+           <span class="s1">'parse'</span><span class="p">,</span> <span class="s1">'parse_ecp'</span><span class="p">,</span> <span class="s1">'load'</span><span class="p">,</span> <span class="s1">'load_ecp'</span><span class="p">,</span> <span class="s1">'load_pseudo'</span><span class="p">,</span>
+           <span class="s1">'optimize_contraction'</span><span class="p">,</span> <span class="s1">'to_general_contraction'</span><span class="p">]</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">imp</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">importlib</span>
-<span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">parse_nwchem</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">pyscf</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">parse_nwchem</span><span class="p">,</span> <span class="n">parse_nwchem_ecp</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">parse_cp2k</span><span class="p">,</span> <span class="n">parse_cp2k_pp</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib.exceptions</span> <span class="kn">import</span> <span class="n">BasisNotFoundError</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
@@ -683,12 +687,52 @@
     <span class="s1">'dyallv4z'</span> <span class="p">:</span> <span class="s1">'dyall-basis.dyall_v4z'</span><span class="p">,</span>
 <span class="p">}</span>
 
+<span class="n">GTH_ALIAS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'gthaugdzvp'</span>  <span class="p">:</span> <span class="s1">'gth-aug-dzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthaugqzv2p'</span> <span class="p">:</span> <span class="s1">'gth-aug-qzv2p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthaugqzv3p'</span> <span class="p">:</span> <span class="s1">'gth-aug-qzv3p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthaugtzv2p'</span> <span class="p">:</span> <span class="s1">'gth-aug-tzv2p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthaugtzvp'</span>  <span class="p">:</span> <span class="s1">'gth-aug-tzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthdzv'</span>      <span class="p">:</span> <span class="s1">'gth-dzv.dat'</span><span class="p">,</span>
+    <span class="s1">'gthdzvp'</span>     <span class="p">:</span> <span class="s1">'gth-dzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthqzv2p'</span>    <span class="p">:</span> <span class="s1">'gth-qzv2p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthqzv3p'</span>    <span class="p">:</span> <span class="s1">'gth-qzv3p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthszv'</span>      <span class="p">:</span> <span class="s1">'gth-szv.dat'</span><span class="p">,</span>
+    <span class="s1">'gthtzv2p'</span>    <span class="p">:</span> <span class="s1">'gth-tzv2p.dat'</span><span class="p">,</span>
+    <span class="s1">'gthtzvp'</span>     <span class="p">:</span> <span class="s1">'gth-tzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthccdzvp'</span>   <span class="p">:</span> <span class="s1">'gth-cc-dzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthcctzvp'</span>   <span class="p">:</span> <span class="s1">'gth-cc-tzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthccqzvp'</span>   <span class="p">:</span> <span class="s1">'gth-cc-qzvp.dat'</span><span class="p">,</span>
+    <span class="s1">'gthszvmolopt'</span>      <span class="p">:</span> <span class="s1">'gth-szv-molopt.dat'</span><span class="p">,</span>
+    <span class="s1">'gthdzvpmolopt'</span>     <span class="p">:</span> <span class="s1">'gth-dzvp-molopt.dat'</span><span class="p">,</span>
+    <span class="s1">'gthtzvpmolopt'</span>     <span class="p">:</span> <span class="s1">'gth-tzvp-molopt.dat'</span><span class="p">,</span>
+    <span class="s1">'gthtzv2pmolopt'</span>    <span class="p">:</span> <span class="s1">'gth-tzv2p-molopt.dat'</span><span class="p">,</span>
+    <span class="s1">'gthszvmoloptsr'</span>    <span class="p">:</span> <span class="s1">'gth-szv-molopt-sr.dat'</span><span class="p">,</span>
+    <span class="s1">'gthdzvpmoloptsr'</span>   <span class="p">:</span> <span class="s1">'gth-dzvp-molopt-sr.dat'</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">PP_ALIAS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'gthblyp'</span>    <span class="p">:</span> <span class="s1">'gth-blyp.dat'</span>   <span class="p">,</span>
+    <span class="s1">'gthbp'</span>      <span class="p">:</span> <span class="s1">'gth-bp.dat'</span>     <span class="p">,</span>
+    <span class="s1">'gthhcth120'</span> <span class="p">:</span> <span class="s1">'gth-hcth120.dat'</span><span class="p">,</span>
+    <span class="s1">'gthhcth407'</span> <span class="p">:</span> <span class="s1">'gth-hcth407.dat'</span><span class="p">,</span>
+    <span class="s1">'gtholyp'</span>    <span class="p">:</span> <span class="s1">'gth-olyp.dat'</span>   <span class="p">,</span>
+    <span class="s1">'gthlda'</span>     <span class="p">:</span> <span class="s1">'gth-pade.dat'</span>   <span class="p">,</span>
+    <span class="s1">'gthpade'</span>    <span class="p">:</span> <span class="s1">'gth-pade.dat'</span>   <span class="p">,</span>
+    <span class="s1">'gthpbe'</span>     <span class="p">:</span> <span class="s1">'gth-pbe.dat'</span>    <span class="p">,</span>
+    <span class="s1">'gthpbesol'</span>  <span class="p">:</span> <span class="s1">'gth-pbesol.dat'</span> <span class="p">,</span>
+    <span class="s1">'gthhf'</span>      <span class="p">:</span> <span class="s1">'gth-hf.dat'</span>     <span class="p">,</span>
+    <span class="s1">'gthhfrev'</span>   <span class="p">:</span> <span class="s1">'gth-hf-rev.dat'</span> <span class="p">,</span>
+<span class="p">}</span>
+
 <span class="k">def</span> <span class="nf">_is_pople_basis</span><span class="p">(</span><span class="n">basis</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">basis</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'631'</span><span class="p">)</span> <span class="ow">or</span>
             <span class="n">basis</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'321'</span><span class="p">)</span> <span class="ow">or</span>
             <span class="n">basis</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'431'</span><span class="p">))</span>
 
 <span class="n">_BASIS_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="n">_GTH_BASIS_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">pyscf</span><span class="o">.</span><span class="vm">__file__</span><span class="si">}</span><span class="s1">/../pbc/gto/basis'</span><span class="p">)</span>
+<span class="n">_GTH_PP_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">_GTH_BASIS_DIR</span><span class="si">}</span><span class="s1">/../pseudo'</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_parse_pople_basis</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">'('</span> <span class="ow">in</span> <span class="n">basis</span><span class="p">:</span>
@@ -720,11 +764,50 @@
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">ALIAS</span><span class="p">[</span><span class="n">mbas</span><span class="p">]]</span> <span class="o">+</span> <span class="n">convert</span><span class="p">(</span><span class="n">extension</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">','</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
 
 <span class="n">OPTIMIZE_CONTRACTION</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'gto_basis_parse_optimize'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
 <div class="viewcode-block" id="parse">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse">[docs]</a>
 <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">OPTIMIZE_CONTRACTION</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Parse the basis (ECP, PP) text in NWChem or CP2K format, returns internal format</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string : Blank linke and the lines of "BASIS SET" and "END" will be ignored</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; mol = gto.Mole()</span>
+<span class="sd">    &gt;&gt;&gt; mol.basis = gto.basis.parse("""</span>
+<span class="sd">    ... He    S</span>
+<span class="sd">    ...      13.6267000              0.1752300</span>
+<span class="sd">    ...       1.9993500              0.8934830</span>
+<span class="sd">    ...       0.3829930              0.0000000</span>
+<span class="sd">    ... He    S</span>
+<span class="sd">    ...      13.6267000              0.0000000</span>
+<span class="sd">    ...       1.9993500              0.0000000</span>
+<span class="sd">    ...       0.3829930              1.0000000</span>
+<span class="sd">    ... """, optimize=True)</span>
+
+<span class="sd">    &gt;&gt;&gt; cell = pbc.gto.Cell()</span>
+<span class="sd">    &gt;&gt;&gt; cell.basis = {'C': gto.basis.parse("""</span>
+<span class="sd">    ... C DZVP-GTH</span>
+<span class="sd">    ...   2</span>
+<span class="sd">    ...   2  0  1  4  2  2</span>
+<span class="sd">    ...         4.3362376436   0.1490797872   0.0000000000  -0.0878123619   0.0000000000</span>
+<span class="sd">    ...         1.2881838513  -0.0292640031   0.0000000000  -0.2775560300   0.0000000000</span>
+<span class="sd">    ...         0.4037767149  -0.6882040510   0.0000000000  -0.4712295093   0.0000000000</span>
+<span class="sd">    ...         0.1187877657  -0.3964426906   1.0000000000  -0.4058039291   1.0000000000</span>
+<span class="sd">    ...   3  2  2  1  1</span>
+<span class="sd">    ...         0.5500000000   1.0000000000</span>
+<span class="sd">    ... #</span>
+<span class="sd">    ... """)}</span>
+<span class="sd">    '''</span>
     <span class="k">if</span> <span class="s1">'ECP'</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse_ecp</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">'GTH'</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">'PSEUDOPOTENTIAL'</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span></div>
 
@@ -734,9 +817,9 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_ecp">[docs]</a>
 <span class="k">def</span> <span class="nf">parse_ecp</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="c1"># TODO: catch KeyError and provide suggestion for the possible keys</span>
-    <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse_ecp</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span></div>
 
-<span class="n">parse_ecp</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse_ecp</span><span class="o">.</span><span class="vm">__doc__</span>
+<span class="n">parse_ecp</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="vm">__doc__</span>
 
 <span class="k">def</span> <span class="nf">_convert_contraction</span><span class="p">(</span><span class="n">contr_string</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Parse contraction scheme string into a list</span>
@@ -817,36 +900,55 @@
         <span class="n">contr_scheme</span> <span class="o">=</span> <span class="n">_convert_contraction</span><span class="p">(</span><span class="n">split_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">contr_scheme</span> <span class="o">=</span> <span class="s1">'Full'</span>
+
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">):</span>
-        <span class="c1"># read basis from given file</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">_load_external</span><span class="p">(</span><span class="n">parse_nwchem</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span>
+                               <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
-                <span class="n">b</span> <span class="o">=</span>  <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">symb</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">_load_external</span><span class="p">(</span><span class="n">parse_cp2k</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span>
+                               <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">contr_scheme</span> <span class="o">!=</span> <span class="s1">'Full'</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="n">_truncate</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">contr_scheme</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">split_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">b</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span> <span class="ow">or</span> <span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">)):</span>
+    <span class="n">fload</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load</span>
+    <span class="n">basis_dir</span> <span class="o">=</span> <span class="n">_BASIS_DIR</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span><span class="p">:</span>
+        <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">GTH_ALIAS</span><span class="p">:</span>
+        <span class="n">basmod</span> <span class="o">=</span> <span class="n">GTH_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">fload</span> <span class="o">=</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">load</span>
+        <span class="n">basis_dir</span> <span class="o">=</span> <span class="n">_GTH_BASIS_DIR</span>
+    <span class="k">elif</span> <span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">basmod</span> <span class="o">=</span> <span class="n">_parse_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span> <span class="k">as</span> <span class="n">basis_err</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Invalid basis name </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">filename_or_basisname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span>
+                                      <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
             <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Invalid basis </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Invalid basis </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
         <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
-        <span class="kn">from</span> <span class="nn">pyscf.basis</span> <span class="kn">import</span> <span class="n">bse</span>
+        <span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">bse</span>
         <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
@@ -856,30 +958,17 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_orbital_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">raise</span> <span class="n">basis_err</span>
-
-    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span><span class="p">:</span>
-        <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-        <span class="n">basmod</span> <span class="o">=</span> <span class="n">_parse_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Unknown basis format or basis name'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s1">'dat'</span> <span class="ow">in</span> <span class="n">basmod</span><span class="p">:</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">fload</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">basis_dir</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basmod</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basmod</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">b</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">basmod</span><span class="p">:</span>
-            <span class="n">b</span> <span class="o">+=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+            <span class="n">b</span> <span class="o">+=</span> <span class="n">fload</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">basis_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span><span class="p">):</span>
-            <span class="n">fp</span><span class="p">,</span> <span class="n">pathname</span><span class="p">,</span> <span class="n">description</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="n">basmod</span><span class="p">,</span> <span class="n">__path__</span><span class="p">)</span>
-            <span class="n">mod</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">pathname</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
-            <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s1">'.'</span><span class="o">+</span><span class="n">basmod</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s1">'.'</span><span class="o">+</span><span class="n">basmod</span><span class="p">,</span> <span class="n">__package__</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">contr_scheme</span> <span class="o">!=</span> <span class="s1">'Full'</span><span class="p">:</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">_truncate</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">contr_scheme</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">split_name</span><span class="p">)</span>
@@ -889,39 +978,34 @@
 <div class="viewcode-block" id="load_ecp">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.load_ecp">[docs]</a>
 <span class="k">def</span> <span class="nf">load_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">'''Convert the basis of the given symbol to internal format</span>
+<span class="w">    </span><span class="sd">'''Parses ECP database file</span>
 <span class="sd">    '''</span>
     <span class="n">symb</span> <span class="o">=</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">symb</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()])</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">):</span>
-        <span class="c1"># read basis from given file</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">parse_ecp</span><span class="p">(</span><span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">symb</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_load_external</span><span class="p">(</span><span class="n">parse_nwchem_ecp</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALIAS</span><span class="p">:</span>
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">load_ecp</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">BasisNotFoundError</span> <span class="k">as</span> <span class="n">basis_err</span><span class="p">:</span>
-        <span class="k">pass</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse_ecp</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Invalid basis name </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
         <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Invalid ECP </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
     <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
-    <span class="kn">from</span> <span class="nn">pyscf.basis</span> <span class="kn">import</span> <span class="n">bse</span>
+    <span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">bse</span>
     <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
@@ -931,13 +1015,52 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_ecp_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">raise</span> <span class="n">basis_err</span></div>
+    <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">'Unknown ECP format or ECP name'</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="load_pseudo">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.load_pseudo">[docs]</a>
+<span class="k">def</span> <span class="nf">load_pseudo</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Parses PP database file</span>
+<span class="sd">    '''</span>
+    <span class="n">symb</span> <span class="o">=</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">symb</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()])</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_load_external</span><span class="p">(</span><span class="n">parse_cp2k_pp</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+
+    <span class="n">name</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">_format_pseudo_name</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">PP_ALIAS</span><span class="p">:</span>
+        <span class="n">basmod</span> <span class="o">=</span> <span class="n">PP_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_GTH_PP_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">raise</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Invalid PP </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_load_external</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Try to read basis from given file'''</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">module</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">module</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_format_basis_name</span><span class="p">(</span><span class="n">basisname</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">basisname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">' '</span><span class="p">,</span> <span class="s1">''</span><span class="p">)</span>
 
-<span class="k">del</span><span class="p">(</span><span class="n">OPTIMIZE_CONTRACTION</span><span class="p">)</span>
+<span class="n">SUFFIX_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'q\d+$'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_format_pseudo_name</span><span class="p">(</span><span class="n">pseudo_name</span><span class="p">):</span>
+    <span class="n">name_suffix</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">pseudo_name</span><span class="p">)</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">SUFFIX_PATTERN</span><span class="p">,</span> <span class="n">name_suffix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name_suffix</span><span class="p">[:</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()]</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="n">name_suffix</span><span class="p">[</span><span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">():]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">name_suffix</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">suffix</span>
 </pre></div>
 
           </article>

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.df.addons </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -330,7 +330,6 @@
 <span class="c1">#</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
@@ -342,10 +341,6 @@
 <span class="n">DFBASIS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_addons_aug_etb_beta'</span><span class="p">,</span> <span class="s1">'weigend'</span><span class="p">)</span>
 <span class="n">ETB_BETA</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_addons_aug_dfbasis'</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
 <span class="n">FIRST_ETB_ELEMENT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_addons_aug_start_at'</span><span class="p">,</span> <span class="mi">36</span><span class="p">)</span>  <span class="c1"># 'Rb'</span>
-
-<span class="c1"># For code compatiblity in python-2 and python-3</span>
-<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-    <span class="n">unicode</span> <span class="o">=</span> <span class="nb">str</span>
 
 <span class="c1"># Obtained from http://www.psicode.org/psi4manual/master/basissets_byfamily.html</span>
 <span class="n">DEFAULT_AUXBASIS</span> <span class="o">=</span> <span class="p">{</span>
@@ -531,16 +526,16 @@
 
 <span class="sd">    See also the paper JCTC, 13, 554 about generating auxiliary fitting basis.</span>
 <span class="sd">    '''</span>
-    <span class="n">pmol</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>  <span class="c1"># just need shallow copy</span>
+    <span class="n">pmol</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">make_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="s1">'+etb'</span> <span class="ow">in</span> <span class="n">auxbasis</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">'+etb'</span> <span class="ow">in</span> <span class="n">auxbasis</span><span class="p">:</span>
         <span class="n">dfbasis</span> <span class="o">=</span> <span class="n">auxbasis</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
         <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">aug_etb_for_dfbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dfbasis</span><span class="p">)</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">auxbasis</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">unicode</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="n">uniq_atoms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">])</span>
         <span class="n">_basis</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">a</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">])</span>
     <span class="k">elif</span> <span class="s1">'default'</span> <span class="ow">in</span> <span class="n">auxbasis</span><span class="p">:</span>

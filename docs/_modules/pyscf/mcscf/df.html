@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.mcscf.df </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -330,13 +330,13 @@
 <span class="c1">#</span>
 
 
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo</span> <span class="kn">import</span> <span class="n">_ao2mo</span>
+<span class="kn">from</span> <span class="nn">pyscf.mcscf.casci</span> <span class="kn">import</span> <span class="n">CASCI</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
 
 
@@ -370,8 +370,6 @@
 <span class="sd">    &gt;&gt;&gt; mc = DFCASSCF(mf, 4, 4)</span>
 <span class="sd">    -100.05994191570504</span>
 <span class="sd">    '''</span>
-    <span class="n">casscf_class</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="vm">__class__</span>
-
     <span class="k">if</span> <span class="n">with_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="s1">'with_df'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span>
             <span class="p">(</span><span class="n">auxbasis</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">auxbasis</span> <span class="o">==</span> <span class="n">casscf</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span><span class="p">)):</span>
@@ -383,101 +381,115 @@
             <span class="n">with_df</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">verbose</span>
             <span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxbasis</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">_DFCASSCF</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">_DFCAS</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">casscf</span><span class="o">.</span><span class="n">with_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">casscf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
         <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="s1">'auxbasis'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="n">auxbasis</span><span class="p">:</span>
             <span class="c1">#logger.warn(casscf, 'DF might have been initialized twice.')</span>
-            <span class="n">casscf</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">casscf</span><span class="p">)</span>
+            <span class="n">casscf</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">casscf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
         <span class="k">return</span> <span class="n">casscf</span>
 
-    <span class="k">class</span> <span class="nc">DFCASSCF</span><span class="p">(</span><span class="n">_DFCASSCF</span><span class="p">,</span> <span class="n">casscf_class</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="c1">#self.grad_update_dep = 0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'with_df'</span><span class="p">])</span>
-
-        <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="n">casscf_class</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'DFCASCI/DFCASSCF: density fitting for JK matrix '</span>
-                        <span class="s1">'and 2e integral transformation'</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span>
-
-        <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="ow">and</span> <span class="s1">'CASSCF'</span> <span class="ow">in</span> <span class="n">casscf_class</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">_ERIS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">get_h2eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># For CASCI</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
-                <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
-                <span class="n">nocc</span> <span class="o">=</span> <span class="n">ncore</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span>
-                <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">mo_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
-                <span class="k">elif</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">:</span>
-                    <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">get_h2eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-
-<span class="c1"># Modify get_veff for JK matrix of core density because get_h1eff calls</span>
-<span class="c1"># self.get_veff to generate core JK</span>
-        <span class="k">def</span> <span class="nf">get_veff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mocore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ncore</span><span class="p">]</span>
-                <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mocore</span><span class="p">,</span> <span class="n">mocore</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-            <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">vj</span> <span class="o">-</span> <span class="n">vk</span> <span class="o">*</span> <span class="mf">.5</span>
-
-<span class="c1"># only approximate jk for self.update_jk_in_ah</span>
-        <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">casscf_class</span><span class="o">.</span><span class="n">get_jk</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
-                                           <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
-                                           <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">_exact_paaa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
-                <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
-                <span class="n">ncas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span>
-                <span class="n">nocc</span> <span class="o">=</span> <span class="n">ncore</span> <span class="o">+</span> <span class="n">ncas</span>
-                <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-                <span class="n">mo1_cas</span> <span class="o">=</span> <span class="n">mo1</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
-                <span class="n">paaa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">([</span><span class="n">mo1</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">paaa</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nmo</span><span class="p">,</span><span class="n">ncas</span><span class="p">,</span><span class="n">ncas</span><span class="p">,</span><span class="n">ncas</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">_exact_paaa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s1">'CASCI'</span> <span class="ow">in</span> <span class="nb">str</span> <span class="p">(</span><span class="n">casscf_class</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span> <span class="p">(</span><span class="s2">"DFCASCI nuclear gradients"</span><span class="p">)</span>
-            <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">casscf</span>
-            <span class="k">return</span> <span class="n">casscf</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">_state_average_nuc_grad_method</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="s1">'CASCI'</span> <span class="ow">in</span> <span class="nb">str</span> <span class="p">(</span><span class="n">casscf_class</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span> <span class="p">(</span><span class="s2">"DFCASCI nuclear gradients"</span><span class="p">)</span>
-            <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">sacasscf</span>
-            <span class="k">return</span> <span class="n">sacasscf</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">DFCASSCF</span><span class="p">()</span></div>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">CASCI</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_DFCASCI</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">_DFCASSCF</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">with_df</span><span class="p">),</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">casscf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
 
 
 <span class="c1"># A tag to label the derived MCSCF class</span>
-<span class="k">class</span> <span class="nc">_DFCASSCF</span><span class="p">:</span>
-    <span class="k">pass</span>
-<span class="n">_DFCASCI</span> <span class="o">=</span> <span class="n">_DFCASSCF</span>
+<span class="k">class</span> <span class="nc">_DFCAS</span><span class="p">:</span>
+    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">'DF'</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'with_df'</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">with_df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="c1">#self.grad_update_dep = 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
+
+    <span class="k">def</span> <span class="nf">undo_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">'''Remove the DFCASCI/DFCASSCF Mixin'''</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">_DFCAS</span><span class="p">))</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">with_df</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'DFCASCI/DFCASSCF: density fitting for JK matrix '</span>
+                    <span class="s1">'and 2e integral transformation'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+    <span class="c1"># Modify get_veff for JK matrix of core density because get_h1eff calls</span>
+    <span class="c1"># self.get_veff to generate core JK</span>
+    <span class="k">def</span> <span class="nf">get_veff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mocore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">ncore</span><span class="p">]</span>
+            <span class="n">dm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mocore</span><span class="p">,</span> <span class="n">mocore</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vj</span> <span class="o">-</span> <span class="n">vk</span> <span class="o">*</span> <span class="mf">.5</span>
+
+    <span class="c1"># only approximate jk for self.update_jk_in_ah</span>
+    <span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
+                                       <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
+                                  <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_exact_paaa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
+            <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
+            <span class="n">ncas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span>
+            <span class="n">nocc</span> <span class="o">=</span> <span class="n">ncore</span> <span class="o">+</span> <span class="n">ncas</span>
+            <span class="n">mo1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+            <span class="n">mo1_cas</span> <span class="o">=</span> <span class="n">mo1</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
+            <span class="n">paaa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">([</span><span class="n">mo1</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">,</span> <span class="n">mo1_cas</span><span class="p">],</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">paaa</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nmo</span><span class="p">,</span><span class="n">ncas</span><span class="p">,</span><span class="n">ncas</span><span class="p">,</span><span class="n">ncas</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_exact_paaa</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_state_average_nuc_grad_method</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<span class="k">class</span> <span class="nc">_DFCASCI</span><span class="p">(</span><span class="n">_DFCAS</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_h2eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
+            <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
+            <span class="n">nocc</span> <span class="o">=</span> <span class="n">ncore</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span>
+            <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mo_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span><span class="p">:</span>
+                <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">ncore</span><span class="p">:</span><span class="n">nocc</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">_DFCAS</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_h2eff</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_DFCASSCF</span><span class="p">(</span><span class="n">_DFCAS</span><span class="p">):</span>
+    <span class="n">get_h2eff</span> <span class="o">=</span> <span class="n">_DFCASCI</span><span class="o">.</span><span class="n">get_h2eff</span>
+
+    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_ERIS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">_DFCAS</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">casscf</span>
+        <span class="k">return</span> <span class="n">casscf</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_state_average_nuc_grad_method</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">sacasscf</span>
+        <span class="k">return</span> <span class="n">sacasscf</span><span class="o">.</span><span class="n">Gradients</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="approx_hessian">
@@ -508,9 +520,8 @@
 <span class="sd">    &gt;&gt;&gt; mc = mcscf.approx_hessian(mcscf.CASSCF(mf, 4, 4))</span>
 <span class="sd">    -100.06458716530391</span>
 <span class="sd">    '''</span>
-    <span class="n">casscf_class</span> <span class="o">=</span> <span class="n">casscf</span><span class="o">.</span><span class="vm">__class__</span>
 
-    <span class="k">if</span> <span class="s1">'CASCI'</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">casscf_class</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">CASCI</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">casscf</span>  <span class="c1"># because CASCI does not need orbital optimization</span>
 
     <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="s1">'with_df'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
@@ -528,72 +539,82 @@
             <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxbasis</span>
 
-    <span class="k">class</span> <span class="nc">CASSCF</span><span class="p">(</span><span class="n">casscf_class</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="c1">#self.grad_update_dep = 0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="s1">'with_df'</span><span class="p">])</span>
-
-        <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="n">casscf_class</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'CASSCF: density fitting for orbital hessian'</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">):</span>
-            <span class="c1"># the exact integral transformation</span>
-            <span class="n">eris</span> <span class="o">=</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-
-            <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
-            <span class="c1"># Add the approximate diagonal term for orbital hessian</span>
-            <span class="n">t1</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
-            <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
-            <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span>
-            <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
-            <span class="n">eris</span><span class="o">.</span><span class="n">j_pc</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">ncore</span><span class="p">))</span>
-            <span class="n">k_cp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ncore</span><span class="p">,</span><span class="n">nmo</span><span class="p">))</span>
-            <span class="n">fmmm</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOmmm_nr_s2_iltj</span>
-            <span class="n">fdrv</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOnr_e2_drv</span>
-            <span class="n">ftrans</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOtranse2_nr_s2</span>
-
-            <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">blockdim</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">*</span><span class="mf">.3e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nmo</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
-            <span class="n">bufs1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">blksize</span><span class="p">,</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">eri1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">blksize</span><span class="p">):</span>
-                <span class="n">naux</span> <span class="o">=</span> <span class="n">eri1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">buf</span> <span class="o">=</span> <span class="n">bufs1</span><span class="p">[:</span><span class="n">naux</span><span class="p">]</span>
-                <span class="n">fdrv</span><span class="p">(</span><span class="n">ftrans</span><span class="p">,</span> <span class="n">fmmm</span><span class="p">,</span>
-                     <span class="n">buf</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-                     <span class="n">eri1</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-                     <span class="n">mo</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-                     <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">naux</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nao</span><span class="p">),</span>
-                     <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">4</span><span class="p">)(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmo</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nmo</span><span class="p">),</span>
-                     <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-                <span class="n">bufd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kii-&gt;ki'</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
-                <span class="n">eris</span><span class="o">.</span><span class="n">j_pc</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,kj-&gt;ij'</span><span class="p">,</span> <span class="n">bufd</span><span class="p">,</span> <span class="n">bufd</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">])</span>
-                <span class="n">k_cp</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kij,kij-&gt;ij'</span><span class="p">,</span> <span class="n">buf</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">],</span> <span class="n">buf</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">])</span>
-                <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'j_pc and k_pc'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
-            <span class="n">eris</span><span class="o">.</span><span class="n">k_pc</span> <span class="o">=</span> <span class="n">k_cp</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'ao2mo density fit part'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">eris</span>
-
-        <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">casscf_class</span><span class="o">.</span><span class="n">get_jk</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
-                                           <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">casscf_class</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
-                                           <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">CASSCF</span><span class="p">()</span></div>
+    <span class="n">dfcas</span> <span class="o">=</span> <span class="n">_DFHessianCASSCF</span><span class="p">(</span><span class="n">casscf</span><span class="p">,</span> <span class="n">with_df</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">dfcas</span><span class="p">,</span> <span class="p">(</span><span class="n">_DFHessianCASSCF</span><span class="p">,</span> <span class="n">casscf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
 
 
+<span class="k">class</span> <span class="nc">_DFHessianCASSCF</span><span class="p">:</span>
 
-<span class="k">class</span> <span class="nc">_ERIS</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">'DFHessian'</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'with_df'</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">,</span> <span class="n">with_df</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="c1">#self.grad_update_dep = 0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
+
+    <span class="k">def</span> <span class="nf">undo_df</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">'''Remove the DFHessianCASSCF Mixin'''</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">_DFHessianCASSCF</span><span class="p">))</span>
+        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">with_df</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'CASSCF: density fitting for orbital hessian'</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">):</span>
+        <span class="c1"># the exact integral transformation</span>
+        <span class="n">eris</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
+
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="c1"># Add the approximate diagonal term for orbital hessian</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
+        <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
+        <span class="n">eris</span><span class="o">.</span><span class="n">j_pc</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nmo</span><span class="p">,</span><span class="n">ncore</span><span class="p">))</span>
+        <span class="n">k_cp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ncore</span><span class="p">,</span><span class="n">nmo</span><span class="p">))</span>
+        <span class="n">fmmm</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOmmm_nr_s2_iltj</span>
+        <span class="n">fdrv</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOnr_e2_drv</span>
+        <span class="n">ftrans</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">libao2mo</span><span class="o">.</span><span class="n">AO2MOtranse2_nr_s2</span>
+
+        <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">blockdim</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">*</span><span class="mf">.3e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nmo</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="n">bufs1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">blksize</span><span class="p">,</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">eri1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">blksize</span><span class="p">):</span>
+            <span class="n">naux</span> <span class="o">=</span> <span class="n">eri1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">bufs1</span><span class="p">[:</span><span class="n">naux</span><span class="p">]</span>
+            <span class="n">fdrv</span><span class="p">(</span><span class="n">ftrans</span><span class="p">,</span> <span class="n">fmmm</span><span class="p">,</span>
+                 <span class="n">buf</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+                 <span class="n">eri1</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+                 <span class="n">mo</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+                 <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">naux</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nao</span><span class="p">),</span>
+                 <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">4</span><span class="p">)(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmo</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nmo</span><span class="p">),</span>
+                 <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">bufd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kii-&gt;ki'</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+            <span class="n">eris</span><span class="o">.</span><span class="n">j_pc</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ki,kj-&gt;ij'</span><span class="p">,</span> <span class="n">bufd</span><span class="p">,</span> <span class="n">bufd</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">])</span>
+            <span class="n">k_cp</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'kij,kij-&gt;ij'</span><span class="p">,</span> <span class="n">buf</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">],</span> <span class="n">buf</span><span class="p">[:,:</span><span class="n">ncore</span><span class="p">])</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">'j_pc and k_pc'</span><span class="p">,</span> <span class="o">*</span><span class="n">t1</span><span class="p">)</span>
+        <span class="n">eris</span><span class="o">.</span><span class="n">k_pc</span> <span class="o">=</span> <span class="n">k_cp</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'ao2mo density fit part'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">eris</span>
+
+    <span class="k">def</span> <span class="nf">get_jk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
+                                       <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_jk</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span>
+                                  <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span> <span class="n">with_k</span><span class="o">=</span><span class="n">with_k</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_ERIS</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">casscf</span><span class="p">,</span> <span class="n">mo</span><span class="p">,</span> <span class="n">with_df</span><span class="p">):</span>
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="n">casscf</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">casscf</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 

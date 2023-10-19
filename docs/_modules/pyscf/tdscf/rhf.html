@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.tdscf.rhf </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -337,6 +337,7 @@
 
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
@@ -364,7 +365,7 @@
 <span class="sd">    '''</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="c1"># assert (mo_coeff.dtype == numpy.double)</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
     <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
     <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span>
@@ -432,7 +433,7 @@
     <span class="k">if</span> <span class="n">mo_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
     <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
     <span class="k">if</span> <span class="n">mo_occ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="c1"># assert (mo_coeff.dtype == numpy.double)</span>
 
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span>
@@ -961,42 +962,47 @@
 
 <span class="sd">    Examples::</span>
 
-<span class="sd">    &gt;&gt;&gt; from pyscf import gto, scf, tdscf</span>
-<span class="sd">    &gt;&gt;&gt; mol = gto.M(atom='H 0 0 0; F 0 0 1')</span>
-<span class="sd">    &gt;&gt;&gt; td_scanner = tdscf.TDHF(scf.RHF(mol)).as_scanner()</span>
-<span class="sd">    &gt;&gt;&gt; de = td_scanner(gto.M(atom='H 0 0 0; F 0 0 1.1'))</span>
-<span class="sd">    [ 0.34460866  0.34460866  0.7131453 ]</span>
-<span class="sd">    &gt;&gt;&gt; de = td_scanner(gto.M(atom='H 0 0 0; F 0 0 1.5'))</span>
-<span class="sd">    [ 0.14844013  0.14844013  0.47641829]</span>
+<span class="sd">        &gt;&gt;&gt; from pyscf import gto, scf, tdscf</span>
+<span class="sd">        &gt;&gt;&gt; mol = gto.M(atom='H 0 0 0; F 0 0 1')</span>
+<span class="sd">        &gt;&gt;&gt; td_scanner = tdscf.TDHF(scf.RHF(mol)).as_scanner()</span>
+<span class="sd">        &gt;&gt;&gt; de = td_scanner(gto.M(atom='H 0 0 0; F 0 0 1.1'))</span>
+<span class="sd">        [ 0.34460866  0.34460866  0.7131453 ]</span>
+<span class="sd">        &gt;&gt;&gt; de = td_scanner(gto.M(atom='H 0 0 0; F 0 0 1.5'))</span>
+<span class="sd">        [ 0.14844013  0.14844013  0.47641829]</span>
 <span class="sd">    '''</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">SinglePointScanner</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">td</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="s1">'Set </span><span class="si">%s</span><span class="s1"> as a scanner'</span><span class="p">,</span> <span class="n">td</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-
-    <span class="k">class</span> <span class="nc">TD_Scanner</span><span class="p">(</span><span class="n">td</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">SinglePointScanner</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">td</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">td</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
-        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-
-            <span class="n">mf_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
-            <span class="n">mf_e</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">mf_e</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span>
-    <span class="k">return</span> <span class="n">TD_Scanner</span><span class="p">(</span><span class="n">td</span><span class="p">)</span></div>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="n">TD_Scanner</span><span class="o">.</span><span class="n">__name_mixin__</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">TD_Scanner</span><span class="p">(</span><span class="n">td</span><span class="p">),</span> <span class="p">(</span><span class="n">TD_Scanner</span><span class="p">,</span> <span class="n">td</span><span class="o">.</span><span class="vm">__class__</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="TD_Scanner">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TD_Scanner">[docs]</a>
+<span class="k">class</span> <span class="nc">TD_Scanner</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">SinglePointScanner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">td</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">td</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
 
-<div class="viewcode-block" id="TDMixin">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin">[docs]</a>
-<span class="k">class</span> <span class="nc">TDMixin</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">MoleBase</span><span class="p">):</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+
+        <span class="n">mf_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
+        <span class="n">mf_e</span> <span class="o">=</span> <span class="n">mf_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mf_e</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span></div>
+
+
+
+<div class="viewcode-block" id="TDBase">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase">[docs]</a>
+<span class="k">class</span> <span class="nc">TDBase</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
     <span class="n">conv_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDA_conv_tol'</span><span class="p">,</span> <span class="mf">1e-9</span><span class="p">)</span>
     <span class="n">nstates</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDA_nstates'</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">singlet</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDA_singlet'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -1006,6 +1012,13 @@
     <span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDA_max_cycle'</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
     <span class="c1"># Low excitation filter to avoid numerical instability</span>
     <span class="n">positive_eig_threshold</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDDFT_positive_eig_threshold'</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
+    <span class="c1"># Threshold to handle degeneracy in init guess</span>
+    <span class="n">deg_eia_thresh</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'tdscf_rhf_TDDFT_deg_eia_thresh'</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">)</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span>
+        <span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'nstates'</span><span class="p">,</span> <span class="s1">'singlet'</span><span class="p">,</span> <span class="s1">'lindep'</span><span class="p">,</span> <span class="s1">'level_shift'</span><span class="p">,</span> <span class="s1">'max_space'</span><span class="p">,</span>
+        <span class="s1">'max_cycle'</span><span class="p">,</span> <span class="s1">'mol'</span><span class="p">,</span> <span class="s1">'chkfile'</span><span class="p">,</span> <span class="s1">'wfnsym'</span><span class="p">,</span> <span class="s1">'converged'</span><span class="p">,</span> <span class="s1">'e'</span><span class="p">,</span> <span class="s1">'xy'</span><span class="p">,</span>
+    <span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">verbose</span>
@@ -1023,10 +1036,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xy</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">((</span><span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'nstates'</span><span class="p">,</span> <span class="s1">'singlet'</span><span class="p">,</span> <span class="s1">'lindep'</span><span class="p">,</span> <span class="s1">'level_shift'</span><span class="p">,</span>
-                    <span class="s1">'max_space'</span><span class="p">,</span> <span class="s1">'max_cycle'</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nroots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span>
@@ -1039,8 +1048,8 @@
 <span class="w">        </span><span class="sd">'''Excited state energies'''</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">e_tot</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span>
 
-<div class="viewcode-block" id="TDMixin.dump_flags">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.dump_flags">[docs]</a>
+<div class="viewcode-block" id="TDBase.dump_flags">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.dump_flags">[docs]</a>
     <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
@@ -1052,6 +1061,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'nstates = </span><span class="si">%d</span><span class="s1"> singlet'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'nstates = </span><span class="si">%d</span><span class="s1"> triplet'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'deg_eia_thresh = </span><span class="si">%.3e</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deg_eia_thresh</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'wfnsym = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfnsym</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'conv_tol = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">)</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'eigh lindep = </span><span class="si">%g</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">)</span>
@@ -1066,16 +1076,16 @@
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TDMixin.check_sanity">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.check_sanity">[docs]</a>
+<div class="viewcode-block" id="TDBase.check_sanity">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.check_sanity">[docs]</a>
     <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'SCF object is not initialized'</span><span class="p">)</span>
         <span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TDMixin.reset">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.reset">[docs]</a>
+<div class="viewcode-block" id="TDBase.reset">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
@@ -1083,22 +1093,22 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
-<div class="viewcode-block" id="TDMixin.gen_vind">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.gen_vind">[docs]</a>
+<div class="viewcode-block" id="TDBase.gen_vind">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.gen_vind">[docs]</a>
     <span class="k">def</span> <span class="nf">gen_vind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
-<div class="viewcode-block" id="TDMixin.get_ab">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.get_ab">[docs]</a>
+<div class="viewcode-block" id="TDBase.get_ab">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.get_ab">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">get_ab</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_ab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">mf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
         <span class="k">return</span> <span class="n">get_ab</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TDMixin.get_precond">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.get_precond">[docs]</a>
+<div class="viewcode-block" id="TDBase.get_precond">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.get_precond">[docs]</a>
     <span class="k">def</span> <span class="nf">get_precond</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
             <span class="n">diagd</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">-</span> <span class="p">(</span><span class="n">e</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">level_shift</span><span class="p">)</span>
@@ -1123,8 +1133,8 @@
 
     <span class="n">as_scanner</span> <span class="o">=</span> <span class="n">as_scanner</span>
 
-<div class="viewcode-block" id="TDMixin.nuc_grad_method">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDMixin.nuc_grad_method">[docs]</a>
+<div class="viewcode-block" id="TDBase.nuc_grad_method">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDBase.nuc_grad_method">[docs]</a>
     <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">tdrhf</span>
         <span class="k">return</span> <span class="n">tdrhf</span><span class="o">.</span><span class="n">Gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
@@ -1141,7 +1151,7 @@
 
 <div class="viewcode-block" id="TDA">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.rhf.TDA">[docs]</a>
-<span class="k">class</span> <span class="nc">TDA</span><span class="p">(</span><span class="n">TDMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TDA</span><span class="p">(</span><span class="n">TDBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Tamm-Dancoff approximation</span>
 
 <span class="sd">    Attributes:</span>
@@ -1182,7 +1192,6 @@
         <span class="n">occidx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">viridx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">e_ia</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
-        <span class="n">e_ia_max</span> <span class="o">=</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1195,9 +1204,8 @@
         <span class="n">nov</span> <span class="o">=</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">size</span>
         <span class="n">nstates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nstates</span><span class="p">,</span> <span class="n">nov</span><span class="p">)</span>
         <span class="n">e_ia</span> <span class="o">=</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">e_threshold</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">e_ia_max</span><span class="p">,</span> <span class="n">e_ia</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">e_ia</span><span class="p">)[</span><span class="n">nstates</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
-        <span class="c1"># Handle degeneracy, include all degenerated states in initial guess</span>
-        <span class="n">e_threshold</span> <span class="o">+=</span> <span class="mf">1e-6</span>
+        <span class="n">e_threshold</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">e_ia</span><span class="p">)[</span><span class="n">nstates</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">e_threshold</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deg_eia_thresh</span>
 
         <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">e_ia</span> <span class="o">&lt;=</span> <span class="n">e_threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">nov</span><span class="p">))</span>
@@ -1224,12 +1232,12 @@
         <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_vind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span>
         <span class="n">precond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
-
         <span class="k">def</span> <span class="nf">pickeig</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">w</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_eig_threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">w</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="n">idx</span><span class="p">],</span> <span class="n">idx</span>
+
+        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> \
                 <span class="n">lib</span><span class="o">.</span><span class="n">davidson1</span><span class="p">(</span><span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span>
@@ -1268,7 +1276,7 @@
 <span class="sd">    '''</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="c1"># assert (mo_coeff.dtype == numpy.double)</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
     <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
     <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span>
@@ -1394,8 +1402,14 @@
 
         <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_vind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span>
         <span class="n">precond</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_precond</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+
+        <span class="c1"># handle single kpt PBC SCF</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="s1">'kpt'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">gamma_point</span>
+            <span class="n">real_system</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">kpt</span><span class="p">)</span> <span class="ow">and</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">real_system</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># We only need positive eigenvalues</span>
         <span class="k">def</span> <span class="nf">pickeig</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
@@ -1404,8 +1418,10 @@
             <span class="c1"># If the complex eigenvalue has small imaginary part, both the</span>
             <span class="c1"># real part and the imaginary part of the eigenvector can</span>
             <span class="c1"># approximately be used as the "real" eigen solutions.</span>
-            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">_eigs_cmplx2real</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">realidx</span><span class="p">,</span>
-                                                      <span class="n">real_eigenvectors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">_eigs_cmplx2real</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">realidx</span><span class="p">,</span> <span class="n">real_system</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> \
                 <span class="n">lib</span><span class="o">.</span><span class="n">davidson_nosym1</span><span class="p">(</span><span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span>

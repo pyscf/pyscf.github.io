@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.dft.numint </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -401,7 +401,7 @@
 <span class="sd">        2D array of shape (N,nao) for AO values if deriv = 0.</span>
 <span class="sd">        Or 3D array of shape (:,N,nao) for AO values and AO derivatives if deriv &gt; 0.</span>
 <span class="sd">        In the 3D array, the first (N,nao) elements are the AO values,</span>
-<span class="sd">        followed by (3,N,nao) for x,y,z compoents;</span>
+<span class="sd">        followed by (3,N,nao) for x,y,z components;</span>
 <span class="sd">        Then 2nd derivatives (6,N,nao) for xx, xy, xz, yy, yz, zz;</span>
 <span class="sd">        Then 3rd derivatives (10,N,nao) for xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz;</span>
 <span class="sd">        ...</span>
@@ -600,7 +600,7 @@
 
     <span class="k">if</span> <span class="n">pair_mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ovlp_cond</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">get_overlap_cond</span><span class="p">()</span>
-        <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">ovlp_cond</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cutoff</span><span class="p">)</span>
+        <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ovlp_cond</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cutoff</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 
     <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">ao_loc_nr</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'LDA'</span> <span class="ow">or</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'HF'</span><span class="p">:</span>
@@ -675,7 +675,7 @@
 <span class="sd">        xctype : str</span>
 <span class="sd">            LDA/GGA/mGGA.  It affects the shape of the return density.</span>
 <span class="sd">        with_lapl: bool</span>
-<span class="sd">            Wether to compute laplacian. It affects the shape of returns.</span>
+<span class="sd">            Whether to compute laplacian. It affects the shape of returns.</span>
 <span class="sd">        verbose : int or object of :class:`Logger`</span>
 <span class="sd">            No effects.</span>
 
@@ -1816,30 +1816,18 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'complex density matrix'</span><span class="p">)</span>
 
     <span class="n">xctype</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xctype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'LDA'</span><span class="p">,</span> <span class="s1">'GGA'</span><span class="p">,</span> <span class="s1">'MGGA'</span><span class="p">):</span>
+        <span class="n">fxc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">cache_xc_kernel1</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+
     <span class="n">make_rho1</span><span class="p">,</span> <span class="n">nset</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rho0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">make_rho0</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">make_rho0</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">block_loop</span><span class="p">(</span><span class="n">ao_deriv</span><span class="p">):</span>
         <span class="n">p1</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">_rho0</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">coords</span> \
                 <span class="ow">in</span> <span class="n">ni</span><span class="o">.</span><span class="n">block_loop</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">ao_deriv</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">):</span>
             <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span>
-            <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">rho0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'LDA'</span><span class="p">:</span>
-                        <span class="n">_rho0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">_rho0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">make_rho0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">_rho0</span> <span class="o">=</span> <span class="n">make_rho0</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
-                <span class="n">_fxc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">eval_xc_eff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">_rho0</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">xctype</span><span class="o">=</span><span class="n">xctype</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">_fxc</span> <span class="o">=</span> <span class="n">fxc</span><span class="p">[:,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-
+            <span class="n">_fxc</span> <span class="o">=</span> <span class="n">fxc</span><span class="p">[:,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">rho1</span> <span class="o">=</span> <span class="n">make_rho1</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'LDA'</span><span class="p">:</span>
@@ -2104,38 +2092,21 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'complex density matrix'</span><span class="p">)</span>
 
     <span class="n">xctype</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">xctype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'LDA'</span><span class="p">,</span> <span class="s1">'GGA'</span><span class="p">,</span> <span class="s1">'MGGA'</span><span class="p">):</span>
+        <span class="n">fxc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">cache_xc_kernel1</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm0</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+
     <span class="n">dma</span><span class="p">,</span> <span class="n">dmb</span> <span class="o">=</span> <span class="n">_format_uks_dm</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
     <span class="n">nao</span> <span class="o">=</span> <span class="n">dma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">make_rhoa</span><span class="p">,</span> <span class="n">nset</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dma</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">make_rhob</span>       <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dmb</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rho0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">make_rho0</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">_format_uks_dm</span><span class="p">(</span><span class="n">dm0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">make_rho0</span> <span class="o">=</span> <span class="kc">None</span>
-
     <span class="k">def</span> <span class="nf">block_loop</span><span class="p">(</span><span class="n">ao_deriv</span><span class="p">):</span>
         <span class="n">p1</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">rho0a</span> <span class="o">=</span> <span class="n">rho0b</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">coords</span> \
                 <span class="ow">in</span> <span class="n">ni</span><span class="o">.</span><span class="n">block_loop</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">ao_deriv</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">):</span>
             <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">weight</span><span class="o">.</span><span class="n">size</span>
-            <span class="k">if</span> <span class="n">fxc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">rho0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'LDA'</span><span class="p">:</span>
-                        <span class="n">rho0a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                        <span class="n">rho0b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">rho0a</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                        <span class="n">rho0b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho0</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="n">make_rho0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">rho0a</span> <span class="o">=</span> <span class="n">make_rho0</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
-                    <span class="n">rho0b</span> <span class="o">=</span> <span class="n">make_rho0</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
-                <span class="n">_rho0</span> <span class="o">=</span> <span class="p">(</span><span class="n">rho0a</span><span class="p">,</span> <span class="n">rho0b</span><span class="p">)</span>
-                <span class="n">_fxc</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">eval_xc_eff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">_rho0</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">xctype</span><span class="o">=</span><span class="n">xctype</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">_fxc</span> <span class="o">=</span> <span class="n">fxc</span><span class="p">[:,:,:,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-
+            <span class="n">_fxc</span> <span class="o">=</span> <span class="n">fxc</span><span class="p">[:,:,:,:,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">rho1a</span> <span class="o">=</span> <span class="n">make_rhoa</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
                 <span class="n">rho1b</span> <span class="o">=</span> <span class="n">make_rhob</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">xctype</span><span class="p">)</span>
@@ -2969,7 +2940,8 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.cache_xc_kernel1">[docs]</a>
 <span class="k">def</span> <span class="nf">cache_xc_kernel1</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Compute the 0th order density, Vxc and fxc.  They can be used in TDDFT,</span>
-<span class="sd">    DFT hessian module etc.</span>
+<span class="sd">    DFT hessian module etc. Note dm the zeroth order density matrix must be a</span>
+<span class="sd">    hermitian matrix.</span>
 <span class="sd">    '''</span>
     <span class="n">xctype</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'GGA'</span><span class="p">:</span>
@@ -2979,7 +2951,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ao_deriv</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">make_rho</span><span class="p">,</span> <span class="n">nset</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">hermi</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">make_rho</span><span class="p">,</span> <span class="n">nset</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_gen_rho_evaluator</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">hermi</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">grids</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># RKS</span>
         <span class="n">rho</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">coords</span> \
@@ -3019,75 +2992,47 @@
     <span class="k">return</span> <span class="n">rho</span></div>
 
 
-<span class="k">def</span> <span class="nf">_block_loop</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">nao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-                <span class="n">non0tab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">'''Define this macro to loop over grids by blocks.</span>
-<span class="sd">    '''</span>
-    <span class="k">if</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">grids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">nao</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
-    <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">comp</span> <span class="o">=</span> <span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span><span class="o">//</span><span class="mi">6</span>
-    <span class="c1"># NOTE to index grids.non0tab, the blksize needs to be an integer</span>
-    <span class="c1"># multiplier of BLKSIZE</span>
-    <span class="k">if</span> <span class="n">blksize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="p">((</span><span class="n">comp</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nao</span><span class="o">*</span><span class="mi">8</span><span class="o">*</span><span class="n">BLKSIZE</span><span class="p">))</span>
-        <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="n">ngrids</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1200</span><span class="p">))</span> <span class="o">*</span> <span class="n">BLKSIZE</span>
-    <span class="k">assert</span> <span class="n">blksize</span> <span class="o">%</span> <span class="n">BLKSIZE</span> <span class="o">==</span> <span class="mi">0</span>
 
-    <span class="k">if</span> <span class="n">non0tab</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span> <span class="ow">is</span> <span class="n">grids</span><span class="o">.</span><span class="n">mol</span><span class="p">:</span>
-        <span class="n">non0tab</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">non0tab</span>
-    <span class="k">if</span> <span class="n">non0tab</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">non0tab</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="n">ngrids</span><span class="o">+</span><span class="n">BLKSIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">,</span><span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>
-                              <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
-        <span class="n">non0tab</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">NBINS</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># Corresponding to AO value ~= 1</span>
-    <span class="n">screen_index</span> <span class="o">=</span> <span class="n">non0tab</span>
-
-    <span class="c1"># the xxx_sparse() functions require ngrids 8-byte aligned</span>
-    <span class="n">allow_sparse</span> <span class="o">=</span> <span class="n">ngrids</span> <span class="o">%</span> <span class="n">ALIGNMENT_UNIT</span> <span class="o">==</span> <span class="mi">0</span>
-
-    <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">buf</span> <span class="o">=</span> <span class="n">_empty_aligned</span><span class="p">(</span><span class="n">comp</span> <span class="o">*</span> <span class="n">blksize</span> <span class="o">*</span> <span class="n">nao</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">ip0</span><span class="p">,</span> <span class="n">ip1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">ip0</span><span class="p">:</span><span class="n">ip1</span><span class="p">]</span>
-        <span class="n">weight</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">ip0</span><span class="p">:</span><span class="n">ip1</span><span class="p">]</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">screen_index</span><span class="p">[</span><span class="n">ip0</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">:]</span>
-        <span class="c1"># TODO: pass grids.cutoff to eval_ao</span>
-        <span class="n">ao</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="n">deriv</span><span class="p">,</span> <span class="n">non0tab</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
-                        <span class="n">cutoff</span><span class="o">=</span><span class="n">grids</span><span class="o">.</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_sparse</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_sparse_enough</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
-            <span class="c1"># Unset mask for dense AO tensor. It determines which eval_rho</span>
-            <span class="c1"># to be called in make_rho</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">yield</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">coords</span>
-
-
-<span class="k">class</span> <span class="nc">_NumIntMixin</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
+<div class="viewcode-block" id="LibXCMixin">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin">[docs]</a>
+<span class="k">class</span> <span class="nc">LibXCMixin</span><span class="p">:</span>
     <span class="n">libxc</span> <span class="o">=</span> <span class="n">libxc</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># RSH paramter</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># RSH paramter</span>
 
 <span class="c1">####################</span>
 <span class="c1"># Overwrite following functions to use custom XC functional</span>
 
+<div class="viewcode-block" id="LibXCMixin.hybrid_coeff">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.hybrid_coeff">[docs]</a>
     <span class="k">def</span> <span class="nf">hybrid_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">hybrid_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">hybrid_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="LibXCMixin.nlc_coeff">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.nlc_coeff">[docs]</a>
     <span class="k">def</span> <span class="nf">nlc_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">nlc_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">nlc_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="LibXCMixin.rsh_coeff">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.rsh_coeff">[docs]</a>
     <span class="k">def</span> <span class="nf">rsh_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">rsh_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">rsh_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="LibXCMixin.eval_xc">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.eval_xc">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">libxc</span><span class="o">.</span><span class="n">eval_xc</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">eval_xc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">omega</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">eval_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">relativity</span><span class="p">,</span> <span class="n">deriv</span><span class="p">,</span>
-                                  <span class="n">omega</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+                                  <span class="n">omega</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="LibXCMixin.eval_xc_eff">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.eval_xc_eff">[docs]</a>
     <span class="k">def</span> <span class="nf">eval_xc_eff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xctype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">'''Returns the derivative tensor against the density parameters</span>
@@ -3151,11 +3096,14 @@
             <span class="n">fxc</span> <span class="o">=</span> <span class="n">xc_deriv</span><span class="o">.</span><span class="n">transform_fxc</span><span class="p">(</span><span class="n">rhop</span><span class="p">,</span> <span class="n">vxc</span><span class="p">,</span> <span class="n">fxc</span><span class="p">,</span> <span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">deriv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">vxc</span> <span class="o">=</span> <span class="n">xc_deriv</span><span class="o">.</span><span class="n">transform_vxc</span><span class="p">(</span><span class="n">rhop</span><span class="p">,</span> <span class="n">vxc</span><span class="p">,</span> <span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span><span class="p">,</span> <span class="n">fxc</span><span class="p">,</span> <span class="n">kxc</span>
+        <span class="k">return</span> <span class="n">exc</span><span class="p">,</span> <span class="n">vxc</span><span class="p">,</span> <span class="n">fxc</span><span class="p">,</span> <span class="n">kxc</span></div>
+
 
     <span class="k">def</span> <span class="nf">_xc_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
 
+<div class="viewcode-block" id="LibXCMixin.rsh_and_hybrid_coeff">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.LibXCMixin.rsh_and_hybrid_coeff">[docs]</a>
     <span class="k">def</span> <span class="nf">rsh_and_hybrid_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">'''Range-separated parameter and HF exchange components: omega, alpha, beta</span>
 
@@ -3176,12 +3124,18 @@
             <span class="n">hyb</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">hyb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">omega</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">hyb</span>
+        <span class="k">return</span> <span class="n">omega</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">hyb</span></div>
+</div>
+
+
+<span class="c1"># Export the symbol _NumIntMixin for backward compatibility.</span>
+<span class="c1"># _NumIntMixin should be dropped in the future.</span>
+<span class="n">_NumIntMixin</span> <span class="o">=</span> <span class="n">LibXCMixin</span>
 
 
 <div class="viewcode-block" id="NumInt">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.NumInt">[docs]</a>
-<span class="k">class</span> <span class="nc">NumInt</span><span class="p">(</span><span class="n">_NumIntMixin</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">NumInt</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">,</span> <span class="n">LibXCMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Numerical integration methods for non-relativistic RKS and UKS'''</span>
 
     <span class="n">cutoff</span> <span class="o">=</span> <span class="n">CUTOFF</span> <span class="o">*</span> <span class="mf">1e2</span>  <span class="c1"># cutoff for small AO product</span>
@@ -3231,7 +3185,51 @@
     <span class="n">eval_rho2</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">eval_rho2</span><span class="p">)</span>
     <span class="n">get_rho</span> <span class="o">=</span> <span class="n">get_rho</span>
 
-    <span class="n">block_loop</span> <span class="o">=</span> <span class="n">_block_loop</span>
+<div class="viewcode-block" id="NumInt.block_loop">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.numint.NumInt.block_loop">[docs]</a>
+    <span class="k">def</span> <span class="nf">block_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">nao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+                   <span class="n">non0tab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">'''Define this macro to loop over grids by blocks.</span>
+<span class="sd">        '''</span>
+        <span class="k">if</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">grids</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">with_non0tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nao</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
+        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">comp</span> <span class="o">=</span> <span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">deriv</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span><span class="o">//</span><span class="mi">6</span>
+        <span class="c1"># NOTE to index grids.non0tab, the blksize needs to be an integer</span>
+        <span class="c1"># multiplier of BLKSIZE</span>
+        <span class="k">if</span> <span class="n">blksize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">1e6</span><span class="o">/</span><span class="p">((</span><span class="n">comp</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nao</span><span class="o">*</span><span class="mi">8</span><span class="o">*</span><span class="n">BLKSIZE</span><span class="p">))</span>
+            <span class="n">blksize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">blksize</span><span class="p">,</span> <span class="n">ngrids</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1200</span><span class="p">))</span> <span class="o">*</span> <span class="n">BLKSIZE</span>
+        <span class="k">assert</span> <span class="n">blksize</span> <span class="o">%</span> <span class="n">BLKSIZE</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">non0tab</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span> <span class="ow">is</span> <span class="n">grids</span><span class="o">.</span><span class="n">mol</span><span class="p">:</span>
+            <span class="n">non0tab</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">non0tab</span>
+        <span class="k">if</span> <span class="n">non0tab</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">non0tab</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="n">ngrids</span><span class="o">+</span><span class="n">BLKSIZE</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">,</span><span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">),</span>
+                                  <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">non0tab</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">NBINS</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># Corresponding to AO value ~= 1</span>
+        <span class="n">screen_index</span> <span class="o">=</span> <span class="n">non0tab</span>
+
+        <span class="c1"># the xxx_sparse() functions require ngrids 8-byte aligned</span>
+        <span class="n">allow_sparse</span> <span class="o">=</span> <span class="n">ngrids</span> <span class="o">%</span> <span class="n">ALIGNMENT_UNIT</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">_empty_aligned</span><span class="p">(</span><span class="n">comp</span> <span class="o">*</span> <span class="n">blksize</span> <span class="o">*</span> <span class="n">nao</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ip0</span><span class="p">,</span> <span class="n">ip1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">ip0</span><span class="p">:</span><span class="n">ip1</span><span class="p">]</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">ip0</span><span class="p">:</span><span class="n">ip1</span><span class="p">]</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">screen_index</span><span class="p">[</span><span class="n">ip0</span><span class="o">//</span><span class="n">BLKSIZE</span><span class="p">:]</span>
+            <span class="c1"># TODO: pass grids.cutoff to eval_ao</span>
+            <span class="n">ao</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_ao</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="n">deriv</span><span class="p">,</span> <span class="n">non0tab</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+                              <span class="n">cutoff</span><span class="o">=</span><span class="n">grids</span><span class="o">.</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_sparse</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_sparse_enough</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+                <span class="c1"># Unset mask for dense AO tensor. It determines which eval_rho</span>
+                <span class="c1"># to be called in make_rho</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">yield</span> <span class="n">ao</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">coords</span></div>
+
 
     <span class="k">def</span> <span class="nf">_gen_rho_evaluator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">with_lapl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">grids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dms</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -3256,12 +3254,15 @@
         <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">ndms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
 
-        <span class="n">ovlp_cond</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">get_overlap_cond</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">dms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">:</span>
-            <span class="n">dm_cond</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">mol</span><span class="o">.</span><span class="n">condense_to_shell</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="s1">'absmax'</span><span class="p">)</span> <span class="k">for</span> <span class="n">dm</span> <span class="ow">in</span> <span class="n">dms</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="n">pair_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ovlp_cond</span><span class="p">)</span> <span class="o">*</span> <span class="n">dm_cond</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">ovlp_cond</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">grids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ovlp_cond</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">get_overlap_cond</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">dms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">:</span>
+                <span class="n">dm_cond</span> <span class="o">=</span> <span class="p">[</span><span class="n">mol</span><span class="o">.</span><span class="n">condense_to_shell</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="s1">'absmax'</span><span class="p">)</span> <span class="k">for</span> <span class="n">dm</span> <span class="ow">in</span> <span class="n">dms</span><span class="p">]</span>
+                <span class="n">dm_cond</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dm_cond</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">ovlp_cond</span><span class="p">)</span> <span class="o">*</span> <span class="n">dm_cond</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">ovlp_cond</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cutoff</span><span class="p">)</span>
+            <span class="n">pair_mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pair_mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">make_rho</span><span class="p">(</span><span class="n">idm</span><span class="p">,</span> <span class="n">ao</span><span class="p">,</span> <span class="n">sindex</span><span class="p">,</span> <span class="n">xctype</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">sindex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">grids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

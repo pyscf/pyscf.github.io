@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=c3c8ae58"></script>
+    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
     <script src="../../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.3</span>
+          <span class="md-header-nav__topic">PySCF 2.4</span>
           <span class="md-header-nav__topic"> pyscf.df.grad.casscf </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.3</a>
+       title="PySCF">PySCF 2.4</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -347,6 +347,7 @@
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
@@ -354,8 +355,9 @@
 <span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">rhf_grad</span>
 <span class="kn">from</span> <span class="nn">pyscf.grad.mp2</span> <span class="kn">import</span> <span class="n">_shell_prange</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">dfrhf_grad</span>
-<span class="kn">from</span> <span class="nn">pyscf.df.grad.casdm2_util</span> <span class="kn">import</span> <span class="n">solve_df_rdm2</span><span class="p">,</span>\
-    <span class="n">grad_elec_dferi</span><span class="p">,</span> <span class="n">grad_elec_auxresponse_dferi</span>
+<span class="kn">from</span> <span class="nn">pyscf.df.grad.casdm2_util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">solve_df_rdm2</span><span class="p">,</span> <span class="n">grad_elec_dferi</span><span class="p">,</span>
+                                       <span class="n">grad_elec_auxresponse_dferi</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
 
 <div class="viewcode-block" id="grad_elec">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.casscf.grad_elec">[docs]</a>
@@ -463,31 +465,36 @@
 <span class="sd">    &gt;&gt;&gt; etot, grad = mc_grad_scanner(gto.M(atom='N 0 0 0; N 0 0 1.1'))</span>
 <span class="sd">    &gt;&gt;&gt; etot, grad = mc_grad_scanner(gto.M(atom='N 0 0 0; N 0 0 1.5'))</span>
 <span class="sd">    '''</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMCSCFSolver</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">mcscf_grad</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">,</span> <span class="s1">'Create scanner for </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="n">CASSCF_GradScanner</span><span class="o">.</span><span class="n">__name_mixin__</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">),</span>
+                         <span class="p">(</span><span class="n">CASSCF_GradScanner</span><span class="p">,</span> <span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
 
-    <span class="k">class</span> <span class="nc">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
-            <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
-        <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">):</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="n">mc_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
-            <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
-                <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_average</span>
+<div class="viewcode-block" id="CASSCF_GradScanner">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.casscf.CASSCF_GradScanner">[docs]</a>
+<span class="k">class</span> <span class="nc">CASSCF_GradScanner</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">GradScanner</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
-            <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">de</span>
-    <span class="k">return</span> <span class="n">CASSCF_GradScanner</span><span class="p">(</span><span class="n">mcscf_grad</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol_or_geom</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">MoleBase</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">mol_or_geom</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">==</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_or_geom</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">mol_or_geom</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">mc_scanner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span>
+        <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc_scanner</span><span class="p">,</span> <span class="n">StateAverageMCSCFSolver</span><span class="p">):</span>
+            <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc_scanner</span><span class="o">.</span><span class="n">e_average</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
+        <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">de</span></div>
 
 
 
@@ -495,6 +502,8 @@
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.casscf.Gradients">[docs]</a>
 <span class="k">class</span> <span class="nc">Gradients</span><span class="p">(</span><span class="n">casci_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Non-relativistic restricted Hartree-Fock gradients'''</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'with_df'</span><span class="p">,</span> <span class="s1">'auxbasis_response'</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mc</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">with_df</span>
@@ -553,7 +562,6 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">mcscf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
