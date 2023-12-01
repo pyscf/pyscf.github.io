@@ -304,8 +304,9 @@ functions, for example,
     g = mf.Gradients()
     g.kernel()
 
-Also several response properties are available in PySCF, see the
-examples in :source:`examples/prop/17-stability.py`.
+Also several response properties are available in PySCF
+with the `properties <https://github.com/pyscf/properties>`_ extension, see the
+examples `there <https://github.com/pyscf/properties/tree/master/examples>`_.
     
 .. _user_scf_restrict:
 

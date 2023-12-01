@@ -387,6 +387,7 @@ to extension projects hosted at https://github.com/pyscf.
 =================== =========================================================
 Project             URL
 =================== =========================================================
+cas_ac0             https://github.com/CQCL/pyscf-ac0
 cornell-shci        https://github.com/pyscf/cornell-shci
 dftd3               https://github.com/pyscf/dftd3
 dmrgscf             https://github.com/pyscf/dmrgscf
