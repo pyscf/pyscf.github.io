@@ -23,7 +23,7 @@ myscanner = mycas.nuc_grad_method().as_scanner()
 # or for 50 a.u.
 myintegrator = pyscf.md.NVE(myscanner,
                             dt=5,
-                            steps=10,
+                            steps=100,
                             data_output="BOMD.md.data",
                             trajectory_output="BOMD.md.xyz").run()
 
