@@ -104,9 +104,9 @@ solver. The following values are possible
 * ``'vsap'``
 
     Superposition of atomic potentials as described in
-    :cite:`Lehtola2019_JCTC_1593`. Pretabulated, fully numerical
-    atomic potentials determined with the approach of
-    :cite:`Lehtola2020_PRA_012516` are used to build a guess potential
+    :cite:`Lehtola2019_JCTC_1593`. A sum of pretabulated, fully
+    numerical atomic potentials determined with the approach of
+    :cite:`Lehtola2020_PRA_012516` is used to build a guess potential
     on a DFT quadrature grid; this potential is then used to obtain
     the orbitals. Note this option is only available for DFT
     calculations in PySCF.
