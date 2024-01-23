@@ -64,11 +64,13 @@ solver. The following values are possible
 
 * ``'minao'`` (default)
 
-    Superposition of atomic densities projected in a minimal basis
-    obtained from the first contracted functions in the cc-pVTZ or
-    cc-pVTZ-PP basis set. The guess orbitals are obtained by
-    diagonalizing the Fock matrix that arises from the spin-restricted
-    guess density.
+    A superposition of atomic densities
+    :cite:`Almlof1982_JCC_385,VanLenthe2006_JCC_926` technique, in
+    which the guess is obtained by projecting the minimal basis of the
+    first contracted functions in the cc-pVTZ or cc-pVTZ-PP basis set
+    onto the orbital basis set, and then forming the density
+    matrix. The guess orbitals are obtained by diagonalizing the Fock
+    matrix that arises from the spin-restricted guess density.
 
 * ``'1e'``
 
@@ -82,10 +84,11 @@ solver. The following values are possible
 
 * ``'atom'``
 
-    Superposition of atomic HF density matrices. The atomic HF
-    calculations are spin-restricted and employ spherically averaged
-    fractional occupations with ground states determined with fully
-    numerical calculations at the complete basis set limit in
+    Superposition of atomic densities
+    :cite:`Almlof1982_JCC_385,VanLenthe2006_JCC_926`. Employs
+    spin-restricted atomic HF calculations that employ spherically
+    averaged fractional occupations with ground states determined with
+    fully numerical calculations at the complete basis set limit in
     :cite:`Lehtola2020_PRA_012516`.
 
 * ``'huckel'``
@@ -101,9 +104,9 @@ solver. The following values are possible
 * ``'vsap'``
 
     Superposition of atomic potentials as described in
-    :cite:`Lehtola2019_JCTC_1593`. Pretabulated, fully numerical
-    atomic potentials determined with the approach of
-    :cite:`Lehtola2020_PRA_012516` are used to build a guess potential
+    :cite:`Lehtola2019_JCTC_1593`. A sum of pretabulated, fully
+    numerical atomic potentials determined with the approach of
+    :cite:`Lehtola2020_PRA_012516` is used to build a guess potential
     on a DFT quadrature grid; this potential is then used to obtain
     the orbitals. Note this option is only available for DFT
     calculations in PySCF.
