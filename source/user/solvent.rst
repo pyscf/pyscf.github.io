@@ -371,7 +371,7 @@ SMD solvent solvent models can be applied on to an SCF object::
   mf.with_solvent.solvent = 'water'
   mf.run()
 
-The format of solvant names are the same as Minnesota Solvent Descriptor Database (https://comp.chem.umn.edu/solvation/mnsddb.pdf). One can also customize the solvent descriptors in the format `mf.with_solvent.solvent_descriptors = [n, n25, alpha, beta, gamma, epsilon, phi, psi]`
+The format of solvant names are the same as Minnesota Solvent Descriptor Database (https://comp.chem.umn.edu/solvation/mnsddb.pdf). One can also customize the solvent descriptors in the format ``mf.with_solvent.solvent_descriptors = [n, n25, alpha, beta, gamma, epsilon, phi, psi]``
 
 Polarizable embedding
 =====================
