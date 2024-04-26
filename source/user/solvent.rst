@@ -339,6 +339,39 @@ Xylene-mixture                     2.3879
 z-1,2-DiChloroEthene               9.2
 ================================== ====================
 
+PCM model
+=========
+PySCF support four types of PCM solvent models, i.e. C-PCM, IEF-PCM, SS(V)PE, and COSMO (See https://manual.q-chem.com/5.2/Ch12.S2.SS2.html for more detailed descriptions of these methods). The analytical gradient and semi-analytical Hessian are also supported. PCM solvent models can be applied on to an SCF object::
+
+  import pyscf
+  mol = pyscf.M(atom='''
+       C  0.    0.      -0.542
+       O  0.    0.       0.677
+       H  0.    0.935   -1.082
+       H  0.   -0.935   -1.082''',
+                basis='6-31g*', verbose=4)
+  mf = mol.RKS(xc='b3lyp').PCM()
+  mf.with_solvent.method = 'IEF-PCM' # C-PCM, SS(V)PE, COSMO
+  mf.with_solvent.eps = 78.3553 # for water
+  mf.run()
+
+SMD model
+=========
+SMD model is recommended for computing solvation free energy. The implementation of SMD model in PySCF is based on IEF-PCM. Other SMx models are not supported yet (See https://manual.q-chem.com/5.2/Ch12.S2.SS8.html). The source code for CDS contribution is taken from NWChem (https://github.com/nwchemgit/nwchem/blob/master/src/solvation/mnsol.F)
+SMD solvent solvent models can be applied on to an SCF object::
+
+  import pyscf
+  mol = pyscf.M(atom='''
+       C  0.    0.      -0.542
+       O  0.    0.       0.677
+       H  0.    0.935   -1.082
+       H  0.   -0.935   -1.082''',
+                basis='6-31g*', verbose=4)
+  mf = mol.RKS(xc='b3lyp').SMD()
+  mf.with_solvent.solvent = 'water'
+  mf.run()
+
+The format of solvant names are the same as Minnesota Solvent Descriptor Database (https://comp.chem.umn.edu/solvation/mnsddb.pdf). One can also customize the solvent descriptors in the format `mf.with_solvent.solvent_descriptors = [n, n25, alpha, beta, gamma, epsilon, phi, psi]`
 
 Polarizable embedding
 =====================
