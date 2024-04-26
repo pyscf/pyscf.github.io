@@ -8,7 +8,7 @@ Solvation models
 
 .. module:: solvent
    :synopsis: Solvation models and solvent effects
-.. sectionauthor:: Qiming Sun <osirpt.sun@gmail.com>.
+.. sectionauthor:: Qiming Sun <osirpt.sun@gmail.com> and Xiaojie Wu <wxj6000@gmail.com>.
 
 Introduction
 ============
@@ -16,9 +16,10 @@ Introduction
 Solvation model allows the quantum chemistry calculations to include the
 interactions between solvents and the quantum solute. Solvents can be treated
 implicitly, known as continuum solvents, and explicitly. For continuum solvents,
-we implemented the ddCOSMO (domain-decomposition COSMO solvation model). For
-the explicit solvent environment, we provided the interface to call the
-polarizable embedding library CPPE.
+we implemented the ddCOSMO (domain-decomposition COSMO solvation model), 
+ddPCM (domain-decomposition polarizable continuum model), PCM (polarizable continuum model), 
+and SMD (Solvation Model Density). For the explicit solvent environment, 
+we provided the interface to call the polarizable embedding library CPPE.
 
 
 ddCOSMO
