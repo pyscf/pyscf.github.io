@@ -21,7 +21,7 @@ GPU4PySCF on A100-80G can be 1000x faster than PySCF on single-core CPU. The spe
 
 Installation
 ============
-GPU4PySCF
+The binary package of GPU4PySCF is released based on the CUDA version.
 
 .. list-table::
    :widths: 25 25 25 25
