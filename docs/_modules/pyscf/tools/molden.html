@@ -49,8 +49,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="icon" href="../../../_static/favicon-32x32.png"/>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.4</span>
+          <span class="md-header-nav__topic">PySCF 2.5</span>
           <span class="md-header-nav__topic"> pyscf.tools.molden </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.4</a>
+       title="PySCF">PySCF 2.5</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -569,8 +569,16 @@
         <span class="k">elif</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="s1">'SPDFGHIJ'</span><span class="p">:</span>
             <span class="n">basis</span><span class="p">[</span><span class="n">symb</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">read_one_bas</span><span class="p">(</span><span class="o">*</span><span class="n">dat</span><span class="p">))</span>
 
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'basis'</span><span class="p">]</span> <span class="o">=</span> <span class="n">basis</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">atom_seq</span><span class="p">]</span>
+    <span class="n">uniq_atoms</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom</span><span class="p">}</span>
+
+    <span class="c1"># To avoid the mol.build() sort the basis, disable mol.basis and set the</span>
+    <span class="c1"># internal data _basis directly. It is a workaround to solve issue #1961.</span>
+    <span class="c1"># Mole.decontract_basis function should be rewritten to support</span>
+    <span class="c1"># discontinuous bases that have the same angular momentum.</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">_basis</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">_parse_default_basis</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">uniq_atoms</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">_basis</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">'basis'</span><span class="p">]</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">format_basis</span><span class="p">(</span><span class="n">_basis</span><span class="p">,</span> <span class="n">sort_basis</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mol</span>
 
 <span class="k">def</span> <span class="nf">_parse_mo</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
@@ -685,6 +693,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'Unknown section </span><span class="si">%s</span><span class="se">\n</span><span class="s1">'</span> <span class="o">%</span> <span class="n">sec_title</span><span class="p">)</span>
 
+    <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">irrep_labels</span><span class="p">,</span> <span class="n">spins</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
     <span class="k">for</span> <span class="n">sec_kind</span> <span class="ow">in</span> <span class="n">_SEC_ORDER</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sec_kind</span> <span class="o">==</span> <span class="s1">'MO'</span> <span class="ow">and</span> <span class="s1">'MO'</span> <span class="ow">in</span> <span class="n">sec_kinds</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sec_kinds</span><span class="p">[</span><span class="s1">'MO'</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -724,6 +734,8 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mol</span><span class="o">.</span><span class="n">_built</span><span class="p">:</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mol</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">irrep_labels</span><span class="p">,</span> <span class="n">spins</span></div>
 
 
@@ -844,8 +856,9 @@
 <span class="sd">    '''</span>
     <span class="n">pmol</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">symb</span><span class="p">,</span> <span class="n">bas</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_basis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">pmol</span><span class="o">.</span><span class="n">basis</span><span class="p">[</span><span class="n">symb</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bas</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">]</span>
+        <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span><span class="p">[</span><span class="n">symb</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bas</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">]</span>
     <span class="n">pmol</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pmol</span><span class="p">,</span> <span class="kc">None</span>
@@ -918,7 +931,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

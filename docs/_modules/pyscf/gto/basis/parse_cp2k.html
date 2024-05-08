@@ -49,8 +49,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=4d935f96"></script>
-    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="icon" href="../../../../_static/favicon-32x32.png"/>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.4</span>
+          <span class="md-header-nav__topic">PySCF 2.5</span>
           <span class="md-header-nav__topic"> pyscf.gto.basis.parse_cp2k </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.4</a>
+       title="PySCF">PySCF 2.5</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -336,6 +336,7 @@
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib.exceptions</span> <span class="kn">import</span> <span class="n">BasisNotFoundError</span>
 <span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">parse_nwchem</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis.parse_nwchem</span> <span class="kn">import</span> <span class="n">_search_basis_block</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">DISABLE_EVAL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'DISABLE_EVAL'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
@@ -344,7 +345,7 @@
 
 <div class="viewcode-block" id="parse">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse_cp2k.parse">[docs]</a>
-<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">symb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Parse the basis text which is in CP2K format, return an internal</span>
 <span class="sd">    basis format which can be assigned to :attr:`Mole.basis`</span>
 <span class="sd">    Lines started with # are ignored.</span>
@@ -365,6 +366,12 @@
 <span class="sd">    ... #</span>
 <span class="sd">    ... """)}</span>
 <span class="sd">    '''</span>
+    <span class="k">if</span> <span class="n">symb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">BASIS_SET_DELIMITER</span><span class="p">,</span> <span class="n">string</span><span class="p">)))</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">_search_basis_block</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Basis not found for </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
     <span class="n">bastxt</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'#'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -436,13 +443,11 @@
 <span class="k">def</span> <span class="nf">search_seg</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fin</span><span class="p">:</span>
         <span class="n">fdata</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">BASIS_SET_DELIMITER</span><span class="p">,</span> <span class="n">fin</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">fdata</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
-        <span class="n">dat0</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">dat0</span> <span class="ow">and</span> <span class="n">dat0</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">symb</span><span class="p">:</span>
-            <span class="c1"># remove blank lines</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dat</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">'END'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
-    <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Basis for </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1"> not found in </span><span class="si">{</span><span class="n">basisfile</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span></div>
+    <span class="n">raw_basis</span> <span class="o">=</span> <span class="n">_search_basis_block</span><span class="p">(</span><span class="n">fdata</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">symb</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_basis</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Basis for </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1"> not found in </span><span class="si">{</span><span class="n">basisfile</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">raw_basis</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">'END'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span></div>
 
 </pre></div>
 
@@ -468,7 +473,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

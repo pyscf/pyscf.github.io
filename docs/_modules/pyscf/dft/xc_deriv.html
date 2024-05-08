@@ -49,8 +49,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="icon" href="../../../_static/favicon-32x32.png"/>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.4</span>
+          <span class="md-header-nav__topic">PySCF 2.5</span>
           <span class="md-header-nav__topic"> pyscf.dft.xc_deriv </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.4</a>
+       title="PySCF">PySCF 2.5</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -332,6 +332,9 @@
 <span class="sd">Transform XC functional derivatives between different representations</span>
 <span class="sd">'''</span>
 
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
@@ -774,63 +777,169 @@
     <span class="n">fggg</span> <span class="o">=</span> <span class="n">_stack_fg</span><span class="p">(</span><span class="n">fggg</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_stack_fg</span><span class="p">(</span><span class="n">fggg</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">)</span>
 
-<div class="viewcode-block" id="compress">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.xc_deriv.compress">[docs]</a>
-<span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">spin</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># spin polarized</span>
-        <span class="n">shape</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">comp_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">vp</span><span class="o">.</span><span class="n">ndim</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]</span>
-        <span class="n">vp</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">comp_shape</span> <span class="o">+</span> <span class="p">[</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_product_uniq_indices</span><span class="p">(</span><span class="n">nvars</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''</span>
+<span class="sd">    Indexing the symmetry unique elements in cartensian product</span>
+<span class="sd">    '''</span>
+    <span class="c1"># n = 0</span>
+    <span class="c1"># for i range(nvars):</span>
+    <span class="c1">#    for j in range(i, nvars):</span>
+    <span class="c1">#        for k in range(k, nvars):</span>
+    <span class="c1">#            ...</span>
+    <span class="c1">#            prod[(i,j,k,...)] = n</span>
+    <span class="c1">#            n += 1</span>
+    <span class="n">prod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">nvars</span><span class="p">]</span> <span class="o">*</span> <span class="n">order</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">uniq_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations_with_replacement</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nvars</span><span class="p">),</span> <span class="n">order</span><span class="p">))</span>
+    <span class="n">prod</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">uniq_idx</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">uniq_idx</span><span class="p">))</span>
 
-    <span class="n">order</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># 2nd derivatives</span>
-        <span class="n">vp</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">vp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
-    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># 2nd derivatives</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">vp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">vp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nd</span><span class="p">)])</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">prod</span><span class="p">)</span>
+    <span class="n">sidx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">prod</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">prod</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sidx</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">prod</span>
+
+<span class="k">def</span> <span class="nf">_pair_combinations</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">lst</span><span class="p">)]]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">rests</span> <span class="o">=</span> <span class="n">_pair_combinations</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="n">lst</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">for</span> <span class="n">rest</span> <span class="ow">in</span> <span class="n">rests</span><span class="p">:</span>
+            <span class="n">rest</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rests</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+<span class="k">def</span> <span class="nf">_unfold_gga</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">xc_val</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span><span class="p">,</span> <span class="n">reserve</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">nvar</span> <span class="o">&gt;=</span> <span class="mi">4</span>
+    <span class="n">ngrids</span> <span class="o">=</span> <span class="n">rho</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">n_transform</span> <span class="o">=</span> <span class="n">order</span> <span class="o">-</span> <span class="n">reserve</span>
+
+    <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">nvar2</span> <span class="o">=</span> <span class="n">nvar</span>
+        <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCunfold_sigma_spin0</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'High order derivatives'</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">vp</span></div>
+        <span class="n">nvar2</span> <span class="o">=</span> <span class="n">nvar</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCunfold_sigma_spin1</span>
 
-
-<div class="viewcode-block" id="decompress">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.xc_deriv.decompress">[docs]</a>
-<span class="k">def</span> <span class="nf">decompress</span><span class="p">(</span><span class="n">vp</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-    <span class="n">order</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">ngrids</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">vp</span>
-    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># 2nd derivatives</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nd</span><span class="p">,</span> <span class="n">nd</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">))</span>
-        <span class="n">idx</span><span class="p">,</span> <span class="n">idy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">nd</span><span class="p">)</span>
-        <span class="n">out</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">idy</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span>
-        <span class="n">out</span><span class="p">[</span><span class="n">idy</span><span class="p">,</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span>
-    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># 2nd derivatives</span>
-        <span class="n">nd</span> <span class="o">=</span> <span class="n">vp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nd</span><span class="p">,</span> <span class="n">nd</span><span class="p">,</span> <span class="n">nd</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">))</span>
-        <span class="n">p1</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nd</span><span class="p">):</span>
-            <span class="n">idx</span><span class="p">,</span> <span class="n">idy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tril_indices</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p1</span><span class="o">+</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">idx</span><span class="p">,</span><span class="n">idy</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">idy</span><span class="p">,</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">idy</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">idy</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="n">idy</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">idy</span><span class="p">,</span><span class="n">idx</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">vp</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
+    <span class="c1"># xc_val[idx] expands unique xc elements to n-order tensors</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">_product_uniq_indices</span><span class="p">(</span><span class="n">xlen</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+    <span class="n">xc_tensor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">xlen</span><span class="o">**</span><span class="n">reserve</span> <span class="o">*</span> <span class="n">nvar2</span><span class="o">**</span><span class="n">n_transform</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">))</span>
+    <span class="n">xc_tensor</span><span class="p">[:</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">xc_val</span><span class="p">[</span><span class="n">idx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">xc_tensor</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_transform</span><span class="p">):</span>
+        <span class="n">xc_tensor</span><span class="p">,</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">buf</span><span class="p">,</span> <span class="n">xc_tensor</span>
+        <span class="n">ncounts</span> <span class="o">=</span> <span class="n">xlen</span><span class="o">**</span><span class="p">(</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">nvar2</span><span class="o">**</span><span class="n">i</span>
+        <span class="n">drv</span><span class="p">(</span><span class="n">xc_tensor</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">rho</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ncounts</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nvar</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">xc_tensor</span> <span class="o">=</span> <span class="n">xc_tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">xlen</span><span class="p">]</span><span class="o">*</span><span class="n">reserve</span> <span class="o">+</span> <span class="p">[</span><span class="n">nvar</span><span class="p">]</span><span class="o">*</span><span class="n">n_transform</span> <span class="o">+</span> <span class="p">[</span><span class="n">ngrids</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'High order derivatives'</span><span class="p">)</span>
+        <span class="n">xc_tensor</span> <span class="o">=</span> <span class="n">xc_tensor</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">xlen</span><span class="p">]</span><span class="o">*</span><span class="n">reserve</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="n">nvar</span><span class="p">]</span><span class="o">*</span><span class="n">n_transform</span> <span class="o">+</span> <span class="p">[</span><span class="n">ngrids</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">xc_tensor</span>
 
-    <span class="k">if</span> <span class="n">spin</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># spin polarized</span>
-        <span class="n">shape</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">nvar</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="n">decomp_shape</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nvar</span><span class="p">)]</span> <span class="o">*</span> <span class="n">order</span> <span class="o">+</span> <span class="p">[</span><span class="n">ngrids</span><span class="p">]</span>
-        <span class="c1"># reshape to (2,n,2,n,...,ngrids)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">decomp_shape</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">out</span></div>
+<span class="k">def</span> <span class="nf">_diagonal_indices</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">order</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="n">diag_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">idx</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="n">last_dim</span> <span class="o">=</span> <span class="n">diag_idx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">diag_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">diag_idx</span><span class="p">]</span>
+        <span class="n">diag_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">last_dim</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="c1"># repeat(diag_idx, 2)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">diag_idx</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="n">_XC_NVAR</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="p">(</span><span class="s1">'HF'</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'HF'</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'LDA'</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'LDA'</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'GGA'</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'GGA'</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'MGGA'</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">'MGGA'</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="transform_xc">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.xc_deriv.transform_xc">[docs]</a>
+<span class="k">def</span> <span class="nf">transform_xc</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">xc_val</span><span class="p">,</span> <span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''General transformation to construct XC derivative tensor'''</span>
+    <span class="n">xc_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xc_val</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xc_val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span> <span class="o">=</span> <span class="n">_XC_NVAR</span><span class="p">[</span><span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">]</span>
+    <span class="n">ngrids</span> <span class="o">=</span> <span class="n">xc_val</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">count_combinations</span><span class="p">(</span><span class="n">xlen</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">order</span><span class="p">:</span><span class="n">order</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'LDA'</span> <span class="ow">or</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">'HF'</span><span class="p">:</span>
+        <span class="n">xc_out</span> <span class="o">=</span> <span class="n">xc_val</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xc_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">order</span> <span class="o">+</span> <span class="p">[</span><span class="n">ngrids</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">_product_uniq_indices</span><span class="p">(</span><span class="n">xlen</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">xc_out</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">order</span> <span class="o">+</span> <span class="p">[</span><span class="n">ngrids</span><span class="p">])</span>
+
+    <span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">rho</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="p">(</span><span class="n">spin</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nvar</span> <span class="o">*</span> <span class="n">ngrids</span>
+    <span class="n">xc_tensor</span> <span class="o">=</span> <span class="n">_unfold_gga</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">xc_val</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">spin</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span><span class="p">)</span>
+    <span class="n">nabla_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n_pairs</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="p">:</span><span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">_unfold_gga</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">xc_val</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">spin</span><span class="p">,</span> <span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="p">,</span>
+                                 <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">)</span>
+            <span class="c1"># Just the sigma components</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">xc_sub</span><span class="p">[(</span><span class="mi">1</span><span class="p">,)</span><span class="o">*</span><span class="n">n_pairs</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">n_pairs</span>
+
+            <span class="c1"># low_sigmas indicates the index for the extra sigma terms</span>
+            <span class="n">low_sigmas</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">n_pairs</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">pair_combs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+                          <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_pair_combinations</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_pairs</span><span class="o">*</span><span class="mi">2</span><span class="p">)))]</span>
+            <span class="n">diag_idx</span> <span class="o">=</span> <span class="n">_diagonal_indices</span><span class="p">(</span><span class="n">nabla_idx</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">dim_lst</span> <span class="ow">in</span> <span class="n">low_sigmas</span><span class="p">:</span>
+                <span class="n">rest_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">xc_tensor</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dim_lst</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">pair_comb</span> <span class="ow">in</span> <span class="n">pair_combs</span><span class="p">:</span>
+                    <span class="n">xc_tensor_1</span> <span class="o">=</span> <span class="n">xc_tensor</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">dim_lst</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pair_comb</span><span class="p">]</span> <span class="o">+</span> <span class="n">rest_dims</span><span class="p">)</span>
+                    <span class="n">xc_tensor_1</span><span class="p">[</span><span class="n">diag_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xc_sub</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n_pairs</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="p">:</span><span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">_unfold_gga</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">xc_val</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">spin</span><span class="p">,</span> <span class="n">order</span><span class="o">-</span><span class="n">n_pairs</span><span class="p">,</span>
+                                 <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">)</span>
+            <span class="c1"># Just the sigma components</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">xc_sub</span><span class="p">[(</span><span class="nb">slice</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">),)</span> <span class="o">*</span> <span class="n">n_pairs</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_pairs</span><span class="p">):</span>
+                <span class="n">xc_sub</span><span class="p">[(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="p">(</span><span class="mi">0</span><span class="p">,)]</span> <span class="o">*=</span> <span class="mi">2</span>
+                <span class="n">xc_sub</span><span class="p">[(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),)</span><span class="o">*</span><span class="n">i</span><span class="o">+</span><span class="p">(</span><span class="mi">2</span><span class="p">,)]</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="n">sigma_idx</span> <span class="o">=</span> <span class="n">_product_uniq_indices</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_pairs</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">xc_sub</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="o">**</span><span class="n">n_pairs</span><span class="p">,)</span> <span class="o">+</span> <span class="n">xc_sub</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">n_pairs</span><span class="p">:])</span>
+            <span class="n">xc_sub</span> <span class="o">=</span> <span class="n">xc_sub</span><span class="p">[</span><span class="n">sigma_idx</span><span class="p">]</span>
+
+            <span class="n">low_sigmas</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">),</span> <span class="n">n_pairs</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">pair_combs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+                          <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_pair_combinations</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_pairs</span><span class="o">*</span><span class="mi">2</span><span class="p">)))]</span>
+            <span class="n">diag_idx</span> <span class="o">=</span> <span class="n">_diagonal_indices</span><span class="p">(</span><span class="n">nabla_idx</span><span class="p">,</span> <span class="n">n_pairs</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">dim_lst</span> <span class="ow">in</span> <span class="n">low_sigmas</span><span class="p">:</span>
+                <span class="n">dim_lst2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dim_lst</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])[:,</span><span class="kc">None</span><span class="p">]</span>
+                <span class="n">rest_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">xc_tensor</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dim_lst2</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">pair_comb</span> <span class="ow">in</span> <span class="n">pair_combs</span><span class="p">:</span>
+                    <span class="n">leading_dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dim_lst2</span><span class="p">[:,</span><span class="n">pair_comb</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+                    <span class="n">xc_tensor_1</span> <span class="o">=</span> <span class="n">xc_tensor</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">leading_dims</span> <span class="o">+</span> <span class="n">rest_dims</span><span class="p">)</span>
+                    <span class="n">xc_tensor_1</span><span class="p">[</span><span class="n">diag_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">xc_sub</span>
+    <span class="k">return</span> <span class="n">xc_tensor</span></div>
+
+
+<div class="viewcode-block" id="count_combinations">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.xc_deriv.count_combinations">[docs]</a>
+<span class="k">def</span> <span class="nf">count_combinations</span><span class="p">(</span><span class="n">nvar</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''sum(len(combinations_with_replacement(range(nvar), o) for o in range(order))'''</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="n">nvar</span><span class="o">+</span><span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ud2ts">
@@ -839,27 +948,20 @@
 <span class="w">    </span><span class="sd">'''XC derivatives spin-up/spin-down representations to</span>
 <span class="sd">    total-density/spin-density representations'''</span>
     <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_ud</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
-    <span class="n">nvar</span><span class="p">,</span> <span class="n">ngrids</span> <span class="o">=</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-    <span class="c1">#:c = np.array([[.5,  .5],    # vrho = (va + vb) / 2</span>
-    <span class="c1">#:              [.5, -.5]])   # vs   = (va - vb) / 2</span>
-    <span class="k">if</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># vxc</span>
-        <span class="c1">#:v_ts = np.einsum('ra,axg-&gt;rxg', c, v_ud)</span>
-        <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCud2ts_deriv1</span>
-    <span class="k">elif</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># fxc</span>
-        <span class="c1">#:v_ts = np.einsum('ra,axbyg-&gt;rxbyg', c, v_ud)</span>
-        <span class="c1">#:v_ts = np.einsum('sb,rxbyg-&gt;rxsyg', c, v_ts)</span>
-        <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCud2ts_deriv2</span>
-    <span class="k">elif</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>  <span class="c1"># kxc</span>
-        <span class="c1">#:v_ts = np.einsum('ra,axbyczg-&gt;rxbyczg', c, v_ud)</span>
-        <span class="c1">#:v_ts = np.einsum('sb,rxbyczg-&gt;rxsyczg', c, v_ts)</span>
-        <span class="c1">#:v_ts = np.einsum('tc,rxsyczg-&gt;rxsytzg', c, v_ts)</span>
-        <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCud2ts_deriv3</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Shape </span><span class="si">{</span><span class="n">v_ud</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1"> not supported'</span><span class="p">)</span>
     <span class="n">v_ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">v_ud</span><span class="p">)</span>
-    <span class="n">drv</span><span class="p">(</span><span class="n">v_ts</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">v_ud</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-        <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nvar</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">))</span>
+    <span class="n">nvar</span><span class="p">,</span> <span class="n">ngrids</span> <span class="o">=</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">nvar2</span> <span class="o">=</span> <span class="n">nvar</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ndim</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCud2ts</span>
+    <span class="n">v_ts</span><span class="p">,</span> <span class="n">v_ud</span> <span class="o">=</span> <span class="n">v_ud</span><span class="p">,</span> <span class="n">v_ts</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">v_ts</span><span class="p">,</span> <span class="n">v_ud</span> <span class="o">=</span> <span class="n">v_ud</span><span class="p">,</span> <span class="n">v_ts</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">nvar2</span><span class="o">**</span><span class="n">i</span>
+        <span class="n">nvg</span> <span class="o">=</span> <span class="n">nvar</span> <span class="o">*</span> <span class="n">nvar2</span><span class="o">**</span><span class="p">(</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">ngrids</span>
+        <span class="c1">#:c = np.array([[.5,  .5],    # vrho = (va + vb) / 2</span>
+        <span class="c1">#:              [.5, -.5]])   # vs   = (va - vb) / 2</span>
+        <span class="c1">#:v_ts = np.einsum('ra,...ax...g-&gt;...rx...g', c, v_ud)</span>
+        <span class="n">drv</span><span class="p">(</span><span class="n">v_ts</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nvg</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">v_ts</span></div>
 
 
@@ -868,19 +970,21 @@
 <span class="k">def</span> <span class="nf">ts2ud</span><span class="p">(</span><span class="n">v_ts</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''XC derivatives total-density/spin-density representations to</span>
 <span class="sd">    spin-up/spin-down representations'''</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>    <span class="c1"># va = vrho + vs</span>
-                  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>   <span class="c1"># vb = vrho - vs</span>
-    <span class="k">if</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># vxc</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ra,axg-&gt;rxg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ts</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># fxc</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ra,axbyg-&gt;rxbyg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ts</span><span class="p">)</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'sb,rxbyg-&gt;rxsyg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ud</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>  <span class="c1"># kxc</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ra,axbyczg-&gt;rxbyczg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ts</span><span class="p">)</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'sb,rxbyczg-&gt;rxsyczg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ud</span><span class="p">)</span>
-        <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'tc,rxsyczg-&gt;rxsytzg'</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">v_ud</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Shape </span><span class="si">{</span><span class="n">v_ts</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1"> not supported'</span><span class="p">)</span>
+    <span class="n">v_ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v_ts</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span>
+    <span class="n">v_ud</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">v_ts</span><span class="p">)</span>
+    <span class="n">nvar</span><span class="p">,</span> <span class="n">ngrids</span> <span class="o">=</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">nvar2</span> <span class="o">=</span> <span class="n">nvar</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">v_ud</span><span class="o">.</span><span class="n">ndim</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">drv</span> <span class="o">=</span> <span class="n">libdft</span><span class="o">.</span><span class="n">VXCts2ud</span>
+    <span class="n">v_ts</span><span class="p">,</span> <span class="n">v_ud</span> <span class="o">=</span> <span class="n">v_ud</span><span class="p">,</span> <span class="n">v_ts</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">v_ts</span><span class="p">,</span> <span class="n">v_ud</span> <span class="o">=</span> <span class="n">v_ud</span><span class="p">,</span> <span class="n">v_ts</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">nvar2</span><span class="o">**</span><span class="n">i</span>
+        <span class="n">nvg</span> <span class="o">=</span> <span class="n">nvar</span> <span class="o">*</span> <span class="n">nvar2</span><span class="o">**</span><span class="p">(</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">ngrids</span>
+        <span class="c1">#:c = np.array([[1,  1],    # va = vrho + vs</span>
+        <span class="c1">#:              [1, -1]])   # vb = vrho - vs</span>
+        <span class="c1">#:v_ud = np.einsum('ra,...ax...g-&gt;...rx...g', c, v_ts)</span>
+        <span class="n">drv</span><span class="p">(</span><span class="n">v_ud</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">v_ts</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nvg</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">v_ud</span></div>
 
 </pre></div>
@@ -907,7 +1011,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

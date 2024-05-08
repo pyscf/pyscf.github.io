@@ -33,4 +33,6 @@ functionalities.
    user/lo.rst
    user/sgx.rst
    user/geomopt.rst
+   user/gpu.rst
    user/reference.rst
+   

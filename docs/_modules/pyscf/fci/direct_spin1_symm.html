@@ -49,8 +49,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="icon" href="../../../_static/favicon-32x32.png"/>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.4</span>
+          <span class="md-header-nav__topic">PySCF 2.5</span>
           <span class="md-header-nav__topic"> pyscf.fci.direct_spin1_symm </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.4</a>
+       title="PySCF">PySCF 2.5</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -581,6 +581,13 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span></div>
 
+
+<span class="k">def</span> <span class="nf">_validate_degen_mapping</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">norb</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Check if 2D irreps are properly paired'''</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mapping</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">mapping</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">norb</span> <span class="ow">and</span>
+            <span class="c1"># Must be self-conjugated</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">mapping</span><span class="p">[</span><span class="n">mapping</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">norb</span><span class="p">)))</span>
 
 <div class="viewcode-block" id="get_init_guess_cyl_sym">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.direct_spin0_symm.get_init_guess_cyl_sym">[docs]</a>
@@ -1119,6 +1126,11 @@
                 <span class="n">orbsym</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">orbsym</span><span class="p">,</span> <span class="n">degen_mapping</span><span class="o">=</span><span class="n">degen_mapping</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">davidson_only</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">davidson_only</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_validate_degen_mapping</span><span class="p">(</span><span class="n">orbsym</span><span class="o">.</span><span class="n">degen_mapping</span><span class="p">,</span> <span class="n">norb</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">PointGroupSymmetryError</span><span class="p">(</span>
+                    <span class="s1">'Incomplete 2D-irrep orbitals for cylindrical symmetry.</span><span class="se">\n</span><span class="s1">'</span>
+                    <span class="sa">f</span><span class="s1">'orbsym = </span><span class="si">{</span><span class="n">orbsym</span><span class="si">}</span><span class="s1">. '</span>
+                    <span class="sa">f</span><span class="s1">'Retry </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> with D2h subgroup symmetry.'</span><span class="p">)</span>
 
         <span class="n">wfnsym_ir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">guess_wfnsym</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">ci0</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sym_allowed_idx</span> <span class="o">=</span> <span class="n">sym_allowed_indices</span><span class="p">(</span><span class="n">nelec</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym_ir</span><span class="p">)</span>
@@ -1196,7 +1208,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

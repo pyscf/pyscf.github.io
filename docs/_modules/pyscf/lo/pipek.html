@@ -49,8 +49,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="icon" href="../../../_static/favicon-32x32.png"/>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.4</span>
+          <span class="md-header-nav__topic">PySCF 2.5</span>
           <span class="md-header-nav__topic"> pyscf.lo.pipek </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.4</a>
+       title="PySCF">PySCF 2.5</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -341,11 +341,12 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">orth</span>
 <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">boys</span>
+<span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">pipek_jacobi</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <div class="viewcode-block" id="atomic_pops">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.pipek.atomic_pops">[docs]</a>
-<span class="k">def</span> <span class="nf">atomic_pops</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'meta_lowdin'</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">atomic_pops</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'meta_lowdin'</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''</span>
 <span class="sd">    Kwargs:</span>
 <span class="sd">        method : string</span>
@@ -367,10 +368,11 @@
     <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">proj</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="n">nmo</span><span class="p">,</span><span class="n">nmo</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'pbc_intor'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># whether mol object is a cell</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp_sph'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">'pbc_intor'</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># whether mol object is a cell</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">intor_symmetric</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">'becke'</span><span class="p">:</span>
         <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">gen_grid</span>
@@ -501,9 +503,9 @@
 
     <span class="n">pop_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'lo_pipek_PM_pop_method'</span><span class="p">,</span> <span class="s1">'meta_lowdin'</span><span class="p">)</span>
     <span class="n">conv_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'lo_pipek_PM_conv_tol'</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
-    <span class="n">exponent</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'lo_pipek_PM_exponent'</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># should be 2 or 4</span>
+    <span class="n">exponent</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'lo_pipek_PM_exponent'</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># any integer &gt;= 2</span>
 
-    <span class="n">_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">'pop_method'</span><span class="p">,</span> <span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'exponent'</span><span class="p">])</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'pop_method'</span><span class="p">,</span> <span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'exponent'</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pop_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">boys</span><span class="o">.</span><span class="n">OrbitalLocalizer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
@@ -521,50 +523,48 @@
 <div class="viewcode-block" id="PipekMezey.gen_g_hop">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.pipek.PipekMezey.gen_g_hop">[docs]</a>
     <span class="k">def</span> <span class="nf">gen_g_hop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-        <span class="n">pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">g0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
-            <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g0</span><span class="o">-</span><span class="n">g0</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="n">pop3</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>
-            <span class="n">g0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop3</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
-            <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g0</span><span class="o">-</span><span class="n">g0</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'exponent </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span><span class="p">)</span>
+        <span class="n">projR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">pop</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span>
+        <span class="n">popexp1</span> <span class="o">=</span> <span class="n">pop</span><span class="o">**</span><span class="p">(</span><span class="n">exponent</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">popexp2</span> <span class="o">=</span> <span class="n">pop</span><span class="o">**</span><span class="p">(</span><span class="n">exponent</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">h_diag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii,xpp-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">g_diag</span> <span class="o">=</span> <span class="n">g0</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
-        <span class="n">h_diag</span><span class="o">-=</span> <span class="n">g_diag</span> <span class="o">+</span> <span class="n">g_diag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">h_diag</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">h_diag</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xpi-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="n">h_diag</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">h_diag</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="c1"># gradient</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xj,xij-&gt;ij'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="n">g</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
-        <span class="n">g0</span> <span class="o">=</span> <span class="n">g0</span> <span class="o">+</span> <span class="n">g0</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">h_op</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="n">norb</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">hx</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">g0</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span>
-                <span class="n">hx</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xi-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qi,xiq-&gt;xi'</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pop</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
-                <span class="n">hx</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpp,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span>
-                                  <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pop</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">norb</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">norb</span><span class="p">,</span><span class="n">norb</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
-                <span class="n">hx</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xp-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;xp'</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pop</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span>
-                <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">hx</span><span class="o">-</span><span class="n">hx</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">h_op</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-                <span class="n">norb</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">hx</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">g0</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="mi">2</span>
-                <span class="n">pop2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-                <span class="n">pop3</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qi,xiq-&gt;xi'</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span> <span class="o">*</span> <span class="n">pop2</span>
-                <span class="n">hx</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xi-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span> <span class="o">*</span> <span class="mi">12</span>
-                <span class="n">hx</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xp,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop3</span><span class="p">,</span>
-                                  <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">pop</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">norb</span><span class="p">),</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">norb</span><span class="p">,</span><span class="n">norb</span><span class="p">))</span> <span class="o">*</span> <span class="mi">4</span>
-                <span class="n">tmp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'qp,xpq-&gt;xp'</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span> <span class="o">*</span> <span class="n">pop2</span>
-                <span class="n">hx</span><span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xip,xp-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span> <span class="o">*</span> <span class="mi">12</span>
-                <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">hx</span><span class="o">-</span><span class="n">hx</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="c1"># hessian diagonal</span>
+        <span class="n">g1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xi-&gt;i'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
+        <span class="n">g2</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xj-&gt;ij'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
+        <span class="n">h_diag</span>  <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="p">(</span><span class="n">g1</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">g2</span><span class="p">)</span>
+        <span class="n">g1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xij-&gt;ij'</span><span class="p">,</span> <span class="n">popexp2</span><span class="p">,</span> <span class="n">projR</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+        <span class="n">h_diag</span> <span class="o">+=</span>  <span class="mi">4</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="p">(</span><span class="n">exponent</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">g1</span>
+        <span class="n">h_diag</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">h_diag</span> <span class="o">+</span> <span class="n">h_diag</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="c1"># hessian vector product</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xij-&gt;ij'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span>
+        <span class="n">G</span> <span class="o">+=</span> <span class="n">G</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">def</span> <span class="nf">h_op</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">xR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_uniq_var</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+
+            <span class="c1"># contributions from (nabla proj) x (nabla proj)</span>
+            <span class="n">j0</span> <span class="o">=</span> <span class="n">popexp2</span> <span class="o">*</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xik,ki-&gt;xi'</span><span class="p">,</span> <span class="n">projR</span><span class="p">,</span> <span class="n">xR</span><span class="p">)</span>
+            <span class="n">j1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xij-&gt;ij'</span><span class="p">,</span> <span class="n">j0</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span>
+            <span class="n">hx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="p">(</span><span class="n">exponent</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">j1</span>
+
+            <span class="c1"># contributions from nabla^2 proj: symmetric terms</span>
+            <span class="n">j1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">xR</span><span class="p">)</span>
+            <span class="n">hx</span> <span class="o">+=</span> <span class="o">-</span><span class="n">exponent</span> <span class="o">*</span> <span class="n">j1</span>
+
+            <span class="c1"># contributions from nabla^2 proj: asymmetric terms</span>
+            <span class="n">j1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xj,xik,kj-&gt;ij'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">projR</span><span class="p">,</span> <span class="n">xR</span><span class="p">)</span>
+            <span class="n">hx</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="n">j1</span>
+
+            <span class="n">hx</span> <span class="o">-=</span> <span class="n">hx</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">hx</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">h_op</span><span class="p">,</span> <span class="n">h_diag</span></div>
 
@@ -573,15 +573,12 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.pipek.PipekMezey.get_grad">[docs]</a>
     <span class="k">def</span> <span class="nf">get_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">exponent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-        <span class="n">pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">g0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
-            <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g0</span><span class="o">-</span><span class="n">g0</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pop3</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>
-            <span class="n">g0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xip-&gt;pi'</span><span class="p">,</span> <span class="n">pop3</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
-            <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g0</span><span class="o">-</span><span class="n">g0</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
+        <span class="n">projR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">popexp1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">exponent</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xj,xij-&gt;ij'</span><span class="p">,</span> <span class="n">popexp1</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">exponent</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pack_uniq_var</span><span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="n">g</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">g</span></div>
 
 
@@ -590,18 +587,14 @@
     <span class="k">def</span> <span class="nf">cost_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">u</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
-        <span class="n">pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponent</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii,xii-&gt;'</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pop2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xi,xi'</span><span class="p">,</span> <span class="n">pop2</span><span class="p">,</span> <span class="n">pop2</span><span class="p">)</span></div>
+        <span class="n">projR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xii-&gt;xi'</span><span class="p">,</span> <span class="n">projR</span><span class="p">)</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">exponent</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PipekMezey.atomic_pops">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.pipek.PipekMezey.atomic_pops">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">atomic_pops</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">atomic_pops</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop_method</span>
 
@@ -609,8 +602,15 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'PM with IAO scheme should include an scf '</span>
                          <span class="s1">'object when creating PM object.</span><span class="se">\n</span><span class="s1">    PM(mol, mf=scf_object)'</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'PM attribute method is not valid'</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">atomic_pops</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">atomic_pops</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PipekMezey.stability_jacobi">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.lo.html#pyscf.lo.pipek.PipekMezey.stability_jacobi">[docs]</a>
+    <span class="k">def</span> <span class="nf">stability_jacobi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pipek_jacobi</span><span class="o">.</span><span class="n">PipekMezey_stability_jacobi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </div>
+
 
 
 <span class="n">PM</span> <span class="o">=</span> <span class="n">Pipek</span> <span class="o">=</span> <span class="n">PipekMezey</span>
@@ -620,15 +620,24 @@
 
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">'''</span>
-<span class="s1">         O   0.    0.     0.2</span>
-<span class="s1">         H    0.   -0.5   -0.4</span>
-<span class="s1">         H    0.    0.5   -0.4</span>
-<span class="s1">      '''</span>
+<span class="s1">    O          0.00000        0.00000        0.11779</span>
+<span class="s1">    H          0.00000        0.75545       -0.47116</span>
+<span class="s1">    H          0.00000       -0.75545       -0.47116</span>
+<span class="s1">    '''</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'ccpvdz'</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
     <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-    <span class="n">mo</span> <span class="o">=</span> <span class="n">PM</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="mi">5</span><span class="p">:</span><span class="mi">9</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">mlo</span> <span class="o">=</span> <span class="n">PM</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+    <span class="n">mlo</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">mlo</span><span class="o">.</span><span class="n">exponent</span> <span class="o">=</span> <span class="mi">2</span>    <span class="c1"># integer &gt;= 2</span>
+    <span class="n">mo0</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="o">&gt;</span><span class="mf">1e-6</span><span class="p">]</span>
+    <span class="n">mo</span> <span class="o">=</span> <span class="n">mlo</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">mo0</span><span class="p">)</span>
+    <span class="n">isstable</span><span class="p">,</span> <span class="n">mo1</span> <span class="o">=</span> <span class="n">mlo</span><span class="o">.</span><span class="n">stability_jacobi</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isstable</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">mlo</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">mo1</span><span class="p">)</span>
+        <span class="n">isstable</span><span class="p">,</span> <span class="n">mo1</span> <span class="o">=</span> <span class="n">mlo</span><span class="o">.</span><span class="n">stability_jacobi</span><span class="p">()</span>
+        <span class="k">assert</span><span class="p">(</span> <span class="n">isstable</span> <span class="p">)</span>
 </pre></div>
 
           </article>
@@ -653,7 +662,7 @@
               
           </div>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
