@@ -3,8 +3,8 @@
 Install PySCF
 *************
 
-1) Install with `pip` (easiest method)
-======================================
+1) Install with `pip`
+=====================
 This is the recommended way to install PySCF for non-developers::
 
   $ pip install --prefer-binary pyscf
@@ -16,8 +16,15 @@ PySCF via pip, you can upgrade it to the new version with::
 
   $ pip install --upgrade pyscf
 
-.. note::
-   Since PySCF version 2.1, the Linux wheels require manylinux2010 (for x86_64) or manylinux2014 (for aarch64). So the pip version should >= 19.3 for installing on Linux.
+Some theoretical models developed in recent years are only available in the
+pyscf-forge package. To access these modules, you can install the pyscf-forge package::
+
+  $ pip install pyscf-forge
+
+Certain modules are maintained as extensions of PySCF (see also `Install extensions`_).
+To install all PySCF functionalities, you can execute the command::
+
+  $ pip install pyscf[all]
 
 
 2) Build from source with `pip`
@@ -38,7 +45,7 @@ list of prerequisites. If you would like to tune the CMake compilation
 parameters, you can set them with the environment variable `CMAKE_CONFIGURE_ARGS`, 
 for example:: 
 
-  $ export CMAKE_CONFIGURE_ARGS="-DBUILD_MARCH_NATIVE=ON"
+  $ export CMAKE_CONFIGURE_ARGS="-DBUILD_MARCH_NATIVE=ON -DBLA_VENDOR=Intel10_64lp_seq"
 
 See :ref:`cmake_options` for more details about CMake configuration.
 
@@ -56,7 +63,7 @@ Prerequisites for manual install are
   * CMake >= 3.10
   * Python >= 3.7
   * Numpy >= 1.13
-  * Scipy >= 0.19
+  * Scipy >= 1.3
   * h5py >= 2.7
 
 You can download the latest version of PySCF (or the development
