@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.scf.dispersion </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -333,58 +333,163 @@
 <span class="sd">dispersion correction for HF and DFT</span>
 <span class="sd">'''</span>
 
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">pyscf.scf.hf</span> <span class="kn">import</span> <span class="n">KohnShamDFT</span>
+<span class="c1"># supported dispersion corrections</span>
+<span class="n">DISP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'d3bj'</span><span class="p">,</span> <span class="s1">'d3zero'</span><span class="p">,</span> <span class="s1">'d3bjm'</span><span class="p">,</span> <span class="s1">'d3zerom'</span><span class="p">,</span> <span class="s1">'d3op'</span><span class="p">,</span> <span class="s1">'d4'</span><span class="p">]</span>
+<span class="n">XC_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'wb97m-d3bj'</span><span class="p">:</span> <span class="s1">'wb97m'</span><span class="p">,</span>
+          <span class="s1">'b97m-d3bj'</span><span class="p">:</span> <span class="s1">'b97m'</span><span class="p">,</span>
+          <span class="s1">'wb97x-d3bj'</span><span class="p">:</span> <span class="s1">'wb97x'</span><span class="p">,</span>
+          <span class="s1">'wb97m-v'</span><span class="p">:</span> <span class="s1">'wb97m'</span><span class="p">,</span>
+          <span class="s1">'b97m-v'</span><span class="p">:</span> <span class="s1">'b97m'</span><span class="p">,</span>
+          <span class="s1">'wb97x-v'</span><span class="p">:</span> <span class="s1">'wb97x'</span>
+          <span class="p">}</span>
+
+<span class="c1"># special cases:</span>
+<span class="c1"># - wb97x-d is not supported yet</span>
+<span class="c1"># - wb97*-d3bj is wb97*-v with d3bj</span>
+<span class="c1"># - wb97x-d3 is not supported yet</span>
+<span class="c1"># - 3c method is not supported yet</span>
+
+<span class="c1"># These xc functionals need special treatments</span>
+<span class="n">_white_list</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'wb97m-d3bj'</span><span class="p">:</span> <span class="p">(</span><span class="s1">'wb97m-v'</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'d3bj'</span><span class="p">),</span>
+    <span class="s1">'b97m-d3bj'</span><span class="p">:</span> <span class="p">(</span><span class="s1">'b97m-v'</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'d3bj'</span><span class="p">),</span>
+    <span class="s1">'wb97x-d3bj'</span><span class="p">:</span> <span class="p">(</span><span class="s1">'wb97x-v'</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'d3bj'</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># These xc functionals are not supported yet</span>
+<span class="n">_black_list</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'wb97x-d'</span><span class="p">,</span> <span class="s1">'wb97x-d3'</span><span class="p">,</span>
+    <span class="s1">'wb97m-d3bj2b'</span><span class="p">,</span> <span class="s1">'wb97m-d3bjatm'</span><span class="p">,</span>
+    <span class="s1">'b97m-d3bj2b'</span><span class="p">,</span> <span class="s1">'b97m-d3bjatm'</span><span class="p">,</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="parse_dft">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.dispersion.parse_dft">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parse_dft</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''</span>
+<span class="sd">    Extract (xc, nlc, disp) from xc_code</span>
+<span class="sd">    '''</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">xc_code</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">method_lower</span> <span class="o">=</span> <span class="n">xc_code</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">method_lower</span> <span class="ow">in</span> <span class="n">_black_list</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">method_lower</span><span class="si">}</span><span class="s1"> is not supported yet.'</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method_lower</span> <span class="ow">in</span> <span class="n">_white_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_white_list</span><span class="p">[</span><span class="n">method_lower</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">method_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'-3c'</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">'*-3c methods are not supported yet.'</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">'-d3'</span> <span class="ow">in</span> <span class="n">method_lower</span> <span class="ow">or</span> <span class="s1">'-d4'</span> <span class="ow">in</span> <span class="n">method_lower</span><span class="p">:</span>
+        <span class="n">xc</span><span class="p">,</span> <span class="n">disp</span> <span class="o">=</span> <span class="n">method_lower</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'-'</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xc</span><span class="p">,</span> <span class="n">disp</span> <span class="o">=</span> <span class="n">method_lower</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">xc</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="n">disp</span></div>
+
+
+<div class="viewcode-block" id="parse_disp">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.dispersion.parse_disp">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">parse_disp</span><span class="p">(</span><span class="n">dft_method</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Decode the disp parameters based on the xc code.</span>
+<span class="sd">    Returns xc_code_for_dftd3, disp_version, with_3body</span>
+
+<span class="sd">    Example: b3lyp-d3bj2b -&gt; (b3lyp, d3bj, False)</span>
+<span class="sd">             wb97x-d3bj   -&gt; (wb97x, d3bj, False)</span>
+<span class="sd">    '''</span>
+    <span class="k">if</span> <span class="n">dft_method</span> <span class="o">==</span> <span class="s1">'hf'</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">'hf'</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span>
+
+    <span class="n">dft_lower</span> <span class="o">=</span> <span class="n">dft_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">xc</span><span class="p">,</span> <span class="n">nlc</span><span class="p">,</span> <span class="n">disp</span> <span class="o">=</span> <span class="n">parse_dft</span><span class="p">(</span><span class="n">dft_lower</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dft_lower</span> <span class="ow">in</span> <span class="n">XC_MAP</span><span class="p">:</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">XC_MAP</span><span class="p">[</span><span class="n">dft_lower</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">disp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="n">disp_lower</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">disp_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'2b'</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">xc</span><span class="p">,</span> <span class="n">disp_lower</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'2b'</span><span class="p">,</span> <span class="s1">''</span><span class="p">),</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">disp_lower</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'atm'</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">xc</span><span class="p">,</span> <span class="n">disp_lower</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'atm'</span><span class="p">,</span> <span class="s1">''</span><span class="p">),</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xc</span><span class="p">,</span> <span class="n">disp_lower</span><span class="p">,</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="check_disp">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.dispersion.check_disp">[docs]</a>
+<span class="k">def</span> <span class="nf">check_disp</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Check whether to apply dispersion correction based on the xc attribute.</span>
+<span class="sd">    If dispersion is allowed, return the DFTD3 disp version, such as d3bj,</span>
+<span class="sd">    d3zero, d4.</span>
+<span class="sd">    '''</span>
+    <span class="k">if</span> <span class="n">disp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">disp</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">disp</span>
+    <span class="k">if</span> <span class="n">disp</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># disp = False</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># The disp method for both HF and MCSCF is set to 'hf'</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'hf'</span><span class="p">)</span>
+    <span class="n">disp_version</span> <span class="o">=</span> <span class="n">parse_disp</span><span class="p">(</span><span class="n">method</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">disp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Using the disp version decoded from the mf.xc attribute</span>
+        <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Using the version specified by mf.disp</span>
+        <span class="n">disp_version</span> <span class="o">=</span> <span class="n">disp</span>
+    <span class="k">elif</span> <span class="n">disp</span> <span class="o">!=</span> <span class="n">disp_version</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'mf.disp </span><span class="si">{</span><span class="n">disp</span><span class="si">}</span><span class="s1"> conflicts with mf.xc </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DISP_VERSIONS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">return</span> <span class="n">disp_version</span></div>
+
 
 <div class="viewcode-block" id="get_dispersion">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.dispersion.get_dispersion">[docs]</a>
-<span class="k">def</span> <span class="nf">get_dispersion</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">disp_version</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">disp_version</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">disp</span>
+<span class="k">def</span> <span class="nf">get_dispersion</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_3body</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">disp_version</span> <span class="o">=</span> <span class="n">check_disp</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">disp_version</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dispersion</span> <span class="kn">import</span> <span class="n">dftd3</span><span class="p">,</span> <span class="n">dftd4</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'dftd3 and dftd4 not available. Install them with `pip install pyscf-dispersion`'</span><span class="p">)</span>
+        <span class="k">raise</span>
+
     <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
-    <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mf">0.0</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">KohnShamDFT</span><span class="p">):</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="s1">'hf'</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'hf'</span><span class="p">)</span>
+    <span class="n">method</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">disp_with_3body</span> <span class="o">=</span> <span class="n">parse_disp</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_3body</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">with_3body</span> <span class="o">=</span> <span class="n">disp_with_3body</span>
 
     <span class="c1"># for dftd3</span>
     <span class="k">if</span> <span class="n">disp_version</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'D3'</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">dftd3.pyscf</span> <span class="k">as</span> <span class="nn">disp</span>
-        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">cannot find dftd3 in the current environment.</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">please install dftd3 via </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">**************************************</span><span class="se">\n\</span>
-<span class="s2">        pip3 install dftd3 </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">**************************************"</span><span class="p">)</span>
-
-        <span class="n">d3</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">DFTD3Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">disp_version</span><span class="p">)</span>
-        <span class="n">e_d3</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">d3</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s2">"Calc dispersion correction with DFTD3."</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Parameters: xc=</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, version=</span><span class="si">{</span><span class="n">disp_version</span><span class="si">}</span><span class="s2">, atm=</span><span class="si">{</span><span class="n">with_3body</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">d3_model</span> <span class="o">=</span> <span class="n">dftd3</span><span class="o">.</span><span class="n">DFTD3Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">disp_version</span><span class="p">,</span> <span class="n">atm</span><span class="o">=</span><span class="n">with_3body</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">d3_model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">()</span>
+        <span class="n">e_d3</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'energy'</span><span class="p">)</span>
         <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'dispersion'</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_d3</span>
         <span class="k">return</span> <span class="n">e_d3</span>
 
     <span class="c1"># for dftd4</span>
     <span class="k">elif</span> <span class="n">disp_version</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'D4'</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">charge</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">charge</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">])</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">dftd4.interface</span> <span class="kn">import</span> <span class="n">DampingParam</span><span class="p">,</span> <span class="n">DispersionModel</span>
-        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">cannot find dftd4 in the current environment. </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">please install dftd4 via </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">***************************************</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">        pip3 install dftd4 </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">***************************************"</span><span class="p">)</span>
-
-        <span class="n">model</span> <span class="o">=</span> <span class="n">DispersionModel</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">(</span><span class="n">DampingParam</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">),</span> <span class="n">grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">e_d4</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"energy"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s2">"Calc dispersion correction with DFTD4."</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Parameters: xc=</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, atm=</span><span class="si">{</span><span class="n">with_3body</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">d4_model</span> <span class="o">=</span> <span class="n">dftd4</span><span class="o">.</span><span class="n">DFTD4Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">atm</span><span class="o">=</span><span class="n">with_3body</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">d4_model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">()</span>
+        <span class="n">e_d4</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'energy'</span><span class="p">)</span>
         <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">'dispersion'</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_d4</span>
         <span class="k">return</span> <span class="n">e_d4</span>
     <span class="k">else</span><span class="p">:</span>
@@ -393,6 +498,7 @@
 
 <span class="c1"># Inject to SCF class</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">do_disp</span> <span class="o">=</span> <span class="n">check_disp</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">get_dispersion</span> <span class="o">=</span> <span class="n">get_dispersion</span>
 </pre></div>
 

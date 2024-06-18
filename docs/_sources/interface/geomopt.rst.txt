@@ -17,7 +17,7 @@ The following example shows how to optimize the structure of the N\ :sub:`2`\  m
     mol = gto.M(atom='N 0 0 0; N 0 0 1.2', basis='ccpvdz')
     mf = scf.RHF(mol)
     mol_eq = optimize(mf)
-    print(mol_eq.atom_coords())
+    print(mol_eq.tostring())
 
 Examples
 ========

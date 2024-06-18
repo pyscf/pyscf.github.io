@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.addons </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -440,12 +440,17 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">mu_a</span><span class="p">,</span> <span class="n">occa</span> <span class="o">=</span> <span class="n">mol_addons</span><span class="o">.</span><span class="n">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
                 <span class="n">mu_b</span><span class="p">,</span> <span class="n">occb</span> <span class="o">=</span> <span class="n">mol_addons</span><span class="o">.</span><span class="n">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="n">mu</span> <span class="o">=</span> <span class="p">[</span><span class="n">mu_a</span><span class="p">,</span> <span class="n">mu_b</span><span class="p">]</span>
-                <span class="n">mo_occs</span> <span class="o">=</span> <span class="p">[</span><span class="n">occa</span><span class="p">,</span> <span class="n">occb</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
-                <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="p">):</span>
+                    <span class="n">mu_a</span> <span class="o">=</span> <span class="n">mu_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">mu_a</span><span class="p">,</span> <span class="n">mu_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Unsupported mu0: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+                <span class="n">occa</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu_a</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
+                <span class="n">occb</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu_b</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="p">[</span><span class="n">mu_a</span><span class="p">,</span> <span class="n">mu_b</span><span class="p">]</span>
+            <span class="n">mo_occs</span> <span class="o">=</span> <span class="p">[</span><span class="n">occa</span><span class="p">,</span> <span class="n">occb</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">/=</span> <span class="n">nkpts</span>
@@ -482,6 +487,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># If mu0 is given, fix mu instead of electron number. XXX -Chong Sun</span>
                 <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
+                <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
                 <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">,</span> <span class="n">mo_occs</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">nkpts</span>
             <span class="k">if</span> <span class="n">is_rhf</span><span class="p">:</span>

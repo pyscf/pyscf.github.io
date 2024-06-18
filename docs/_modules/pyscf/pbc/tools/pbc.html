@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.pbc.tools.pbc </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -326,6 +326,7 @@
 <span class="c1"># limitations under the License.</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.linalg</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
@@ -369,6 +370,44 @@
     <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">mesh</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">FFT_ENGINE</span> <span class="o">==</span> <span class="s1">'FFTW'</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">libfft</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libfft'</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Failed to load libfft"</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_copy_d2z</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">libfft</span><span class="o">.</span><span class="n">_copy_d2z</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="n">fn</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+           <span class="n">a</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+           <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_complex_fftn_fftw</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span> <span class="ow">and</span> <span class="n">f</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">c_contiguous</span><span class="p">:</span>
+            <span class="c1"># np.asarray or np.astype is too slow</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">_copy_d2z</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">rank</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">libfft</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="n">fn</span><span class="p">(</span><span class="n">fi</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+               <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+               <span class="n">mesh</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+               <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">rank</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_fftn_wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">_complex_fftn_fftw</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="s1">'fft'</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_ifftn_wrapper</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">_complex_fftn_fftw</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="s1">'ifft'</span><span class="p">)</span>
+
+<span class="k">elif</span> <span class="n">FFT_ENGINE</span> <span class="o">==</span> <span class="s1">'PYFFTW'</span><span class="p">:</span>
     <span class="c1"># pyfftw is slower than np.fft in most cases</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">pyfftw</span>
@@ -561,8 +600,9 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">kG</span> <span class="o">=</span> <span class="n">Gv</span>
 
-    <span class="n">equal2boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Gv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">equal2boundary</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">wrap_around</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-9</span><span class="p">:</span>
+        <span class="n">equal2boundary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Gv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="c1"># Here we 'wrap around' the high frequency k+G vectors into their lower</span>
         <span class="c1"># frequency counterparts.  Important if you want the gamma point and k-point</span>
         <span class="c1"># answers to agree</span>
@@ -683,7 +723,8 @@
         <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">'ewald'</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G0_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">coulG</span><span class="p">[</span><span class="n">G0_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Nk</span><span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span><span class="o">*</span><span class="n">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
 
-    <span class="n">coulG</span><span class="p">[</span><span class="n">equal2boundary</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">equal2boundary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">coulG</span><span class="p">[</span><span class="n">equal2boundary</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c1"># Scale the coulG kernel for attenuated Coulomb integrals.</span>
     <span class="c1"># * omega is used by RangeSeparatedJKBuilder which requires ewald probe charge</span>
@@ -845,7 +886,7 @@
 
     <span class="n">a</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">()</span>
 
-    <span class="n">scaled_atom_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">scaled_atom_coords</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_scaled_atom_coords</span><span class="p">()</span>
     <span class="n">atom_boundary_max</span> <span class="o">=</span> <span class="n">scaled_atom_coords</span><span class="p">[:,:</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">atom_boundary_min</span> <span class="o">=</span> <span class="n">scaled_atom_coords</span><span class="p">[:,:</span><span class="n">dimension</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atom_boundary_max</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">atom_boundary_min</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
@@ -880,11 +921,12 @@
                              <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
     <span class="n">Ls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ts</span><span class="p">[:,:</span><span class="n">dimension</span><span class="p">],</span> <span class="n">a</span><span class="p">[:</span><span class="n">dimension</span><span class="p">])</span>
 
-    <span class="n">ovlp_penalty</span> <span class="o">+=</span> <span class="mf">1e-200</span>  <span class="c1"># avoid /0</span>
-    <span class="n">Ts_scaled</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ts</span><span class="p">[:,:</span><span class="n">dimension</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-200</span><span class="p">)</span> <span class="o">/</span> <span class="n">ovlp_penalty</span>
-    <span class="n">ovlp_penalty_fac</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Ts_scaled</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">Ls_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ovlp_penalty_fac</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">rcut</span>
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">Ls_mask</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">discard</span><span class="p">:</span>
+        <span class="n">ovlp_penalty</span> <span class="o">+=</span> <span class="mf">1e-200</span>  <span class="c1"># avoid /0</span>
+        <span class="n">Ts_scaled</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ts</span><span class="p">[:,:</span><span class="n">dimension</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-200</span><span class="p">)</span> <span class="o">/</span> <span class="n">ovlp_penalty</span>
+        <span class="n">ovlp_penalty_fac</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Ts_scaled</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Ls_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">ovlp_penalty_fac</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">rcut</span>
+        <span class="n">Ls</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">Ls_mask</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'C'</span><span class="p">)</span></div>
 
 
@@ -979,6 +1021,7 @@
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">T</span>
     <span class="n">supcell</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="n">supcell</span><span class="o">.</span><span class="n">_atom</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">symbs</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)))</span>
     <span class="n">supcell</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s1">'B'</span>
+    <span class="n">supcell</span><span class="o">.</span><span class="n">enuc</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># reset nuclear energy</span>
 
     <span class="c1"># Do not call supcell.build() to initialize supcell since it may normalize</span>
     <span class="c1"># the basis contraction coefficients</span>

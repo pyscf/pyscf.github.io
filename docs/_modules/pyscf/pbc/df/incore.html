@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.incore </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -342,6 +342,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">k2gamma</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">pbc</span> <span class="k">as</span> <span class="n">pbctools</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.gto</span> <span class="kn">import</span> <span class="n">_pbcintor</span>
 
 <span class="n">RCUT_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_scf_rsjk_rcut_threshold'</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)</span>
 <span class="n">KECUT_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'pbc_scf_rsjk_kecut_threshold'</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
@@ -816,6 +817,261 @@
 <span class="sd">    basis accordingly.'''</span>
     <span class="n">comp_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ao_loc1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ao_loc1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ao_loc2</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">comp_loc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+<span class="c1"># The following functions use pre-constructed shell pair list</span>
+<div class="viewcode-block" id="aux_e2_sum_auxbas">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.incore.aux_e2_sum_auxbas">[docs]</a>
+<span class="k">def</span> <span class="nf">aux_e2_sum_auxbas</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell_or_auxbasis</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">kptij_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">'''Compute :math:`\sum_{L} (ij|L)` on the fly.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        out : (nao_pair,) array</span>
+<span class="sd">    '''</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxcell_or_auxbasis</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">MoleBase</span><span class="p">):</span>
+        <span class="n">auxcell</span> <span class="o">=</span> <span class="n">auxcell_or_auxbasis</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxcell_or_auxbasis</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">auxcell</span> <span class="o">=</span> <span class="n">make_auxcell</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell_or_auxbasis</span><span class="p">)</span>
+
+    <span class="n">int3c</span> <span class="o">=</span> <span class="n">wrap_int3c_sum_auxbas</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">kptij_lst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">int3c</span><span class="p">(</span><span class="n">shls_slice</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="wrap_int3c_sum_auxbas">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.incore.wrap_int3c_sum_auxbas">[docs]</a>
+<span class="k">def</span> <span class="nf">wrap_int3c_sum_auxbas</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">kptij_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">cintopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pbcopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">neighbor_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">neighbor_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">'Neighbor list is not initialized.'</span><span class="p">)</span>
+
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="n">nkptij</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">)</span>
+    <span class="n">kpti</span> <span class="o">=</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">kptj</span> <span class="o">=</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">j_only</span> <span class="o">=</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpti</span> <span class="o">-</span> <span class="n">kptj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">j_only</span><span class="p">:</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpti</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">kptij_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">intor</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="n">intor</span><span class="p">)</span>
+    <span class="n">intor</span><span class="p">,</span> <span class="n">comp</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">_get_intor_and_comp</span><span class="p">(</span><span class="n">intor</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
+
+    <span class="n">pcell</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">pcell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> \
+            <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">conc_env</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
+                                         <span class="n">cell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+    <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_loc</span><span class="p">(</span><span class="n">bas</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+    <span class="n">aux_loc</span> <span class="o">=</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">ao_loc_nr</span><span class="p">()</span>
+    <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">ao_loc</span><span class="p">,</span> <span class="n">ao_loc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">aux_loc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">conc_env</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span>
+                                 <span class="n">auxcell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">()</span>
+    <span class="n">nimgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+    <span class="n">nbas</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span>
+
+    <span class="n">gamma_point_only</span> <span class="o">=</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gamma_point_only</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">nkpts</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">kk_type</span> <span class="o">=</span> <span class="s1">'g'</span>
+        <span class="n">expkL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="n">out_dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">fill</span> <span class="o">=</span> <span class="s1">'PBCnr3c_screened_sum_auxbas_fill_</span><span class="si">%s%s</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">kk_type</span><span class="p">,</span> <span class="n">aosym</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">drv</span> <span class="o">=</span> <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCnr3c_screened_sum_auxbas_drv</span>
+
+    <span class="k">if</span> <span class="n">cintopt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">nbas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">env</span><span class="p">[</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_EXPCUTOFF</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">precision</span><span class="p">))</span>
+            <span class="n">cintopt</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cintopt</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">c_null_ptr</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">intor</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'ECP'</span><span class="p">:</span>
+            <span class="n">libpbc</span><span class="o">.</span><span class="n">CINTdel_pairdata_optimizer</span><span class="p">(</span><span class="n">cintopt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pbcopt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pbcopt</span> <span class="o">=</span> <span class="n">_pbcintor</span><span class="o">.</span><span class="n">PBCOpt</span><span class="p">(</span><span class="n">pcell</span><span class="p">)</span><span class="o">.</span><span class="n">init_rcut_cond</span><span class="p">(</span><span class="n">pcell</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pbcopt</span><span class="p">,</span> <span class="n">_pbcintor</span><span class="o">.</span><span class="n">PBCOpt</span><span class="p">):</span>
+        <span class="n">cpbcopt</span> <span class="o">=</span> <span class="n">pbcopt</span><span class="o">.</span><span class="n">_this</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cpbcopt</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">c_null_ptr</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">int3c</span><span class="p">(</span><span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">shls_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
+        <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shls_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                      <span class="n">nbas</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">nbas</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                      <span class="n">nbas</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">nbas</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+        <span class="n">ni</span> <span class="o">=</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">-</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">nj</span> <span class="o">=</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span> <span class="o">-</span> <span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">aosym</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'s2'</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">ni</span> <span class="o">==</span> <span class="n">nj</span>
+            <span class="n">nao_pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="p">(</span><span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span> <span class="o">-</span>
+                        <span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="p">(</span><span class="n">ao_loc</span><span class="p">[</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nao_pair</span> <span class="o">=</span> <span class="n">ni</span> <span class="o">*</span> <span class="n">nj</span>
+
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nkptij</span><span class="p">,</span><span class="n">comp</span><span class="p">,</span><span class="n">nao_pair</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">out_dtype</span><span class="p">)</span>
+
+        <span class="n">drv</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">intor</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">fill</span><span class="p">),</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkptij</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkpts</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">comp</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nimgs</span><span class="p">),</span>
+            <span class="n">Ls</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">expkL</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">kptij_idx</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">6</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span>
+            <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">cintopt</span><span class="p">,</span> <span class="n">cpbcopt</span><span class="p">,</span>
+            <span class="n">atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">natm</span><span class="p">),</span>
+            <span class="n">bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nbas</span><span class="p">),</span>  <span class="c1"># need to pass cell.nbas to libpbc.PBCnr3c_drv</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">neighbor_list</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="sa">f</span><span class="s1">'pbc integral </span><span class="si">{</span><span class="n">intor</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">comp</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">nkptij</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">return</span> <span class="n">int3c</span></div>
+
+
+<div class="viewcode-block" id="int3c1e_nuc_grad">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.incore.int3c1e_nuc_grad">[docs]</a>
+<span class="k">def</span> <span class="nf">int3c1e_nuc_grad</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c1e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                     <span class="n">kptij_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Compute the nuclear gradient contribution</span>
+<span class="sd">    to the 2nd local part of PP on the fly.</span>
+<span class="sd">    See `pbc.gto.pseudo.pp_int.vpploc_part2_nuc_grad`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        out : (natm,comp) array</span>
+<span class="sd">    '''</span>
+    <span class="k">if</span> <span class="n">comp</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">if</span> <span class="n">aosym</span> <span class="o">!=</span> <span class="s1">'s1'</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">int3c</span> <span class="o">=</span> <span class="n">wrap_int3c1e_nuc_grad</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span> <span class="n">kptij_lst</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">int3c</span><span class="p">(</span><span class="n">shls_slice</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="wrap_int3c1e_nuc_grad">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.incore.wrap_int3c1e_nuc_grad">[docs]</a>
+<span class="k">def</span> <span class="nf">wrap_int3c1e_nuc_grad</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">auxcell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c1e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                          <span class="n">kptij_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">cintopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pbcopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">neighbor_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">neighbor_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">'Neighbor list is not initialized.'</span><span class="p">)</span>
+
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+    <span class="n">nkptij</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">)</span>
+    <span class="n">kpti</span> <span class="o">=</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">kptj</span> <span class="o">=</span> <span class="n">kptij_lst</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">j_only</span> <span class="o">=</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpti</span> <span class="o">-</span> <span class="n">kptj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">j_only</span><span class="p">:</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpti</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">kptij_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">intor</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="n">intor</span><span class="p">)</span>
+    <span class="n">intor</span><span class="p">,</span> <span class="n">comp</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">_get_intor_and_comp</span><span class="p">(</span><span class="n">intor</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
+
+    <span class="n">pcell</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">pcell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">pcell</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> \
+            <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">conc_env</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span>
+                                         <span class="n">cell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+    <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_loc</span><span class="p">(</span><span class="n">bas</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+    <span class="n">aux_loc</span> <span class="o">=</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">ao_loc_nr</span><span class="p">()</span>
+    <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">ao_loc</span><span class="p">,</span> <span class="n">ao_loc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">aux_loc</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">conc_env</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span>
+                                 <span class="n">auxcell</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">_env</span><span class="p">)</span>
+
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_lattice_Ls</span><span class="p">()</span>
+    <span class="n">nimgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+    <span class="n">nbas</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nbas</span>
+
+    <span class="n">gamma_point_only</span> <span class="o">=</span> <span class="n">is_zero</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gamma_point_only</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">nkpts</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">kk_type</span> <span class="o">=</span> <span class="s1">'g'</span>
+        <span class="n">expkL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"C"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="n">fill</span> <span class="o">=</span> <span class="s1">'PBCnr3c1e_screened_nuc_grad_fill_</span><span class="si">%s%s</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">kk_type</span><span class="p">,</span> <span class="n">aosym</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">drv</span> <span class="o">=</span> <span class="n">libpbc</span><span class="o">.</span><span class="n">PBCnr3c1e_screened_nuc_grad_drv</span>
+
+    <span class="k">if</span> <span class="n">cintopt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">nbas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">env</span><span class="p">[</span><span class="n">gto</span><span class="o">.</span><span class="n">PTR_EXPCUTOFF</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">precision</span><span class="p">))</span>
+            <span class="n">cintopt</span> <span class="o">=</span> <span class="n">_vhf</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">intor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cintopt</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">c_null_ptr</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">intor</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'ECP'</span><span class="p">:</span>
+            <span class="n">libpbc</span><span class="o">.</span><span class="n">CINTdel_pairdata_optimizer</span><span class="p">(</span><span class="n">cintopt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pbcopt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pbcopt</span> <span class="o">=</span> <span class="n">_pbcintor</span><span class="o">.</span><span class="n">PBCOpt</span><span class="p">(</span><span class="n">pcell</span><span class="p">)</span><span class="o">.</span><span class="n">init_rcut_cond</span><span class="p">(</span><span class="n">pcell</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pbcopt</span><span class="p">,</span> <span class="n">_pbcintor</span><span class="o">.</span><span class="n">PBCOpt</span><span class="p">):</span>
+        <span class="n">cpbcopt</span> <span class="o">=</span> <span class="n">pbcopt</span><span class="o">.</span><span class="n">_this</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cpbcopt</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">c_null_ptr</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">int3c</span><span class="p">(</span><span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">shls_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">auxcell</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
+        <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shls_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                      <span class="n">nbas</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">nbas</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                      <span class="n">nbas</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">nbas</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">shls_slice</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkptij</span><span class="p">,</span><span class="n">cell</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="n">comp</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+
+        <span class="n">drv</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">intor</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">libpbc</span><span class="p">,</span> <span class="n">fill</span><span class="p">),</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">dm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkptij</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nkpts</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">comp</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nimgs</span><span class="p">),</span>
+            <span class="n">Ls</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">expkL</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="n">kptij_idx</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="mi">6</span><span class="p">)(</span><span class="o">*</span><span class="n">shls_slice</span><span class="p">),</span>
+            <span class="n">ao_loc</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">cintopt</span><span class="p">,</span> <span class="n">cpbcopt</span><span class="p">,</span>
+            <span class="n">atm</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">natm</span><span class="p">),</span>
+            <span class="n">bas</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nbas</span><span class="p">),</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">nao</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">neighbor_list</span><span class="p">))</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="sa">f</span><span class="s1">'pbc integral </span><span class="si">{</span><span class="n">intor</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="o">*</span><span class="n">t0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nkptij</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">return</span> <span class="n">int3c</span></div>
+
 </pre></div>
 
           </article>

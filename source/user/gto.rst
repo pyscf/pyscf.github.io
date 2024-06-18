@@ -166,6 +166,8 @@ This function returns a (N,3) array for the coordinates of each atom::
    [0. 1. 0.]
    [0. 0. 1.]]
 
+Please note the unit is Bohr by default. You can assign the keyword argument
+`unit='Ang'` to change the unit to Angstrom.
 Ghost atoms can also be specified when inputting the geometry.
 See :source:`examples/gto/03-ghost_atom.py` for examples.
 

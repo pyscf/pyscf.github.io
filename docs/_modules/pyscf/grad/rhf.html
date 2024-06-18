@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.grad.rhf </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -807,7 +807,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">=</span> <span class="n">de</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_nuc</span><span class="p">(</span><span class="n">atmlst</span><span class="o">=</span><span class="n">atmlst</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmetrize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">de</span><span class="p">,</span> <span class="n">atmlst</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">disp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">do_disp</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">de</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'SCF gradients'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_finalize</span><span class="p">()</span>
@@ -832,10 +832,16 @@
 <span class="sd">        to be split into alpha,beta in DF-ROHF subclass'''</span>
         <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span> <span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="n">mo_occ</span><span class="p">)</span>
 
+    <span class="c1"># to_gpu can be reused only when __init__ still takes mf</span>
 <div class="viewcode-block" id="GradientsBase.to_gpu">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.scf.hf.GradientsBase.to_gpu">[docs]</a>
     <span class="k">def</span> <span class="nf">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="n">mf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'pyscf'</span><span class="p">,</span> <span class="s1">'gpu4pyscf'</span><span class="p">))</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
 </div>
 
 
@@ -865,14 +871,7 @@
         <span class="k">return</span> <span class="n">make_rdm1e</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span></div>
 
 
-    <span class="n">grad_elec</span> <span class="o">=</span> <span class="n">grad_elec</span>
-
-<div class="viewcode-block" id="Gradients.to_gpu">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.scf.hf.Gradients.to_gpu">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">gpu4pyscf.grad.rhf</span> <span class="kn">import</span> <span class="n">Gradients</span>
-        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">Gradients</span><span class="p">))</span></div>
-</div>
+    <span class="n">grad_elec</span> <span class="o">=</span> <span class="n">grad_elec</span></div>
 
 
 <span class="n">Grad</span> <span class="o">=</span> <span class="n">Gradients</span>
@@ -880,6 +879,7 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
 <span class="c1"># Inject to RHF class</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">Gradients</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">Gradients</span><span class="p">)</span>
+<span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="o">.</span><span class="n">Gradients</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">invalid_method</span><span class="p">(</span><span class="s1">'Gradients'</span><span class="p">)</span>
 </pre></div>
 
           </article>

@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.df.outcore </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -340,12 +340,11 @@
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo</span> <span class="kn">import</span> <span class="n">_ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo.outcore</span> <span class="kn">import</span> <span class="n">_load_from_h5g</span>
-<span class="kn">from</span> <span class="nn">pyscf.df.incore</span> <span class="kn">import</span> <span class="n">_eig_decompose</span>
+<span class="kn">from</span> <span class="nn">pyscf.df.incore</span> <span class="kn">import</span> <span class="n">_eig_decompose</span><span class="p">,</span> <span class="n">LINEAR_DEP_THR</span>
 <span class="kn">from</span> <span class="nn">pyscf.df.addons</span> <span class="kn">import</span> <span class="n">make_auxmol</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">MAX_MEMORY</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_outcore_max_memory'</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>  <span class="c1"># 2GB</span>
-<span class="n">LINEAR_DEP_THR</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'df_df_DF_lindep'</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
 
 <span class="c1">#</span>
 <span class="c1"># for auxe1 (P|ij)</span>
@@ -407,6 +406,11 @@
         <span class="n">dat</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">ti0</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'step 2 [</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">], [</span><span class="si">%d</span><span class="s1">:</span><span class="si">%d</span><span class="s1">], row = </span><span class="si">%d</span><span class="s1">'</span><span class="o">%</span>
                         <span class="p">(</span><span class="n">istep</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">totstep</span><span class="p">,</span> <span class="n">row0</span><span class="p">,</span> <span class="n">row1</span><span class="p">,</span> <span class="n">nrow</span><span class="p">),</span> <span class="o">*</span><span class="n">ti0</span><span class="p">)</span>
+
+    <span class="c1"># A bug in NFS / HDF5 may cause .close() not to</span>
+    <span class="c1"># flush properly, hanging the calculation. Flush manually</span>
+    <span class="n">fswap</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">feri</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
     <span class="n">fswap</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="n">feri</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -481,6 +485,7 @@
     <span class="c1">#    cintopt = gto.moleintor.make_cintopt(atm, bas, env, int3c)</span>
     <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">int3c</span><span class="p">)</span>
     <span class="n">bufs1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">comp</span><span class="o">*</span><span class="nb">max</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shranges</span><span class="p">]),</span><span class="n">naoaux</span><span class="p">))</span>
+    <span class="n">bufs2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">bufs1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">b</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">f_contiguous</span><span class="p">:</span>
@@ -491,11 +496,16 @@
             <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">c_contiguous</span><span class="p">:</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">trsm</span><span class="p">,</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">get_blas_funcs</span><span class="p">((</span><span class="s1">'trsm'</span><span class="p">,),</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">trsm</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trans_a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">side</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="n">overwrite_b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve_triangular</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                              <span class="n">overwrite_b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="n">sh_range</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">bufs1</span><span class="p">,</span> <span class="n">bufs2</span>
+        <span class="n">bufs2</span><span class="p">,</span> <span class="n">bufs1</span> <span class="o">=</span> <span class="n">bufs1</span><span class="p">,</span> <span class="n">bufs2</span>
         <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span><span class="p">,</span> <span class="n">nrow</span> <span class="o">=</span> <span class="n">sh_range</span>
         <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="o">+</span><span class="n">auxmol</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
         <span class="n">ints</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">getints3c</span><span class="p">(</span><span class="n">int3c</span><span class="p">,</span> <span class="n">atm</span><span class="p">,</span> <span class="n">bas</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span>
@@ -507,6 +517,7 @@
         <span class="k">return</span> <span class="n">dat</span>
 
     <span class="n">feri</span> <span class="o">=</span> <span class="n">_create_h5file</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="n">dataname</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">istep</span><span class="p">,</span> <span class="n">dat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">map_with_prefetch</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">shranges</span><span class="p">)):</span>
         <span class="n">sh_range</span> <span class="o">=</span> <span class="n">shranges</span><span class="p">[</span><span class="n">istep</span><span class="p">]</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s1">'</span><span class="si">%s</span><span class="s1">/</span><span class="si">%d</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">dataname</span><span class="p">,</span><span class="n">istep</span><span class="p">)</span>
@@ -522,6 +533,8 @@
                   <span class="n">istep</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">shranges</span><span class="p">),</span> <span class="o">*</span><span class="n">sh_range</span><span class="p">)</span>
         <span class="n">time1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">'gen CD eri [</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">]'</span> <span class="o">%</span> <span class="p">(</span><span class="n">istep</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">shranges</span><span class="p">)),</span> <span class="o">*</span><span class="n">time1</span><span class="p">)</span>
     <span class="n">bufs1</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bufs2</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">feri</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="n">feri</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">erifile</span></div>
 
@@ -611,11 +624,11 @@
         <span class="n">erifile</span> <span class="o">=</span> <span class="n">erifile</span><span class="o">.</span><span class="n">name</span>
 
     <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">erifile</span><span class="p">):</span>
-        <span class="n">feri</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span>
+        <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dataname</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">:</span>
             <span class="k">del</span> <span class="p">(</span><span class="n">feri</span><span class="p">[</span><span class="n">dataname</span><span class="p">])</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">feri</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
+        <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">erifile</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">feri</span>
 
 <span class="k">del</span> <span class="p">(</span><span class="n">MAX_MEMORY</span><span class="p">)</span>

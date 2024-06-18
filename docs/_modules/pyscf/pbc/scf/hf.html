@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.pbc.scf.hf </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -312,7 +312,7 @@
             
   <h1 id="modules-pyscf-pbc-scf-hf--page-root">Source code for pyscf.pbc.scf.hf</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2019 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2024 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -368,23 +368,24 @@
         <span class="c1"># Avoid pbcopt's prescreening in the lattice sum, for better accuracy</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">'int1e_ovlp'</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpt</span><span class="p">,</span>
                            <span class="n">pbcopt</span><span class="o">=</span><span class="n">lib</span><span class="o">.</span><span class="n">c_null_ptr</span><span class="p">())</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="n">hermi_error</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">s</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">hermi_error</span> <span class="o">&gt;</span> <span class="n">cell</span><span class="o">.</span><span class="n">precision</span> <span class="ow">and</span> <span class="n">hermi_error</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'</span><span class="si">%.4g</span><span class="s1"> error found in overlap integrals. '</span>
                     <span class="s1">'cell.precision  or  cell.rcut  can be adjusted to '</span>
                     <span class="s1">'improve accuracy.'</span><span class="p">,</span> <span class="n">hermi_error</span><span class="p">)</span>
 
-    <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">cond</span> <span class="o">*</span> <span class="n">precision</span> <span class="o">&gt;</span> <span class="mf">1e2</span><span class="p">:</span>
-        <span class="n">prec</span> <span class="o">=</span> <span class="mf">1e7</span> <span class="o">/</span> <span class="n">cond</span>
-        <span class="n">rmin</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">estimate_rcut</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">prec</span><span class="o">*</span><span class="mf">1e-5</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'Singularity detected in overlap matrix.  '</span>
-                    <span class="s1">'Integral accuracy may be not enough.</span><span class="se">\n</span><span class="s1">      '</span>
-                    <span class="s1">'You can adjust  cell.precision  or  cell.rcut  to '</span>
-                    <span class="s1">'improve accuracy.  Recommended settings are</span><span class="se">\n</span><span class="s1">      '</span>
-                    <span class="s1">'cell.precision &lt; </span><span class="si">%.2g</span><span class="se">\n</span><span class="s1">      '</span>
-                    <span class="s1">'cell.rcut &gt; </span><span class="si">%.4g</span><span class="s1">'</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rmin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">cond</span> <span class="o">*</span> <span class="n">precision</span> <span class="o">&gt;</span> <span class="mf">1e2</span><span class="p">:</span>
+            <span class="n">prec</span> <span class="o">=</span> <span class="mf">1e7</span> <span class="o">/</span> <span class="n">cond</span>
+            <span class="n">rmin</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">estimate_rcut</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">prec</span><span class="o">*</span><span class="mf">1e-5</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">'Singularity detected in overlap matrix.  '</span>
+                        <span class="s1">'Integral accuracy may be not enough.</span><span class="se">\n</span><span class="s1">      '</span>
+                        <span class="s1">'You can adjust  cell.precision  or  cell.rcut  to '</span>
+                        <span class="s1">'improve accuracy.  Recommended settings are</span><span class="se">\n</span><span class="s1">      '</span>
+                        <span class="s1">'cell.precision &lt; </span><span class="si">%.2g</span><span class="se">\n</span><span class="s1">      '</span>
+                        <span class="s1">'cell.rcut &gt; </span><span class="si">%.4g</span><span class="s1">'</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">rmin</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">s</span></div>
 
 
@@ -974,11 +975,18 @@
 <div class="viewcode-block" id="SCF.check_sanity">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.SCF.check_sanity">[docs]</a>
     <span class="k">def</span> <span class="nf">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">mol_hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exxdiv</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">exxdiv</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">'ewald'</span> <span class="ow">and</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">)):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'exxdiv </span><span class="si">%s</span><span class="s1"> is not supported in DF or MDF'</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">exxdiv</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
+            <span class="n">cond</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cond</span> <span class="o">*</span> <span class="mf">1e-17</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Singularity detected in overlap matrix (condition number = </span><span class="si">%4.3g</span><span class="s1">). '</span>
+                            <span class="s1">'SCF may be inaccurate and hard to converge.'</span><span class="p">,</span> <span class="n">cond</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -1121,7 +1129,7 @@
 <div class="viewcode-block" id="SCF.energy_nuc">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.SCF.energy_nuc">[docs]</a>
     <span class="k">def</span> <span class="nf">energy_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">enuc</span></div>
 
 
 <div class="viewcode-block" id="SCF.dip_moment">
@@ -1147,10 +1155,10 @@
 
 <div class="viewcode-block" id="SCF.get_init_guess">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.SCF.get_init_guess">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'minao'</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'minao'</span><span class="p">,</span> <span class="n">s1e</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="n">dm</span> <span class="o">=</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-        <span class="n">dm</span> <span class="o">=</span> <span class="n">normalize_dm_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">normalize_dm_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">s1e</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dm</span></div>
 
 
@@ -1182,7 +1190,7 @@
     <span class="k">def</span> <span class="nf">dump_chk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">:</span>
             <span class="n">mol_hf</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">dump_chk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">)</span>
-            <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh5</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh5</span><span class="p">:</span>
                 <span class="n">fh5</span><span class="p">[</span><span class="s1">'scf/kpt'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpt</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
@@ -1330,6 +1338,7 @@
     <span class="n">analyze</span> <span class="o">=</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">analyze</span>
     <span class="n">spin_square</span> <span class="o">=</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">spin_square</span>
     <span class="n">stability</span> <span class="o">=</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">RHF</span><span class="o">.</span><span class="n">stability</span>
+    <span class="n">to_gpu</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span>
 
 <div class="viewcode-block" id="RHF.nuc_grad_method">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.RHF.nuc_grad_method">[docs]</a>
@@ -1367,12 +1376,14 @@
 
 <div class="viewcode-block" id="normalize_dm_">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.hf.normalize_dm_">[docs]</a>
-<span class="k">def</span> <span class="nf">normalize_dm_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">normalize_dm_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">s1e</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''</span>
 <span class="sd">    Scale density matrix to make it produce the correct number of electrons.</span>
 <span class="sd">    '''</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">cell</span>
-    <span class="n">ne</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji-&gt;'</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span><span class="o">.</span><span class="n">real</span>
+    <span class="k">if</span> <span class="n">s1e</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s1e</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ij,ji-&gt;'</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">s1e</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ne</span> <span class="o">-</span> <span class="n">cell</span><span class="o">.</span><span class="n">nelectron</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.01</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'Big error detected in the electron number '</span>
                      <span class="s1">'of initial guess density matrix (Ne/cell = </span><span class="si">%g</span><span class="s1">)!</span><span class="se">\n</span><span class="s1">'</span>

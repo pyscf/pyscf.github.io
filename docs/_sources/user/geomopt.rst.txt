@@ -26,23 +26,23 @@ and :mod:`pyscf.geomopt.berny_solver`::
     # geometric
     from pyscf.geomopt.geometric_solver import optimize
     mol_eq = optimize(mf, maxsteps=100)
-    print(mol_eq.atom_coords())
+    print(mol_eq.tostring())
 
     # pyberny
     from pyscf.geomopt.berny_solver import optimize
     mol_eq = optimize(mf, maxsteps=100)
-    print(mol_eq.atom_coords())
+    print(mol_eq.tostring())
 
 
 The second way is to create an :func:`optimizer` from the :class:`Gradients` class::
 
     # geometric
     mol_eq = mf.Gradients().optimizer(solver='geomeTRIC').kernel()
-    print(mol_eq.atom_coords())
+    print(mol_eq.tostring())
 
     # pyberny
     mol_eq = mf.Gradients().optimizer(solver='berny').kernel()
-    print(mol_eq.atom_coords())
+    print(mol_eq.tostring())
 
 For the ``geomeTRIC`` backend, the convergence criteria are 
 controlled by the following parameters::

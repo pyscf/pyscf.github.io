@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.solvent.pcm </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -335,7 +335,6 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">scipy</span>
-<span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">df</span>
@@ -450,8 +449,8 @@
     <span class="mi">5810</span><span class="p">:</span> <span class="mf">4.90792902522</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">Bondi</span> <span class="o">=</span> <span class="n">radii</span><span class="o">.</span><span class="n">VDW</span>
-<span class="n">Bondi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">/</span><span class="n">radii</span><span class="o">.</span><span class="n">BOHR</span>      <span class="c1"># modified version</span>
+<span class="n">modified_Bondi</span> <span class="o">=</span> <span class="n">radii</span><span class="o">.</span><span class="n">VDW</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">modified_Bondi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">/</span><span class="n">radii</span><span class="o">.</span><span class="n">BOHR</span>      <span class="c1"># modified version</span>
 <span class="n">PI</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span>
 
 <div class="viewcode-block" id="switch_h">
@@ -470,15 +469,13 @@
 
 <div class="viewcode-block" id="gen_surface">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.gen_surface">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_surface</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ng</span><span class="o">=</span><span class="mi">302</span><span class="p">,</span> <span class="n">vdw_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">gen_surface</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ng</span><span class="o">=</span><span class="mi">302</span><span class="p">,</span> <span class="n">rad</span><span class="o">=</span><span class="n">modified_Bondi</span><span class="p">,</span> <span class="n">vdw_scale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''J. Phys. Chem. A 1999, 103, 11060-11079'''</span>
-    <span class="n">unit_sphere</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">ng</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-    <span class="n">libdft</span><span class="o">.</span><span class="n">MakeAngularGrid</span><span class="p">(</span><span class="n">unit_sphere</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ng</span><span class="p">))</span>
-
+    <span class="n">unit_sphere</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">MakeAngularGrid</span><span class="p">(</span><span class="n">ng</span><span class="p">)</span>
     <span class="n">atom_coords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">)</span>
     <span class="n">charges</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
     <span class="n">N_J</span> <span class="o">=</span> <span class="n">ng</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">)</span>
-    <span class="n">R_J</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">vdw_scale</span><span class="o">*</span><span class="n">Bondi</span><span class="p">[</span><span class="n">chg</span><span class="p">]</span> <span class="k">for</span> <span class="n">chg</span> <span class="ow">in</span> <span class="n">charges</span><span class="p">])</span>
+    <span class="n">R_J</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">rad</span><span class="p">[</span><span class="n">chg</span><span class="p">]</span> <span class="k">for</span> <span class="n">chg</span> <span class="ow">in</span> <span class="n">charges</span><span class="p">])</span>
     <span class="n">R_sw_J</span> <span class="o">=</span> <span class="n">R_J</span> <span class="o">*</span> <span class="p">(</span><span class="mf">14.0</span> <span class="o">/</span> <span class="n">N_J</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
     <span class="n">alpha_J</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">2.0</span> <span class="o">+</span> <span class="n">R_J</span><span class="o">/</span><span class="n">R_sw_J</span> <span class="o">-</span> <span class="p">((</span><span class="n">R_J</span><span class="o">/</span><span class="n">R_sw_J</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="mi">28</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
     <span class="n">R_in_J</span> <span class="o">=</span> <span class="n">R_J</span> <span class="o">-</span> <span class="n">alpha_J</span> <span class="o">*</span> <span class="n">R_sw_J</span>
@@ -495,7 +492,7 @@
     <span class="k">for</span> <span class="n">ia</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">):</span>
         <span class="n">symb</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_symbol</span><span class="p">(</span><span class="n">ia</span><span class="p">)</span>
         <span class="n">chg</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="n">symb</span><span class="p">)</span>
-        <span class="n">r_vdw</span> <span class="o">=</span> <span class="n">vdw_scale</span><span class="o">*</span><span class="n">Bondi</span><span class="p">[</span><span class="n">chg</span><span class="p">]</span>
+        <span class="n">r_vdw</span> <span class="o">=</span> <span class="n">rad</span><span class="p">[</span><span class="n">chg</span><span class="p">]</span>
 
         <span class="n">atom_grid</span> <span class="o">=</span> <span class="n">r_vdw</span> <span class="o">*</span> <span class="n">unit_sphere</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">atom_coords</span><span class="p">[</span><span class="n">ia</span><span class="p">,:]</span>
         <span class="n">riJ</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">spatial</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">cdist</span><span class="p">(</span><span class="n">atom_grid</span><span class="p">[:,:</span><span class="mi">3</span><span class="p">],</span> <span class="n">atom_coords</span><span class="p">)</span>
@@ -593,14 +590,42 @@
 
 <div class="viewcode-block" id="PCM">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM">[docs]</a>
-<span class="k">class</span> <span class="nc">PCM</span><span class="p">(</span><span class="n">ddcosmo</span><span class="o">.</span><span class="n">DDCOSMO</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">PCM</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">StreamObject</span><span class="p">):</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'vdw_scale'</span><span class="p">,</span> <span class="s1">'surface'</span><span class="p">,</span> <span class="s1">'r_probe'</span><span class="p">,</span> <span class="s1">'intopt'</span><span class="p">,</span>
+        <span class="s1">'mol'</span><span class="p">,</span> <span class="s1">'radii_table'</span><span class="p">,</span> <span class="s1">'atom_radii'</span><span class="p">,</span> <span class="s1">'lebedev_order'</span><span class="p">,</span> <span class="s1">'lmax'</span><span class="p">,</span> <span class="s1">'eta'</span><span class="p">,</span>
+        <span class="s1">'eps'</span><span class="p">,</span> <span class="s1">'max_cycle'</span><span class="p">,</span> <span class="s1">'conv_tol'</span><span class="p">,</span> <span class="s1">'state_id'</span><span class="p">,</span> <span class="s1">'frozen'</span><span class="p">,</span>
+        <span class="s1">'equilibrium_solvation'</span><span class="p">,</span> <span class="s1">'e'</span><span class="p">,</span> <span class="s1">'v'</span><span class="p">,</span> <span class="s1">'v_grids_n'</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">ddcosmo</span><span class="o">.</span><span class="n">DDCOSMO</span><span class="o">.</span><span class="n">kernel</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">):</span>
-        <span class="n">ddcosmo</span><span class="o">.</span><span class="n">DDCOSMO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">max_memory</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s1">'C-PCM'</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">vdw_scale</span> <span class="o">=</span> <span class="mf">1.2</span> <span class="c1"># default value in qchem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_probe</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_radii</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lebedev_order</span> <span class="o">=</span> <span class="mi">29</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="mf">78.3553</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-7</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equilibrium_solvation</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dm</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PCM.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.dump_flags">[docs]</a>
@@ -611,42 +636,51 @@
                     <span class="s1">'in the future.'</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'lebedev_order = </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> grids per sphere)'</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">lebedev_order</span><span class="p">,</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">LEBEDEV_ORDER</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lebedev_order</span><span class="p">])</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'lmax = </span><span class="si">%s</span><span class="s1">'</span>         <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'eta = </span><span class="si">%s</span><span class="s1">'</span>          <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'eps = </span><span class="si">%s</span><span class="s1">'</span>          <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'frozen = </span><span class="si">%s</span><span class="s1">'</span>       <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'equilibrium_solvation = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">equilibrium_solvation</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'radii_table </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_radii</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'User specified atomic radii </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_radii</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="PCM.to_gpu">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.to_gpu">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">to_gpu</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="PCM.reset">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intopt</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
 <div class="viewcode-block" id="PCM.build">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.build">[docs]</a>
     <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">vdw_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vdw_scale</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span> <span class="o">=</span> <span class="n">vdw_scale</span> <span class="o">*</span> <span class="n">Bondi</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vdw_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vdw_scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span> <span class="o">=</span> <span class="n">vdw_scale</span> <span class="o">*</span> <span class="n">modified_Bondi</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_probe</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="k">if</span> <span class="n">ng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ng</span> <span class="o">=</span> <span class="n">gen_grid</span><span class="o">.</span><span class="n">LEBEDEV_ORDER</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lebedev_order</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="n">gen_surface</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ng</span><span class="o">=</span><span class="n">ng</span><span class="p">,</span> <span class="n">vdw_scale</span><span class="o">=</span><span class="n">vdw_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surface</span> <span class="o">=</span> <span class="n">gen_surface</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">rad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">radii_table</span><span class="p">,</span> <span class="n">ng</span><span class="o">=</span><span class="n">ng</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">F</span><span class="p">,</span> <span class="n">A</span> <span class="o">=</span> <span class="n">get_F_A</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">)</span>
         <span class="n">D</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="n">get_D_S</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span> <span class="n">with_S</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_D</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'C-PCM'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'C-PCM'</span><span class="p">,</span> <span class="s1">'CPCM'</span><span class="p">]:</span>
             <span class="n">f_epsilon</span> <span class="o">=</span> <span class="p">(</span><span class="n">epsilon</span><span class="o">-</span><span class="mf">1.</span><span class="p">)</span><span class="o">/</span><span class="n">epsilon</span>
             <span class="n">K</span> <span class="o">=</span> <span class="n">S</span>
             <span class="n">R</span> <span class="o">=</span> <span class="o">-</span><span class="n">f_epsilon</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -654,7 +688,7 @@
             <span class="n">f_epsilon</span> <span class="o">=</span> <span class="p">(</span><span class="n">epsilon</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">epsilon</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
             <span class="n">K</span> <span class="o">=</span> <span class="n">S</span>
             <span class="n">R</span> <span class="o">=</span> <span class="o">-</span><span class="n">f_epsilon</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'IEF-PCM'</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'IEF-PCM'</span><span class="p">,</span> <span class="s1">'IEFPCM'</span><span class="p">]:</span>
             <span class="n">f_epsilon</span> <span class="o">=</span> <span class="p">(</span><span class="n">epsilon</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">epsilon</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
             <span class="n">DA</span> <span class="o">=</span> <span class="n">D</span><span class="o">*</span><span class="n">A</span>
             <span class="n">DAS</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">DA</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
@@ -677,85 +711,141 @@
             <span class="s1">'R'</span><span class="p">:</span> <span class="n">R</span><span class="p">,</span>
             <span class="s1">'f_epsilon'</span><span class="p">:</span> <span class="n">f_epsilon</span>
         <span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">intermediates</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">intermediates</span><span class="p">)</span>
+
+        <span class="n">charge_exp</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'charge_exp'</span><span class="p">]</span>
+        <span class="n">grid_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'grid_coords'</span><span class="p">]</span>
+        <span class="n">atom_coords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">)</span>
+        <span class="n">atom_charges</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+
+        <span class="n">int2c2e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="s1">'int2c2e'</span><span class="p">)</span>
+        <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">grid_coords</span><span class="p">,</span> <span class="n">expnt</span><span class="o">=</span><span class="n">charge_exp</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">fakemol_nuc</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
+        <span class="n">v_ng</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="n">int2c2e</span><span class="p">,</span> <span class="n">fakemol_nuc</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_grids_n</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atom_charges</span><span class="p">,</span> <span class="n">v_ng</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_get_vind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dms</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">grids</span><span class="o">.</span><span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 
         <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">dms</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">dms</span> <span class="o">=</span> <span class="p">(</span><span class="n">dms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">dms</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
 
         <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'K'</span><span class="p">]</span>
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'R'</span><span class="p">]</span>
-        <span class="n">v_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_v</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span> <span class="n">dms</span><span class="p">)</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">v_grids</span><span class="p">)</span>
-        <span class="n">q</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">v_grids_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_v</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
+        <span class="n">v_grids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_grids_n</span> <span class="o">-</span> <span class="n">v_grids_e</span>
 
-        <span class="n">vK_1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">v_grids</span><span class="p">)</span>
-        <span class="n">q_sym</span> <span class="o">=</span> <span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">vK_1</span><span class="p">))</span><span class="o">/</span><span class="mf">2.0</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">v_grids</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">vK_1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">v_grids</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">qt</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">vK_1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">q_sym</span> <span class="o">=</span> <span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="n">qt</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
 
         <span class="n">vmat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vmat</span><span class="p">(</span><span class="n">q_sym</span><span class="p">)</span>
-        <span class="n">epcm</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q_sym</span><span class="p">,</span> <span class="n">v_grids</span><span class="p">)</span>
+        <span class="n">epcm</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q_sym</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'K'</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'R'</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'q'</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'q_sym'</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sym</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'v_grids'</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_grids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'q'</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'q_sym'</span><span class="p">]</span> <span class="o">=</span> <span class="n">q_sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'v_grids'</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'dm'</span><span class="p">]</span> <span class="o">=</span> <span class="n">dms</span>
+        <span class="k">return</span> <span class="n">epcm</span><span class="p">,</span> <span class="n">vmat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">epcm</span><span class="p">,</span> <span class="n">vmat</span>
-
-    <span class="k">def</span> <span class="nf">_get_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">,</span> <span class="n">dms</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dms</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">'''</span>
 <span class="sd">        return electrostatic potential on surface</span>
 <span class="sd">        '''</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">atom_coords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">'B'</span><span class="p">)</span>
-        <span class="n">atom_charges</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
-        <span class="n">grid_coords</span> <span class="o">=</span> <span class="n">surface</span><span class="p">[</span><span class="s1">'grid_coords'</span><span class="p">]</span>
-        <span class="n">exponents</span>   <span class="o">=</span> <span class="n">surface</span><span class="p">[</span><span class="s1">'charge_exp'</span><span class="p">]</span>
-
+        <span class="n">grid_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'grid_coords'</span><span class="p">]</span>
+        <span class="n">exponents</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'charge_exp'</span><span class="p">]</span>
+        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">nset</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">v_grids_e</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="n">nset</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">])</span>
         <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">.9e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
-        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">int3c2e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="s1">'int3c2e'</span><span class="p">)</span>
         <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">int3c2e</span><span class="p">)</span>
-        <span class="n">v_grids_e</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ngrids</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
             <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">grid_coords</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">expnt</span><span class="o">=</span><span class="n">exponents</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">v_nj</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="n">int3c2e</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
-            <span class="n">v_grids_e</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijL,ij-&gt;L'</span><span class="p">,</span><span class="n">v_nj</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
+                <span class="n">v_grids_e</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijL,ij-&gt;L'</span><span class="p">,</span><span class="n">v_nj</span><span class="p">,</span> <span class="n">dms</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
-        <span class="n">int2c2e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="s1">'int2c2e'</span><span class="p">)</span>
-
-        <span class="n">fakemol_nuc</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">atom_coords</span><span class="p">)</span>
-        <span class="n">v_ng</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">intor_cross</span><span class="p">(</span><span class="n">int2c2e</span><span class="p">,</span> <span class="n">fakemol_nuc</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">)</span>
-        <span class="n">v_grids_n</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">atom_charges</span><span class="p">,</span> <span class="n">v_ng</span><span class="p">)</span>
-
-        <span class="n">v_grids</span> <span class="o">=</span> <span class="n">v_grids_n</span> <span class="o">-</span> <span class="n">v_grids_e</span>
-        <span class="k">return</span> <span class="n">v_grids</span>
+        <span class="k">return</span> <span class="n">v_grids_e</span>
 
     <span class="k">def</span> <span class="nf">_get_vmat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao</span>
         <span class="n">grid_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'grid_coords'</span><span class="p">]</span>
         <span class="n">exponents</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">'charge_exp'</span><span class="p">]</span>
-
+        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ngrids</span><span class="p">])</span>
+        <span class="n">nset</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">vmat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nset</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">])</span>
         <span class="n">max_memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">blksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">max_memory</span><span class="o">*</span><span class="mf">.9e6</span><span class="o">/</span><span class="mi">8</span><span class="o">/</span><span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
-        <span class="n">ngrids</span> <span class="o">=</span> <span class="n">grid_coords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
         <span class="n">int3c2e</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_add_suffix</span><span class="p">(</span><span class="s1">'int3c2e'</span><span class="p">)</span>
         <span class="n">cintopt</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">moleintor</span><span class="o">.</span><span class="n">make_cintopt</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">_atm</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_bas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">_env</span><span class="p">,</span> <span class="n">int3c2e</span><span class="p">)</span>
-        <span class="n">vmat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span> <span class="n">blksize</span><span class="p">):</span>
-            <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">grid_coords</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">expnt</span><span class="o">=</span><span class="n">exponents</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">fakemol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">fakemol_for_charges</span><span class="p">(</span><span class="n">grid_coords</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">],</span> <span class="n">expnt</span><span class="o">=</span><span class="n">exponents</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">v_nj</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">incore</span><span class="o">.</span><span class="n">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">fakemol</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="n">int3c2e</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">,</span> <span class="n">cintopt</span><span class="o">=</span><span class="n">cintopt</span><span class="p">)</span>
-            <span class="n">vmat</span> <span class="o">+=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijL,L-&gt;ij'</span><span class="p">,</span> <span class="n">v_nj</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">vmat</span></div>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
+                <span class="n">vmat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ijL,L-&gt;ij'</span><span class="p">,</span> <span class="n">v_nj</span><span class="p">,</span> <span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">p0</span><span class="p">:</span><span class="n">p1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">vmat</span>
 
+<div class="viewcode-block" id="PCM.nuc_grad_method">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.nuc_grad_method">[docs]</a>
+    <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_method</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.grad</span> <span class="kn">import</span> <span class="n">pcm</span> <span class="k">as</span> <span class="n">pcm_grad</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Frozen solvent model is not supported'</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent</span> <span class="kn">import</span> <span class="n">_ddcosmo_tdscf_grad</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_method</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">tdscf</span><span class="o">.</span><span class="n">rhf</span><span class="o">.</span><span class="n">TDBase</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_ddcosmo_tdscf_grad</span><span class="o">.</span><span class="n">make_grad_object</span><span class="p">(</span><span class="n">grad_method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pcm_grad</span><span class="o">.</span><span class="n">make_grad_object</span><span class="p">(</span><span class="n">grad_method</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PCM.Hessian">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.pcm.PCM.Hessian">[docs]</a>
+    <span class="k">def</span> <span class="nf">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hess_method</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.hessian</span> <span class="kn">import</span> <span class="n">pcm</span> <span class="k">as</span> <span class="n">pcm_hess</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Frozen solvent model is not supported'</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hess_method</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">pcm_hess</span><span class="o">.</span><span class="n">make_hess_object</span><span class="p">(</span><span class="n">hess_method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'Only SCF gradient is supported'</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_B_dot_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dms</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">nao</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dms</span> <span class="o">=</span> <span class="n">dms</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nao</span><span class="p">,</span><span class="n">nao</span><span class="p">)</span>
+
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'K'</span><span class="p">]</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">'R'</span><span class="p">]</span>
+        <span class="n">v_grids</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_v</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
+
+        <span class="n">b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">v_grids</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">vK_1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">v_grids</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">qt</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">vK_1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">q_sym</span> <span class="o">=</span> <span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="n">qt</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+
+        <span class="n">vmat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vmat</span><span class="p">(</span><span class="n">q_sym</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vmat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span></div>
 
 </pre></div>
 

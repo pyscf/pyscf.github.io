@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.pbc.df.rsdf </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -359,6 +359,7 @@
 
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span><span class="p">,</span> <span class="n">zdotCN</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">parameters</span> <span class="k">as</span> <span class="n">param</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.df</span> <span class="kn">import</span> <span class="n">GDF</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span><span class="p">,</span> <span class="n">aft_jk</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
@@ -748,9 +749,11 @@
     <span class="k">def</span> <span class="nf">outcore_auxe2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">'int3c2e'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">kptij_lst</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">j_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dataname</span><span class="o">=</span><span class="s1">'j3c-junk'</span><span class="p">,</span>
                       <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">swapfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">))</span>
-        <span class="n">fswap</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5TmpFile</span><span class="p">(</span><span class="n">swapfile</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">swapfile</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Deadlock on NFS if you open an already-opened tmpfile in H5PY</span>
+        <span class="c1"># swapfile = tempfile.NamedTemporaryFile(dir=os.path.dirname(cderi_file))</span>
+        <span class="n">fswap</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5TmpFile</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">),</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">'.outcore_auxe2_swap'</span><span class="p">)</span>
+        <span class="c1"># avoid trash files</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">fswap</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
 
         <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_bvk</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts_band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -900,7 +903,7 @@
         <span class="c1"># Add (1) short-range G=0 (i.e., charge) part and (2) long-range part</span>
         <span class="n">tspans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>    <span class="c1"># lr, j2c_inv, j2c_cntr</span>
         <span class="n">tspannames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ftaop+pw"</span><span class="p">,</span> <span class="s2">"j2c_inv"</span><span class="p">,</span> <span class="s2">"j2c_cntr"</span><span class="p">]</span>
-        <span class="n">feri</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
+        <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span>
 
         <span class="c1"># TODO: Store rs_density_fit cderi tensor in v1 format for the moment.</span>
         <span class="c1"># It should be changed to 'v2' format in the future.</span>

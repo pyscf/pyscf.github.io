@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.df.hessian.rhf </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -356,6 +356,13 @@
 <span class="kn">from</span> <span class="nn">pyscf.df.grad.rhf</span> <span class="kn">import</span> <span class="p">(</span><span class="n">_int3c_wrapper</span><span class="p">,</span> <span class="n">_gen_metric_solver</span><span class="p">,</span>
                                <span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">)</span>
 
+<span class="k">def</span> <span class="nf">_pinv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''Similar to pinv (v1.7.0) with atol=lindep and rtol=0'''</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="n">lindep</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v1</span><span class="o">/</span><span class="n">w</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">v1</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
 <div class="viewcode-block" id="partial_hess_elec">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.hessian.html#pyscf.df.hessian.rhf.partial_hess_elec">[docs]</a>
 <span class="k">def</span> <span class="nf">partial_hess_elec</span><span class="p">(</span><span class="n">hessobj</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -490,7 +497,7 @@
         <span class="n">get_int3c_ipip2</span> <span class="o">=</span> <span class="n">_int3c_wrapper</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxmol</span><span class="p">,</span> <span class="s1">'int3c2e_ipip2'</span><span class="p">,</span> <span class="s1">'s1'</span><span class="p">)</span>
         <span class="n">rhok0_P__</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'plj,li-&gt;pij'</span><span class="p">,</span> <span class="n">rhok0_Pl_</span><span class="p">,</span> <span class="n">mocc_2</span><span class="p">)</span>
         <span class="n">rho2c_0</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'pij,qji-&gt;pq'</span><span class="p">,</span> <span class="n">rhok0_P__</span><span class="p">,</span> <span class="n">rhok0_P__</span><span class="p">)</span>
-        <span class="n">int2c_inv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">int2c</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">)</span>
+        <span class="n">int2c_inv</span> <span class="o">=</span> <span class="n">_pinv</span><span class="p">(</span><span class="n">int2c</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">)</span>
         <span class="n">int2c_ipip1</span> <span class="o">=</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2c2e_ipip1'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">)</span>
         <span class="n">int2c_ip_ip</span>  <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'xpq,qr,ysr-&gt;xyps'</span><span class="p">,</span> <span class="n">int2c_ip1</span><span class="p">,</span> <span class="n">int2c_inv</span><span class="p">,</span> <span class="n">int2c_ip1</span><span class="p">)</span>
         <span class="n">int2c_ip_ip</span> <span class="o">-=</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">'int2c2e_ip1ip2'</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s1'</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">naux</span><span class="p">,</span><span class="n">naux</span><span class="p">)</span>
@@ -796,18 +803,11 @@
 <span class="k">class</span> <span class="nc">Hessian</span><span class="p">(</span><span class="n">rhf_hess</span><span class="o">.</span><span class="n">Hessian</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">'''Non-relativistic restricted Hartree-Fock hessian'''</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis_response</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">rhf_hess</span><span class="o">.</span><span class="n">Hessian</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">)</span>
 
+    <span class="n">auxbasis_response</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">partial_hess_elec</span> <span class="o">=</span> <span class="n">partial_hess_elec</span>
-    <span class="n">make_h1</span> <span class="o">=</span> <span class="n">make_h1</span>
-
-<div class="viewcode-block" id="Hessian.to_gpu">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.hessian.html#pyscf.df.hessian.rhf.Hessian.to_gpu">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">gpu4pyscf.df.hessian.rhf</span> <span class="kn">import</span> <span class="n">Hessian</span>
-        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">Hessian</span><span class="p">))</span></div>
-</div>
+    <span class="n">make_h1</span> <span class="o">=</span> <span class="n">make_h1</span></div>
 
 
 <span class="c1">#TODO: Insert into DF class</span>

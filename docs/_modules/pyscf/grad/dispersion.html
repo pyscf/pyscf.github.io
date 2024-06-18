@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.grad.dispersion </span>
         </div>
       </div>
@@ -199,7 +199,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -332,39 +332,46 @@
 <span class="sd">gradient of dispersion correction for HF and DFT</span>
 <span class="sd">'''</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">pyscf.scf.hf</span> <span class="kn">import</span> <span class="n">KohnShamDFT</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pyscf.scf.dispersion</span> <span class="kn">import</span> <span class="n">check_disp</span><span class="p">,</span> <span class="n">parse_disp</span>
 
 <div class="viewcode-block" id="get_dispersion">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.grad.html#pyscf.grad.dispersion.get_dispersion">[docs]</a>
-<span class="k">def</span> <span class="nf">get_dispersion</span><span class="p">(</span><span class="n">mf_grad</span><span class="p">,</span> <span class="n">disp_version</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">'''gradient of dispersion correction for RHF/RKS'''</span>
-    <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">disp_version</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">disp</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">mol</span>
-    <span class="n">disp_version</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">disp</span>
-    <span class="k">if</span> <span class="n">disp_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_dispersion</span><span class="p">(</span><span class="n">mf_grad</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_3body</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">'''gradient of DFTD3/DFTD4 dispersion correction'''</span>
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
+    <span class="n">disp_version</span> <span class="o">=</span> <span class="n">check_disp</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">disp_version</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">KohnShamDFT</span><span class="p">):</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="n">mf_grad</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">xc</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="s1">'hf'</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dispersion</span> <span class="kn">import</span> <span class="n">dftd3</span><span class="p">,</span> <span class="n">dftd4</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'dftd3 and dftd4 not available. Install them with `pip install pyscf-dispersion`'</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+    <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">'xc'</span><span class="p">,</span> <span class="s1">'hf'</span><span class="p">)</span>
+    <span class="n">method</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">disp_with_3body</span> <span class="o">=</span> <span class="n">parse_disp</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_3body</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">with_3body</span> <span class="o">=</span> <span class="n">disp_with_3body</span>
 
     <span class="k">if</span> <span class="n">disp_version</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'D3'</span><span class="p">:</span>
-        <span class="c1"># raised error in SCF module, assuming dftd3 installed</span>
-        <span class="kn">import</span> <span class="nn">dftd3.pyscf</span> <span class="k">as</span> <span class="nn">disp</span>
-        <span class="n">d3</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">DFTD3Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">disp_version</span><span class="p">)</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">g_d3</span> <span class="o">=</span> <span class="n">d3</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s2">"Calc dispersion correction with DFTD3."</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Parameters: xc=</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, version=</span><span class="si">{</span><span class="n">disp_version</span><span class="si">}</span><span class="s2">, atm=</span><span class="si">{</span><span class="n">with_3body</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">d3_model</span> <span class="o">=</span> <span class="n">dftd3</span><span class="o">.</span><span class="n">DFTD3Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">disp_version</span><span class="p">,</span> <span class="n">atm</span><span class="o">=</span><span class="n">with_3body</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">d3_model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">(</span><span class="n">grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">g_d3</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'gradient'</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">g_d3</span>
     <span class="k">elif</span> <span class="n">disp_version</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">'D4'</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">charge</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">charge</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">])</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
-        <span class="kn">from</span> <span class="nn">dftd4.interface</span> <span class="kn">import</span> <span class="n">DampingParam</span><span class="p">,</span> <span class="n">DispersionModel</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">DispersionModel</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">(</span><span class="n">DampingParam</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">),</span> <span class="n">grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"gradient"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s2">"Calc dispersion correction with DFTD4."</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Parameters: xc=</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, atm=</span><span class="si">{</span><span class="n">with_3body</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">d4_model</span> <span class="o">=</span> <span class="n">dftd4</span><span class="o">.</span><span class="n">DFTD4Dispersion</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">atm</span><span class="o">=</span><span class="n">with_3body</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">d4_model</span><span class="o">.</span><span class="n">get_dispersion</span><span class="p">(</span><span class="n">grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">g_d4</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'gradient'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g_d4</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">'dispersion correction: </span><span class="si">{</span><span class="n">disp_version</span><span class="si">}</span><span class="s1"> is not supported.'</span><span class="p">)</span></div>
 

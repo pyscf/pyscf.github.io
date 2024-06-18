@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.gw.urpa </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -345,104 +345,10 @@
 <span class="kn">from</span> <span class="nn">pyscf.ao2mo</span> <span class="kn">import</span> <span class="n">_ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span><span class="p">,</span> <span class="n">scf</span>
 <span class="kn">from</span> <span class="nn">pyscf.mp.ump2</span> <span class="kn">import</span> <span class="n">get_nocc</span><span class="p">,</span> <span class="n">get_nmo</span><span class="p">,</span> <span class="n">get_frozen_mask</span>
-<span class="kn">from</span> <span class="nn">pyscf.gw.rpa</span> <span class="kn">import</span> <span class="n">RPA</span><span class="p">,</span> <span class="n">_get_scaled_legendre_roots</span>
+
+<span class="kn">import</span> <span class="nn">pyscf.gw.rpa</span>
 
 <span class="n">einsum</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span>
-
-<span class="c1"># ****************************************************************************</span>
-<span class="c1"># core routines, kernel, rpa_ecorr, rho_response</span>
-<span class="c1"># ****************************************************************************</span>
-
-<div class="viewcode-block" id="kernel">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.kernel">[docs]</a>
-<span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">Lpq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">NOTE</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    RPA correlation and total energy</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        Lpq : density fitting 3-center integral in MO basis.</span>
-<span class="sd">        nw : number of frequency point on imaginary axis.</span>
-<span class="sd">        x0: scaling factor for frequency grid.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        e_tot : RPA total energy</span>
-<span class="sd">        e_hf : EXX energy</span>
-<span class="sd">        e_corr : RPA correlation energy</span>
-<span class="sd">    """</span>
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">rpa</span><span class="o">.</span><span class="n">_scf</span>
-    <span class="c1"># only support frozen core</span>
-    <span class="k">if</span> <span class="n">rpa</span><span class="o">.</span><span class="n">frozen</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">frozen</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">frozen</span> <span class="o">&lt;</span> <span class="n">rpa</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">rpa</span><span class="o">.</span><span class="n">frozen</span> <span class="o">&lt;</span> <span class="n">rpa</span><span class="o">.</span><span class="n">nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-    <span class="k">if</span> <span class="n">Lpq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Lpq</span> <span class="o">=</span> <span class="n">rpa</span><span class="o">.</span><span class="n">ao2mo</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">)</span>
-
-    <span class="c1"># Grids for integration on imaginary axis</span>
-    <span class="n">freqs</span><span class="p">,</span> <span class="n">wts</span> <span class="o">=</span> <span class="n">_get_scaled_legendre_roots</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
-
-    <span class="c1"># Compute HF exchange energy (EXX)</span>
-    <span class="n">dm</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
-    <span class="n">uhf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
-    <span class="n">e_hf</span> <span class="o">=</span> <span class="n">uhf</span><span class="o">.</span><span class="n">energy_elec</span><span class="p">(</span><span class="n">dm</span><span class="o">=</span><span class="n">dm</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">e_hf</span> <span class="o">+=</span> <span class="n">mf</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span>
-
-    <span class="c1"># Compute RPA correlation energy</span>
-    <span class="n">e_corr</span> <span class="o">=</span> <span class="n">get_rpa_ecorr</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="n">Lpq</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">wts</span><span class="p">)</span>
-
-    <span class="c1"># Compute total energy</span>
-    <span class="n">e_tot</span> <span class="o">=</span> <span class="n">e_hf</span> <span class="o">+</span> <span class="n">e_corr</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="s1">'  RPA total energy = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">e_tot</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="s1">'  EXX energy = </span><span class="si">%s</span><span class="s1">, RPA corr energy = </span><span class="si">%s</span><span class="s1">'</span><span class="p">,</span> <span class="n">e_hf</span><span class="p">,</span> <span class="n">e_corr</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">e_tot</span><span class="p">,</span> <span class="n">e_hf</span><span class="p">,</span> <span class="n">e_corr</span></div>
-
-
-<div class="viewcode-block" id="get_rpa_ecorr">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.get_rpa_ecorr">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rpa_ecorr</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="n">Lpq</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">wts</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Compute RPA correlation energy</span>
-<span class="sd">    """</span>
-    <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">_mo_energy_without_core</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">)</span>
-    <span class="n">nocca</span><span class="p">,</span> <span class="n">noccb</span> <span class="o">=</span> <span class="n">rpa</span><span class="o">.</span><span class="n">nocc</span>
-    <span class="n">nw</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">freqs</span><span class="p">)</span>
-    <span class="n">naux</span> <span class="o">=</span> <span class="n">Lpq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">homo</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">nocca</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">noccb</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">lumo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">nocca</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">noccb</span><span class="p">])</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">lumo</span><span class="o">-</span><span class="n">homo</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="s1">'Current RPA code not well-defined for degeneracy!'</span><span class="p">)</span>
-
-    <span class="n">e_corr</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nw</span><span class="p">):</span>
-        <span class="n">Pi</span> <span class="o">=</span> <span class="n">get_rho_response</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="n">w</span><span class="p">],</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">Lpq</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:</span><span class="n">nocca</span><span class="p">,</span><span class="n">nocca</span><span class="p">:],</span> <span class="n">Lpq</span><span class="p">[</span><span class="mi">1</span><span class="p">,:,:</span><span class="n">noccb</span><span class="p">,</span><span class="n">noccb</span><span class="p">:])</span>
-        <span class="n">ec_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">naux</span><span class="p">)</span> <span class="o">-</span> <span class="n">Pi</span><span class="p">))</span>
-        <span class="n">ec_w</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span>
-        <span class="n">e_corr</span> <span class="o">+=</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">ec_w</span> <span class="o">*</span> <span class="n">wts</span><span class="p">[</span><span class="n">w</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">e_corr</span></div>
-
-
-<div class="viewcode-block" id="get_rho_response">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.get_rho_response">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rho_response</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">Lpqa</span><span class="p">,</span> <span class="n">Lpqb</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">'''</span>
-<span class="sd">    Compute density response function in auxiliary basis at freq iw</span>
-<span class="sd">    '''</span>
-    <span class="n">naux</span><span class="p">,</span> <span class="n">nocca</span><span class="p">,</span> <span class="n">nvira</span> <span class="o">=</span> <span class="n">Lpqa</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">naux</span><span class="p">,</span> <span class="n">noccb</span><span class="p">,</span> <span class="n">nvirb</span> <span class="o">=</span> <span class="n">Lpqb</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">eia_a</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">,:</span><span class="n">nocca</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">nocca</span><span class="p">:]</span>
-    <span class="n">eia_b</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">,:</span><span class="n">noccb</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">noccb</span><span class="p">:]</span>
-    <span class="n">eia_a</span> <span class="o">=</span> <span class="n">eia_a</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">eia_a</span><span class="o">*</span><span class="n">eia_a</span><span class="p">)</span>
-    <span class="n">eia_b</span> <span class="o">=</span> <span class="n">eia_b</span> <span class="o">/</span> <span class="p">(</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">eia_b</span><span class="o">*</span><span class="n">eia_b</span><span class="p">)</span>
-    <span class="n">Pia_a</span> <span class="o">=</span> <span class="n">Lpqa</span> <span class="o">*</span> <span class="p">(</span><span class="n">eia_a</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span>
-    <span class="n">Pia_b</span> <span class="o">=</span> <span class="n">Lpqb</span> <span class="o">*</span> <span class="p">(</span><span class="n">eia_b</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span>
-    <span class="c1"># Response from both spin-up and spin-down density</span>
-    <span class="n">Pi</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'Pia, Qia -&gt; PQ'</span><span class="p">,</span> <span class="n">Pia_a</span><span class="p">,</span> <span class="n">Lpqa</span><span class="p">)</span> <span class="o">+</span> <span class="n">einsum</span><span class="p">(</span><span class="s1">'Pia, Qia -&gt; PQ'</span><span class="p">,</span> <span class="n">Pia_b</span><span class="p">,</span> <span class="n">Lpqb</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Pi</span></div>
-
 
 <span class="k">def</span> <span class="nf">_mo_energy_without_core</span><span class="p">(</span><span class="n">rpa</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">):</span>
     <span class="n">moidx</span> <span class="o">=</span> <span class="n">get_frozen_mask</span><span class="p">(</span><span class="n">rpa</span><span class="p">)</span>
@@ -456,8 +362,7 @@
 
 <div class="viewcode-block" id="URPA">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA">[docs]</a>
-<span class="k">class</span> <span class="nc">URPA</span><span class="p">(</span><span class="n">RPA</span><span class="p">):</span>
-
+<span class="k">class</span> <span class="nc">URPA</span><span class="p">(</span><span class="n">pyscf</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">rpa</span><span class="o">.</span><span class="n">RPA</span><span class="p">):</span>
 <div class="viewcode-block" id="URPA.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA.dump_flags">[docs]</a>
     <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -480,64 +385,154 @@
     <span class="n">get_nmo</span> <span class="o">=</span> <span class="n">get_nmo</span>
     <span class="n">get_frozen_mask</span> <span class="o">=</span> <span class="n">get_frozen_mask</span>
 
-<div class="viewcode-block" id="URPA.kernel">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA.kernel">[docs]</a>
-    <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lpq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<div class="viewcode-block" id="URPA.make_e_ov">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA.make_e_ov">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_e_ov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Compute orbital energy differences</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">mo_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">_mo_energy_without_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">)</span>
+
+        <span class="n">nocc_a</span><span class="p">,</span> <span class="n">nocc_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nocc</span>
+        <span class="n">e_ov_a</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="n">nocc_a</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="n">nocc_a</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">e_ov_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="n">nocc_b</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="kc">None</span><span class="p">,</span> <span class="n">nocc_b</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="n">gap</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">e_ov_a</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="o">-</span><span class="n">e_ov_b</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lowest orbital energy difference: (</span><span class="si">% 6.4e</span><span class="s1">, </span><span class="si">% 6.4e</span><span class="s1">)'</span><span class="p">,</span> <span class="n">gap</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gap</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'RPA code not well-defined for degenerate systems!'</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Lowest orbital energy difference: </span><span class="si">% 6.4e</span><span class="s1">'</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gap</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">e_ov_a</span><span class="p">,</span> <span class="n">e_ov_b</span></div>
+
+
+<div class="viewcode-block" id="URPA.make_dielectric_matrix">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA.make_dielectric_matrix">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_dielectric_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">e_ov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cderi_ov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Args:</span>
-<span class="sd">            mo_energy : 2D array (2, nmo), mean-field mo energy</span>
-<span class="sd">            mo_coeff : 3D array (2, nmo, nmo), mean-field mo coefficient</span>
-<span class="sd">            Lpq : 4D array (2, naux, nmo, nmo), 3-index ERI</span>
-<span class="sd">            nw: integer, grid number</span>
-<span class="sd">            x0: real, scaling factor for frequency grid</span>
+<span class="sd">            omega : float, frequency</span>
+<span class="sd">            mo_energy : (2, nmo), mean-field mo energy</span>
+<span class="sd">            mo_coeff :  (2, nao, nmo), mean-field mo coefficient</span>
+<span class="sd">            cderi_ov :  (2, naux, nocc, nvir), Cholesky decomposed ERI in OV subspace.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            self.e_tot : RPA total eenrgy</span>
-<span class="sd">            self.e_hf : EXX energy</span>
-<span class="sd">            self.e_corr : RPA correlation energy</span>
+<span class="sd">            diel : 2D array (naux, naux), dielectric matrix</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">_mo_without_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">mo_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">_mo_energy_without_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">cderi_ov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">e_ov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
-        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">=</span> \
-                        <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">Lpq</span><span class="o">=</span><span class="n">Lpq</span><span class="p">,</span> <span class="n">nw</span><span class="o">=</span><span class="n">nw</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_naoaux</span><span class="p">()</span>
+        <span class="n">blksize</span> <span class="o">=</span> <span class="n">blksize</span> <span class="ow">or</span> <span class="nb">max</span><span class="p">(</span><span class="n">e_ov</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">e_ov</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'RPA'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span></div>
+        <span class="n">diel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">naux</span><span class="p">,</span> <span class="n">naux</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e_ov_s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">e_ov</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">e_ov</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+            <span class="n">cderi_ov_s</span> <span class="o">=</span> <span class="n">cderi_ov</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cderi_ov</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">cderi_ov</span><span class="p">[</span><span class="s2">"cderi_ov_</span><span class="si">%d</span><span class="s2">"</span> <span class="o">%</span> <span class="n">s</span><span class="p">]</span>
+            <span class="n">diel</span> <span class="o">+=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">gw</span><span class="o">.</span><span class="n">rpa</span><span class="o">.</span><span class="n">make_dielectric_matrix</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">e_ov_s</span><span class="p">,</span> <span class="n">cderi_ov_s</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="n">blksize</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">diel</span></div>
 
 
 <div class="viewcode-block" id="URPA.ao2mo">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gw.html#pyscf.gw.urpa.URPA.ao2mo">[docs]</a>
-    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">nmoa</span><span class="p">,</span> <span class="n">nmob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nmo</span>
-        <span class="n">nao</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_naoaux</span><span class="p">()</span>
-        <span class="n">mem_incore</span> <span class="o">=</span> <span class="p">(</span><span class="n">nmoa</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">naux</span> <span class="o">+</span> <span class="n">nmob</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">naux</span> <span class="o">+</span> <span class="n">nao</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">naux</span><span class="p">)</span> <span class="o">*</span> <span class="mi">8</span><span class="o">/</span><span class="mf">1e6</span>
-        <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">ao2mo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blksize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">_mo_without_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
 
-        <span class="n">moa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
-        <span class="n">mob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">'F'</span><span class="p">)</span>
-        <span class="n">ijslicea</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmoa</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nmoa</span><span class="p">)</span>
-        <span class="n">ijsliceb</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmob</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nmob</span><span class="p">)</span>
-        <span class="n">Lpqa</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">Lpqb</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">mem_incore</span> <span class="o">+</span> <span class="n">mem_now</span> <span class="o">&lt;</span> <span class="mf">0.99</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">incore_anyway</span><span class="p">:</span>
-            <span class="n">Lpqa</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">moa</span><span class="p">,</span> <span class="n">ijslicea</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">Lpqa</span><span class="p">)</span>
-            <span class="n">Lpqb</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">mob</span><span class="p">,</span> <span class="n">ijsliceb</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">Lpqb</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">Lpqa</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">naux</span><span class="p">,</span><span class="n">nmoa</span><span class="p">,</span><span class="n">nmoa</span><span class="p">),</span><span class="n">Lpqb</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">naux</span><span class="p">,</span><span class="n">nmob</span><span class="p">,</span><span class="n">nmob</span><span class="p">)))</span>
+        <span class="n">mo_coeff_a</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mo_coeff_b</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">nocc_a</span><span class="p">,</span> <span class="n">nocc_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nocc</span>
+        <span class="n">norb_a</span><span class="p">,</span> <span class="n">norb_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nmo</span>
+        <span class="n">nvir_a</span><span class="p">,</span> <span class="n">nvir_b</span> <span class="o">=</span> <span class="n">norb_a</span> <span class="o">-</span> <span class="n">nocc_a</span><span class="p">,</span> <span class="n">norb_b</span> <span class="o">-</span> <span class="n">nocc_b</span>
+
+        <span class="n">naux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">get_naoaux</span><span class="p">()</span>
+        <span class="n">sov_a</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nocc_a</span><span class="p">,</span> <span class="n">nocc_a</span><span class="p">,</span> <span class="n">norb_a</span><span class="p">)</span>
+        <span class="n">sov_b</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nocc_b</span><span class="p">,</span> <span class="n">nocc_b</span><span class="p">,</span> <span class="n">norb_b</span><span class="p">)</span>
+
+        <span class="n">blksize</span>  <span class="o">=</span> <span class="n">naux</span> <span class="k">if</span> <span class="n">blksize</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">blksize</span>
+        <span class="n">cderi_ov</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cderi_ov_a</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cderi_ov_b</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">cput0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">blksize</span> <span class="o">&gt;=</span> <span class="n">naux</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">incore_anyway</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="n">cderi_ov_a</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">mo_coeff_a</span><span class="p">,</span>
+                <span class="n">sov_a</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">cderi_ov_a</span>
+                                    <span class="p">)</span>
+
+            <span class="n">cderi_ov_b</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">_cderi</span><span class="p">,</span> <span class="n">mo_coeff_b</span><span class="p">,</span>
+                <span class="n">sov_b</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">cderi_ov_b</span>
+                                    <span class="p">)</span>
+            <span class="n">cderi_ov</span> <span class="o">=</span> <span class="p">(</span><span class="n">cderi_ov_a</span><span class="p">,</span> <span class="n">cderi_ov_b</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'incore ao2mo'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'Memory may not be enough!'</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+            <span class="n">fswap</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5TmpFile</span><span class="p">()</span>
+            <span class="n">fswap</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">'cderi_ov_0'</span><span class="p">,</span> <span class="p">(</span><span class="n">naux</span><span class="p">,</span> <span class="n">nocc_a</span> <span class="o">*</span> <span class="n">nvir_a</span><span class="p">),</span> <span class="s1">'f8'</span><span class="p">)</span>
+            <span class="n">fswap</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">'cderi_ov_1'</span><span class="p">,</span> <span class="p">(</span><span class="n">naux</span><span class="p">,</span> <span class="n">nocc_b</span> <span class="o">*</span> <span class="n">nvir_b</span><span class="p">),</span> <span class="s1">'f8'</span><span class="p">)</span>
+
+            <span class="n">q0</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">cderi</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">blksize</span><span class="o">=</span><span class="n">blksize</span><span class="p">):</span>
+                <span class="n">q1</span> <span class="o">=</span> <span class="n">q0</span> <span class="o">+</span> <span class="n">cderi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">v_ov_a</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span>
+                    <span class="n">cderi</span><span class="p">,</span> <span class="n">mo_coeff_a</span><span class="p">,</span>
+                    <span class="n">sov_a</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span>
+                                    <span class="p">)</span>
+                <span class="n">fswap</span><span class="p">[</span><span class="s1">'cderi_ov_0'</span><span class="p">][</span><span class="n">q0</span><span class="p">:</span><span class="n">q1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_ov_a</span>
+                <span class="n">v_ov_a</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="n">v_ov_b</span> <span class="o">=</span> <span class="n">_ao2mo</span><span class="o">.</span><span class="n">nr_e2</span><span class="p">(</span>
+                    <span class="n">cderi</span><span class="p">,</span> <span class="n">mo_coeff_b</span><span class="p">,</span>
+                    <span class="n">sov_b</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">'s2'</span>
+                                    <span class="p">)</span>
+                <span class="n">fswap</span><span class="p">[</span><span class="s1">'cderi_ov_1'</span><span class="p">][</span><span class="n">q0</span><span class="p">:</span><span class="n">q1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_ov_b</span>
+                <span class="n">v_ov_b</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="n">q0</span> <span class="o">=</span> <span class="n">q1</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'outcore ao2mo'</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
+
+            <span class="n">cderi_ov</span> <span class="o">=</span> <span class="n">fswap</span>
+
+        <span class="k">return</span> <span class="n">cderi_ov</span></div>
 </div>
 
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">dft</span>
+    <span class="c1"># Closed-shell unrestricted RPA</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span><span class="mi">8</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.</span>     <span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span>
+        <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="o">-</span><span class="mf">0.7571</span> <span class="p">,</span> <span class="mf">0.5861</span><span class="p">)],</span>
+        <span class="p">[</span><span class="mi">1</span> <span class="p">,</span> <span class="p">(</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.7571</span> <span class="p">,</span> <span class="mf">0.5861</span><span class="p">)]]</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">'def2svp'</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">UKS</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+    <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">'pbe'</span>
+    <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+    <span class="c1"># Shall be identical to the restricted RPA result</span>
+    <span class="n">rpa</span> <span class="o">=</span> <span class="n">URPA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="n">rpa</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">rpa</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">rpa</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="s1">'RPA e_tot, e_hf, e_corr = '</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_hf</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.307830040357800</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_tot</span>  <span class="o">-</span> <span class="o">-</span><span class="mf">76.26651423730257</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+    <span class="c1"># Open-shell RPA</span>
     <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">'F 0 0 0'</span>
@@ -547,13 +542,20 @@
 
     <span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">UKS</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="s1">'pbe0'</span>
+    <span class="n">mf</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
 
     <span class="n">rpa</span> <span class="o">=</span> <span class="n">URPA</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="n">rpa</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">rpa</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">rpa</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
     <span class="nb">print</span> <span class="p">(</span><span class="s1">'RPA e_tot, e_hf, e_corr = '</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_hf</span><span class="p">,</span> <span class="n">rpa</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_corr</span><span class="o">-</span> <span class="o">-</span><span class="mf">0.20980646878974454</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_tot</span><span class="o">-</span> <span class="o">-</span><span class="mf">99.49292565821425</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_corr</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.20980646878974454</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rpa</span><span class="o">.</span><span class="n">e_tot</span>  <span class="o">-</span> <span class="o">-</span><span class="mf">99.49455969299747</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+
+
+
 </pre></div>
 
           </article>

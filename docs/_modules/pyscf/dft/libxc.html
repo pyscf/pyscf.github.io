@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.dft.libxc </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -1264,6 +1264,7 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_nlc">[docs]</a>
 <span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">is_nlc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+    <span class="c1"># identify nlc by xc_code itself if enable_nlc is None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">xc_code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)))</span>
@@ -1453,6 +1454,7 @@
 <span class="sd">        decoded XC description, with the data structure</span>
 <span class="sd">        (hybrid, alpha, omega), ((libxc-Id, fac), (libxc-Id, fac), ...)</span>
 <span class="sd">    '''</span>  <span class="c1"># noqa: E501</span>
+
     <span class="n">hyb</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># hybrid, alpha, omega (== SR_HF, LR_HF, omega)</span>
     <span class="k">if</span> <span class="n">description</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">hyb</span><span class="p">),</span> <span class="p">()</span>
@@ -1461,7 +1463,13 @@
     <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span> <span class="c1">#isinstance(description, (tuple,list)):</span>
         <span class="k">return</span> <span class="n">parse_xc</span><span class="p">(</span><span class="s1">'</span><span class="si">%s</span><span class="s1">,</span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">description</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'B3P86'</span><span class="p">,</span> <span class="s1">'B3LYP'</span><span class="p">,</span> <span class="s1">'X3LYP'</span><span class="p">)</span> <span class="ow">and</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s1">'-D3'</span> <span class="ow">in</span> <span class="n">description</span> <span class="ow">or</span> <span class="s1">'-D4'</span> <span class="ow">in</span> <span class="n">description</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.scf.dispersion</span> <span class="kn">import</span> <span class="n">parse_dft</span>
+        <span class="n">description</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parse_dft</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">description</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'B3P86'</span><span class="p">,</span> <span class="s1">'B3LYP'</span><span class="p">,</span> <span class="s1">'X3LYP'</span><span class="p">)</span> <span class="ow">and</span>
         <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parse_xc</span><span class="p">,</span> <span class="s1">'b3lyp5_warned'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span>
         <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">'B3LYP_WITH_VWN5'</span><span class="p">)):</span>
         <span class="n">parse_xc</span><span class="o">.</span><span class="n">b3lyp5_warned</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1548,8 +1556,8 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Some libxc functionals may not be listed in the</span>
                         <span class="c1"># XC_CODES table. Query libxc directly</span>
-                        <span class="n">func_id</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_number</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">()))</span>
-                        <span class="k">if</span> <span class="n">func_id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">x_id</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_number</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">()))</span>
+                        <span class="k">if</span> <span class="n">x_id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LibXCFunctional: name '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' not found."</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="n">hyb1</span><span class="p">,</span> <span class="n">fn_facs1</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">x_id</span><span class="p">)</span>
@@ -1597,6 +1605,8 @@
             <span class="n">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="s1">'C'</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">description</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'-'</span><span class="p">,</span> <span class="s1">'+-'</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">';+'</span><span class="p">,</span> <span class="s1">';'</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'+'</span><span class="p">):</span>
+            <span class="c1"># dftd3 cannot be used in a custom xc description</span>
+            <span class="k">assert</span> <span class="s1">'-d3'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">token</span>
             <span class="n">parse_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="s1">'compound XC'</span><span class="p">,</span> <span class="n">search_xc_alias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># No omega is assigned. LR_HF is 0 for normal Coulomb operator</span>
         <span class="n">hyb</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1618,6 +1628,7 @@
                    <span class="s1">'WB97X-D'</span>  <span class="p">:</span> <span class="s1">'WB97X_D'</span><span class="p">,</span>
                    <span class="s1">'WB97X-V'</span>  <span class="p">:</span> <span class="s1">'WB97X_V'</span><span class="p">,</span>
                    <span class="s1">'WB97M-V'</span>  <span class="p">:</span> <span class="s1">'WB97M_V'</span><span class="p">,</span>
+                   <span class="s1">'WB97X-D3'</span> <span class="p">:</span> <span class="s1">'WB97X_D3'</span><span class="p">,</span>
                    <span class="s1">'B97M-V'</span>   <span class="p">:</span> <span class="s1">'B97M_V'</span><span class="p">,</span>
                    <span class="s1">'M05-2X'</span>   <span class="p">:</span> <span class="s1">'M05_2X'</span><span class="p">,</span>
                    <span class="s1">'M06-L'</span>    <span class="p">:</span> <span class="s1">'M06_L'</span><span class="p">,</span>

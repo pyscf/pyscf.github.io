@@ -49,7 +49,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/material.css?v=79c92029" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf.css?v=9b431c29" />
-    <script src="../../../_static/documentation_options.js?v=3c4615cf"></script>
+    <script src="../../../_static/documentation_options.js?v=0a414f3d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,7 @@
       </div>
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
-          <span class="md-header-nav__topic">PySCF 2.5</span>
+          <span class="md-header-nav__topic">PySCF 2.6</span>
           <span class="md-header-nav__topic"> pyscf.df.df_jk </span>
         </div>
       </div>
@@ -200,7 +200,7 @@
       
     </a>
     <a href="../../../index.html"
-       title="PySCF">PySCF 2.5</a>
+       title="PySCF">PySCF 2.6</a>
   </label>
     <div class="md-nav__source">
       <a href="https://github.com/pyscf/pyscf/" title="Go to repository" class="md-source" data-md-source="github">
@@ -516,6 +516,8 @@
                 <span class="k">return</span> <span class="n">uks</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">uhf</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rhf</span><span class="o">.</span><span class="n">RHF</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">rks</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -544,8 +546,7 @@
 
     <span class="k">def</span> <span class="nf">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">undo_df</span><span class="p">()</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">()</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
-        <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_jk">
@@ -579,8 +580,9 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_k</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">eri1</span> <span class="ow">in</span> <span class="n">dfobj</span><span class="o">.</span><span class="n">loop</span><span class="p">():</span>
-            <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ix,px-&gt;ip'</span><span class="p">,</span> <span class="n">dmtril</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
-            <span class="n">vj</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ip,px-&gt;ix'</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
+            <span class="c1"># uses numpy.matmul</span>
+            <span class="n">vj</span> <span class="o">+=</span> <span class="p">(</span><span class="n">dmtril</span> <span class="o">@</span> <span class="n">eri1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="n">eri1</span>
+
 
     <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="s1">'mo_coeff'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1">#TODO: test whether dm.mo_coeff matching dm</span>
@@ -609,9 +611,8 @@
             <span class="n">naux</span><span class="p">,</span> <span class="n">nao_pair</span> <span class="o">=</span> <span class="n">eri1</span><span class="o">.</span><span class="n">shape</span>
             <span class="k">assert</span> <span class="p">(</span><span class="n">nao_pair</span> <span class="o">==</span> <span class="n">nao</span><span class="o">*</span><span class="p">(</span><span class="n">nao</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
-                <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ix,px-&gt;ip'</span><span class="p">,</span> <span class="n">dmtril</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
-                <span class="n">vj</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ip,px-&gt;ix'</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
-
+                <span class="c1"># uses numpy.matmul</span>
+                <span class="n">vj</span> <span class="o">+=</span> <span class="p">(</span><span class="n">dmtril</span> <span class="o">@</span> <span class="n">eri1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="n">eri1</span>
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">nocc</span> <span class="o">=</span> <span class="n">orbo</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">nocc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -637,8 +638,9 @@
         <span class="k">for</span> <span class="n">eri1</span> <span class="ow">in</span> <span class="n">dfobj</span><span class="o">.</span><span class="n">loop</span><span class="p">(</span><span class="n">blksize</span><span class="p">):</span>
             <span class="n">naux</span><span class="p">,</span> <span class="n">nao_pair</span> <span class="o">=</span> <span class="n">eri1</span><span class="o">.</span><span class="n">shape</span>
             <span class="k">if</span> <span class="n">with_j</span><span class="p">:</span>
-                <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ix,px-&gt;ip'</span><span class="p">,</span> <span class="n">dmtril</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
-                <span class="n">vj</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">'ip,px-&gt;ix'</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">eri1</span><span class="p">)</span>
+                <span class="c1"># uses numpy.matmul</span>
+                <span class="n">vj</span> <span class="o">+=</span> <span class="p">(</span><span class="n">dmtril</span> <span class="o">@</span> <span class="n">eri1</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">@</span> <span class="n">eri1</span>
+
 
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nset</span><span class="p">):</span>
                 <span class="n">buf1</span> <span class="o">=</span> <span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">,:</span><span class="n">naux</span><span class="p">]</span>
