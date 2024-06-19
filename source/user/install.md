@@ -24,7 +24,7 @@ PySCF via pip, you can upgrade it to the new version,
 pip install --upgrade pyscf
 ```
 
-:::{note}
+:::{seealso}
 Newly introduced features are available in the
 [pyscf-forge](https://github.com/pyscf/pyscf-forge) package, which can be
 installed with `pip`,
@@ -355,6 +355,7 @@ This can be solved by preloading the MKL core library,
 ```bash
 export LD_PRELOAD=$MKLROOT/lib/intel64/libmkl_avx.so:$MKLROOT/lib/intel64/libmkl_core.so
 ```
+:::
 
 ### Using the Qcint optimized integral library
 
@@ -365,8 +366,10 @@ computing systems. However, on x86-64 platforms, libcint has a more
 efficient counterpart, [Qcint](https://github.com/sunqm/qcint), which is
 heavily optimized with x86 SIMD instructions (AVX-512/AVX2/AVX/SSE3).
 To replace the default libcint library with the qcint library, edit the
-URL of the integral library in lib/CMakeLists.txt file,
-```bash
+URL of the integral library in `lib/CMakeLists.txt` file,
+```{code-block} bash
+:caption: lib/CMakeLists.txt
+
 ExternalProject_Add(libcint
     GIT_REPOSITORY
     https://github.com/sunqm/qcint.git
