@@ -108,7 +108,7 @@ dm = gto.M(atom='H 0 0 0; H 0 0 1') \
   .run() \
   .make_rdm1()
 ```
-This code works because the `.dump_flags()` method simply prints information and then
+This code works because the `dump_flags()` method simply prints information and then
 returns the object.
 
 ## Scanners
