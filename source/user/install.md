@@ -141,7 +141,7 @@ Extension modules are not available in the Fedora package.
 ## Docker image
 
 The following command starts a container with a jupyter notebook
-server that listens for HTTP connections on port 8888::
+server that listens for HTTP connections on port 8888,
 ```
 docker run -it -p 8888:8888 pyscf/pyscf:latest
 ```
