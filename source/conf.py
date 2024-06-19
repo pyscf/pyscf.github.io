@@ -175,8 +175,16 @@ if html_theme == 'pydata_sphinx_theme':
             "image_light": "../logo/logo-64x64.png",
             "image_dark": "../logo/logo-64x64.png",
         },
-        "show_toc_level": 1,
+        "icon_links": [
+            {
+                "name": "GitHub",
+                "url": "https://github.com/pyscf/pyscf",
+                "icon": "fa-brands fa-github",
+                "type": "fontawesome",
+            },
+        ],
         "use_edit_page_button": True,
+        "show_toc_level": 1,
         "secondary_sidebar_items": {
             "**": ["page-toc", "edit-this-page"],
         },
