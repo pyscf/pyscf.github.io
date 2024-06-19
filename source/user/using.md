@@ -22,9 +22,9 @@ Performing a calculation in PySCF typically involves
 importing a module, instantiating a class provided by that module with some arguments, 
 and executing the functions of that class. For example,
 ```python
-from pyscf import scf # import module
-myhf = scf.RHF(...) # instantiate class
-e_hf = myhf.kernel() # execute kernel() method to do the calculation
+from pyscf import scf  # import module
+myhf = scf.RHF(...)  # instantiate class
+e_hf = myhf.kernel()  # execute kernel() method to do the calculation
 ```
 
 Every class has the `kernel()` method, which serves as the driver of
@@ -41,7 +41,7 @@ to instantiate a coupled-cluster class,
 ```python
 from pyscf import gto, scf, cc
 mymol = gto.Mole(...)
-mymol.build() # returns mymol
+mymol.build()  # returns mymol
 myscf = scf.RHF(mymol)
 e_hf = mymol.kernel()
 mycc = cc.CCSD(myscf)
@@ -190,13 +190,13 @@ Many useful functions are defined at both the class level (as methods) and
 the module level. For example, 
 ```python
 myhf = scf.RHF(mol)
-vj, vk = myhf.get_jk(mol, dm) # class method
-vj, vk = scf.hf.get_jk(mol, dm) # module function
+vj, vk = myhf.get_jk(mol, dm)  # class method
+vj, vk = scf.hf.get_jk(mol, dm)  # module function
 ```
 Note that some module functions may require the class object as the first argument,
 ```python
-e_hf = myhf.kernel(conv_tol=1e-5) # class method
-e_hf = scf.hf.kernel(mymf, conv_tol=1e-5) # module function
+e_hf = myhf.kernel(conv_tol=1e-5)  # class method
+e_hf = scf.hf.kernel(mymf, conv_tol=1e-5)  # module function
 ```
 
 In PySCF, most functions and classes are **pure**, which means that no
@@ -225,9 +225,10 @@ A global configuration file is a Python script that contains PySCF configuration
 When PySCF is imported in a Python program (or Python interpreter), the
 package will preload the global configuration file to set default values.
 For example, the configuration file below detects the available memory in the
-operate system at the runtime and set the maximum memory for PySCF,
-```python
-# this is the global configuration file ~/.pyscf_conf.py
+operating system at runtime and sets the maximum memory for PySCF,
+```{code-block} python
+:caption: ~/.pyscf_conf.py
+
 import psutil
 MAX_MEMORY = int(psutil.virtual_memory().available / 1e6)
 ```
@@ -259,8 +260,9 @@ Available configurations can be found by reading the source code of PySCF
 and its modules. For example, generic configuration parameters include `DEBUG`, `MAX_MEMORY`,
 `TMPDIR`, `ARGPARSE`, `VERBOSE`, and `UNIT`, and specific configuration parameters
 for a Hartree-Fock calculation can be found at the top of the file,
-```python
-# this is scf/hf.py
+```{code-block} python
+:caption: pyscf/scf/hf.py
+
 from pyscf import __config__
 
 WITH_META_LOWDIN = getattr(__config__, 'scf_analyze_with_meta_lowdin', True)
@@ -271,8 +273,9 @@ MUTE_CHKFILE = getattr(__config__, 'scf_hf_SCF_mute_chkfile', False)
 ```
 For example, you can choose to change the default behavior associated with the use of
 meta Lowdin population analysis,
-```python
-# this is ~/.pyscf_conf.py
+```{code-block} python
+:caption: ~/.pyscf_conf.py
+
 scf_analyze_with_meta_lowdin = False
 ```
 
