@@ -29,7 +29,7 @@ extensions = [
     "pyscfdocext",
     "myst_parser",
     "sphinx_design",
-#    "gallery_directive",
+    "gallery_directive",
 ]
 bibtex_bibfiles = ['user/ref.bib']
 myst_update_mathjax = False
