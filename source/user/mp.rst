@@ -95,6 +95,8 @@ Analytical nuclear gradients can be calculated :cite:`Pople1979,Handy1985,Yamagu
     mygrad = mymp.nuc_grad_method().run()
 
 
+.. _user_mp2_frozen:
+
 Frozen orbitals
 ===============
 
@@ -113,6 +115,15 @@ keyword argument::
     # freeze 2 core orbitals and 3 unoccupied orbitals
     mymp = mp.MP2(mf, frozen=[0,1,16,17,18]).run()
 
+The number of core orbitals to be frozen can be generated automatically::
+    
+    mymp = mp.MP2(mf).set_frozen().run()
+
+``set_frozen()`` will freeze the core orbitals determined by sum of the core electrons of atoms, which are shown as follows. 
+The current rule is the same as that of ORCA program.
+
+.. image:: ./frozencore.png
+   :width: 600
 
 Job control
 ===========
