@@ -21,9 +21,11 @@ Pip install the following packages, which are also listed in `requirements.txt`:
 
 - pyscf
 - sphinx
-- sphinx-material
 - sphinxcontrib-bibtex
 - nbsphinx
+- pydata-sphinx-theme
+- myst-parser
+- sphinx_design
 
 If you have multiple versions of PySCF on your machine and you would like so use
 a specific version, set `PYTHONPATH` to include the specific PySCF source
