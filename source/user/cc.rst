@@ -104,6 +104,11 @@ To freeze occupied and/or unoccupied orbitals with finer control, a list of
     # freeze 2 core orbitals and 3 unoccupied orbitals
     mycc = cc.CCSD(mf, frozen=[0,1,16,17,18]).run()
 
+The number of core orbitals to be frozen can be generated automatically::
+    
+    mycc = cc.CCSD(mf).set_frozen().run()
+
+See also :ref:`user_mp2_frozen` for more information on the rule of freezing orbitals.
 
 Equation-of-motion coupled-cluster theory 
 =========================================
