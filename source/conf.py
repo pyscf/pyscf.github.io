@@ -2,165 +2,11 @@
 
 # import os
 import sys
-
-# import ablog
+from datetime import datetime
 
 from pyscf import __version__
 
 sys.path.append("./source/tools/extensions")
-
-
-# -- General ABlog Options ----------------------------------------------------
-
-# A path relative to the configuration directory for blog archive pages.
-# blog_path = 'blog'
-
-# The "title" for the blog, used in active pages.  Default is ``'Blog'``.
-blog_title = u"PySCF Docs"
-
-# Base URL for the website, required for generating feeds.
-# e.g. blog_baseurl = "http://example.com/"
-blog_baseurl = u""
-
-# Choose to archive only post titles. Archiving only titles can speed
-# up project building.
-# blog_archive_titles = False
-
-# -- Blog Authors, Languages, and Locations -----------------------------------
-
-# A dictionary of author names mapping to author full display names and
-# links. Dictionary keys are what should be used in ``post`` directive
-# to refer to the author.  Default is ``{}``.
-blog_authors = {"James E. T. Smith": ("James E. T. Smith", None)}
-
-
-# A dictionary of language code names mapping to full display names and
-# links of these languages. Similar to :confval:`blog_authors`, dictionary
-# keys should be used in ``post`` directive to refer to the locations.
-# Default is ``{}``.
-# blog_languages = {
-#    'en': ('English', None),
-# }
-
-
-# A dictionary of location names mapping to full display names and
-# links of these locations. Similar to :confval:`blog_authors`, dictionary
-# keys should be used in ``post`` directive to refer to the locations.
-# Default is ``{}``.
-# blog_locations = {
-#    'Earth': ('The Blue Planet', 'https://en.wikipedia.org/wiki/Earth),
-# }
-
-# -- Blog Post Related --------------------------------------------------------
-
-# Format date for a post.
-# post_date_format = '%b %d, %Y'
-
-# Number of paragraphs (default is ``1``) that will be displayed as an excerpt
-# from the post. Setting this ``0`` will result in displaying no post excerpt
-# in archive pages.  This option can be set on a per post basis using
-# post_auto_excerpt = 1
-
-# Index of the image that will be displayed in the excerpt of the post.
-# Default is ``0``, meaning no image.  Setting this to ``1`` will include
-# the first image, when available, to the excerpt.  This option can be set
-# on a per post basis using :rst:dir:`post` directive option ``image``.
-# post_auto_image = 0
-
-# Number of seconds (default is ``5``) that a redirect page waits before
-# refreshing the page to redirect to the post.
-# post_redirect_refresh = 5
-
-# When ``True``, post title and excerpt is always taken from the section that
-# contains the :rst:dir:`post` directive, instead of the document. This is the
-# behavior when :rst:dir:`post` is used multiple times in a document. Default
-# is ``False``.
-# post_always_section = False
-
-# When ``False``, the :rst:dir:`orphan` directive is not automatically set
-# for each post. Without this directive, Sphinx will warn about posts that
-# are not explicitly referenced via another document. :rst:dir:`orphan` can
-# be set on a per-post basis as well if this is false. Default is ``True``.
-# post_auto_orphan = True
-
-# -- ABlog Sidebars -------------------------------------------------------
-
-# There are seven sidebars you can include in your HTML output.
-# postcard.html provides information regarding the current post.
-# recentposts.html lists most recent five posts. Others provide
-# a link to a archive pages generated for each tag, category, and year.
-# In addition, there are authors.html, languages.html, and locations.html
-# sidebars that link to author and location archive pages.
-html_sidebars = {
-    "**": [
-        # "about.html",
-        # "postcard.html",
-        # "navigation.html",
-        # "recentposts.html",
-        # "tagcloud.html",
-        # "categories.html",
-        # "archives.html",
-        "searchbox.html",
-        "logo-text.html",
-        "globaltoc.html",
-        "localtoc.html",
-    ],
-    #"index": [
-    #    "searchbox.html",
-    #    #"logo-text.html",
-    #]
-}
-
-# -- Blog Feed Options --------------------------------------------------------
-
-# Turn feeds by setting :confval:`blog_baseurl` configuration variable.
-# Choose to create feeds per author, location, tag, category, and year,
-# default is ``False``.
-# blog_feed_archives = False
-
-# Choose to display full text in blog feeds, default is ``False``.
-# blog_feed_fulltext = False
-
-# Blog feed subtitle, default is ``None``.
-# blog_feed_subtitle = None
-
-# Choose to feed only post titles, default is ``False``.
-# blog_feed_titles = False
-
-# Specify number of recent posts to include in feeds, default is ``None``
-# for all posts.
-# blog_feed_length = None
-
-# -- Font-Awesome Options -----------------------------------------------------
-
-# ABlog templates will use of Font Awesome icons if one of the following
-# is ``True``
-
-# Link to `Font Awesome`_ at `Bootstrap CDN`_ and use icons in sidebars
-# and post footers.  Default: ``None``
-# fontawesome_link_cdn = None
-
-# Sphinx_ theme already links to `Font Awesome`_.  Default: ``False``
-# fontawesome_included = False
-
-# Alternatively, you can provide the path to `Font Awesome`_ :file:`.css`
-# with the configuration option: fontawesome_css_file
-# Path to `Font Awesome`_ :file:`.css` (default is ``None``) that will
-# be linked to in HTML output by ABlog.
-# fontawesome_css_file = None
-
-# -- Disqus Integration -------------------------------------------------------
-
-# You can enable Disqus_ by setting ``disqus_shortname`` variable.
-# Disqus_ short name for the blog.
-# disqus_shortname = None
-
-# Choose to disqus pages that are not posts, default is ``False``.
-# disqus_pages = False
-
-# Choose to disqus posts that are drafts (without a published date),
-# default is ``False``.
-# disqus_drafts = False
 
 # -- Sphinx Options -----------------------------------------------------------
 
@@ -181,22 +27,20 @@ extensions = [
     "sphinxcontrib.bibtex",
     "nbsphinx",
     "pyscfdocext",
-    # "ablog",
+    "myst_parser",
+    "sphinx_design",
+    "gallery_directive",
 ]
 bibtex_bibfiles = ['user/ref.bib']
 myst_update_mathjax = False
+myst_enable_extensions = [
+    "colon_fence",
+    "dollarmath",
+]
 
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
-# templates_path = ["_templates", ablog.get_html_templates_path()]
-
-# The suffix(es) of source filenames.
-source_suffix = {
-    ".rst": "restructuredtext",
-    # ".txt": "markdown",
-    # ".md": "markdown",
-}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -206,7 +50,8 @@ master_doc = "index"
 
 # General information about the project.
 project = u"PySCF"
-copyright = u"2015-2021, The PySCF Developers"
+year = datetime.now().year
+copyright = f"{year}, The PySCF Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -267,39 +112,91 @@ todo_include_todos = False
 
 # -- Options for HTML output ----------------------------------------------
 
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ["_static"]
+
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_material"
+#html_theme = "sphinx_material"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {
-    # "github_button": False,
-    "repo_name": "PySCF",
-    "repo_url": "https://github.com/pyscf/pyscf/",
-    "nav_title": "PySCF {0}".format(version),
-    #"color_primary": "blue",
-    #"color_accent": "amber",
-    "color_primary": "pyscf",
-    "color_accent": "pyscf",
-    "globaltoc_depth": 2,
-    "globaltoc_collapse": True,
-    "master_doc": False,
-    "heroes": {"index": "The Python-based Simulations of Chemistry Framework"},
-    "nav_links": [
-        {"href": "index", "title": "Home", "internal": True},
-        #{"href": "overview", "title": "Overview", "internal": True},
-        {"href": "install", "title": "Install", "internal": True},
-        {"href": "quickstart", "title": "Quickstart", "internal": True},
-        {"href": "user", "title": "User Guide", "internal": True},
-        {"href": "develop", "title": "Developer Guide", "internal": True},
-        {"href": "pyscf_api_docs/modules", "title": "API", "internal": True},
-        # {"href": "blog_wrapper", "title": "Blog", "internal": True},
-        {"href": "about", "title": "About", "internal": True},
-    ],
-    "table_classes": ["simple"],
+
+if html_theme == 'sphinx_material':
+    html_css_files = ["css/pyscf-material.css"]
+    html_theme_options = {
+        # "github_button": False,
+        "repo_name": "PySCF",
+        "repo_url": "https://github.com/pyscf/pyscf/",
+        "nav_title": "PySCF {0}".format(version),
+        #"color_primary": "blue",
+        #"color_accent": "amber",
+        "color_primary": "pyscf",
+        "color_accent": "pyscf",
+        "globaltoc_depth": 2,
+        "globaltoc_collapse": True,
+        "master_doc": False,
+        "heroes": {"index": "The Python-based Simulations of Chemistry Framework"},
+        "nav_links": [
+            {"href": "index", "title": "Home", "internal": True},
+            #{"href": "overview", "title": "Overview", "internal": True},
+            {"href": "install", "title": "Install", "internal": True},
+            {"href": "quickstart", "title": "Quickstart", "internal": True},
+            {"href": "user", "title": "User Guide", "internal": True},
+            {"href": "develop", "title": "Developer Guide", "internal": True},
+            {"href": "pyscf_api_docs/modules", "title": "API", "internal": True},
+            {"href": "about", "title": "About", "internal": True},
+        ],
+        "table_classes": ["simple"],
+    }
+
+    # The name of an image file (relative to this directory) to place at the top
+    # of the sidebar.
+    html_logo = "../logo/pyscf-logo-white.svg"
+
+
+if html_theme == 'pydata_sphinx_theme':
+    html_css_files = ["css/pyscf-pst.css"]
+    html_context = {
+        "github_user": "pyscf",
+        "github_repo": "pyscf.github.io",
+        "github_version": "master",
+        "doc_path": "source",
+    }
+
+    html_theme_options = {
+        "logo": {
+            "text": "PySCF",
+            "image_light": "../logo/logo-64x64.png",
+            "image_dark": "../logo/logo-64x64.png",
+        },
+        "icon_links": [
+            {
+                "name": "GitHub",
+                "url": "https://github.com/pyscf/pyscf",
+                "icon": "fa-brands fa-github",
+                "type": "fontawesome",
+            },
+        ],
+        "use_edit_page_button": True,
+        "show_toc_level": 1,
+        "secondary_sidebar_items": {
+            "**": ["page-toc", "edit-this-page"],
+        },
+        # "navbar_align": "left",
+    }
+
+html_sidebars = {
+  "install": [],
+  "quickstart": [],
+  "about": [],
 }
+
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = [alabaster.get_path()]
@@ -311,20 +208,10 @@ html_title = "PySCF"
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = "PySCF" 
 
-# The name of an image file (relative to this directory) to place at the top
-# of the sidebar.
-html_logo = "../logo/pyscf-logo-white.svg"
-
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = "../logo/favicon-32x32.png"
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
-html_css_files = ["css/pyscf.css"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

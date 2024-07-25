@@ -1,0 +1,711 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Auxiliary second-order Green’s function perturbation theory (AGF2) &#8212; PySCF</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=92fd9be5" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/pyscf-pst.css?v=ed6b5f64" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'contributor/agf2_developer';</script>
+    <link rel="icon" href="../_static/favicon-32x32.png"/>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo-64x64.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/logo-64x64.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">PySCF</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyscf/pyscf" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../about.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/pyscf/pyscf" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Auxiliary...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="auxiliary-second-order-green-s-function-perturbation-theory-agf2">
+<span id="developer-agf2"></span><h1>Auxiliary second-order Green’s function perturbation theory (AGF2)<a class="headerlink" href="#auxiliary-second-order-green-s-function-perturbation-theory-agf2" title="Link to this heading">#</a></h1>
+<p><em>Modules</em>: <code class="xref py py-mod docutils literal notranslate"><span class="pre">agf2</span></code></p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The function <a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.AGF2" title="pyscf.agf2.AGF2"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyscf.agf2.AGF2()</span></code></a> will direct the method to one of the
+following classes, depending on the nature of the Hartree–Fock object passed as
+an argument</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.ragf2.RAGF2" title="pyscf.agf2.ragf2.RAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.ragf2.RAGF2</span></code></a></p></td>
+<td><p>RHF</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.uagf2.UAGF2" title="pyscf.agf2.uagf2.UAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.uagf2.UAGF2</span></code></a></p></td>
+<td><p>UHF</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.dfragf2.DFRAGF2" title="pyscf.agf2.dfragf2.DFRAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.dfragf2.DFRAGF2</span></code></a></p></td>
+<td><p>RHF with density fitting</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.dfuagf2.DFUAGF2" title="pyscf.agf2.dfuagf2.DFUAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.dfuagf2.DFUAGF2</span></code></a></p></td>
+<td><p>UHF with density fitting</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.ragf2_slow.RAGF2" title="pyscf.agf2.ragf2_slow.RAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.ragf2_slow.RAGF2</span></code></a></p></td>
+<td><p>RHF with arbitrary moment orders</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.uagf2_slow.UAGF2" title="pyscf.agf2.uagf2_slow.UAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.uagf2_slow.UAGF2</span></code></a></p></td>
+<td><p>UHF with arbitrary moment orders</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The key attributes of the AGF2 classes include</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">mo_coeff</span></code></p></td>
+<td><p>saved MO coefficients</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">mo_energy</span></code></p></td>
+<td><p>saved MO energies</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">mo_occ</span></code></p></td>
+<td><p>saved MO occupations</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">diis</span></code></p></td>
+<td><p>DIIS method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">se</span></code></p></td>
+<td><p>SelfEnergy object</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">gf</span></code></p></td>
+<td><p>GreensFunction object</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The AGF2 calculation is dispatched via the <a class="reference internal" href="ao2mo_developer.html#kernel" title="kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">kernel()</span></code></a> function, which
+carries out the following steps:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>generate the MO basis integrals – <code class="xref py py-func docutils literal notranslate"><span class="pre">ao2mo()</span></code></p></li>
+<li><p>build the zeroth-order Green’s function via the Hartree–Fock states – <code class="xref py py-func docutils literal notranslate"><span class="pre">init_gf()</span></code></p></li>
+<li><p>build the MP2 self-energy – <code class="xref py py-func docutils literal notranslate"><span class="pre">build_se()</span></code></p></li>
+<li><p>run the Fock loop (updates the self-energy and Green’s function) – <code class="xref py py-func docutils literal notranslate"><span class="pre">fock_loop()</span></code></p></li>
+<li><p>update the 1-body energy – <code class="xref py py-func docutils literal notranslate"><span class="pre">energy_1body()</span></code></p></li>
+<li><p>update the self-energy – <code class="xref py py-func docutils literal notranslate"><span class="pre">build_se()</span></code></p></li>
+<li><p>update the 2-body energy – <code class="xref py py-func docutils literal notranslate"><span class="pre">energy_2body()</span></code></p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="auxiliary-space-objects">
+<h2>Auxiliary space objects<a class="headerlink" href="#auxiliary-space-objects" title="Link to this heading">#</a></h2>
+<p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">se</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">gf</span></code> attributes are both derived from the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.aux.AuxiliarySpace</span></code> object, and are used as
+containers for the poles and residues of the self-energy and Green’s function.
+The classes contained in <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/pyscf/agf2/aux.py">pyscf/agf2/aux.py</a> are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.aux.AuxiliarySpace</span></code></p></td>
+<td><p>base class for auxiliary spaces</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.aux.SelfEnergy</span></code></p></td>
+<td><p>self-energy</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.aux.GreensFunction</span></code></p></td>
+<td><p>Green’s function</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">AuxiliarySpace</span></code> contains most of the attributes and functions
+common to both <code class="xref py py-class docutils literal notranslate"><span class="pre">SelfEnergy</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">GreensFunction</span></code>. The key
+attributes are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">energy</span></code></p></td>
+<td><p>array of energies (positions) of the poles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">coupling</span></code></p></td>
+<td><p>array of couplings of the poles to a physical space</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">chempot</span></code></p></td>
+<td><p>position of the Fermi energy</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Key methods are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">get_occupied</span></code></p></td>
+<td><p>get a copy of the object with only occupied poles</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">get_virtual</span></code></p></td>
+<td><p>get a copy of the object with only virtual poles</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">get_array</span></code></p></td>
+<td><p>get a dense representation of the Hamiltonian coupling to a physical space</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">dot</span></code></p></td>
+<td><p>perform a dot-product of the result of <code class="xref py py-attr docutils literal notranslate"><span class="pre">get_array</span></code> with a vector via the sparse representation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">moment</span></code></p></td>
+<td><p>return the <span class="math notranslate nohighlight">\(n\)</span>-th spectral moment of the auxiliaries</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Methods specific to the <code class="xref py py-class docutils literal notranslate"><span class="pre">SelfEnergy</span></code> are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">compress</span></code></p></td>
+<td><p>compress the self-energy via the AGF2 compression algorithms</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">get_greens_function</span></code></p></td>
+<td><p>diagonalise the self-energy along with a physical space matrix to get a <code class="xref py py-attr docutils literal notranslate"><span class="pre">GreensFunction</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Methods specific to the <code class="xref py py-class docutils literal notranslate"><span class="pre">GreensFunction</span></code> are</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">make_rdm1</span></code></p></td>
+<td><p>get the associated one-particle reduced density matrix</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">real_freq_spectrum</span></code></p></td>
+<td><p>express the Green’s function as a spectrum on a real-valued frequency grid, with a broadening factor</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="fock-loop">
+<h2>Fock loop<a class="headerlink" href="#fock-loop" title="Link to this heading">#</a></h2>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">fock_loop()</span></code> function is used to solve the self-consistent
+Hartree–Fock-like iterations on the correlated density matrix.
+This step also simultaneously ensures that there is a correct number of electrons in the
+physical space.
+The chemical potential is first optimised by minimising the metric (in the
+restricted case)</p>
+<div class="math notranslate nohighlight">
+\[x(\mu) = \Big( N_\mathrm{elec} -
+               2 \sum_{p}^{n_\mathrm{MO}}
+                 \sum_{i}^{n_\mathrm{QMO}^\mathrm{occ}}
+                 \phi_{pi} \phi_{pi}^*
+         \Big)^{2},\]</div>
+<p>where the chemical potential (<span class="math notranslate nohighlight">\(\mu\)</span>) adjusts the positions of the poles of
+the self-energy before diagonalisation, thereby adjusting the weight of the
+occupied QMOs on the physical space and in turn the trace of the one-particle
+density matrix.
+The gradient of <span class="math notranslate nohighlight">\(x\)</span> with respect to the chemical potential
+<span class="math notranslate nohighlight">\(\frac{\partial x(\mu)}{\partial \mu}\)</span> is also implemented such that a
+truncated Newton algorithm can be used via <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.optimize.minimize()</span></code>.
+The functions required to handle this step are contained in
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/pyscf/agf2/chempot.py">pyscf/agf2/chempot.py</a>.</p>
+</section>
+<section id="memory-requirements">
+<h2>Memory requirements<a class="headerlink" href="#memory-requirements" title="Link to this heading">#</a></h2>
+<p>Due to the renormalisation of the second-order diagrams, the MO basis integrals
+must be transformed into the QMO basis at subsequent iterations.
+This requires the combinations <span class="math notranslate nohighlight">\((xo|ov)\)</span> and <span class="math notranslate nohighlight">\((xv|vo)\)</span>, where
+<span class="math notranslate nohighlight">\(x\)</span> are general MOs, <span class="math notranslate nohighlight">\(o\)</span> are occupied QMOs and <span class="math notranslate nohighlight">\(v\)</span> are virtual
+QMOs.
+The occupied QMOs number <span class="math notranslate nohighlight">\(n_\mathrm{MO} + n_\mathrm{MO}^\mathrm{occ}\)</span>, and
+virtual <span class="math notranslate nohighlight">\(n_\mathrm{MO} + n_\mathrm{MO}^\mathrm{vir}\)</span>, and so these arrays
+become prohibitively expensive with increasing system size.
+This necessitates the use of density fitting for large system sizes, which
+provides lower scaling memory requirements.
+The density fitting implementation still requires the four-centre integrals to
+be built in order to compute the moments of the self-energy, but they may be
+computed block-wise in order that the memory overhead remains low.</p>
+</section>
+<section id="arbitrary-order-moment-calculations">
+<h2>Arbitrary order moment calculations<a class="headerlink" href="#arbitrary-order-moment-calculations" title="Link to this heading">#</a></h2>
+<p>The <a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.ragf2_slow.RAGF2" title="pyscf.agf2.ragf2_slow.RAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.ragf2_slow.RAGF2</span></code></a> and
+<a class="reference internal" href="../pyscf_api_docs/pyscf.agf2.html#pyscf.agf2.uagf2_slow.UAGF2" title="pyscf.agf2.uagf2_slow.UAGF2"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyscf.agf2.uagf2_slow.UAGF2</span></code></a> classes support AGF2 calculations beyond
+the standard efficient AGF2(1,0) implementation.
+These classes are largely unoptimised and do not support density fitting, and
+are intended for developmental use only.
+For a discussion of the order of the moments required as parameters to these
+methods, please refer to our paper <span id="id1">[<a class="reference internal" href="../user/reference.html#id8" title="Oliver J. Backhouse, Max Nusspickel, and George H. Booth. Wave function perspective and efficient truncation of renormalized second-order perturbation theory. J. Chem. Theory Comput., 16(2):1090-1104, 2020. doi:10.1021/acs.jctc.9b01182.">42</a>]</span>.
+An example of higher-order AGF2 calculations can be found in
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/pyscf/examples/agf2/05-agf2_moments.py">pyscf/examples/agf2/05-agf2_moments.py</a>, with a connection to the
+algebraic diagrammatic construction method.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#auxiliary-space-objects">Auxiliary space objects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fock-loop">Fock loop</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-requirements">Memory requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arbitrary-order-moment-calculations">Arbitrary order moment calculations</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/pyscf/pyscf.github.io/edit/master/source/contributor/agf2_developer.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2024, The PySCF Developers.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
