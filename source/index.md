@@ -4,6 +4,13 @@ html_theme.sidebar_secondary.remove: true
 
 # Quantum chemistry with Python 
 
+<div style="background-color: #013243; padding: 5px; border-radius: 2px; font-family: monospace; font-size: 20px; color: white; display: flex; justify-content: center; align-items: center; height: 60px; text-align: center; margin-bottom: 20px;">
+
+  <p style="margin: 0;">
+    <a href="news.html" style="color: white;">2nd PySCF Developers Meeting! 09-18-2024</a>
+  </p>
+
+</div>
 
 ```{gallery-grid}
 :grid-columns: 1 2 2 3
@@ -46,4 +53,5 @@ quickstart
 user/index
 contributor/index
 About <about>
+News <news>
 ```
