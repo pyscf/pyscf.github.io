@@ -217,7 +217,7 @@ Env variable            Comments
 
 `PYSCF_MAX_MEMORY` sets the default maximum memory in MB when creating
 `Mole` (or `Cell`) object. It corresponds to the attribute
-`max_memory``of Mole` (or `Cell`) object.
+`max_memory` of `Mole` (or `Cell`) object.
 
 The environment variable `PYSCF_TMPDIR` controls which directory is
 used to store intermediate files and temporary data when PySCF is run;
