@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -421,62 +421,91 @@ document.write(`
 
 <span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">H5FileWrap</span>
-<span class="kn">from</span> <span class="nn">pyscf.lib.chkfile</span> <span class="kn">import</span> <span class="n">load</span>
-<span class="kn">from</span> <span class="nn">pyscf.lib.chkfile</span> <span class="kn">import</span> <span class="n">dump</span><span class="p">,</span> <span class="n">save</span>
-<span class="kn">from</span> <span class="nn">pyscf.lib.chkfile</span> <span class="kn">import</span> <span class="n">load_mol</span><span class="p">,</span> <span class="n">save_mol</span>
+<span class="kn">from</span> <span class="nn">pyscf.lib.chkfile</span> <span class="kn">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">load_mol</span><span class="p">,</span> <span class="n">dump</span>
+<span class="kn">from</span> <span class="nn">pyscf.mcscf.addons</span> <span class="kn">import</span> <span class="n">StateAverageMixFCISolver</span>
 
 
 <div class="viewcode-block" id="load_mcscf">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.chkfile.load_mcscf">[docs]</a>
 <span class="k">def</span> <span class="nf">load_mcscf</span><span class="p">(</span><span class="n">chkfile</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">load_mol</span><span class="p">(</span><span class="n">chkfile</span><span class="p">),</span> <span class="n">load</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">&#39;mcscf&#39;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">load_mol</span><span class="p">(</span><span class="n">chkfile</span><span class="p">),</span> <span class="n">load</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="s2">&quot;mcscf&quot;</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="dump_mcscf">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.chkfile.dump_mcscf">[docs]</a>
-<span class="k">def</span> <span class="nf">dump_mcscf</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">chkfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">&#39;mcscf&#39;</span><span class="p">,</span>
-               <span class="n">e_tot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ncas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-               <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">e_cas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ci_vector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-               <span class="n">casdm1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite_mol</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Save CASCI/CASSCF calculation results or intermediates in chkfile.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">chkfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">chkfile</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">chkfile</span>
-    <span class="k">if</span> <span class="n">ncore</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">ncore</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">ncore</span>
-    <span class="k">if</span> <span class="n">ncas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">ncas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">ncas</span>
-    <span class="k">if</span> <span class="n">e_tot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">e_tot</span>
-    <span class="k">if</span> <span class="n">e_cas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">e_cas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">e_cas</span>
-    <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_coeff</span>
-    <span class="k">if</span> <span class="n">mo_occ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_occ</span>
-    <span class="k">if</span> <span class="n">mo_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_energy</span>
-    <span class="c1">#if ci_vector is None: ci_vector = mc.ci</span>
+<span class="k">def</span> <span class="nf">dump_mcscf</span><span class="p">(</span>
+    <span class="n">mc</span><span class="p">,</span>
+    <span class="n">chkfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">key</span><span class="o">=</span><span class="s2">&quot;mcscf&quot;</span><span class="p">,</span>
+    <span class="n">e_tot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ncas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">e_cas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ci_vector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">casdm1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">overwrite_mol</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save CASCI/CASSCF calculation results or intermediates in chkfile.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">chkfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">chkfile</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">chkfile</span>
+    <span class="k">if</span> <span class="n">ncore</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ncore</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">ncore</span>
+    <span class="k">if</span> <span class="n">ncas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ncas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">ncas</span>
+    <span class="k">if</span> <span class="n">e_tot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">e_tot</span>
+    <span class="k">if</span> <span class="n">e_cas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">e_cas</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">e_cas</span>
+    <span class="k">if</span> <span class="n">mo_coeff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">if</span> <span class="n">mo_occ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_occ</span>
+    <span class="k">if</span> <span class="n">mo_energy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mo_energy</span>
+    <span class="c1"># if ci_vector is None: ci_vector = mc.ci</span>
 
     <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">chkfile</span><span class="p">):</span>
-        <span class="n">fh5</span> <span class="o">=</span> <span class="n">H5FileWrap</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">fh5</span><span class="p">:</span>
-            <span class="k">del</span> <span class="p">(</span><span class="n">fh5</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">fh5</span> <span class="o">=</span> <span class="n">H5FileWrap</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;w&quot;</span>
 
-    <span class="k">if</span> <span class="s1">&#39;mol&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fh5</span><span class="p">:</span>
-        <span class="n">fh5</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">overwrite_mol</span><span class="p">:</span>
-        <span class="k">del</span> <span class="p">(</span><span class="n">fh5</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">])</span>
-        <span class="n">fh5</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span>
+    <span class="n">mixed_ci</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">fcisolver</span><span class="p">,</span> <span class="n">StateAverageMixFCISolver</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ci_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">)</span>
 
-    <span class="n">fh5</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s1">&#39;/mo_coeff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mo_coeff</span>
+    <span class="k">with</span> <span class="n">H5FileWrap</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh5</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">fh5</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">fh5</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="n">subkey</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">fh5</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="o">+</span><span class="n">subkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;e_tot&#39;</span><span class="p">,</span> <span class="n">e_tot</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;e_cas&#39;</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;ci&#39;</span><span class="p">,</span> <span class="n">ci_vector</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;ncore&#39;</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;ncas&#39;</span><span class="p">,</span> <span class="n">ncas</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;mo_energy&#39;</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">)</span>
-    <span class="n">store</span><span class="p">(</span><span class="s1">&#39;casdm1&#39;</span><span class="p">,</span> <span class="n">casdm1</span><span class="p">)</span>
-    <span class="n">fh5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="s2">&quot;mol&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fh5</span><span class="p">:</span>
+            <span class="n">fh5</span><span class="p">[</span><span class="s2">&quot;mol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">overwrite_mol</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">fh5</span><span class="p">[</span><span class="s2">&quot;mol&quot;</span><span class="p">]</span>
+            <span class="n">fh5</span><span class="p">[</span><span class="s2">&quot;mol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">dumps</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="n">subkey</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">fh5</span><span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">subkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;mo_coeff&quot;</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;e_tot&quot;</span><span class="p">,</span> <span class="n">e_tot</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;e_cas&quot;</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;ncore&quot;</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;ncas&quot;</span><span class="p">,</span> <span class="n">ncas</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;mo_occ&quot;</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;mo_energy&quot;</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">)</span>
+        <span class="n">store</span><span class="p">(</span><span class="s2">&quot;casdm1&quot;</span><span class="p">,</span> <span class="n">casdm1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mixed_ci</span><span class="p">:</span>
+            <span class="n">store</span><span class="p">(</span><span class="s2">&quot;ci&quot;</span><span class="p">,</span> <span class="n">ci_vector</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mixed_ci</span><span class="p">:</span>
+        <span class="n">dump</span><span class="p">(</span><span class="n">chkfile</span><span class="p">,</span> <span class="s2">&quot;mcscf/ci&quot;</span><span class="p">,</span> <span class="n">ci_vector</span><span class="p">)</span></div>
 
 </pre></div>
 

@@ -16,7 +16,7 @@ example [benchmark data](benchmark).
 - [Garnet Chan](https://www.chan-lab.caltech.edu/), Caltech
 - [Sandeep Sharma](https://www.colorado.edu/lab/sharmagroup/), CU Boulder
 - [Alexander Sokolov](https://research.cbc.osu.edu/sokolov.8/), Ohio State
-- Qiming Sun
+- Qiming Sun, Bytedance Ltd.
 
 ### Maintainers
 

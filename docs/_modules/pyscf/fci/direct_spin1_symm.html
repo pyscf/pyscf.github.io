@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -626,22 +626,28 @@ document.write(`
     <span class="n">neleca</span><span class="p">,</span> <span class="n">nelecb</span> <span class="o">=</span> <span class="n">_unpack_nelec</span><span class="p">(</span><span class="n">nelec</span><span class="p">)</span>
     <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">airreps</span><span class="p">)</span>
     <span class="n">nb</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">birreps</span><span class="p">)</span>
-    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">nb</span><span class="p">)</span>
     <span class="n">sym_allowed</span> <span class="o">=</span> <span class="n">airreps</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">==</span> <span class="n">wfnsym</span> <span class="o">^</span> <span class="n">birreps</span>
     <span class="k">if</span> <span class="n">neleca</span> <span class="o">==</span> <span class="n">nelecb</span> <span class="ow">and</span> <span class="n">na</span> <span class="o">==</span> <span class="n">nb</span><span class="p">:</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">na</span><span class="p">)</span>
         <span class="n">sym_allowed</span><span class="p">[</span><span class="n">idx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">idx_a</span><span class="p">,</span> <span class="n">idx_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sym_allowed</span><span class="p">)</span>
 
+    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">nb</span><span class="p">)[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">nroots</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hdiag</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]</span>
+
     <span class="n">ci0</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">],</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">hdiag_indices</span><span class="p">:</span>
         <span class="n">addra</span><span class="p">,</span> <span class="n">addrb</span> <span class="o">=</span> <span class="n">idx_a</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">idx_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span><span class="p">))</span>
         <span class="n">x</span><span class="p">[</span><span class="n">addra</span><span class="p">,</span><span class="n">addrb</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">ci0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">direct_spin1</span><span class="o">.</span><span class="n">FCIvector</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span>
 
 <div class="viewcode-block" id="get_init_guess">
@@ -659,13 +665,18 @@ document.write(`
         <span class="k">return</span> <span class="n">_get_init_guess</span><span class="p">(</span><span class="n">airreps</span><span class="p">,</span> <span class="n">birreps</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
 
     <span class="n">ci0</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">nroots</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hdiag</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">hdiag_indices</span><span class="p">:</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)</span>
         <span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
         <span class="n">ci0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">direct_spin1</span><span class="o">.</span><span class="n">FCIvector</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span></div>
 
 
@@ -715,6 +726,13 @@ document.write(`
             <span class="n">addra1</span><span class="p">,</span> <span class="n">sign_a</span> <span class="o">=</span> <span class="n">_sv_associated_det</span><span class="p">(</span><span class="n">strsa</span><span class="p">[</span><span class="n">addra</span><span class="p">],</span> <span class="n">degen_mapping</span><span class="p">)</span>
             <span class="n">addrb1</span><span class="p">,</span> <span class="n">sign_b</span> <span class="o">=</span> <span class="n">_sv_associated_det</span><span class="p">(</span><span class="n">strsb</span><span class="p">[</span><span class="n">addrb</span><span class="p">],</span> <span class="n">degen_mapping</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="ow">and</span> <span class="n">addra</span> <span class="o">==</span> <span class="n">addra1</span> <span class="ow">and</span> <span class="n">addrb</span> <span class="o">==</span> <span class="n">addrb1</span><span class="p">:</span>
+                <span class="c1"># Remove the A1 repr from initial guess.</span>
+                <span class="c1"># The product of two E reprs can produce A1, A2 and another E repr.</span>
+                <span class="c1"># addra == addra1 and addrb == addrb1  can be found in the A1 repr.</span>
+                <span class="c1"># However, this may also incorrectly remove the A2 repr, see the</span>
+                <span class="c1"># explanation in issue #2291.</span>
+                <span class="c1"># In this case, the direct_spin1_cyl_sym solver can be used to</span>
+                <span class="c1"># solve A2. See example mcscf/18-o2_spatial_spin_symmetry.py</span>
                 <span class="k">continue</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">ca</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cb</span>
 
@@ -753,7 +771,8 @@ document.write(`
             <span class="k">break</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span></div>
 
 
@@ -924,19 +943,34 @@ document.write(`
     <span class="k">if</span> <span class="n">wfn_momentum</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># For A1g and A1u, CI coefficient and its sigma_v associated one have</span>
         <span class="c1"># the same sign</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">&gt;</span> <span class="mf">1e-6</span> <span class="ow">or</span>
-            <span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">):</span>  <span class="c1"># A1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">&gt;</span> <span class="mf">1e-4</span> <span class="ow">or</span>
+            <span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">&gt;</span> <span class="mf">1e-4</span><span class="p">):</span>  <span class="c1"># A1</span>
             <span class="k">if</span> <span class="n">wfn_ungerade</span><span class="p">:</span>
                 <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">5</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-4</span> <span class="ow">or</span>
+              <span class="n">sign_a</span><span class="o">*</span><span class="n">sign_b</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-4</span><span class="p">):</span>  <span class="c1"># A2</span>
             <span class="c1"># For A2g and A2u, CI coefficient and its sigma_v associated one</span>
             <span class="c1"># have opposite signs</span>
             <span class="k">if</span> <span class="n">wfn_ungerade</span><span class="p">:</span>
                 <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">4</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">:</span> <span class="c1"># Off-diagonal terms only</span>
+            <span class="c1"># (E+)(E-&#39;) + (E-)(E+&#39;) =&gt; A1</span>
+            <span class="k">if</span> <span class="n">wfn_ungerade</span><span class="p">:</span>
+                <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">c_max</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">c_max</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">1e-4</span><span class="p">:</span>
+            <span class="c1"># (E+)(E-&#39;) - (E-)(E+&#39;) =&gt; A2</span>
+            <span class="k">if</span> <span class="n">wfn_ungerade</span><span class="p">:</span>
+                <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wfnsym</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Symmetry broken wavefunction&#39;</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">wfn_momentum</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">c_max</span><span class="p">[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>  <span class="c1"># Ex</span>
@@ -1008,8 +1042,9 @@ document.write(`
                 <span class="n">fcivec</span> <span class="o">=</span> <span class="n">fcivec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">wfnsym1</span> <span class="o">=</span> <span class="n">_guess_wfnsym_cyl_sym</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">strsa</span><span class="p">,</span> <span class="n">strsb</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wfnsym1</span> <span class="o">!=</span> <span class="n">_id_wfnsym</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input wfnsym </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> is not consistent with &#39;</span>
-                                   <span class="sa">f</span><span class="s1">&#39;fcivec symmetry </span><span class="si">{</span><span class="n">wfnsym1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Input wfnsym </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> is not consistent with &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;fcivec symmetry </span><span class="si">{</span><span class="n">wfnsym1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">wfnsym1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">na</span><span class="p">,</span> <span class="n">nb</span> <span class="o">=</span> <span class="n">strsa</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">strsb</span><span class="o">.</span><span class="n">size</span>
@@ -1027,8 +1062,8 @@ document.write(`
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fcivec</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">fcivec</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">fcivec</span> <span class="o">=</span> <span class="p">[</span><span class="n">fcivec</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span> <span class="n">nb</span><span class="p">)[</span><span class="n">mask</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">1e-5</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fcivec</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Input wfnsym </span><span class="si">{wfnsym}</span><span class="s1"> is not consistent with &#39;</span>
-                                   <span class="s1">&#39;fcivec coefficients&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+                    <span class="s1">&#39;Input wfnsym </span><span class="si">{wfnsym}</span><span class="s1"> is not consistent with fcivec coefficients&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">wfnsym</span></div>
 
 
@@ -1226,7 +1261,7 @@ document.write(`
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Num symmetry allowed elements </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
                      <span class="nb">sum</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sym_allowed_idx</span><span class="p">]))</span>
         <span class="k">if</span> <span class="n">s_idx</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;Symmetry allowed determinants not found for wfnsym </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">wfnsym_ir</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>

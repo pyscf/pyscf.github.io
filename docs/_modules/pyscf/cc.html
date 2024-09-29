@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
@@ -418,7 +418,7 @@ document.write(`
 <span class="sd">    &gt;&gt;&gt; mf = scf.RHF(mol).run()</span>
 <span class="sd">    &gt;&gt;&gt; cc.CCSD(mf).run()</span>
 
-<span class="sd">:func:`cc.CCSD` returns an instance of CCSD class.  Followings are parameters</span>
+<span class="sd">:func:`cc.CCSD` returns an instance of CCSD class.  Following are parameters</span>
 <span class="sd">to control CCSD calculation.</span>
 
 <span class="sd">    verbose : int</span>
@@ -449,8 +449,8 @@ document.write(`
 
 <span class="sd">Saved results</span>
 
-<span class="sd">    converged : bool</span>
-<span class="sd">        CCSD converged or not</span>
+<span class="sd">    iterinfo : common.IterationInfo</span>
+<span class="sd">        Information about iteration (see pyscf.common.Iteration in detail)</span>
 <span class="sd">    e_tot : float</span>
 <span class="sd">        Total CCSD energy (HF + correlation)</span>
 <span class="sd">    t1, t2 :</span>
@@ -631,6 +631,27 @@ document.write(`
         <span class="k">return</span> <span class="bp">self</span>
     <span class="n">mycc</span><span class="o">.</span><span class="n">_finalize</span> <span class="o">=</span> <span class="n">_finalize</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">mycc</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mycc</span></div>
+
+
+<div class="viewcode-block" id="BCCD">
+<a class="viewcode-back" href="../../pyscf_api_docs/pyscf.cc.html#pyscf.scf.hf.BCCD">[docs]</a>
+<span class="k">def</span> <span class="nf">BCCD</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conv_tol_normu</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">diis</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+         <span class="n">canonicalization</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pyscf.cc.bccd</span> <span class="kn">import</span> <span class="n">bccd_kernel_</span>
+    <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">StreamObject</span>
+    <span class="n">mycc</span> <span class="o">=</span> <span class="n">CCSD</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="n">frozen</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">BCCD</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="mf">1e-3</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+            <span class="n">bccd_kernel_</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">conv_tol_normu</span><span class="p">,</span> <span class="n">max_cycle</span><span class="p">,</span> <span class="n">diis</span><span class="p">,</span>
+                         <span class="n">canonicalization</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span>
+
+    <span class="k">return</span> <span class="n">mycc</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">BCCD</span><span class="p">)</span></div>
 
 </pre></div>
 

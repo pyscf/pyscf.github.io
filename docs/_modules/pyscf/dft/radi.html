@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -421,9 +421,19 @@ document.write(`
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf.data</span> <span class="kn">import</span> <span class="n">radii</span>
 <span class="kn">from</span> <span class="nn">pyscf.data.elements</span> <span class="kn">import</span> <span class="n">charge</span> <span class="k">as</span> <span class="n">elements_proton</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">BRAGG_RADII</span> <span class="o">=</span> <span class="n">radii</span><span class="o">.</span><span class="n">BRAGG</span>
 <span class="n">COVALENT_RADII</span> <span class="o">=</span> <span class="n">radii</span><span class="o">.</span><span class="n">COVALENT</span>
+
+<span class="c1"># The effective atomic radius in Treutler&#39;s original paper (JCP 102, 346) was</span>
+<span class="c1"># omitted in PySCF versions 2.6 and earlier. This can cause discrepancies in the</span>
+<span class="c1"># numerical grids when compared to other software (See issue #2178 for details).</span>
+<span class="c1"># Note that using the atom-specific radius may slightly alter the results of</span>
+<span class="c1"># numerical integration, potentially leading to differences of ~ 1e-6 per atom</span>
+<span class="c1"># in total energy.</span>
+<span class="c1"># Disable this flag to make DFT grids consistent with old PySCF versions.</span>
+<span class="n">ATOM_SPECIFIC_TREUTLER_GRIDS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;ATOM_SPECIFIC_TREUTLER_GRIDS&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># P.M.W. Gill, B.G. Johnson, J.A. Pople, Chem. Phys. Letters 209 (1993) 506-512</span>
 <span class="n">SG1RADII</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span>
@@ -510,17 +520,43 @@ document.write(`
     <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">dr</span></div>
 
 
+<span class="c1"># Individually optimized Treutler/Ahlrichs radius parameter.</span>
+<span class="c1"># H - Kr are taken from the original paper JCP 102, 346 (1995)</span>
+<span class="c1"># Other elements are copied from Psi4 source code</span>
+<span class="n">_treutler_ahlrichs_xi</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="c1"># Ghost</span>
+    <span class="mf">0.8</span><span class="p">,</span>                               <span class="mf">0.9</span><span class="p">,</span>           <span class="c1"># 1s</span>
+    <span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span>           <span class="c1"># 2s2p</span>
+    <span class="mf">1.4</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>           <span class="c1"># 3s3p</span>
+    <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span>                                         <span class="c1"># 4s</span>
+    <span class="mf">1.3</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="c1"># 3d</span>
+              <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span>           <span class="c1"># 4p</span>
+    <span class="mf">2.000</span><span class="p">,</span> <span class="mf">1.700</span><span class="p">,</span>                                                         <span class="c1"># 5s</span>
+    <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.350</span><span class="p">,</span> <span class="mf">1.350</span><span class="p">,</span> <span class="mf">1.250</span><span class="p">,</span> <span class="mf">1.200</span><span class="p">,</span> <span class="mf">1.250</span><span class="p">,</span> <span class="mf">1.300</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="c1"># 4d</span>
+                  <span class="mf">1.300</span><span class="p">,</span> <span class="mf">1.200</span><span class="p">,</span> <span class="mf">1.200</span><span class="p">,</span> <span class="mf">1.150</span><span class="p">,</span> <span class="mf">1.150</span><span class="p">,</span> <span class="mf">1.150</span><span class="p">,</span>               <span class="c1"># 5p</span>
+    <span class="mf">2.500</span><span class="p">,</span> <span class="mf">2.200</span><span class="p">,</span>                                                         <span class="c1"># 6s</span>
+           <span class="mf">2.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span>               <span class="c1"># La, Ce-Eu</span>
+           <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span>        <span class="c1"># Gd, Tb-Lu</span>
+           <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="c1"># 5d</span>
+                  <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span>               <span class="c1"># 6p</span>
+    <span class="mf">2.500</span><span class="p">,</span> <span class="mf">2.100</span><span class="p">,</span>                                                         <span class="c1"># 7s</span>
+           <span class="mf">3.685</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span>
+           <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span> <span class="mf">1.500</span><span class="p">,</span>
+<span class="p">]</span> <span class="c1"># noqa: E124</span>
 
 <div class="viewcode-block" id="treutler_ahlrichs">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.gen_grid.treutler_ahlrichs">[docs]</a>
-<span class="k">def</span> <span class="nf">treutler_ahlrichs</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">treutler_ahlrichs</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">chg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids</span>
 <span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">ATOM_SPECIFIC_TREUTLER_GRIDS</span><span class="p">:</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">_treutler_ahlrichs_xi</span><span class="p">[</span><span class="n">chg</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="mf">1.</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
     <span class="n">dr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
     <span class="n">step</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ln2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ln2</span> <span class="o">=</span> <span class="n">xi</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">step</span><span class="p">)</span>
         <span class="n">r</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">ln2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mf">.6</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
@@ -529,8 +565,6 @@ document.write(`
     <span class="k">return</span> <span class="n">r</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dr</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 <span class="n">treutler</span> <span class="o">=</span> <span class="n">treutler_ahlrichs</span>
-
-
 
 
 <div class="viewcode-block" id="becke_atomic_radii_adjust">

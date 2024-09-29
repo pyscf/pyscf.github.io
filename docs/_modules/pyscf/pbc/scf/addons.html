@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -497,13 +497,17 @@ document.write(`
 
 <span class="sd">        This is a k-point version of scf.hf.SCF.get_occ</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="p">):</span>
             <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_occ</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">,</span> <span class="n">mo_coeff_kpts</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">mo_occ_kpts</span>
 
         <span class="n">is_uhf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;KUHF&#39;</span><span class="p">)</span>
         <span class="n">is_rhf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;KRHF&#39;</span><span class="p">)</span>
-        <span class="n">is_rohf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;KROHF&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">krohf</span><span class="o">.</span><span class="n">KROHF</span><span class="p">):</span>
+            <span class="c1"># ROHF leads to two Fock matrices. It&#39;s not clear how to define the</span>
+            <span class="c1"># Roothaan effective Fock matrix from the two.</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Smearing-ROHF&#39;</span><span class="p">)</span>
 
         <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;fermi&#39;</span><span class="p">:</span>
@@ -518,9 +522,7 @@ document.write(`
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_spin</span> <span class="ow">and</span> <span class="p">(</span><span class="n">is_uhf</span> <span class="ow">or</span> <span class="n">is_rohf</span><span class="p">):</span> <span class="c1"># spin separated fermi level</span>
-            <span class="k">if</span> <span class="n">is_rohf</span><span class="p">:</span> <span class="c1"># treat rohf as uhf</span>
-                <span class="n">mo_energy_kpts</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">,</span> <span class="n">mo_energy_kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_spin</span> <span class="ow">and</span> <span class="n">is_uhf</span><span class="p">:</span> <span class="c1"># spin separated fermi level</span>
             <span class="n">mo_es</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
                      <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy_kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
             <span class="n">nocc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelec</span>
@@ -556,8 +558,6 @@ document.write(`
             <span class="n">mo_occ_kpts</span> <span class="o">=</span><span class="p">(</span><span class="n">_partition_occ</span><span class="p">(</span><span class="n">mo_occs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_energy_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
                           <span class="n">_partition_occ</span><span class="p">(</span><span class="n">mo_occs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_energy_kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="n">tools</span><span class="o">.</span><span class="n">print_mo_energy_occ_kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy_kpts</span><span class="p">,</span> <span class="n">mo_occ_kpts</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">is_rohf</span><span class="p">:</span>
-                <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mo_occ_kpts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nocc</span> <span class="o">=</span> <span class="n">nelectron</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">tot_electrons</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">is_uhf</span><span class="p">:</span>
@@ -914,14 +914,18 @@ document.write(`
         <span class="p">}</span>
         <span class="n">mf</span> <span class="o">=</span> <span class="n">mol_addons</span><span class="o">.</span><span class="n">_object_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">known_cls</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;UHF&#39;</span><span class="p">):</span>
-                <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[:,</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-                <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
-                <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[:,</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">kuhf</span><span class="o">.</span><span class="n">KUHF</span><span class="p">):</span>
+                <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[:,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+                <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[:,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
                 <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
                 <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;_numint&#39;</span><span class="p">):</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="s1">&#39;kpts&#39;</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+            <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">numint</span><span class="o">.</span><span class="n">KNumInt</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mf</span>
@@ -951,7 +955,7 @@ document.write(`
         <span class="n">fockao</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">vhf</span><span class="o">=</span><span class="n">vhf</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="n">dm</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_moe1</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">fao</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;pi,pq,qi-&gt;i&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">fao</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;pi,pq,qi-&gt;i&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">fao</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
     <span class="k">def</span> <span class="nf">_get_moek</span><span class="p">(</span><span class="n">kC</span><span class="p">,</span> <span class="n">kfao</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">_get_moe1</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">fao</span><span class="p">)</span> <span class="k">for</span> <span class="n">C</span><span class="p">,</span><span class="n">fao</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">kC</span><span class="p">,</span> <span class="n">kfao</span><span class="p">)]</span>
 

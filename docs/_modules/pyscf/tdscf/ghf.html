@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -425,14 +425,13 @@ document.write(`
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">dft</span>
-<span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">numint</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">symm</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.tdscf</span> <span class="kn">import</span> <span class="n">rhf</span>
+<span class="kn">from</span> <span class="nn">pyscf.tdscf._lr_eig</span> <span class="kn">import</span> <span class="n">eigh</span> <span class="k">as</span> <span class="n">lr_eigh</span><span class="p">,</span> <span class="n">eig</span> <span class="k">as</span> <span class="n">lr_eig</span>
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">ghf_symm</span>
-<span class="kn">from</span> <span class="nn">pyscf.data</span> <span class="kn">import</span> <span class="n">nist</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 
 <span class="n">OUTPUT_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;tdscf_rhf_get_nto_threshold&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
@@ -464,21 +463,16 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">irrep_name2id</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">groupname</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
         <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">wfnsym</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h subgroup</span>
-        <span class="n">orbsym</span> <span class="o">=</span> <span class="n">ghf_symm</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-        <span class="n">orbsym_in_d2h</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h irreps</span>
-        <span class="n">sym_forbid</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">^</span> <span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">viridx</span><span class="p">])</span> <span class="o">!=</span> <span class="n">wfnsym</span>
+        <span class="n">sym_forbid</span> <span class="o">=</span> <span class="n">_get_x_sym_table</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span> <span class="o">!=</span> <span class="n">wfnsym</span>
 
     <span class="k">if</span> <span class="n">fock_ao</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1">#dm0 = mf.make_rdm1(mo_coeff, mo_occ)</span>
-        <span class="c1">#fock_ao = mf.get_hcore() + mf.get_veff(mol, dm0)</span>
-        <span class="n">foo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">])</span>
-        <span class="n">fvv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">])</span>
+        <span class="n">e_ia</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">fock</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fock_ao</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">))</span>
         <span class="n">foo</span> <span class="o">=</span> <span class="n">fock</span><span class="p">[</span><span class="n">occidx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">occidx</span><span class="p">]</span>
         <span class="n">fvv</span> <span class="o">=</span> <span class="n">fock</span><span class="p">[</span><span class="n">viridx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">viridx</span><span class="p">]</span>
+        <span class="n">hdiag</span> <span class="o">=</span> <span class="n">fvv</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">foo</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()[:,</span><span class="kc">None</span><span class="p">]</span>
 
-    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">fvv</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">foo</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()[:,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
         <span class="n">hdiag</span><span class="p">[</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
@@ -495,8 +489,11 @@ document.write(`
         <span class="n">dmov</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xov,qv,po-&gt;xpq&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">orbv</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbo</span><span class="p">)</span>
         <span class="n">v1ao</span> <span class="o">=</span> <span class="n">vresp</span><span class="p">(</span><span class="n">dmov</span><span class="p">)</span>
         <span class="n">v1ov</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,po,qv-&gt;xov&#39;</span><span class="p">,</span> <span class="n">v1ao</span><span class="p">,</span> <span class="n">orbo</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbv</span><span class="p">)</span>
-        <span class="n">v1ov</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xqs,sp-&gt;xqp&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">fvv</span><span class="p">)</span>
-        <span class="n">v1ov</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpr,sp-&gt;xsr&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">foo</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fock_ao</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">v1ov</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xia,ia-&gt;xia&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">e_ia</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v1ov</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xqs,sp-&gt;xqp&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">fvv</span><span class="p">)</span>
+            <span class="n">v1ov</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpr,sp-&gt;xsr&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">foo</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
             <span class="n">v1ov</span><span class="p">[:,</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">v1ov</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">v1ov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -504,6 +501,14 @@ document.write(`
     <span class="k">return</span> <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span></div>
 
 <span class="n">gen_tda_hop</span> <span class="o">=</span> <span class="n">gen_tda_operation</span>
+
+<span class="k">def</span> <span class="nf">_get_x_sym_table</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Irrep (up to D2h symmetry) of each coefficient in X[nocc,nvir]&#39;&#39;&#39;</span>
+    <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
+    <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
+    <span class="n">orbsym</span> <span class="o">=</span> <span class="n">ghf_symm</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
+    <span class="n">orbsym</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h irreps</span>
+    <span class="k">return</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">^</span> <span class="n">orbsym</span><span class="p">[</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span>
 
 <div class="viewcode-block" id="get_ab">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.scf.ghf.get_ab">[docs]</a>
@@ -556,7 +561,7 @@ document.write(`
         <span class="n">b</span> <span class="o">-=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;jaib-&gt;iajb&#39;</span><span class="p">,</span> <span class="n">eri_mo</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,</span><span class="n">nocc</span><span class="p">:,:</span><span class="n">nocc</span><span class="p">,</span><span class="n">nocc</span><span class="p">:])</span> <span class="o">*</span> <span class="n">hyb</span>
         <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dft</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">xc_deriv</span>
         <span class="n">ni</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">_numint</span>
         <span class="n">ni</span><span class="o">.</span><span class="n">libxc</span><span class="o">.</span><span class="n">test_deriv_order</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">raise_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -567,6 +572,7 @@ document.write(`
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
         <span class="n">omega</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">hyb</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">rsh_and_hybrid_coeff</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">spin</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">omega</span> <span class="o">==</span> <span class="mf">0.</span>
 
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">add_hf_</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">hyb</span><span class="p">)</span>
 
@@ -806,7 +812,7 @@ document.write(`
 
 <div class="viewcode-block" id="TDA.init_guess">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.scf.ghf.TDA.init_guess">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">nstates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">nstates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span>
         <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">wfnsym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfnsym</span>
 
@@ -814,27 +820,36 @@ document.write(`
         <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
         <span class="n">occidx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">viridx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mo_occ</span><span class="o">==</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">e_ia</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">irrep_name2id</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">groupname</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
-            <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">wfnsym</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h subgroup</span>
-            <span class="n">orbsym</span> <span class="o">=</span> <span class="n">ghf_symm</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
-            <span class="n">orbsym_in_d2h</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h irreps</span>
-            <span class="n">e_ia</span><span class="p">[(</span><span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">^</span> <span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">viridx</span><span class="p">])</span> <span class="o">!=</span> <span class="n">wfnsym</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e99</span>
-
+        <span class="n">e_ia</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
         <span class="n">nov</span> <span class="o">=</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">size</span>
         <span class="n">nstates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nstates</span><span class="p">,</span> <span class="n">nov</span><span class="p">)</span>
-        <span class="n">e_ia</span> <span class="o">=</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">e_threshold</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">e_ia</span><span class="p">)[</span><span class="n">nstates</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">return_symmetry</span><span class="p">)</span> <span class="ow">and</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
+            <span class="n">x_sym</span> <span class="o">=</span> <span class="n">_get_x_sym_table</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">irrep_name2id</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">groupname</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
+                <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">wfnsym</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h subgroup</span>
+                <span class="n">e_ia</span><span class="p">[</span><span class="n">x_sym</span> <span class="o">!=</span> <span class="n">wfnsym</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e99</span>
+                <span class="n">nov_allowed</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">x_sym</span> <span class="o">==</span> <span class="n">wfnsym</span><span class="p">)</span>
+                <span class="n">nstates</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nstates</span><span class="p">,</span> <span class="n">nov_allowed</span><span class="p">)</span>
+
+        <span class="n">e_threshold</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">e_ia</span><span class="p">,</span> <span class="n">nstates</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="n">nstates</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">e_threshold</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deg_eia_thresh</span>
 
         <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">e_ia</span> <span class="o">&lt;=</span> <span class="n">e_threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">idx</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">nov</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
             <span class="n">x0</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Koopmans&#39; excitations</span>
-        <span class="k">return</span> <span class="n">x0</span></div>
+
+        <span class="k">if</span> <span class="n">return_symmetry</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
+                <span class="n">x0sym</span> <span class="o">=</span> <span class="n">x_sym</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x0sym</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x0sym</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x0</span></div>
 
 
 <div class="viewcode-block" id="TDA.kernel">
@@ -849,6 +864,7 @@ document.write(`
             <span class="n">nstates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span> <span class="o">=</span> <span class="n">nstates</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
 
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
@@ -859,17 +875,18 @@ document.write(`
             <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">w</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">positive_eig_threshold</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">w</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="n">idx</span><span class="p">],</span> <span class="n">idx</span>
 
+        <span class="n">x0sym</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">x0sym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
+            <span class="n">x_sym</span> <span class="o">=</span> <span class="n">_get_x_sym_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">x0sym</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhf</span><span class="o">.</span><span class="n">_guess_wfnsym_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x0</span><span class="p">]</span>
 
-        <span class="c1"># FIXME: Is it correct to call davidson1 for complex integrals</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> \
-                <span class="n">lib</span><span class="o">.</span><span class="n">davidson1</span><span class="p">(</span><span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span>
-                              <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span>
-                              <span class="n">nroots</span><span class="o">=</span><span class="n">nstates</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>
-                              <span class="n">max_cycle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
-                              <span class="n">max_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">pickeig</span><span class="p">,</span>
-                              <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">lr_eigh</span><span class="p">(</span>
+            <span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol_residual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>
+            <span class="n">nroots</span><span class="o">=</span><span class="n">nstates</span><span class="p">,</span> <span class="n">x0sym</span><span class="o">=</span><span class="n">x0sym</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">pickeig</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
+            <span class="n">max_memory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
         <span class="n">nocc</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_occ</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">nmo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_occ</span><span class="o">.</span><span class="n">size</span>
@@ -913,19 +930,11 @@ document.write(`
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">irrep_name2id</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">groupname</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
         <span class="n">wfnsym</span> <span class="o">=</span> <span class="n">wfnsym</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h subgroup</span>
-        <span class="n">orbsym</span> <span class="o">=</span> <span class="n">ghf_symm</span><span class="o">.</span><span class="n">get_orbsym</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-        <span class="n">orbsym_in_d2h</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span>  <span class="c1"># convert to D2h irreps</span>
-        <span class="n">sym_forbid</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span> <span class="o">^</span> <span class="n">orbsym_in_d2h</span><span class="p">[</span><span class="n">viridx</span><span class="p">])</span> <span class="o">!=</span> <span class="n">wfnsym</span>
+        <span class="n">sym_forbid</span> <span class="o">=</span> <span class="n">_get_x_sym_table</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span> <span class="o">!=</span> <span class="n">wfnsym</span>
 
-    <span class="c1">#dm0 = mf.make_rdm1(mo_coeff, mo_occ)</span>
-    <span class="c1">#fock_ao = mf.get_hcore() + mf.get_veff(mol, dm0)</span>
-    <span class="c1">#fock = reduce(numpy.dot, (mo_coeff.T, fock_ao, mo_coeff))</span>
-    <span class="c1">#foo = fock[occidx[:,None],occidx]</span>
-    <span class="c1">#fvv = fock[viridx[:,None],viridx]</span>
-    <span class="n">foo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">])</span>
-    <span class="n">fvv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">fock_ao</span> <span class="ow">is</span> <span class="kc">None</span>
 
-    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">fvv</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">foo</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()[:,</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">e_ia</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">viridx</span><span class="p">]</span> <span class="o">-</span> <span class="n">mo_energy</span><span class="p">[</span><span class="n">occidx</span><span class="p">,</span><span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
         <span class="n">hdiag</span><span class="p">[</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">hdiag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="o">-</span><span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span><span class="o">.</span><span class="n">real</span>
@@ -941,17 +950,20 @@ document.write(`
             <span class="n">xys</span><span class="p">[:,:,</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">xys</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
-        <span class="c1"># dms = AX + BY</span>
         <span class="n">dms</span>  <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xov,qv,po-&gt;xpq&#39;</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">orbv</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbo</span><span class="p">)</span>
         <span class="n">dms</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xov,pv,qo-&gt;xpq&#39;</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">orbv</span><span class="p">,</span> <span class="n">orbo</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
-
-        <span class="n">v1ao</span> <span class="o">=</span> <span class="n">vresp</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
+        <span class="n">v1ao</span> <span class="o">=</span> <span class="n">vresp</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span> <span class="c1"># = &lt;mb||nj&gt; Xjb + &lt;mj||nb&gt; Yjb</span>
+        <span class="c1"># A ~= &lt;ib||aj&gt;, B = &lt;ij||ab&gt;</span>
+        <span class="c1"># AX + BY</span>
+        <span class="c1"># = &lt;ib||aj&gt; Xjb + &lt;ij||ab&gt; Yjb</span>
+        <span class="c1"># = (&lt;mb||nj&gt; Xjb + &lt;mj||nb&gt; Yjb) Cmi* Cna</span>
         <span class="n">v1ov</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,po,qv-&gt;xov&#39;</span><span class="p">,</span> <span class="n">v1ao</span><span class="p">,</span> <span class="n">orbo</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">orbv</span><span class="p">)</span>
+        <span class="c1"># (B*)X + (A*)Y</span>
+        <span class="c1"># = &lt;ab||ij&gt; Xjb + &lt;aj||ib&gt; Yjb</span>
+        <span class="c1"># = (&lt;mb||nj&gt; Xjb + &lt;mj||nb&gt; Yjb) Cma* Cni</span>
         <span class="n">v1vo</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpq,qo,pv-&gt;xov&#39;</span><span class="p">,</span> <span class="n">v1ao</span><span class="p">,</span> <span class="n">orbo</span><span class="p">,</span> <span class="n">orbv</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
-        <span class="n">v1ov</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xqs,sp-&gt;xqp&#39;</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">fvv</span><span class="p">)</span>  <span class="c1"># AX</span>
-        <span class="n">v1ov</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpr,sp-&gt;xsr&#39;</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">foo</span><span class="p">)</span>  <span class="c1"># AX</span>
-        <span class="n">v1vo</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xqs,sp-&gt;xqp&#39;</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">fvv</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>  <span class="c1"># (A*)Y</span>
-        <span class="n">v1vo</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xpr,sp-&gt;xsr&#39;</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">foo</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>  <span class="c1"># (A*)Y</span>
+        <span class="n">v1ov</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xia,ia-&gt;xia&#39;</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">e_ia</span><span class="p">)</span>  <span class="c1"># AX</span>
+        <span class="n">v1vo</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xia,ia-&gt;xia&#39;</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">e_ia</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>  <span class="c1"># (A*)Y</span>
 
         <span class="k">if</span> <span class="n">wfnsym</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
             <span class="n">v1ov</span><span class="p">[:,</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -983,10 +995,15 @@ document.write(`
 
 <div class="viewcode-block" id="TDHF.init_guess">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.scf.ghf.TDHF.init_guess">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="n">TDA</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
-        <span class="n">y0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">block</span><span class="p">([[</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">],</span> <span class="p">[</span><span class="n">y0</span><span class="p">,</span> <span class="n">x0</span><span class="o">.</span><span class="n">conj</span><span class="p">()]]))</span></div>
+    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">return_symmetry</span><span class="p">:</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">x0sym</span> <span class="o">=</span> <span class="n">TDA</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="p">)</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">]),</span> <span class="n">x0sym</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="n">TDA</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="p">)</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="TDHF.kernel">
@@ -1001,6 +1018,7 @@ document.write(`
             <span class="n">nstates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span> <span class="o">=</span> <span class="n">nstates</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
 
         <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">Logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
@@ -1014,16 +1032,19 @@ document.write(`
             <span class="c1"># FIXME: Should the amplitudes be real? It also affects x2c-tdscf</span>
             <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">_eigs_cmplx2real</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">realidx</span><span class="p">,</span> <span class="n">ensure_real</span><span class="p">)</span>
 
+        <span class="n">x0sym</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">x0sym</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">,</span> <span class="n">return_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
+            <span class="n">x_sym</span> <span class="o">=</span> <span class="n">y_sym</span> <span class="o">=</span> <span class="n">_get_x_sym_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+            <span class="n">x_sym</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">)</span>
+            <span class="n">x0sym</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhf</span><span class="o">.</span><span class="n">_guess_wfnsym_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x0</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> \
-                <span class="n">lib</span><span class="o">.</span><span class="n">davidson_nosym1</span><span class="p">(</span><span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span>
-                                    <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span>
-                                    <span class="n">nroots</span><span class="o">=</span><span class="n">nstates</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>
-                                    <span class="n">max_cycle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
-                                    <span class="n">max_space</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">pickeig</span><span class="p">,</span>
-                                    <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">lr_eig</span><span class="p">(</span>
+            <span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol_residual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>
+            <span class="n">nroots</span><span class="o">=</span><span class="n">nstates</span><span class="p">,</span> <span class="n">x0sym</span><span class="o">=</span><span class="n">x0sym</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">pickeig</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
+            <span class="n">max_memory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
         <span class="n">nocc</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_occ</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">nmo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_occ</span><span class="o">.</span><span class="n">size</span>
@@ -1048,7 +1069,6 @@ document.write(`
 
 <span class="n">RPA</span> <span class="o">=</span> <span class="n">TDGHF</span> <span class="o">=</span> <span class="n">TDHF</span>
 
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="o">.</span><span class="n">TDA</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">TDA</span><span class="p">)</span>
 <span class="n">scf</span><span class="o">.</span><span class="n">ghf</span><span class="o">.</span><span class="n">GHF</span><span class="o">.</span><span class="n">TDHF</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">class_as_method</span><span class="p">(</span><span class="n">TDHF</span><span class="p">)</span>
 </pre></div>

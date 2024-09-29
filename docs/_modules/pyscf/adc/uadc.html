@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -412,9 +412,11 @@ document.write(`
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="c1">#</span>
-<span class="c1"># Author: Samragni Banerjee &lt;samragnibanerjee4@gmail.com&gt;</span>
+<span class="c1"># Author: Abdelrahman Ahmed &lt;&gt;</span>
+<span class="c1">#         Samragni Banerjee &lt;samragnibanerjee4@gmail.com&gt;</span>
+<span class="c1">#         James Serna &lt;jamcar456@gmail.com&gt;</span>
+<span class="c1">#         Terrence Stahl &lt;&gt;</span>
 <span class="c1">#         Alexander Sokolov &lt;alexander.y.sokolov@gmail.com&gt;</span>
-<span class="c1">#</span>
 
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">Unrestricted algebraic diagrammatic construction</span>
@@ -429,6 +431,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">dfadc</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
 
 
 <span class="c1"># Excited-state kernel</span>
@@ -446,13 +449,17 @@ document.write(`
         <span class="n">adc</span><span class="o">.</span><span class="n">check_sanity</span><span class="p">()</span>
     <span class="n">adc</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">()</span>
 
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adc</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">adc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">==</span> <span class="s2">&quot;ip&quot;</span> <span class="ow">or</span> <span class="n">adc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">==</span> <span class="s2">&quot;ea&quot;</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;EA/IP-ADC with the ROHF reference do not incorporate the occ-vir Fock matrix elements...&quot;</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">eris</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">eris</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">transform_integrals</span><span class="p">()</span>
 
     <span class="n">imds</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_imds</span><span class="p">(</span><span class="n">eris</span><span class="p">)</span>
     <span class="n">matvec</span><span class="p">,</span> <span class="n">diag</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">gen_matvec</span><span class="p">(</span><span class="n">imds</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
 
-    <span class="n">guess</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">guess</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
     <span class="n">conv</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">davidson1</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">xs</span> <span class="p">:</span> <span class="p">[</span><span class="n">matvec</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">],</span>
@@ -463,7 +470,6 @@ document.write(`
 
     <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span><span class="p">:</span>
         <span class="n">adc</span><span class="o">.</span><span class="n">P</span><span class="p">,</span><span class="n">adc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_properties</span><span class="p">(</span><span class="n">nroots</span><span class="p">)</span>
-
     <span class="n">nfalse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">conv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
 
     <span class="n">header</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************&quot;</span>
@@ -471,16 +477,16 @@ document.write(`
               <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">nfalse</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;Davidson iterations for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nfalse</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; root(s) not converged</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nroots</span><span class="p">):</span>
         <span class="n">print_string</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> root </span><span class="si">%d</span><span class="s1">  |  Energy (Eh) = </span><span class="si">%14.10f</span><span class="s1">  |  Energy (eV) = </span><span class="si">%12.8f</span><span class="s1">  &#39;</span> <span class="o">%</span>
                         <span class="p">(</span><span class="n">adc</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">*</span><span class="mf">27.2114</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span><span class="p">:</span>
-            <span class="n">print_string</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;|  Spec factors = </span><span class="si">%10.8f</span><span class="s2">  &quot;</span> <span class="o">%</span> <span class="n">adc</span><span class="o">.</span><span class="n">P</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+            <span class="n">print_string</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;|  Spec. factor = </span><span class="si">%10.8f</span><span class="s2">  &quot;</span> <span class="o">%</span> <span class="n">adc</span><span class="o">.</span><span class="n">P</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
         <span class="n">print_string</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;|  conv = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">conv</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="n">print_string</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nfalse</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;Davidson iterations for &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nfalse</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; root(s) did not converge!!!&quot;</span><span class="p">)</span>
 
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">&#39;ADC&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
 
@@ -519,14 +525,13 @@ document.write(`
     <span class="n">incore_complete</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_incore_complete&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
     <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;tol_residual&#39;</span><span class="p">,</span><span class="s1">&#39;conv_tol&#39;</span><span class="p">,</span> <span class="s1">&#39;e_corr&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;method_type&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;mol&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_energy_b&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;scf_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;e_tot&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;mo_energy_a&#39;</span><span class="p">,</span> <span class="s1">&#39;chkfile&#39;</span><span class="p">,</span> <span class="s1">&#39;max_space&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="s1">&#39;max_cycle&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;incore_complete&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_energy_a&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_energy_b&#39;</span><span class="p">,</span> <span class="s1">&#39;with_df&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;compute_mpn_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_spec&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_properties&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;tol_residual&#39;</span><span class="p">,</span><span class="s1">&#39;conv_tol&#39;</span><span class="p">,</span> <span class="s1">&#39;e_corr&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;method_type&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mol&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_energy_a&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_energy_b&#39;</span><span class="p">,</span> <span class="s1">&#39;incore_complete&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;scf_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;e_tot&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="s1">&#39;chkfile&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;max_space&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="s1">&#39;max_cycle&#39;</span><span class="p">,</span> <span class="s1">&#39;imds&#39;</span><span class="p">,</span> <span class="s1">&#39;with_df&#39;</span><span class="p">,</span> <span class="s1">&#39;compute_properties&#39;</span><span class="p">,</span>
         <span class="s1">&#39;approx_trans_moments&#39;</span><span class="p">,</span> <span class="s1">&#39;evec_print_tol&#39;</span><span class="p">,</span> <span class="s1">&#39;spec_factor_print_tol&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;ncvs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;ncvs&#39;</span><span class="p">,</span> <span class="s1">&#39;dip_mom&#39;</span><span class="p">,</span> <span class="s1">&#39;dip_mom_nuc&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;spin_c&#39;</span><span class="p">,</span> <span class="s1">&#39;f_ov&#39;</span>
     <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -549,11 +554,58 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">max_space</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_max_space&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_max_cycle&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_conv_tol&#39;</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tol_residual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_tol_res&#39;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol_residual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_uadc_UADC_tol_residual&#39;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scf_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="n">frozen</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">incore_complete</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">incore_complete</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">incore_anyway</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_ov</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ROHF reference detected in ADC, semicanonicalizing the orbitals...&quot;</span><span class="p">)</span>
+
+            <span class="n">mo_a</span> <span class="o">=</span> <span class="n">mo_coeff</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">nalpha</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">nelec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nbeta</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">nelec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">h1e</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">()</span>
+            <span class="n">dm</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
+            <span class="n">vhf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_veff</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+
+            <span class="n">fock_a</span> <span class="o">=</span> <span class="n">h1e</span> <span class="o">+</span> <span class="n">vhf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">fock_b</span> <span class="o">=</span> <span class="n">h1e</span> <span class="o">+</span> <span class="n">vhf</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">nalpha</span> <span class="o">&gt;</span> <span class="n">nbeta</span><span class="p">:</span>
+                <span class="n">ndocc</span> <span class="o">=</span> <span class="n">nbeta</span>
+                <span class="n">nsocc</span> <span class="o">=</span> <span class="n">nalpha</span> <span class="o">-</span> <span class="n">nbeta</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ndocc</span> <span class="o">=</span> <span class="n">nalpha</span>
+                <span class="n">nsocc</span> <span class="o">=</span> <span class="n">nbeta</span> <span class="o">-</span> <span class="n">nalpha</span>
+
+            <span class="n">fock_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_a</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fock_a</span><span class="p">,</span> <span class="n">mo_a</span><span class="p">))</span>
+            <span class="n">fock_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_a</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fock_b</span><span class="p">,</span> <span class="n">mo_a</span><span class="p">))</span>
+
+            <span class="c1"># Semicanonicalize Ca using fock_a, nocc_a -&gt; Ca, mo_energy_a, U_a, f_ov_a</span>
+            <span class="n">mo_a</span><span class="p">,</span> <span class="n">mo_energy_a</span><span class="p">,</span> <span class="n">f_ov_a</span><span class="p">,</span> <span class="n">f_aa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semi_canonicalize_orbitals</span><span class="p">(</span>
+                <span class="n">fock_a</span><span class="p">,</span> <span class="n">ndocc</span> <span class="o">+</span> <span class="n">nsocc</span><span class="p">,</span> <span class="n">mo_a</span><span class="p">)</span>
+
+            <span class="c1"># Semicanonicalize Cb using fock_b, nocc_b -&gt; Cb, mo_energy_b, U_b, f_ov_b</span>
+            <span class="n">mo_b</span><span class="p">,</span> <span class="n">mo_energy_b</span><span class="p">,</span> <span class="n">f_ov_b</span><span class="p">,</span> <span class="n">f_bb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semi_canonicalize_orbitals</span><span class="p">(</span><span class="n">fock_b</span><span class="p">,</span> <span class="n">ndocc</span><span class="p">,</span> <span class="n">mo_a</span><span class="p">)</span>
+
+            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="p">[</span><span class="n">mo_a</span><span class="p">,</span> <span class="n">mo_b</span><span class="p">]</span>
+
+            <span class="n">f_ov</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_ov_a</span><span class="p">,</span> <span class="n">f_ov_b</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">f_ov</span> <span class="o">=</span> <span class="n">f_ov</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spin_c</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_a</span> <span class="o">=</span> <span class="n">mo_energy_a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_b</span> <span class="o">=</span> <span class="n">mo_energy_b</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_a</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_b</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mo_coeff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mo_occ</span>
@@ -564,27 +616,68 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_nocc</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">nelec</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nvir</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_a</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mo_energy_b</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">chkfile</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">compute_mpn_energy</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">compute_spec</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compute_properties</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">approx_trans_moments</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evec_print_tol</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spec_factor_print_tol</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncvs</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ncvs</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin_c</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">dip_ints</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">intor</span><span class="p">(</span><span class="s1">&#39;int1e_r&#39;</span><span class="p">,</span><span class="n">comp</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">dip_mom_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dip_ints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">dip_mom_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dip_ints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dip_ints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">dip</span> <span class="o">=</span> <span class="n">dip_ints</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span>
+            <span class="n">dip_mom_a</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dip</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">dip_mom_b</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dip</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dip_mom</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dip_mom</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dip_mom_a</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dip_mom</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dip_mom_b</span><span class="p">)</span>
+
+        <span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_charges</span><span class="p">()</span>
+        <span class="n">coords</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dip_mom_nuc</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,ix-&gt;x&#39;</span><span class="p">,</span> <span class="n">charges</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
 
     <span class="n">compute_amplitudes</span> <span class="o">=</span> <span class="n">uadc_amplitudes</span><span class="o">.</span><span class="n">compute_amplitudes</span>
     <span class="n">compute_energy</span> <span class="o">=</span> <span class="n">uadc_amplitudes</span><span class="o">.</span><span class="n">compute_energy</span>
     <span class="n">transform_integrals</span> <span class="o">=</span> <span class="n">uadc_ao2mo</span><span class="o">.</span><span class="n">transform_integrals_incore</span>
+
+<div class="viewcode-block" id="UADC.semi_canonicalize_orbitals">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.adc.html#pyscf.adc.uadc.UADC.semi_canonicalize_orbitals">[docs]</a>
+    <span class="k">def</span> <span class="nf">semi_canonicalize_orbitals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+
+        <span class="c1"># Diagonalize occ-occ block</span>
+        <span class="n">evals_oo</span><span class="p">,</span> <span class="n">evecs_oo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">f</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,</span> <span class="p">:</span><span class="n">nocc</span><span class="p">])</span>
+
+        <span class="c1"># Diagonalize virt-virt block</span>
+        <span class="n">evals_vv</span><span class="p">,</span> <span class="n">evecs_vv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">nocc</span><span class="p">:,</span> <span class="n">nocc</span><span class="p">:])</span>
+
+        <span class="n">evals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">evals_oo</span><span class="p">,</span> <span class="n">evals_vv</span><span class="p">))</span>
+
+        <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">U</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,</span> <span class="p">:</span><span class="n">nocc</span><span class="p">]</span> <span class="o">=</span> <span class="n">evecs_oo</span>
+        <span class="n">U</span><span class="p">[</span><span class="n">nocc</span><span class="p">:,</span> <span class="n">nocc</span><span class="p">:]</span> <span class="o">=</span> <span class="n">evecs_vv</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">U</span><span class="p">)</span>
+
+        <span class="n">transform_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">U</span><span class="p">))</span>
+        <span class="n">f_ov</span> <span class="o">=</span> <span class="n">transform_f</span><span class="p">[:</span><span class="n">nocc</span><span class="p">,</span> <span class="n">nocc</span><span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">C</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">f_ov</span><span class="p">,</span> <span class="n">transform_f</span></div>
+
 
 <div class="viewcode-block" id="UADC.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.adc.html#pyscf.adc.uadc.UADC.dump_flags">[docs]</a>
@@ -613,8 +706,8 @@ document.write(`
 <div class="viewcode-block" id="UADC.kernel_gs">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.adc.html#pyscf.adc.uadc.UADC.kernel_gs">[docs]</a>
     <span class="k">def</span> <span class="nf">kernel_gs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;adc(2)&quot;</span><span class="p">,</span> <span class="s2">&quot;adc(2)-x&quot;</span><span class="p">,</span> <span class="s2">&quot;adc(3)&quot;</span><span class="p">):</span>
@@ -718,8 +811,8 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Hook for dumping results and clearing up the object.&#39;&#39;&#39;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;E_corr = </span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;MP</span><span class="si">%s</span><span class="s1"> correlation energy of reference state (a.u.) = </span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="UADC.ea_adc">
@@ -786,7 +879,6 @@ document.write(`
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">adc</span>
 

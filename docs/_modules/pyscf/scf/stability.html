@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -433,10 +433,15 @@ document.write(`
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">hf</span><span class="p">,</span> <span class="n">hf_symm</span><span class="p">,</span> <span class="n">uhf_symm</span>
 <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">_response_functions</span>  <span class="c1"># noqa</span>
 <span class="kn">from</span> <span class="nn">pyscf.soscf</span> <span class="kn">import</span> <span class="n">newton_ah</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
+
+<span class="n">STAB_NROOTS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;stab_nroots&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">STAB_TOL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;stab_tol&#39;</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span>
 
 <div class="viewcode-block" id="rhf_stability">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rhf_stability">[docs]</a>
-<span class="k">def</span> <span class="nf">rhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Stability analysis for RHF/RKS method.</span>
 
@@ -451,6 +456,10 @@ document.write(`
 <span class="sd">            stability analysis.</span>
 <span class="sd">        return_status: bool</span>
 <span class="sd">            Whether to return `stable_i` and `stable_e`</span>
+<span class="sd">        nroots : int</span>
+<span class="sd">            Number of roots solved by Davidson solver</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Convergence threshold for Davidson solver</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        If return_status is False (default), the return value includes</span>
@@ -464,24 +473,21 @@ document.write(`
 <span class="sd">        and the second corresponds to the external stability.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">mo_i</span> <span class="o">=</span> <span class="n">mo_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
+        <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">rhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
+        <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
-        <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">rhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_i</span><span class="p">,</span> <span class="n">stable_e</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span> <span class="o">=</span> <span class="n">rhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span> <span class="o">=</span> <span class="n">rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span></div>
 
 
 <div class="viewcode-block" id="uhf_stability">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.uhf_stability">[docs]</a>
-<span class="k">def</span> <span class="nf">uhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">uhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Stability analysis for UHF/UKS method.</span>
 
@@ -496,6 +502,10 @@ document.write(`
 <span class="sd">            stability analysis.</span>
 <span class="sd">        return_status: bool</span>
 <span class="sd">            Whether to return `stable_i` and `stable_e`</span>
+<span class="sd">        nroots : int</span>
+<span class="sd">            Number of roots solved by Davidson solver</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Convergence threshold for Davidson solver</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        If return_status is False (default), the return value includes</span>
@@ -509,24 +519,21 @@ document.write(`
 <span class="sd">        and the second corresponds to the external stability.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">mo_i</span> <span class="o">=</span> <span class="n">mo_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
+        <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">uhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
+        <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
-        <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">uhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_i</span><span class="p">,</span> <span class="n">stable_e</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span> <span class="o">=</span> <span class="n">uhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span> <span class="o">=</span> <span class="n">uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span></div>
 
 
 <div class="viewcode-block" id="rohf_stability">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rohf_stability">[docs]</a>
-<span class="k">def</span> <span class="nf">rohf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rohf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Stability analysis for ROHF/ROKS method.</span>
 
@@ -540,6 +547,10 @@ document.write(`
 <span class="sd">            External stability. It is not available in current version.</span>
 <span class="sd">        return_status: bool</span>
 <span class="sd">            Whether to return `stable_i` and `stable_e`</span>
+<span class="sd">        nroots : int</span>
+<span class="sd">            Number of roots solved by Davidson solver</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Convergence threshold for Davidson solver</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        If return_status is False (default), the return value includes</span>
@@ -553,24 +564,31 @@ document.write(`
 <span class="sd">        and the second corresponds to the external stability.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">mo_i</span> <span class="o">=</span> <span class="n">mo_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
+        <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">rohf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
+        <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">rohf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
-        <span class="n">stable_i</span> <span class="o">=</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span><span class="p">,</span> <span class="n">stable_i</span> <span class="o">=</span> <span class="n">rohf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_e</span> <span class="o">=</span> <span class="n">rohf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span><span class="p">,</span> <span class="n">stable_i</span><span class="p">,</span> <span class="n">stable_e</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">internal</span><span class="p">:</span>
-            <span class="n">mo_i</span> <span class="o">=</span> <span class="n">rohf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">external</span><span class="p">:</span>
-            <span class="n">mo_e</span> <span class="o">=</span> <span class="n">rohf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mo_i</span><span class="p">,</span> <span class="n">mo_e</span></div>
+
+
+<div class="viewcode-block" id="dump_status">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.dump_status">[docs]</a>
+<span class="k">def</span> <span class="nf">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="n">method_class</span><span class="p">,</span> <span class="n">stab_type</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stable</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="n">method_class</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; wavefunction has an </span><span class="si">{</span><span class="n">stab_type</span><span class="si">}</span><span class="s1"> instability&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="n">method_class</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; wavefunction is stable in the </span><span class="si">{</span><span class="n">stab_type</span><span class="si">}</span><span class="s1"> &#39;</span>
+                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ghf_stability">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.ghf_stability">[docs]</a>
-<span class="k">def</span> <span class="nf">ghf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">ghf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Stability analysis for GHF/GKS method.</span>
 
@@ -580,6 +598,10 @@ document.write(`
 <span class="sd">    Kwargs:</span>
 <span class="sd">        return_status: bool</span>
 <span class="sd">            Whether to return `stable_i` and `stable_e`</span>
+<span class="sd">        nroots : int</span>
+<span class="sd">            Number of roots solved by Davidson solver</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Convergence threshold for Davidson solver</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        If return_status is False (default), the return value includes</span>
@@ -604,15 +626,16 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an internal instability&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the internal &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;ghf_stability: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -621,7 +644,8 @@ document.write(`
 
 <div class="viewcode-block" id="dhf_stability">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.dhf_stability">[docs]</a>
-<span class="k">def</span> <span class="nf">dhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">dhf_stability</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Stability analysis for DHF/DKS method.</span>
 
@@ -631,6 +655,10 @@ document.write(`
 <span class="sd">    Kwargs:</span>
 <span class="sd">        return_status: bool</span>
 <span class="sd">            Whether to return `stable_i` and `stable_e`</span>
+<span class="sd">        nroots : int</span>
+<span class="sd">            Number of roots solved by Davidson solver</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Convergence threshold for Davidson solver</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        If return_status is False (default), the return value includes</span>
@@ -653,15 +681,16 @@ document.write(`
     <span class="n">x0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
     <span class="n">x0</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an internal instability&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the internal &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;dhf_stability: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -670,12 +699,12 @@ document.write(`
 
 <div class="viewcode-block" id="rhf_internal">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rhf_internal">[docs]</a>
-<span class="k">def</span> <span class="nf">rhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">g</span><span class="p">,</span> <span class="n">hop</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">gen_g_hop_rhf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span>
                                             <span class="n">with_symmetry</span><span class="o">=</span><span class="n">with_symmetry</span><span class="p">)</span>
     <span class="n">hdiag</span> <span class="o">*=</span> <span class="mi">2</span>
-    <span class="n">stable</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">-</span> <span class="n">e</span>
         <span class="n">hdiagd</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">hdiagd</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1e-8</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-8</span>
@@ -683,7 +712,7 @@ document.write(`
     <span class="c1"># The results of hop(x) corresponds to a displacement that reduces</span>
     <span class="c1"># gradients g.  It is the vir-occ block of the matrix vector product</span>
     <span class="c1"># (Hessian*x). The occ-vir block equals to x2.T.conj(). The overall</span>
-    <span class="c1"># Hessian for internal reotation is x2 + x2.T.conj(). This is</span>
+    <span class="c1"># Hessian for internal rotation is x2 + x2.T.conj(). This is</span>
     <span class="c1"># the reason we apply (.real * 2) below</span>
     <span class="k">def</span> <span class="nf">hessian_x</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">hop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="mi">2</span>
@@ -692,15 +721,16 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an internal instability&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the internal &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;rhf_internal: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -780,10 +810,10 @@ document.write(`
 
 <div class="viewcode-block" id="rhf_external">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rhf_external">[docs]</a>
-<span class="k">def</span> <span class="nf">rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">hop1</span><span class="p">,</span> <span class="n">hdiag1</span><span class="p">,</span> <span class="n">hop2</span><span class="p">,</span> <span class="n">hdiag2</span> <span class="o">=</span> <span class="n">_gen_hop_rhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="p">)</span>
-    <span class="n">stable</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag1</span> <span class="o">-</span> <span class="n">e</span>
@@ -793,12 +823,12 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">hdiag1</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag1</span><span class="p">[</span><span class="n">hdiag1</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e1</span><span class="p">,</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has a real -&gt; complex instability&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the real -&gt; complex &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e1</span><span class="p">,</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;rhf_real2complex: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e1</span><span class="p">,</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable1</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;real -&gt; complex&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag2</span> <span class="o">-</span> <span class="n">e</span>
@@ -806,15 +836,16 @@ document.write(`
         <span class="k">return</span> <span class="n">dx</span><span class="o">/</span><span class="n">hdiagd</span>
     <span class="n">x0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">hdiag2</span><span class="p">)</span>
     <span class="n">x0</span><span class="p">[</span><span class="n">hdiag2</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag2</span><span class="p">[</span><span class="n">hdiag2</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span>
-    <span class="n">e3</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop2</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e3</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has a RHF/RKS -&gt; UHF/UKS instability.&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="p">(</span><span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v3</span><span class="p">),</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the RHF/RKS -&gt; &#39;</span>
-                 <span class="s1">&#39;UHF/UKS stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e3</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop2</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;rhf_external: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e3</span><span class="p">,</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">e3</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e3</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;RHF/RKS -&gt; UHF/UKS&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="p">(</span><span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v3</span><span class="p">),</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -823,12 +854,12 @@ document.write(`
 
 <div class="viewcode-block" id="rohf_internal">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rohf_internal">[docs]</a>
-<span class="k">def</span> <span class="nf">rohf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rohf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">g</span><span class="p">,</span> <span class="n">hop</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">gen_g_hop_rohf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span>
                                              <span class="n">with_symmetry</span><span class="o">=</span><span class="n">with_symmetry</span><span class="p">)</span>
     <span class="n">hdiag</span> <span class="o">*=</span> <span class="mi">2</span>
-    <span class="n">stable</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">-</span> <span class="n">e</span>
         <span class="n">hdiagd</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">hdiagd</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1e-8</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-8</span>
@@ -840,15 +871,16 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an internal instability.&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the internal &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;rohf_internal: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -857,18 +889,19 @@ document.write(`
 
 <div class="viewcode-block" id="rohf_external">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.rohf_external">[docs]</a>
-<span class="k">def</span> <span class="nf">rohf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rohf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="uhf_internal">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.uhf_internal">[docs]</a>
-<span class="k">def</span> <span class="nf">uhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">uhf_internal</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">g</span><span class="p">,</span> <span class="n">hop</span><span class="p">,</span> <span class="n">hdiag</span> <span class="o">=</span> <span class="n">newton_ah</span><span class="o">.</span><span class="n">gen_g_hop_uhf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">,</span>
                                             <span class="n">with_symmetry</span><span class="o">=</span><span class="n">with_symmetry</span><span class="p">)</span>
     <span class="n">hdiag</span> <span class="o">*=</span> <span class="mi">2</span>
-    <span class="n">stable</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag</span> <span class="o">-</span> <span class="n">e</span>
         <span class="n">hdiagd</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">hdiagd</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1e-8</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-8</span>
@@ -880,18 +913,19 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">g</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an internal instability.&#39;</span><span class="p">)</span>
+    <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hessian_x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;uhf_internal: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;internal&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stable</span><span class="p">:</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
+    <span class="k">else</span><span class="p">:</span>
         <span class="n">nocca</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">nvira</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="p">(</span><span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[:</span><span class="n">nocca</span><span class="o">*</span><span class="n">nvira</span><span class="p">]),</span>
               <span class="n">_rotate_mo</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">nocca</span><span class="o">*</span><span class="n">nvira</span><span class="p">:]))</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the internal &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
-        <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1001,10 +1035,10 @@ document.write(`
 
 <div class="viewcode-block" id="uhf_external">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.stability.uhf_external">[docs]</a>
-<span class="k">def</span> <span class="nf">uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">nroots</span><span class="o">=</span><span class="n">STAB_NROOTS</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">STAB_TOL</span><span class="p">):</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">hop1</span><span class="p">,</span> <span class="n">hdiag1</span><span class="p">,</span> <span class="n">hop2</span><span class="p">,</span> <span class="n">hdiag2</span> <span class="o">=</span> <span class="n">_gen_hop_uhf_external</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_symmetry</span><span class="p">)</span>
-    <span class="n">stable</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag1</span> <span class="o">-</span> <span class="n">e</span>
@@ -1014,12 +1048,12 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">hdiag1</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag1</span><span class="p">[</span><span class="n">hdiag1</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e1</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has a real -&gt; complex instability&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the real -&gt; complex &#39;</span>
-                 <span class="s1">&#39;stability analysis&#39;</span><span class="p">)</span>
+    <span class="n">e1</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop1</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;uhf_real2complex: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e1</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable1</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e1</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;real -&gt; complex&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">precond</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
         <span class="n">hdiagd</span> <span class="o">=</span> <span class="n">hdiag2</span> <span class="o">-</span> <span class="n">e</span>
@@ -1029,11 +1063,14 @@ document.write(`
     <span class="n">x0</span><span class="p">[</span><span class="n">hdiag2</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">hdiag2</span><span class="p">[</span><span class="n">hdiag2</span><span class="o">&gt;</span><span class="mf">1e-5</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">with_symmetry</span><span class="p">:</span>  <span class="c1"># allow to break point group symmetry</span>
         <span class="n">x0</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">hdiag2</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">e3</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop2</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;uhf_external: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e3</span><span class="p">)</span>
+    <span class="n">e3</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson</span><span class="p">(</span><span class="n">hop2</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;uhf_external: lowest eigs of H = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nroots</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">e3</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">e3</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stable</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">e3</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">dump_status</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">stable</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;UHF/UKS -&gt; GHF/GKS&#39;</span><span class="p">)</span>
     <span class="n">mo</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">e3</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e-5</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction has an UHF/UKS -&gt; GHF/GKS instability.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stable</span><span class="p">:</span>
         <span class="n">occidxa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">viridxa</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">occidxb</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1050,10 +1087,6 @@ document.write(`
         <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
         <span class="n">mo</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">mo</span><span class="p">[:,:</span><span class="n">nocca</span><span class="p">],</span> <span class="n">mo</span><span class="p">[:,</span><span class="n">nmo</span><span class="p">:</span><span class="n">nmo</span><span class="o">+</span><span class="n">noccb</span><span class="p">],</span>
                            <span class="n">mo</span><span class="p">[:,</span><span class="n">nocca</span><span class="p">:</span><span class="n">nmo</span><span class="p">],</span> <span class="n">mo</span><span class="p">[:,</span><span class="n">nmo</span><span class="o">+</span><span class="n">noccb</span><span class="p">:]])</span>
-        <span class="n">stable</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s1"> wavefunction is stable in the UHF/UKS -&gt; &#39;</span>
-                 <span class="s1">&#39;GHF/GKS stability analysis&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_status</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">mo</span><span class="p">,</span> <span class="n">stable</span>
     <span class="k">else</span><span class="p">:</span>

@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -479,15 +479,20 @@ document.write(`
     <span class="n">strsa</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">gen_strings4orblist</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">neleca</span><span class="p">)</span>
     <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">strsa</span><span class="p">)</span>
     <span class="n">airreps</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">_gen_strs_irrep</span><span class="p">(</span><span class="n">strsa</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">)</span>
-    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">na</span><span class="p">)</span>
 
     <span class="n">sym_allowed</span> <span class="o">=</span> <span class="p">(</span><span class="n">airreps</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">^</span> <span class="n">airreps</span><span class="p">)</span> <span class="o">==</span> <span class="n">wfnsym</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">na</span><span class="p">)</span>
     <span class="n">sym_allowed</span><span class="p">[</span><span class="n">idx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">idx_a</span><span class="p">,</span> <span class="n">idx_b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sym_allowed</span><span class="p">)</span>
 
+    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">na</span><span class="p">)[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="n">nroots</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hdiag</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">hdiag_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]</span>
+
     <span class="n">ci0</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argpartition</span><span class="p">(</span><span class="n">hdiag</span><span class="p">[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">],</span> <span class="n">nroots</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nroots</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">hdiag_indices</span><span class="p">:</span>
         <span class="n">addra</span><span class="p">,</span> <span class="n">addrb</span> <span class="o">=</span> <span class="n">idx_a</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">idx_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">na</span><span class="p">,</span> <span class="n">na</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">addra</span> <span class="o">==</span> <span class="n">addrb</span><span class="p">:</span>
@@ -497,7 +502,8 @@ document.write(`
         <span class="n">ci0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">direct_spin1</span><span class="o">.</span><span class="n">FCIvector</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span></div>
 
 
@@ -505,51 +511,22 @@ document.write(`
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.direct_spin0_symm.get_init_guess_cyl_sym">[docs]</a>
 <span class="k">def</span> <span class="nf">get_init_guess_cyl_sym</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="n">neleca</span><span class="p">,</span> <span class="n">nelecb</span> <span class="o">=</span> <span class="n">direct_spin1</span><span class="o">.</span><span class="n">_unpack_nelec</span><span class="p">(</span><span class="n">nelec</span><span class="p">)</span>
-    <span class="n">strsa</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">gen_strings4orblist</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">norb</span><span class="p">),</span> <span class="n">neleca</span><span class="p">)</span>
-    <span class="n">airreps_d2h</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">_gen_strs_irrep</span><span class="p">(</span><span class="n">strsa</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">)</span>
-    <span class="n">a_ls</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">_strs_angular_momentum</span><span class="p">(</span><span class="n">strsa</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">)</span>
-
-    <span class="n">wfnsym_in_d2h</span> <span class="o">=</span> <span class="n">wfnsym</span> <span class="o">%</span> <span class="mi">10</span>
-    <span class="n">wfn_momentum</span> <span class="o">=</span> <span class="n">symm</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">linearmole_irrep2momentum</span><span class="p">(</span><span class="n">wfnsym</span><span class="p">)</span>
-    <span class="n">na</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">strsa</span><span class="p">)</span>
-    <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span><span class="n">na</span><span class="p">)</span>
-    <span class="n">degen</span> <span class="o">=</span> <span class="n">orbsym</span><span class="o">.</span><span class="n">degen_mapping</span>
+    <span class="n">na</span> <span class="o">=</span> <span class="n">cistring</span><span class="o">.</span><span class="n">num_strings</span><span class="p">(</span><span class="n">norb</span><span class="p">,</span> <span class="n">neleca</span><span class="p">)</span>
+    <span class="n">ci0_guess</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">get_init_guess_cyl_sym</span><span class="p">(</span>
+            <span class="n">norb</span><span class="p">,</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">hdiag</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
     <span class="n">ci0</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">iroot</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">wfn_ungerade</span> <span class="o">=</span> <span class="n">wfnsym_in_d2h</span> <span class="o">&gt;=</span> <span class="mi">4</span>
-    <span class="n">a_ungerade</span> <span class="o">=</span> <span class="n">airreps_d2h</span> <span class="o">&gt;=</span> <span class="mi">4</span>
-    <span class="n">sym_allowed</span> <span class="o">=</span> <span class="n">a_ungerade</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">==</span> <span class="n">a_ungerade</span> <span class="o">^</span> <span class="n">wfn_ungerade</span>
-    <span class="c1"># total angular momentum == wfn_momentum</span>
-    <span class="n">sym_allowed</span> <span class="o">&amp;=</span> <span class="n">a_ls</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">==</span> <span class="n">wfn_momentum</span> <span class="o">-</span> <span class="n">a_ls</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">na</span><span class="p">)</span>
-    <span class="n">sym_allowed</span><span class="p">[</span><span class="n">idx</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="n">idx_a</span><span class="p">,</span> <span class="n">idx_b</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sym_allowed</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">hdiag</span><span class="p">[</span><span class="n">idx_a</span><span class="p">,</span><span class="n">idx_b</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">():</span>
-        <span class="n">addra</span><span class="p">,</span> <span class="n">addrb</span> <span class="o">=</span> <span class="n">idx_a</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">idx_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-        <span class="n">ca</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">_cyl_sym_csf2civec</span><span class="p">(</span><span class="n">strsa</span><span class="p">,</span> <span class="n">addra</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">degen</span><span class="p">)</span>
-        <span class="n">cb</span> <span class="o">=</span> <span class="n">direct_spin1_symm</span><span class="o">.</span><span class="n">_cyl_sym_csf2civec</span><span class="p">(</span><span class="n">strsa</span><span class="p">,</span> <span class="n">addrb</span><span class="p">,</span> <span class="n">orbsym</span><span class="p">,</span> <span class="n">degen</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">wfn_momentum</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">wfnsym</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">ca</span><span class="o">.</span><span class="n">real</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cb</span><span class="o">.</span><span class="n">real</span>
-            <span class="n">x</span><span class="o">-=</span> <span class="n">ca</span><span class="o">.</span><span class="n">imag</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cb</span><span class="o">.</span><span class="n">imag</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">ca</span><span class="o">.</span><span class="n">imag</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cb</span><span class="o">.</span><span class="n">real</span>
-            <span class="n">x</span><span class="o">+=</span> <span class="n">ca</span><span class="o">.</span><span class="n">real</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">cb</span><span class="o">.</span><span class="n">imag</span>
-        <span class="k">if</span> <span class="n">addra</span> <span class="o">==</span> <span class="n">addrb</span><span class="p">:</span>
-            <span class="n">norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span>
-            <span class="n">norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">norm</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
-                <span class="k">continue</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ci0_guess</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">na</span><span class="p">,</span> <span class="n">na</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+            <span class="k">continue</span>
         <span class="n">x</span> <span class="o">*=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">norm</span>
         <span class="n">ci0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">direct_spin1</span><span class="o">.</span><span class="n">FCIvector</span><span class="p">))</span>
-        <span class="n">iroot</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">iroot</span> <span class="o">&gt;=</span> <span class="n">nroots</span><span class="p">:</span>
-            <span class="k">break</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ci0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">lib</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">WfnSymmetryError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Initial guess for symmetry </span><span class="si">{</span><span class="n">wfnsym</span><span class="si">}</span><span class="s1"> not found&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ci0</span></div>
 
 
@@ -557,6 +534,8 @@ document.write(`
 <div class="viewcode-block" id="FCISolver">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.fci.html#pyscf.fci.direct_spin0_symm.FCISolver">[docs]</a>
 <span class="k">class</span> <span class="nc">FCISolver</span><span class="p">(</span><span class="n">direct_spin0</span><span class="o">.</span><span class="n">FCISolver</span><span class="p">):</span>
+
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;wfnsym&#39;</span><span class="p">,</span> <span class="s1">&#39;sym_allowed_idx&#39;</span><span class="p">}</span>
 
     <span class="n">davidson_only</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;fci_direct_spin1_symm_FCI_davidson_only&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="n">pspace_size</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;fci_direct_spin1_symm_FCI_pspace_size&#39;</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>

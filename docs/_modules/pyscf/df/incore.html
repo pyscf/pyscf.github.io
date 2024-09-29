@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -440,22 +440,34 @@ document.write(`
 <div class="viewcode-block" id="aux_e2">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.df.html#pyscf.df.incore.aux_e2">[docs]</a>
 <span class="k">def</span> <span class="nf">aux_e2</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxmol_or_auxbasis</span><span class="p">,</span> <span class="n">intor</span><span class="o">=</span><span class="s1">&#39;int3c2e&#39;</span><span class="p">,</span> <span class="n">aosym</span><span class="o">=</span><span class="s1">&#39;s1&#39;</span><span class="p">,</span> <span class="n">comp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-           <span class="n">cintopt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+           <span class="n">cintopt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shls_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;3-center AO integrals (ij|L), where L is the auxiliary basis.</span>
 
 <span class="sd">    Kwargs:</span>
-<span class="sd">        cintopt : Libcint-3.14 and newer version support to compute int3c2e</span>
-<span class="sd">            without the opt for the 3rd index.  It can be precomputed to</span>
-<span class="sd">            reduce the overhead of cintopt initialization repeatedly.</span>
+<span class="sd">        cintopt :</span>
+<span class="sd">            Precomputing certain pair-shell data. It can be created by</span>
 
 <span class="sd">            cintopt = gto.moleintor.make_cintopt(mol._atm, mol._bas, mol._env, &#39;int3c2e&#39;)</span>
+
+<span class="sd">        shls_slice : 6-element tuple</span>
+<span class="sd">            Label the start-stop shells for each index in the integral tensor.</span>
+<span class="sd">            For the (ij|aux) = intor(&#39;int3c2e&#39;), the tuple should be given as</span>
+<span class="sd">            (ish_start, ish_end, jsh_start, jsh_end, aux_start, aux_end)</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxmol_or_auxbasis</span><span class="p">,</span> <span class="n">gto</span><span class="o">.</span><span class="n">MoleBase</span><span class="p">):</span>
         <span class="n">auxmol</span> <span class="o">=</span> <span class="n">auxmol_or_auxbasis</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxmol_or_auxbasis</span>
         <span class="n">auxmol</span> <span class="o">=</span> <span class="n">addons</span><span class="o">.</span><span class="n">make_auxmol</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span>
-    <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="o">+</span><span class="n">auxmol</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">shls_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">shls_slice</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span>
+                      <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span><span class="o">+</span><span class="n">auxmol</span><span class="o">.</span><span class="n">nbas</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">shls_slice</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span>
+        <span class="k">assert</span> <span class="n">shls_slice</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">auxmol</span><span class="o">.</span><span class="n">nbas</span>
+        <span class="n">shls_slice</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shls_slice</span><span class="p">)</span>
+        <span class="n">shls_slice</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span>
+        <span class="n">shls_slice</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nbas</span>
 
     <span class="c1"># Extract the call of the two lines below</span>
     <span class="c1">#  pmol = gto.mole.conc_mol(mol, auxmol)</span>

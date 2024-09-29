@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -427,6 +427,7 @@ document.write(`
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pyscf.gto</span>
 <span class="kn">import</span> <span class="nn">pyscf.scf</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf</span> <span class="kn">import</span> <span class="n">ucasci</span>
 <span class="kn">from</span> <span class="nn">pyscf.mcscf.mc1step</span> <span class="kn">import</span> <span class="n">expmat</span><span class="p">,</span> <span class="n">rotate_orb_cc</span><span class="p">,</span> <span class="n">max_stepsize_scheduler</span><span class="p">,</span> <span class="n">as_scanner</span>
@@ -806,6 +807,9 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_stepsize</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">__getstate__</span><span class="p">,</span> <span class="n">__setstate__</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">generate_pickle_methods</span><span class="p">(</span>
+            <span class="n">excludes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;chkfile&#39;</span><span class="p">,</span> <span class="s1">&#39;callback&#39;</span><span class="p">))</span>
 
 <div class="viewcode-block" id="UCASSCF.dump_flags">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.umc1step.UCASSCF.dump_flags">[docs]</a>
@@ -1187,39 +1191,54 @@ document.write(`
 
 <div class="viewcode-block" id="UCASSCF.dump_chk">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.mcscf.html#pyscf.mcscf.umc1step.UCASSCF.dump_chk">[docs]</a>
-    <span class="k">def</span> <span class="nf">dump_chk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="nf">dump_chk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">envs_or_file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Serialize the MCSCF object and save it to the specified chkfile.</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chk_ci</span><span class="p">:</span>
-            <span class="n">civec</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;fcivec&#39;</span><span class="p">]</span>
+<span class="sd">        Args:</span>
+<span class="sd">            envs_or_file:</span>
+<span class="sd">                If this argument is a file path, the serialized MCSCF object is</span>
+<span class="sd">                saved to the file specified by this argument.</span>
+<span class="sd">                If this attribute is a dict (created by locals()), the necessary</span>
+<span class="sd">                variables are saved to the file specified by the attribute .chkfile.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">envs_or_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">envs</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">chk_file</span> <span class="o">=</span> <span class="n">envs_or_file</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">civec</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">envs</span> <span class="o">=</span> <span class="n">envs_or_file</span>
+            <span class="n">chk_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chk_file</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">e_tot</span> <span class="o">=</span> <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">e_cas</span> <span class="o">=</span> <span class="n">civec</span> <span class="o">=</span> <span class="n">casdm1</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">ncore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncore</span>
         <span class="n">ncas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncas</span>
         <span class="n">nocca</span> <span class="o">=</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ncas</span>
         <span class="n">noccb</span> <span class="o">=</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ncas</span>
-        <span class="k">if</span> <span class="s1">&#39;mo&#39;</span> <span class="ow">in</span> <span class="n">envs</span><span class="p">:</span>
-            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">]</span>
-        <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-        <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,:</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,:</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">natorb</span><span class="p">:</span>
-            <span class="n">occa</span><span class="p">,</span> <span class="n">ucas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eig</span><span class="p">(</span><span class="o">-</span><span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nocca</span><span class="p">)</span>
-            <span class="n">occb</span><span class="p">,</span> <span class="n">ucas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eig</span><span class="p">(</span><span class="o">-</span><span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">noccb</span><span class="p">)</span>
-            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">nocca</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">occa</span>
-            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">noccb</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">occb</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">nocca</span><span class="p">]</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
-            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">noccb</span><span class="p">]</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
-        <span class="n">mo_energy</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
 
-        <span class="n">chkfile</span><span class="o">.</span><span class="n">dump_mcscf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">&#39;mcscf&#39;</span><span class="p">,</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;e_tot&#39;</span><span class="p">],</span>
+        <span class="k">if</span> <span class="n">envs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chk_ci</span><span class="p">:</span>
+                <span class="n">civec</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;fcivec&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;mo&#39;</span> <span class="ow">in</span> <span class="n">envs</span><span class="p">:</span>
+                <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo_coeff&#39;</span><span class="p">]</span>
+            <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,:</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,:</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">natorb</span><span class="p">:</span>
+                <span class="n">occa</span><span class="p">,</span> <span class="n">ucas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eig</span><span class="p">(</span><span class="o">-</span><span class="n">casdm1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nocca</span><span class="p">)</span>
+                <span class="n">occb</span><span class="p">,</span> <span class="n">ucas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eig</span><span class="p">(</span><span class="o">-</span><span class="n">casdm1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">noccb</span><span class="p">)</span>
+                <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">nocca</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">occa</span>
+                <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">noccb</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">occb</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">nocca</span><span class="p">]</span> <span class="o">=</span> <span class="n">casdm1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
+                <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">ncore</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">noccb</span><span class="p">]</span> <span class="o">=</span> <span class="n">casdm1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
+
+        <span class="n">chkfile</span><span class="o">.</span><span class="n">dump_mcscf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span><span class="p">,</span> <span class="s1">&#39;mcscf&#39;</span><span class="p">,</span> <span class="n">e_tot</span><span class="p">,</span>
                            <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">ncore</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span>
-                           <span class="n">mo_energy</span><span class="p">,</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;e_cas&#39;</span><span class="p">],</span> <span class="n">civec</span><span class="p">,</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">],</span>
-                           <span class="n">overwrite_mol</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                           <span class="n">mo_energy</span><span class="p">,</span> <span class="n">e_cas</span><span class="p">,</span> <span class="n">civec</span><span class="p">,</span> <span class="n">casdm1</span><span class="p">,</span>
+                           <span class="n">overwrite_mol</span><span class="o">=</span><span class="p">(</span><span class="n">envs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 

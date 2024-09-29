@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -409,6 +409,7 @@ document.write(`
 <span class="c1"># limitations under the License.</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span><span class="p">,</span> <span class="n">optimize</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">sparse_linalg</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span><span class="p">,</span> <span class="n">__config__</span>
@@ -549,9 +550,9 @@ document.write(`
         <span class="n">prec_obj</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">LinearOperator</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nlag</span><span class="p">),</span> <span class="n">matvec</span><span class="o">=</span><span class="n">precond</span><span class="p">,</span>
                                                  <span class="n">dtype</span><span class="o">=</span><span class="n">bvec</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">x0_guess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_init_guess</span> <span class="p">(</span><span class="n">bvec</span><span class="p">,</span> <span class="n">Adiag</span><span class="p">,</span> <span class="n">Aop</span><span class="p">,</span> <span class="n">precond</span><span class="p">)</span>
-        <span class="n">Lvec</span><span class="p">,</span> <span class="n">info_int</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">cg</span><span class="p">(</span><span class="n">Aop_obj</span><span class="p">,</span> <span class="o">-</span><span class="n">bvec</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0_guess</span><span class="p">,</span>
-                                          <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_atol</span><span class="p">,</span>
-                                          <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_call</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">prec_obj</span><span class="p">)</span>
+        <span class="n">Lvec</span><span class="p">,</span> <span class="n">info_int</span> <span class="o">=</span> <span class="n">_cg</span><span class="p">(</span><span class="n">Aop_obj</span><span class="p">,</span> <span class="o">-</span><span class="n">bvec</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0_guess</span><span class="p">,</span>
+                             <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_atol</span><span class="p">,</span>
+                             <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">my_call</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">prec_obj</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Lagrange multiplier determination </span><span class="si">{}</span><span class="s1"> after </span><span class="si">{}</span><span class="s1"> iterations</span><span class="se">\n</span><span class="s1">&#39;</span>
                             <span class="s1">&#39;   |geff| = </span><span class="si">{}</span><span class="s1">, |Lvec| = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span> <span class="p">(</span>
                                 <span class="s1">&#39;converged&#39;</span> <span class="k">if</span> <span class="n">info_int</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;not converged&#39;</span><span class="p">,</span>
@@ -621,6 +622,13 @@ document.write(`
         <span class="n">x</span> <span class="o">/=</span> <span class="n">Adiagd</span>
         <span class="k">return</span> <span class="n">x</span></div>
 
+
+<span class="k">if</span> <span class="nb">int</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">__version__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">14</span><span class="p">:</span> <span class="c1"># scipy 1.14</span>
+    <span class="k">def</span> <span class="nf">_cg</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">cg</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="n">maxiter</span><span class="p">,</span>
+                                <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">_cg</span> <span class="o">=</span> <span class="n">sparse_linalg</span><span class="o">.</span><span class="n">cg</span>
 </pre></div>
 
                 </article>

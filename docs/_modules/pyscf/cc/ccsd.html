@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -467,7 +467,8 @@ document.write(`
     <span class="k">else</span><span class="p">:</span>
         <span class="n">adiis</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="n">conv</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">mycc</span><span class="o">.</span><span class="n">cycles</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">istep</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_cycle</span><span class="p">):</span>
         <span class="n">t1new</span><span class="p">,</span> <span class="n">t2new</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">update_amps</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -485,14 +486,15 @@ document.write(`
         <span class="n">t1new</span> <span class="o">=</span> <span class="n">t2new</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">run_diis</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">istep</span><span class="p">,</span> <span class="n">normt</span><span class="p">,</span> <span class="n">eccsd</span><span class="o">-</span><span class="n">eold</span><span class="p">,</span> <span class="n">adiis</span><span class="p">)</span>
         <span class="n">eold</span><span class="p">,</span> <span class="n">eccsd</span> <span class="o">=</span> <span class="n">eccsd</span><span class="p">,</span> <span class="n">mycc</span><span class="o">.</span><span class="n">energy</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
+        <span class="n">mycc</span><span class="o">.</span><span class="n">cycles</span> <span class="o">=</span> <span class="n">istep</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;cycle = </span><span class="si">%d</span><span class="s1">  E_corr(</span><span class="si">%s</span><span class="s1">) = </span><span class="si">%.15g</span><span class="s1">  dE = </span><span class="si">%.9g</span><span class="s1">  norm(t1,t2) = </span><span class="si">%.6g</span><span class="s1">&#39;</span><span class="p">,</span>
                  <span class="n">istep</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">eccsd</span><span class="p">,</span> <span class="n">eccsd</span> <span class="o">-</span> <span class="n">eold</span><span class="p">,</span> <span class="n">normt</span><span class="p">)</span>
         <span class="n">cput1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> iter&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cput1</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eccsd</span><span class="o">-</span><span class="n">eold</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">normt</span> <span class="o">&lt;</span> <span class="n">tolnormt</span><span class="p">:</span>
-            <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">break</span>
     <span class="n">log</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">cput0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">conv</span><span class="p">,</span> <span class="n">eccsd</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span></div>
+    <span class="k">return</span> <span class="n">converged</span><span class="p">,</span> <span class="n">eccsd</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span></div>
 
 
 
@@ -988,7 +990,7 @@ document.write(`
         <span class="n">tril2sq</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">square_mat_in_trilu_indices</span><span class="p">(</span><span class="n">nvira</span><span class="p">)</span>
         <span class="n">loadbuf</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">blksize</span><span class="p">,</span><span class="n">blksize</span><span class="p">,</span><span class="n">nvirb</span><span class="p">,</span><span class="n">nvirb</span><span class="p">))</span>
 
-        <span class="n">slices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nvira</span><span class="p">,</span> <span class="n">blksize</span><span class="p">)]</span>
+        <span class="n">slices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nvira</span><span class="p">,</span> <span class="n">blksize</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">istep</span><span class="p">,</span> <span class="n">wwbuf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fmap</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nvira</span><span class="p">,</span> <span class="n">blksize</span><span class="p">))):</span>
             <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">slices</span><span class="p">[</span><span class="n">istep</span><span class="p">]</span>
             <span class="n">off0</span> <span class="o">=</span> <span class="n">i0</span><span class="o">*</span><span class="p">(</span><span class="n">i0</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
@@ -1314,7 +1316,7 @@ document.write(`
 <span class="sd">        incore_complete : bool</span>
 <span class="sd">            Avoid all I/O (also for DIIS). Default is False.</span>
 <span class="sd">        level_shift : float</span>
-<span class="sd">            A shift on virtual orbital energies to stablize the CCSD iteration</span>
+<span class="sd">            A shift on virtual orbital energies to stabilize the CCSD iteration</span>
 <span class="sd">        frozen : int or list</span>
 <span class="sd">            If integer is given, the inner-most orbitals are frozen from CC</span>
 <span class="sd">            amplitudes.  Given the orbital indices (0-based) in a list, both</span>
@@ -1335,10 +1337,10 @@ document.write(`
 <span class="sd">            callback function can access all local variables in the current</span>
 <span class="sd">            environment.</span>
 
-<span class="sd">    Saved results</span>
+<span class="sd">    Saved results:</span>
 
 <span class="sd">        converged : bool</span>
-<span class="sd">            CCSD converged or not</span>
+<span class="sd">            Whether the CCSD iteration converged</span>
 <span class="sd">        e_corr : float</span>
 <span class="sd">            CCSD correlation correction</span>
 <span class="sd">        e_tot : float</span>
@@ -1347,6 +1349,8 @@ document.write(`
 <span class="sd">            T amplitudes t1[i,a], t2[i,j,a,b]  (i,j in occ, a,b in virt)</span>
 <span class="sd">        l1, l2 :</span>
 <span class="sd">            Lambda amplitudes l1[i,a], l2[i,j,a,b]  (i,j in occ, a,b in virt)</span>
+<span class="sd">        cycles : int</span>
+<span class="sd">            The number of iteration cycles performed</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;cc_ccsd_CCSD_max_cycle&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
@@ -1373,7 +1377,7 @@ document.write(`
         <span class="s1">&#39;diis_start_cycle&#39;</span><span class="p">,</span> <span class="s1">&#39;diis_start_energy_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;direct&#39;</span><span class="p">,</span>
         <span class="s1">&#39;async_io&#39;</span><span class="p">,</span> <span class="s1">&#39;incore_complete&#39;</span><span class="p">,</span> <span class="s1">&#39;cc2&#39;</span><span class="p">,</span> <span class="s1">&#39;callback&#39;</span><span class="p">,</span>
         <span class="s1">&#39;mol&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="s1">&#39;level_shift&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="s1">&#39;converged&#39;</span><span class="p">,</span> <span class="s1">&#39;converged_lambda&#39;</span><span class="p">,</span> <span class="s1">&#39;emp2&#39;</span><span class="p">,</span> <span class="s1">&#39;e_hf&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="s1">&#39;cycles&#39;</span><span class="p">,</span> <span class="s1">&#39;converged_lambda&#39;</span><span class="p">,</span> <span class="s1">&#39;emp2&#39;</span><span class="p">,</span> <span class="s1">&#39;e_hf&#39;</span><span class="p">,</span>
         <span class="s1">&#39;e_corr&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;l1&#39;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="s1">&#39;chkfile&#39;</span><span class="p">,</span>
     <span class="p">}</span>
 
@@ -1403,6 +1407,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mo_coeff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mo_occ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cycles</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converged_lambda</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">emp2</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_hf</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1414,6 +1419,9 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_nocc</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nmo</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">chkfile</span>
+
+    <span class="n">__getstate__</span><span class="p">,</span> <span class="n">__setstate__</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">generate_pickle_methods</span><span class="p">(</span>
+            <span class="n">excludes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;chkfile&#39;</span><span class="p">,</span> <span class="s1">&#39;callback&#39;</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ecc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -28,7 +28,7 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=92fd9be5" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../../_static/documentation_options.js?v=3db9c557"></script>
+    <script src="../../../../_static/documentation_options.js?v=dfec817d"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -542,40 +542,43 @@ document.write(`
     <span class="k">return</span> <span class="n">mo_occ_kpts</span></div>
 
 
+<span class="k">def</span> <span class="nf">_make_rdm1_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">pre_orth_method</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">orth</span>
+    <span class="kn">from</span> <span class="nn">pyscf.pbc.tools</span> <span class="kn">import</span> <span class="n">k2gamma</span>
+
+    <span class="n">kmesh</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">kpts_to_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">-</span><span class="n">kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">nkpts</span><span class="p">,</span> <span class="n">nso</span> <span class="o">=</span> <span class="n">dm_ao_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nao</span> <span class="o">=</span> <span class="n">nso</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">scell</span><span class="p">,</span> <span class="n">phase</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">get_phase</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kmesh</span><span class="p">)</span>
+    <span class="n">s_sc</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">to_supercell_ao_integrals</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">kmesh</span><span class="o">=</span><span class="n">kmesh</span><span class="p">,</span> <span class="n">force_real</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">orth_coeff</span> <span class="o">=</span> <span class="n">orth</span><span class="o">.</span><span class="n">orth_ao</span><span class="p">(</span><span class="n">scell</span><span class="p">,</span> <span class="s1">&#39;meta_lowdin&#39;</span><span class="p">,</span> <span class="n">pre_orth_method</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s_sc</span><span class="p">)[:,:</span><span class="n">nao</span><span class="p">]</span> <span class="c1"># cell 0 only</span>
+    <span class="n">c_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orth_coeff</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">s_sc</span><span class="p">)</span>
+    <span class="n">c_inv</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;aRp,Rk-&gt;kap&#39;</span><span class="p">,</span> <span class="n">c_inv</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nao</span><span class="p">,</span><span class="n">nkpts</span><span class="p">,</span><span class="n">nao</span><span class="p">),</span> <span class="n">phase</span><span class="p">)</span>
+    <span class="n">dm_aa</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;kap,kpq,kbq-&gt;ab&#39;</span><span class="p">,</span> <span class="n">c_inv</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">[:,:</span><span class="n">nao</span><span class="p">,:</span><span class="n">nao</span><span class="p">],</span> <span class="n">c_inv</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
+    <span class="n">dm_bb</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;kap,kpq,kbq-&gt;ab&#39;</span><span class="p">,</span> <span class="n">c_inv</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">[:,</span><span class="n">nao</span><span class="p">:,</span><span class="n">nao</span><span class="p">:],</span> <span class="n">c_inv</span><span class="o">.</span><span class="n">conj</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">dm_aa</span><span class="p">,</span> <span class="n">dm_bb</span><span class="p">)</span>
+
 <div class="viewcode-block" id="mulliken_meta">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf.mulliken_meta">[docs]</a>
-<span class="k">def</span> <span class="nf">mulliken_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">mulliken_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
                   <span class="n">pre_orth_method</span><span class="o">=</span><span class="n">PRE_ORTH_METHOD</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;A modified Mulliken population analysis, based on meta-Lowdin AOs.</span>
-
-<span class="sd">    Note this function only computes the Mulliken population for the gamma</span>
-<span class="sd">    point density matrix.</span>
+<span class="sd">    The results are equivalent to the corresponding supercell calculation.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="kn">from</span> <span class="nn">pyscf.lo</span> <span class="kn">import</span> <span class="n">orth</span>
-    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">&#39;Analyze output for *gamma point*.&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;    To include the contributions from k-points, transform to a &#39;</span>
-             <span class="s1">&#39;supercell then run the population analysis on the supercell</span><span class="se">\n</span><span class="s1">&#39;</span>
-             <span class="s1">&#39;        from pyscf.pbc.tools import k2gamma</span><span class="se">\n</span><span class="s1">&#39;</span>
-             <span class="s1">&#39;        k2gamma.k2gamma(mf).mulliken_meta()&#39;</span><span class="p">)</span>
-    <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s2">&quot;KGHF mulliken_meta&quot;</span><span class="p">)</span>
-    <span class="n">dm_ao_gamma</span> <span class="o">=</span> <span class="n">dm_ao_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span>
-    <span class="n">nso</span> <span class="o">=</span> <span class="n">dm_ao_gamma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">nao</span> <span class="o">=</span> <span class="n">nso</span> <span class="o">//</span> <span class="mi">2</span>
 
-    <span class="n">dm_ao_gamma_aa</span> <span class="o">=</span> <span class="n">dm_ao_gamma</span><span class="p">[:</span><span class="n">nao</span><span class="p">,:</span><span class="n">nao</span><span class="p">]</span>
-    <span class="n">dm_ao_gamma_bb</span> <span class="o">=</span> <span class="n">dm_ao_gamma</span><span class="p">[</span><span class="n">nao</span><span class="p">:,</span><span class="n">nao</span><span class="p">:]</span>
-    <span class="n">s_gamma</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">real</span>
-    <span class="n">s_gamma_aa</span> <span class="o">=</span> <span class="n">s_gamma</span><span class="p">[:</span><span class="n">nao</span><span class="p">,:</span><span class="n">nao</span><span class="p">]</span>
-    <span class="n">orth_coeff</span> <span class="o">=</span> <span class="n">orth</span><span class="o">.</span><span class="n">orth_ao</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;meta_lowdin&#39;</span><span class="p">,</span> <span class="n">pre_orth_method</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s_gamma_aa</span><span class="p">)</span>
-    <span class="n">c_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orth_coeff</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">s_gamma_aa</span><span class="p">)</span>
-    <span class="n">dm_aa</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">c_inv</span><span class="p">,</span> <span class="n">dm_ao_gamma_aa</span><span class="p">,</span> <span class="n">c_inv</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">()))</span>
-    <span class="n">dm_bb</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">c_inv</span><span class="p">,</span> <span class="n">dm_ao_gamma_bb</span><span class="p">,</span> <span class="n">c_inv</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">dm_ao_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>   <span class="c1"># s in SO</span>
+            <span class="n">nao</span> <span class="o">=</span> <span class="n">dm_ao_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">s</span><span class="p">[:,:</span><span class="n">nao</span><span class="p">,:</span><span class="n">nao</span><span class="p">],</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="c1"># keep only one spin sector</span>
+
+    <span class="n">dm_aa</span><span class="p">,</span> <span class="n">dm_bb</span> <span class="o">=</span> <span class="n">_make_rdm1_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm_ao_kpts</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">pre_orth_method</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 
     <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">&#39; ** Mulliken pop alpha/beta on meta-lowdin orthogonal AOs **&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mol_uhf</span><span class="o">.</span><span class="n">mulliken_pop</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="p">(</span><span class="n">dm_aa</span><span class="p">,</span><span class="n">dm_bb</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">orth_coeff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">log</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">mol_uhf</span><span class="o">.</span><span class="n">mulliken_pop</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="p">(</span><span class="n">dm_aa</span><span class="p">,</span><span class="n">dm_bb</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">dm_aa</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">log</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_cast_mol_init_guess</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
@@ -693,12 +696,13 @@ document.write(`
 <div class="viewcode-block" id="KGHF.mulliken_meta">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf.KGHF.mulliken_meta">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">mulliken_meta</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">mulliken_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">mulliken_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
                       <span class="n">pre_orth_method</span><span class="o">=</span><span class="n">PRE_ORTH_METHOD</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
         <span class="k">if</span> <span class="n">dm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">dm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mulliken_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">s</span> <span class="o">=</span> <span class="n">khf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mulliken_meta</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                              <span class="n">pre_orth_method</span><span class="o">=</span><span class="n">pre_orth_method</span><span class="p">)</span></div>
 
 
@@ -748,7 +752,7 @@ document.write(`
     <span class="n">mf</span> <span class="o">=</span> <span class="n">KGHF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
     <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
 
-    <span class="c1"># x2c1e decoractor to KGHF class.</span>
+    <span class="c1"># x2c1e decorator to KGHF class.</span>
     <span class="c1">#mf = KGHF(cell, kpts=kpts).x2c1e()</span>
     <span class="c1"># or</span>
     <span class="c1">#mf = KGHF(cell, kpts=kpts).sfx2c1e()</span>
