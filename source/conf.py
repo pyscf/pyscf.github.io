@@ -195,6 +195,7 @@ html_sidebars = {
   "install": [],
   "quickstart": [],
   "about": [],
+  "news": [],
 }
 
 
