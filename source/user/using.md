@@ -176,7 +176,7 @@ Intermediate quantities are **not** saved in the class.
 After calling the `kernel()` or `run()` method, results will be generated and
 saved as attributes of the object.  For example,
 ```python
-from pyscf import gto, scf, ccsd
+from pyscf import gto, scf, cc
 mol = gto.M(atom='H 0 0 0; H 0 0 1.1', basis='ccpvtz')
 mf = scf.RHF(mol).run()
 mycc = ccsd.CCSD(mf).run()
