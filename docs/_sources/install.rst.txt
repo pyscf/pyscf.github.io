@@ -390,20 +390,28 @@ Extension modules
 
 As of PySCF-2.0, some modules have been moved from the main code trunk
 to extension projects hosted at https://github.com/pyscf.
+In addition, community-contributed packages that are officially recognized
+as PySCF extensions are also listed below.
 
 =================== =========================================================
 Project             URL
 =================== =========================================================
 cas_ac0             https://github.com/CQCL/pyscf-ac0
 cornell-shci        https://github.com/pyscf/cornell-shci
+ccpy                https://github.com/piecuch-group/ccpy
+cppe                https://github.com/maxscheurer/cppe
 dftd3               https://github.com/pyscf/dftd3
+dispersion          https://github.com/pyscf/dispersion
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
 fciqmc              https://github.com/pyscf/fciqmc
+forge               https://github.com/pyscf/pyscf-forge
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive-hci           https://github.com/pyscf/naive-hci
 nao                 https://github.com/pyscf/nao
+properties          https://github.com/pyscf/properties
+pyqmc               https://github.com/WagnerGroup/pyqmc
 qsdopt              https://github.com/pyscf/qsdopt
 rt                  https://github.com/pyscf/rt
 semiempirical       https://github.com/pyscf/semiempirical
