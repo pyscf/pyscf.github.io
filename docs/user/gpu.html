@@ -474,9 +474,18 @@ GPU4PySCF on A100-80G can be 1000x faster than PySCF on single-core CPU. The spe
 </section>
 <section id="usage-of-gpu4pyscf">
 <h2>Usage of GPU4PySCF<a class="headerlink" href="#usage-of-gpu4pyscf" title="Link to this heading">#</a></h2>
-<p>GPU4PySCF APIs are designed to be compatible with PySCF. When supported, high-level functions and objects are named the same as PySCF. But, GPU4PySCF classes do not directly inherit from PySCF class.
-PySCF objects and GPU4PySCF objects can be converted into each other by <code class="xref py py-func docutils literal notranslate"><span class="pre">to_gpu()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">to_cpu()</span></code>. In the conversion, the numpy arrays will be converted into cupy array. And the functions will be omitted if they are not supported with GPU acceleration.</p>
-<p>One can use the two modes to accelerate the calculations: directly use GPU4PySCF object:</p>
+<p>The GPU4PySCF APIs are designed to maintain compatibility with PySCF. The
+classes and methods in GPU4PySCF are named identically to those in PySCF,
+ensuring a familiar interface for users. However, GPU4PySCF classes do not
+directly inherit from PySCF classes.</p>
+<p>PySCF objects and GPU4PySCF objects can be converted to each other using the <cite>to_gpu</cite> and <cite>to_cpu</cite> methods.
+The conversion process can automatically, recursively translate all attributes between GPU and CPU instances.
+For example, numpy arrays on the CPU are converted into CuPy arrays on the GPU, and vice versa.
+If certain attributes are exclusive to either the CPU or GPU, these attributes will be appropriately handled.
+They are omitted or specifically converted, depending on the target platform.</p>
+<p>There are two approaches to execute the computation on GPU.</p>
+<ol class="arabic">
+<li><p>Directly import GPU4PySCF classes and methods:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyscf</span>
 <span class="kn">from</span> <span class="nn">gpu4pyscf.dft</span> <span class="kn">import</span> <span class="n">rks</span>
 
@@ -499,7 +508,8 @@ PySCF objects and GPU4PySCF objects can be converted into each other by <code cl
 <span class="n">h_dft</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>   <span class="c1"># compute analytical Hessian</span>
 </pre></div>
 </div>
-<p>Alternatively, one can convert PySCF object to the corresponding GPU4PySCF object with <code class="xref py py-func docutils literal notranslate"><span class="pre">to_gpu()</span></code> since PySCF 2.5.0</p>
+</li>
+<li><p>Convert PySCF object to the corresponding GPU4PySCF object with <code class="xref py py-func docutils literal notranslate"><span class="pre">to_gpu()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyscf</span>
 <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">rks</span>
 
@@ -514,8 +524,42 @@ PySCF objects and GPU4PySCF objects can be converted into each other by <code cl
 <span class="n">e_dft</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>  <span class="c1"># compute total energy</span>
 </pre></div>
 </div>
-<p>When the GPU task is done, the GPU4PySCF object can be converted into the corresponding PySCF object via <code class="xref py py-func docutils literal notranslate"><span class="pre">mf.to_cpu()</span></code>.
-Then, more sophisticated methods in PySCF can apply. One can also convert the individual CuPy array to numpy array with <a href="#id4"><span class="problematic" id="id5">`Cupy APIs`_</span></a>.</p>
+</li>
+</ol>
+<p>When the GPU task is done, the GPU4PySCF object can be converted into the corresponding PySCF object via <code class="xref py py-func docutils literal notranslate"><span class="pre">mf.to_cpu()</span></code>.</p>
+<p>In GPU4PySCF, wavefunctions, density matrices, and other array data are stored in CuPy arrays.
+To transfer these data to NumPy arrays on the CPU, the <cite>.get()</cite> method of the CuPy array can be invoked.
+For more detailed information on handling CuPy array conversions, please refer to the <cite>CuPy APIs</cite> documentation.</p>
+</section>
+<section id="gpu4pyscf-and-pyscf-hybrid-programming">
+<h2>GPU4PySCF and PySCF Hybrid Programming<a class="headerlink" href="#gpu4pyscf-and-pyscf-hybrid-programming" title="Link to this heading">#</a></h2>
+<p>GPU4PySCF allows for seamless integration with existing PySCF programs, enabling
+a hybrid approach that leverages both CPU and GPU resources in the program. This
+integration is facilitated through the use of <cite>to_gpu()</cite> and <cite>to_cpu()</cite>
+functions, which convert PySCF instances between CPU and GPU.</p>
+<p>For instance, we can perform DFT calculations on GPU to obtain a set of DFT
+orbitals followed by orbital localization using the Boys method on the CPU:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyscf</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lo</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">O       0.0000000000    -0.0000000000     0.1174000000</span>
+<span class="s1">H      -0.7570000000    -0.0000000000    -0.4696000000</span>
+<span class="s1">H       0.7570000000     0.0000000000    -0.4696000000</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;def2-tzvpp&#39;</span><span class="p">)</span>
+
+<span class="c1"># Perform DFT computation on GPU</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># Transfer the computation back to CPU and continue the tasks on the CPU</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">to_cpu</span><span class="p">()</span>
+<span class="n">loc_orb</span> <span class="o">=</span> <span class="n">lo</span><span class="o">.</span><span class="n">Boys</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:,[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]])</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>GPU Implementation Availability</strong>: The <cite>to_gpu</cite> method is implemented for
+almost all methods in PySCF. However, the actual availability of GPU4PySCF
+implementations for specific modules may vary. If a GPU4PySCF module is
+available, <cite>to_gpu</cite> will return a GPU4PySCF instance. Otherwise, it will raise a
+<cite>NotImplementedError</cite>.</p>
 </section>
 <section id="functionalities-supported-by-gpu4pyscf">
 <h2>Functionalities supported by GPU4PySCF<a class="headerlink" href="#functionalities-supported-by-gpu4pyscf" title="Link to this heading">#</a></h2>
@@ -654,6 +698,7 @@ Then, more sophisticated methods in PySCF can apply. One can also convert the in
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-of-gpu4pyscf">Usage of GPU4PySCF</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu4pyscf-and-pyscf-hybrid-programming">GPU4PySCF and PySCF Hybrid Programming</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functionalities-supported-by-gpu4pyscf">Functionalities supported by GPU4PySCF</a></li>
 </ul>
   </nav></div>

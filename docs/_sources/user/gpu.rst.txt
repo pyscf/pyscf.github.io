@@ -39,10 +39,20 @@ The binary package of GPU4PySCF is released based on the CUDA version.
 
 Usage of GPU4PySCF
 ==================
-GPU4PySCF APIs are designed to be compatible with PySCF. When supported, high-level functions and objects are named the same as PySCF. But, GPU4PySCF classes do not directly inherit from PySCF class.
-PySCF objects and GPU4PySCF objects can be converted into each other by :func:`to_gpu` and :func:`to_cpu`. In the conversion, the numpy arrays will be converted into cupy array. And the functions will be omitted if they are not supported with GPU acceleration.
+The GPU4PySCF APIs are designed to maintain compatibility with PySCF. The
+classes and methods in GPU4PySCF are named identically to those in PySCF,
+ensuring a familiar interface for users. However, GPU4PySCF classes do not
+directly inherit from PySCF classes.
 
-One can use the two modes to accelerate the calculations: directly use GPU4PySCF object::
+PySCF objects and GPU4PySCF objects can be converted to each other using the `to_gpu` and `to_cpu` methods.
+The conversion process can automatically, recursively translate all attributes between GPU and CPU instances.
+For example, numpy arrays on the CPU are converted into CuPy arrays on the GPU, and vice versa.
+If certain attributes are exclusive to either the CPU or GPU, these attributes will be appropriately handled.
+They are omitted or specifically converted, depending on the target platform.
+
+There are two approaches to execute the computation on GPU.
+
+1. Directly import GPU4PySCF classes and methods::
 
     import pyscf
     from gpu4pyscf.dft import rks
@@ -65,7 +75,7 @@ One can use the two modes to accelerate the calculations: directly use GPU4PySCF
     h = mf.Hessian()
     h_dft = h.kernel()   # compute analytical Hessian
 
-Alternatively, one can convert PySCF object to the corresponding GPU4PySCF object with :func:`to_gpu` since PySCF 2.5.0 ::
+2. Convert PySCF object to the corresponding GPU4PySCF object with :func:`to_gpu`::
 
     import pyscf
     from pyscf.dft import rks
@@ -82,9 +92,43 @@ Alternatively, one can convert PySCF object to the corresponding GPU4PySCF objec
 
 
 When the GPU task is done, the GPU4PySCF object can be converted into the corresponding PySCF object via :func:`mf.to_cpu()`.
-Then, more sophisticated methods in PySCF can apply. One can also convert the individual CuPy array to numpy array with `Cupy APIs`_.
+
+In GPU4PySCF, wavefunctions, density matrices, and other array data are stored in CuPy arrays.
+To transfer these data to NumPy arrays on the CPU, the `.get()` method of the CuPy array can be invoked.
+For more detailed information on handling CuPy array conversions, please refer to the `CuPy APIs` documentation.
 
 .. Cupy APIs: https://docs.cupy.dev/en/stable/user_guide/index.html
+
+GPU4PySCF and PySCF Hybrid Programming
+======================================
+GPU4PySCF allows for seamless integration with existing PySCF programs, enabling
+a hybrid approach that leverages both CPU and GPU resources in the program. This
+integration is facilitated through the use of `to_gpu()` and `to_cpu()`
+functions, which convert PySCF instances between CPU and GPU.
+
+For instance, we can perform DFT calculations on GPU to obtain a set of DFT
+orbitals followed by orbital localization using the Boys method on the CPU::
+
+    import pyscf
+    from pyscf import lo
+    mol = pyscf.M(atom = '''
+    O       0.0000000000    -0.0000000000     0.1174000000
+    H      -0.7570000000    -0.0000000000    -0.4696000000
+    H       0.7570000000     0.0000000000    -0.4696000000
+    ''', basis='def2-tzvpp')
+
+    # Perform DFT computation on GPU
+    mf = mol.RKS(xc='b3lyp').to_gpu().run()
+
+    # Transfer the computation back to CPU and continue the tasks on the CPU
+    mf = mf.to_cpu()
+    loc_orb = lo.Boys(mol, mf.mo_coeff[:,[2,3,4]]).kernel()
+
+**GPU Implementation Availability**: The `to_gpu` method is implemented for
+almost all methods in PySCF. However, the actual availability of GPU4PySCF
+implementations for specific modules may vary. If a GPU4PySCF module is
+available, `to_gpu` will return a GPU4PySCF instance. Otherwise, it will raise a
+`NotImplementedError`.
 
 Functionalities supported by GPU4PySCF
 ======================================
