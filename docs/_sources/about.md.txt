@@ -17,10 +17,17 @@ example [benchmark data](benchmark).
 - [Sandeep Sharma](https://www.colorado.edu/lab/sharmagroup/), CU Boulder
 - [Alexander Sokolov](https://research.cbc.osu.edu/sokolov.8/), Ohio State
 - Qiming Sun, Bytedance Ltd.
+- [Laura Gagliardi](https://gagliardigroup.uchicago.edu/), Chicago
 
 ### Maintainers
 
-- [Xing Zhang](https://www.chan-lab.caltech.edu/people), Caltech
+- [Xing Zhang](https://www.chan-lab.caltech.edu/people), Caltech :
+  [PySCF](https://github.com/pyscf/pyscf),
+  [PySCF-Forge](https://github.com/pyscf/pyscf-forge)
+- Xiaojie Wu, Bytedance Ltd :
+  [GPU4PySCF](https://github.com/pyscf/gpu4pyscf),
+- [Mattew Hermes](https://gagliardigroup.uchicago.edu/member/dr-matthew-hermes-2/), Chicago :
+  [PySCF-Forge](https://github.com/pyscf/pyscf-forge)
 
 ## How to cite
 
