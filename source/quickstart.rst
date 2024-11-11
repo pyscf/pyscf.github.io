@@ -109,10 +109,10 @@ PySCF offers a number of different standard schemes for localizing MOs, e.g., Pi
 
   >>> from pyscf import lo
   >>> occ_orbs = rhf_h2o.mo_coeff[:, rhf_h2o.mo_occ > 0.]
-  >>> fb_h2o = lo.Boys(mol_h2o, occ_orbs, rhf_h2o) # Foster-Boys
+  >>> fb_h2o = lo.Boys(mol_h2o, occ_orbs) # Foster-Boys
   >>> loc_occ_orbs = fb.kernel()
   >>> virt_orbs = rhf_h2o.mo_coeff[:, rhf_h2o.mo_occ == 0.]
-  >>> pm_h2o = lo.PM(mol_h2o, virt_orbs, rhf_h2o) # Pipek-Mezey
+  >>> pm_h2o = lo.PM(mol_h2o, virt_orbs) # Pipek-Mezey
   >>> loc_virt_orbs = pm.kernel()
   
 Knizia's intrinsic bond orbitals can be computed as (cf. `local_orb/04-ibo_benzene_cubegen.py <https://github.com/pyscf/pyscf/blob/master/examples/local_orb/04-ibo_benzene_cubegen.py>`_):
