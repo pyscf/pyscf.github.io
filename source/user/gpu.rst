@@ -12,30 +12,23 @@ GPU Acceleration (GPU4PySCF)
 Introduction
 ============
 
-Modern GPUs accelerate quantum chemistry calculation significantly, but also have an advantage in cost saving `[1]`_.
+Modern GPUs accelerate quantum chemistry calculation significantly, but also have an advantage in cost saving `[1]`_ `[2]`_.
 Some of basic PySCF modules, such as SCF and DFT, are accelerated with GPU via a plugin package
 GPU4PySCF (See the end of this page for the supported functionalities). For the density fitting scheme,
 GPU4PySCF on A100-80G can be 1000x faster than PySCF on single-core CPU. The speedup of direct SCF scheme is relatively low.
 
-.. _[1]: https://arxiv.org/abs/2404.09452
+.. _[1]: https://arxiv.org/abs/2407.09700
+.. _[2]: https://arxiv.org/abs/2404.09452
 
 Installation
 ============
 The binary package of GPU4PySCF is released based on the CUDA version.
 
-.. list-table::
-   :widths: 25 25 25 25
-   :header-rows: 1
-
-  * - CUDA version
-    - GPU4PySCF
-    - cuTensor
-  * - CUDA 11.x
-    - ``pip3 install gpu4pyscf-cuda11x``
-    - ``pip3 install cutensor-cu11``
-  * - CUDA 12.x
-    - ``pip3 install gpu4pyscf-cuda12x``
-    - ``pip3 install cutensor-cu12``
+============ =================================== ==============================
+CUDA version  GPU4PySCF                            cuTensor
+CUDA 11.x     ``pip3 install gpu4pyscf-cuda11x`` ``pip3 install cutensor-cu11``
+CUDA 12.x     ``pip3 install gpu4pyscf-cuda12x`` ``pip3 install cutensor-cu12``
+============ =================================== ==============================
 
 Usage of GPU4PySCF
 ==================
@@ -44,7 +37,7 @@ classes and methods in GPU4PySCF are named identically to those in PySCF,
 ensuring a familiar interface for users. However, GPU4PySCF classes do not
 directly inherit from PySCF classes.
 
-PySCF objects and GPU4PySCF objects can be converted to each other using the `to_gpu` and `to_cpu` methods.
+PySCF objects and GPU4PySCF objects can be converted to each other using the :func:`to_gpu` and :func:`to_cpu` methods.
 The conversion process can automatically, recursively translate all attributes between GPU and CPU instances.
 For example, numpy arrays on the CPU are converted into CuPy arrays on the GPU, and vice versa.
 If certain attributes are exclusive to either the CPU or GPU, these attributes will be appropriately handled.
@@ -94,7 +87,7 @@ There are two approaches to execute the computation on GPU.
 When the GPU task is done, the GPU4PySCF object can be converted into the corresponding PySCF object via :func:`mf.to_cpu()`.
 
 In GPU4PySCF, wavefunctions, density matrices, and other array data are stored in CuPy arrays.
-To transfer these data to NumPy arrays on the CPU, the `.get()` method of the CuPy array can be invoked.
+To transfer these data to NumPy arrays on the CPU, the :func:`.get()` method of the CuPy array can be invoked.
 For more detailed information on handling CuPy array conversions, please refer to the `CuPy APIs` documentation.
 
 .. Cupy APIs: https://docs.cupy.dev/en/stable/user_guide/index.html
@@ -124,75 +117,36 @@ orbitals followed by orbital localization using the Boys method on the CPU::
     mf = mf.to_cpu()
     loc_orb = lo.Boys(mol, mf.mo_coeff[:,[2,3,4]]).kernel()
 
-**GPU Implementation Availability**: The `to_gpu` method is implemented for
+**GPU Implementation Availability**: The :func:`to_gpu` method is implemented for
 almost all methods in PySCF. However, the actual availability of GPU4PySCF
 implementations for specific modules may vary. If a GPU4PySCF module is
-available, `to_gpu` will return a GPU4PySCF instance. Otherwise, it will raise a
-`NotImplementedError`.
+available, :func:`to_gpu` will return a GPU4PySCF instance. Otherwise, it will raise a
+:func:`NotImplementedError`.
 
 Functionalities supported by GPU4PySCF
 ======================================
-.. list-table::
-   :widths: 25 25 25 25
-   :header-rows: 1
 
-  * - Method
-    - SCF
-    - Gradient
-    - Hessian
-  * - direct SCF
-    - O
-    - GPU
-    - CPU
-  * - density fitting
-    - O
-    - O
-    - O
-  * - LDA
-    - O
-    - O
-    - O
-  * - GGA
-    - O
-    - O
-    - O
-  * - mGGA
-    - O
-    - O
-    - O
-  * - hybrid
-    - O
-    - O
-    - O
-  * - unrestricted
-    - O
-    - O
-    - O
-  * - PCM solvent
-    - GPU
-    - GPU
-    - FD
-  * - SMD solvent
-    - GPU
-    - GPU
-    - FD
-  * - dispersion correction
-    - CPU*
-    - CPU*
-    - FD
-  * - nonlocal correlation
-    - O
-    - O
-    - NA
-  * - ECP
-    - CPU
-    - CPU
-    - CPU
-  * - MP2
-    - GPU
-    - CPU
-    - CPU
-  * - CCSD
-    - GPU
-    - CPU
-    - NA
+====================== ===== ========= =========
+Method                 SCF   Gradient  Hessian
+direct SCF             O     GPU       CPU
+density fitting        O     O         O
+LDA                    O     O         O
+GGA                    O     O         O
+mGGA                   O     O         O
+hybrid                 O     O         O
+unrestricted           O     O         O
+PCM solvent            GPU   GPU       FD
+SMD solvent            GPU   GPU       FD
+dispersion correction  CPU*  CPU*      FD
+nonlocal correlation   O     O         NA
+ECP                    CPU   CPU       CPU
+MP2                    GPU   CPU       CPU
+CCSD                   GPU   CPU       NA
+====================== ===== ========= =========
+
+- ‘O’: carefully optimized for GPU. 
+- ‘CPU’: only cpu implementation. 
+- ‘GPU’: drop-in replacement or naive implementation. 
+- ‘FD’: use finite-difference gradient to approximate the exact Hessian matrix.
+- ’NA’: not available. 
+- ‘CPU*’: DFTD3 [100]/DFTD4 [101] on CPU.
