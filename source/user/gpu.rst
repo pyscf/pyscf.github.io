@@ -146,7 +146,7 @@ CCSD                   GPU   CPU       NA
 
 - ‘O’: carefully optimized for GPU. 
 - ‘CPU’: only cpu implementation. 
-- ‘GPU’: drop-in replacement or na¨ıveimplementation. 
+- ‘GPU’: drop-in replacement or naive implementation. 
 - ‘FD’: use finite-difference gradient to approximate the exact Hessian matrix.
 - ’NA’: not available. 
 - ‘CPU*’: DFTD3 [100]/DFTD4 [101] on CPU.
