@@ -113,7 +113,7 @@ If you have a [Conda](https://conda.io/docs/) (or
 package can be installed from the Conda cloud (for Linux and macOS
 systems),
 ```bash
-conda install -c pyscf pyscf
+conda install -c pyscf -c conda-forge pyscf
 ```
 
 <!-- 
