@@ -181,14 +181,13 @@ or - as an alternative - the same may be achieved in the following way:
 Dispersion corrections
 ======================
 
-Adding dispersion (van der Waals) corrections to KS-DFT calculations requires the pyscf-dispersion extension, 
-which implements a simplified interface to d3 (https://github.com/dftd3/simple-dftd3)
-and d4 (https://github.com/dftd4/dftd4) libraries. 
-This interface can automatically configure the necessary settings including dispersion, xc, and nlc attributes of PySCF mean-field objects. 
+Adding dispersion (van der Waals) corrections to KS-DFT calculations requires the `pyscf-dispersion <https://github.com/pyscf/dispersion>`_ extension, 
+which implements a simplified interface to `simple-dftd3 <https://github.com/dftd3/simple-dftd3>`_
+and `dftd4 <https://github.com/dftd4/dftd4>`_ libraries. 
 
 It is recommended to enable D3 :cite:`DFTD3`, D4 dispersion corrections through the KS class instantiation. 
 The values of attributes nlc, disp, and xc of KS object are automatically configured in this way. 
-Both the `mol.KS`` method or `pyscf.dft.RKS` function can be used, 
+Both the ``mol.KS`` method or ``dft.RKS`` function can be used, 
 cf. `dft/16-dft_d3.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/16-dft_d3.py>`_:
 
   >>> mf_d3 = mol_hf.KS(xc='wb97x-d4')
@@ -203,6 +202,8 @@ cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examp
   >>> mf_nlc.xc = 'wb97m_v'
   >>> mf_nlc.kernel()
   
+See `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_ 
+for more examples of setting the ``nlc`` and ``nlcgrids`` attribute.
 It's important to keep in mind that the evaluation of the VV10 functional involves a double grid integration, so differences in grid size can make an enormous difference in time.
 
 .. _user_dft_collinear:
