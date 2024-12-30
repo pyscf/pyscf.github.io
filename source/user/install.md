@@ -116,6 +116,13 @@ systems),
 conda install -c pyscf -c conda-forge pyscf
 ```
 
+To prevent potential conflict problems, it is recommended to enable the conda-forge channel in the ``.condarc``, 
+or create an environment enabling conda-forge like
+```bash
+conda create -n pyscf-env -c conda-forge -c pyscf python=3.9 pyscf
+conda activate pyscf-env
+```
+
 <!-- 
 Extension modules are not available on the Conda cloud. They should be
 installed either with pip or through the environment variable
