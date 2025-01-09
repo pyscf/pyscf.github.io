@@ -388,8 +388,10 @@ Install PySCF extensions
 Extension modules
 =================
 
-As of PySCF-2.0, some modules have been moved from the main code trunk
-to extension projects hosted at https://github.com/pyscf.
+As of PySCF-2.0, PySCF has been restructured to simplify the maintanence of the
+core modules. Some modules have been relocated from the main codebase to
+to extension projects. These projects are hosted at https://github.com/pyscf.
+
 In addition, community-contributed packages that are officially recognized
 as PySCF extensions are also listed below.
 
@@ -400,7 +402,6 @@ cas_ac0             https://github.com/CQCL/pyscf-ac0
 cornell-shci        https://github.com/pyscf/cornell-shci
 ccpy                https://github.com/piecuch-group/ccpy
 cppe                https://github.com/maxscheurer/cppe
-dftd3               https://github.com/pyscf/dftd3
 dispersion          https://github.com/pyscf/dispersion
 dmrgscf             https://github.com/pyscf/dmrgscf
 doci                https://github.com/pyscf/doci
@@ -418,7 +419,24 @@ semiempirical       https://github.com/pyscf/semiempirical
 shciscf             https://github.com/pyscf/shciscf
 zquatev             https://github.com/sunqm/zquatev
 tblis               https://github.com/pyscf/pyscf-tblis
+gpu4pyscf           https://github.com/pyscf/gpu4pyscf
+dispersion          https://github.com/pyscf/dispersion
 =================== =========================================================
+
+More details of the extensions and optional dependencies can be found in the
+:ref:`extensions_list`.
+
+
+Install PySCF-Forge
+===================
+Newly developed methods, such as MCPDFT and pp-RPA, are first introduced in PySCF-Forge.
+PySCF-Forge is a platform serving as a staging area for features before they are
+integrated into the core modules. For more details, see :ref:`pyscf_forge`.
+
+To access these methods, you need to install PySCF-Forge using the following command:
+
+  $ pip install pyscf-forge
+
 
 Install extensions
 ==================
