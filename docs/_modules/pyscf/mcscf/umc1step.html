@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
+    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.7" />
+  <meta name="docsearch:version" content="2.8" />
   </head>
   
   
@@ -724,7 +724,7 @@
             <span class="ow">and</span> <span class="p">(</span><span class="n">norm_gorb0</span> <span class="o">&lt;</span> <span class="n">conv_tol_grad</span> <span class="ow">and</span> <span class="n">norm_ddm</span> <span class="o">&lt;</span> <span class="n">conv_tol_ddm</span><span class="p">)):</span>
             <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="k">if</span> <span class="n">dump_chk</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dump_chk</span> <span class="ow">and</span> <span class="n">casscf</span><span class="o">.</span><span class="n">chkfile</span><span class="p">:</span>
             <span class="n">casscf</span><span class="o">.</span><span class="n">dump_chk</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">callback</span><span class="p">):</span>
@@ -783,8 +783,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nelecas</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">ucasci</span><span class="o">.</span><span class="n">UCASBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf_or_mol</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">ncore</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="n">frozen</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">chkfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chkfile</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">fcisolver</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span>
                                            <span class="s1">&#39;mcscf_umc1step_UCASSCF_fcisolver_max_cycle&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
@@ -1211,6 +1210,9 @@
         <span class="k">if</span> <span class="n">envs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chk_ci</span><span class="p">:</span>
                 <span class="n">civec</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;fcivec&#39;</span><span class="p">]</span>
+            <span class="n">e_tot</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;e_tot&#39;</span><span class="p">]</span>
+            <span class="n">e_cas</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;e_cas&#39;</span><span class="p">]</span>
+            <span class="n">casdm1</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;casdm1&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="s1">&#39;mo&#39;</span> <span class="ow">in</span> <span class="n">envs</span><span class="p">:</span>
                 <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">envs</span><span class="p">[</span><span class="s1">&#39;mo&#39;</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1413,7 +1415,7 @@
 
   <p class="copyright">
     
-      © Copyright 2024, The PySCF Developers.
+      © Copyright 2025, The PySCF Developers.
       <br/>
     
   </p>

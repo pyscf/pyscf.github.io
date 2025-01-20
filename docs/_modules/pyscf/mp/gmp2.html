@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
+    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.7" />
+  <meta name="docsearch:version" content="2.8" />
   </head>
   
   
@@ -635,6 +635,12 @@
         <span class="k">return</span> <span class="n">kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">eris</span><span class="p">,</span> <span class="n">with_t2</span><span class="p">)</span></div>
 
 
+    <span class="k">def</span> <span class="nf">_finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">&#39;E(</span><span class="si">%s</span><span class="s1">) = </span><span class="si">%.15g</span><span class="s1">  E_corr = </span><span class="si">%.15g</span><span class="s1">&#39;</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_corr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
     <span class="n">to_gpu</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">to_gpu</span></div>
 
 
@@ -793,53 +799,6 @@
     <span class="k">return</span> <span class="n">eris</span>
 
 <span class="k">del</span> <span class="p">(</span><span class="n">WITH_T2</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
-    <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
-    <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.</span><span class="p">,</span>   <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)],</span>
-                <span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.21</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)]]</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;cc-pvdz&#39;</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">convert_to_ghf</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-
-    <span class="n">frozen</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
-    <span class="n">pt</span> <span class="o">=</span> <span class="n">GMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="n">frozen</span><span class="p">)</span>
-    <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.345306881488508</span><span class="p">)</span>
-
-    <span class="n">pt</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">emp2</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">emp2</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.345306881488508</span><span class="p">)</span>
-
-    <span class="n">dm1</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
-    <span class="n">dm2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">make_rdm2</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
-    <span class="n">nao</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">()</span>
-    <span class="n">mo_a</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[:</span><span class="n">nao</span><span class="p">]</span>
-    <span class="n">mo_b</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="n">nao</span><span class="p">:]</span>
-    <span class="n">nmo</span> <span class="o">=</span> <span class="n">mo_a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">eri</span> <span class="o">=</span> <span class="n">ao2mo</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">_eri</span><span class="p">,</span> <span class="n">mo_a</span><span class="o">+</span><span class="n">mo_b</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">nmo</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">orbspin</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">orbspin</span>
-    <span class="n">sym_forbid</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbspin</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="o">!=</span> <span class="n">orbspin</span><span class="p">)</span>
-    <span class="n">eri</span><span class="p">[</span><span class="n">sym_forbid</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">eri</span><span class="p">[:,:,</span><span class="n">sym_forbid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">hcore</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">()</span>
-    <span class="n">h1</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_a</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">hcore</span><span class="p">,</span> <span class="n">mo_a</span><span class="p">))</span>
-    <span class="n">h1</span><span class="o">+=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_b</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">hcore</span><span class="p">,</span> <span class="n">mo_b</span><span class="p">))</span>
-    <span class="n">e1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,ji&#39;</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">dm1</span><span class="p">)</span>
-    <span class="n">e1</span><span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ijkl,ijkl&#39;</span><span class="p">,</span> <span class="n">eri</span><span class="p">,</span> <span class="n">dm2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">.5</span>
-    <span class="n">e1</span><span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">e1</span> <span class="o">-</span> <span class="n">pt</span><span class="o">.</span><span class="n">e_tot</span><span class="p">)</span>
-
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">max_cycle</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">convert_to_ghf</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="n">pt</span> <span class="o">=</span> <span class="n">GMP2</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">kernel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="o">-</span><span class="mf">0.371240143556976</span><span class="p">)</span>
 </pre></div>
 
                 </article>
@@ -881,7 +840,7 @@
 
   <p class="copyright">
     
-      © Copyright 2024, The PySCF Developers.
+      © Copyright 2025, The PySCF Developers.
       <br/>
     
   </p>

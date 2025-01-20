@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=dfec817d"></script>
+    <script src="../../../../_static/documentation_options.js?v=69ff2ef9"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.7" />
+  <meta name="docsearch:version" content="2.8" />
   </head>
   
   
@@ -630,12 +630,10 @@
 <div class="viewcode-block" id="weighted_coulG">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.df.aft.weighted_coulG">[docs]</a>
 <span class="k">def</span> <span class="nf">weighted_coulG</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpt</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">exx</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Weighted regular Coulomb kernel, applying cell.omega by default&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Weighted regular Coulomb kernel&#39;&#39;&#39;</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">cell</span>
     <span class="k">if</span> <span class="n">mesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span>
-    <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">omega</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span>
     <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kws</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
     <span class="n">coulG</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">get_coulG</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpt</span><span class="p">,</span> <span class="n">exx</span><span class="p">,</span> <span class="n">mydf</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">Gv</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="n">omega</span><span class="p">)</span>
     <span class="n">coulG</span> <span class="o">*=</span> <span class="n">kws</span>
@@ -748,7 +746,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">lib</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;cell.pseudo was specified but its elements </span><span class="si">%s</span><span class="s1"> &#39;</span>
                                 <span class="s1">&#39;were not found in the system.&#39;</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_pseudo</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-            <span class="n">vpploc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nkpts</span>
+            <span class="n">nao</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">nao</span>
+            <span class="n">vpploc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">nao</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">vpploc</span>
 
         <span class="n">rcut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_rcut_3c1e</span><span class="p">(</span><span class="n">rs_cell</span><span class="p">,</span> <span class="n">fake_cells</span><span class="p">)</span>
@@ -1004,6 +1003,9 @@
         <span class="s1">&#39;cell&#39;</span><span class="p">,</span> <span class="s1">&#39;mesh&#39;</span><span class="p">,</span> <span class="s1">&#39;kpts&#39;</span><span class="p">,</span> <span class="s1">&#39;time_reversal_symmetry&#39;</span><span class="p">,</span> <span class="s1">&#39;blockdim&#39;</span><span class="p">,</span>
     <span class="p">}</span>
 
+    <span class="c1"># to mimic molecular DF object</span>
+    <span class="n">blockdim</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;pbc_df_df_DF_blockdim&#39;</span><span class="p">,</span> <span class="mi">240</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stdout</span>
@@ -1012,9 +1014,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">mesh</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_reversal_symmetry</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="c1"># to mimic molecular DF object</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">blockdim</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;pbc_df_df_DF_blockdim&#39;</span><span class="p">,</span> <span class="mi">240</span><span class="p">)</span>
 
         <span class="c1"># The following attributes are not input options.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Range separated Coulomb DF objects</span>
@@ -1232,7 +1231,7 @@
 
   <p class="copyright">
     
-      © Copyright 2024, The PySCF Developers.
+      © Copyright 2025, The PySCF Developers.
       <br/>
     
   </p>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=dfec817d"></script>
+    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.7" />
+  <meta name="docsearch:version" content="2.8" />
   </head>
   
   
@@ -470,10 +470,16 @@
         <span class="n">normt</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">tmpvec</span><span class="p">)</span>
         <span class="n">tmpvec</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">mycc</span><span class="o">.</span><span class="n">iterative_damping</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">iterative_damping</span>
-            <span class="n">t1new</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">t1</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">t1new</span>
-            <span class="n">t2new</span> <span class="o">*=</span> <span class="n">alpha</span>
-            <span class="n">t2new</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">t2</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mycc</span><span class="o">.</span><span class="n">iterative_damping</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span> <span class="c1"># e.g. UCCSD</span>
+                <span class="n">t1new</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t1_part</span><span class="p">)</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t1new_part</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">t1_part</span><span class="p">,</span> <span class="n">t1new_part</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t1new</span><span class="p">))</span>
+                <span class="n">t2new</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t2_part</span><span class="p">)</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t2new_part</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">t2_part</span><span class="p">,</span> <span class="n">t2new_part</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">t2new</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">t1new</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t1new</span><span class="p">)</span>
+                <span class="n">t2new</span> <span class="o">*=</span> <span class="n">alpha</span>
+                <span class="n">t2new</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
         <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">t1new</span><span class="p">,</span> <span class="n">t2new</span>
         <span class="n">t1new</span> <span class="o">=</span> <span class="n">t2new</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">mycc</span><span class="o">.</span><span class="n">run_diis</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">istep</span><span class="p">,</span> <span class="n">normt</span><span class="p">,</span> <span class="n">eccsd</span><span class="o">-</span><span class="n">eold</span><span class="p">,</span> <span class="n">adiis</span><span class="p">)</span>
@@ -1009,6 +1015,8 @@
     <span class="c1"># vvvv == None means AO-direct CCSD. It should redirect to</span>
     <span class="c1"># _contract_s4vvvv_t2(mycc, mol, vvvv, t2, out, verbose)</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">vvvv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">t2</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
 
     <span class="n">time0</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mycc</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
@@ -1370,7 +1378,7 @@
         <span class="s1">&#39;async_io&#39;</span><span class="p">,</span> <span class="s1">&#39;incore_complete&#39;</span><span class="p">,</span> <span class="s1">&#39;cc2&#39;</span><span class="p">,</span> <span class="s1">&#39;callback&#39;</span><span class="p">,</span>
         <span class="s1">&#39;mol&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">,</span> <span class="s1">&#39;frozen&#39;</span><span class="p">,</span> <span class="s1">&#39;level_shift&#39;</span><span class="p">,</span>
         <span class="s1">&#39;mo_coeff&#39;</span><span class="p">,</span> <span class="s1">&#39;mo_occ&#39;</span><span class="p">,</span> <span class="s1">&#39;cycles&#39;</span><span class="p">,</span> <span class="s1">&#39;converged_lambda&#39;</span><span class="p">,</span> <span class="s1">&#39;emp2&#39;</span><span class="p">,</span> <span class="s1">&#39;e_hf&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;e_corr&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;l1&#39;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="s1">&#39;chkfile&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;converged&#39;</span><span class="p">,</span> <span class="s1">&#39;e_corr&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">,</span> <span class="s1">&#39;t2&#39;</span><span class="p">,</span> <span class="s1">&#39;l1&#39;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="s1">&#39;chkfile&#39;</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -2356,7 +2364,7 @@
 
   <p class="copyright">
     
-      © Copyright 2024, The PySCF Developers.
+      © Copyright 2025, The PySCF Developers.
       <br/>
     
   </p>

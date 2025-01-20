@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=dfec817d"></script>
+    <script src="../../../../_static/documentation_options.js?v=69ff2ef9"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.7" />
+  <meta name="docsearch:version" content="2.8" />
   </head>
   
   
@@ -656,13 +656,14 @@
 <span class="sd">        omega : float</span>
 <span class="sd">            Enable Coulomb kernel ``erf(|omega|*r12)/r12`` if omega &gt; 0</span>
 <span class="sd">            and ``erfc(|omega|*r12)/r12`` if omega &lt; 0.</span>
-<span class="sd">            Note this parameter is slightly different to setting cell.omega</span>
-<span class="sd">            for the treatment of exxdiv (at G0).  cell.omega affects Ewald</span>
-<span class="sd">            probe charge at G0. It is used mostly by RSH functionals for</span>
-<span class="sd">            the long-range part of HF exchange. This parameter is used by</span>
+<span class="sd">            Note this parameter is slightly different to setting cell.omega for</span>
+<span class="sd">            exxdiv=&#39;ewald&#39; at G0. When cell.omega is configured, the Ewald probe</span>
+<span class="sd">            charge correction will be computed using the LR or SR Coulomb</span>
+<span class="sd">            interactions. However, when this kwarg is explicitly specified, the</span>
+<span class="sd">            exxdiv correction is computed with the full-range Coulomb</span>
+<span class="sd">            interaction (1/r12). This parameter should only be specified in the</span>
 <span class="sd">            range-separated JK builder and range-separated DF (and other</span>
-<span class="sd">            range-separated integral methods) which require Ewald probe charge</span>
-<span class="sd">            to be computed with regular Coulomb interaction (1/r12).</span>
+<span class="sd">            range-separated integral methods if any).</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">exxdiv</span> <span class="o">=</span> <span class="n">exx</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exx</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -712,11 +713,11 @@
             <span class="n">kG</span><span class="p">[</span><span class="n">on_edge</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">==-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">box_edge</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
     <span class="n">absG2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;gi,gi-&gt;g&#39;</span><span class="p">,</span> <span class="n">kG</span><span class="p">,</span> <span class="n">kG</span><span class="p">)</span>
+    <span class="n">G0_idx</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;kpts&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">kpts</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;kpts&#39;</span><span class="p">):</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">kpts</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">kpts</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">Nk</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;vcut_sph&#39;</span><span class="p">:</span>  <span class="c1"># PRB 77 193110</span>
@@ -799,34 +800,38 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">G0_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">coulG</span><span class="p">[</span><span class="n">G0_idx</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">Rc</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Rc</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="c1"># The divergent part of periodic summation of (ii|ii) integrals in</span>
-        <span class="c1"># Coulomb integrals were cancelled out by electron-nucleus</span>
-        <span class="c1"># interaction. The periodic part of (ii|ii) in exchange cannot be</span>
-        <span class="c1"># cancelled out by Coulomb integrals. Its leading term is calculated</span>
-        <span class="c1"># using Ewald probe charge (the function madelung below)</span>
-        <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G0_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">coulG</span><span class="p">[</span><span class="n">G0_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Nk</span><span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span><span class="o">*</span><span class="n">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">equal2boundary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">coulG</span><span class="p">[</span><span class="n">equal2boundary</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c1"># Scale the coulG kernel for attenuated Coulomb integrals.</span>
-    <span class="c1"># * omega is used by RangeSeparatedJKBuilder which requires ewald probe charge</span>
+    <span class="c1"># * kwarg omega is used by RangeSeparatedJKBuilder which requires ewald probe charge</span>
     <span class="c1"># being evaluated with regular Coulomb interaction (1/r12).</span>
     <span class="c1"># * cell.omega, which affects the ewald probe charge, is often set by</span>
     <span class="c1"># DFT-RSH functionals to build long-range HF-exchange for erf(omega*r12)/r12</span>
-    <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># long range part</span>
-            <span class="n">coulG</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">.25</span><span class="o">/</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">absG2</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">omega</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># short range part</span>
-            <span class="n">coulG</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">.25</span><span class="o">/</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">absG2</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">coulG</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">.25</span><span class="o">/</span><span class="n">cell</span><span class="o">.</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">absG2</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_omega</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_omega</span> <span class="o">=</span> <span class="n">omega</span>
+    <span class="k">if</span> <span class="n">_omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># long range part</span>
+        <span class="n">coulG</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">.25</span><span class="o">/</span><span class="n">_omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">absG2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_omega</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;vcut_sph&#39;</span> <span class="ow">or</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;vcut_ws&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SR Coulomb for exxdiv=</span><span class="si">{</span><span class="n">exxdiv</span><span class="si">}</span><span class="s1"> is not available&#39;</span><span class="p">)</span>
+        <span class="c1"># short range part</span>
+        <span class="n">coulG</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">.25</span><span class="o">/</span><span class="n">_omega</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">absG2</span><span class="p">))</span>
 
+    <span class="c1"># For full-range Coulomb and long-range Coulomb,</span>
+    <span class="c1"># the divergent part of periodic summation of (ii|ii) integrals in</span>
+    <span class="c1"># Coulomb integrals were cancelled out by electron-nucleus</span>
+    <span class="c1"># interaction. The periodic part of (ii|ii) in exchange cannot be</span>
+    <span class="c1"># cancelled out by Coulomb integrals. Its leading term is calculated</span>
+    <span class="c1"># using Ewald probe charge (the function madelung below)</span>
+    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">exxdiv</span> <span class="o">==</span> <span class="s1">&#39;ewald&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">G0_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Affects DFT-RSH</span>
+            <span class="n">coulG</span><span class="p">[</span><span class="n">G0_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Nk</span><span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span><span class="o">*</span><span class="n">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># for RangeSeparatedJKBuilder</span>
+            <span class="n">coulG</span><span class="p">[</span><span class="n">G0_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">Nk</span><span class="o">*</span><span class="n">cell</span><span class="o">.</span><span class="n">vol</span><span class="o">*</span><span class="n">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">coulG</span></div>
 
 
@@ -896,7 +901,7 @@
 
 <div class="viewcode-block" id="madelung">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.tools.html#pyscf.pbc.tools.pbc.madelung">[docs]</a>
-<span class="k">def</span> <span class="nf">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">madelung</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">Nk</span> <span class="o">=</span> <span class="n">get_monkhorst_pack_size</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
     <span class="n">ecell</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">ecell</span><span class="o">.</span><span class="n">_atm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
@@ -905,7 +910,10 @@
     <span class="c1">#ecell.verbose = 0</span>
     <span class="n">ecell</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xi,x-&gt;xi&#39;</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">(),</span> <span class="n">Nk</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span>
+
+    <span class="k">if</span> <span class="n">omega</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">ecell</span><span class="o">.</span><span class="n">ewald</span><span class="p">()</span>
 
     <span class="k">else</span><span class="p">:</span>
@@ -915,16 +923,21 @@
         <span class="c1"># because the Coulomb kernel 4pi/G^2*exp(-G^2/4/omega**2) decays</span>
         <span class="c1"># quickly.</span>
         <span class="n">precision</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">precision</span>
-        <span class="n">omega</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">omega</span>
         <span class="n">Ecut</span> <span class="o">=</span> <span class="mf">10.</span>
         <span class="n">Ecut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">16</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Ecut</span><span class="p">)</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">precision</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="o">*</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span>
         <span class="n">Ecut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">16</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">Ecut</span><span class="p">)</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">precision</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="o">*</span><span class="n">omega</span><span class="o">**</span><span class="mi">2</span>
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Ecut</span><span class="p">)</span>
         <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">ecell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
-        <span class="n">wcoulG</span> <span class="o">=</span> <span class="n">get_coulG</span><span class="p">(</span><span class="n">ecell</span><span class="p">,</span> <span class="n">Gv</span><span class="o">=</span><span class="n">Gv</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span>
+        <span class="n">wcoulG</span> <span class="o">=</span> <span class="n">get_coulG</span><span class="p">(</span><span class="n">ecell</span><span class="p">,</span> <span class="n">Gv</span><span class="o">=</span><span class="n">Gv</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">omega</span><span class="p">),</span> <span class="n">exxdiv</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span>
         <span class="n">SI</span> <span class="o">=</span> <span class="n">ecell</span><span class="o">.</span><span class="n">get_SI</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
         <span class="n">ZSI</span> <span class="o">=</span> <span class="n">SI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">omega</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mf">0.5</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i-&gt;&#39;</span><span class="p">,</span> <span class="n">ZSI</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">ZSI</span><span class="p">,</span> <span class="n">wcoulG</span><span class="p">)</span><span class="o">.</span><span class="n">real</span></div>
+        <span class="n">e_lr</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">-</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i-&gt;&#39;</span><span class="p">,</span> <span class="n">ZSI</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">ZSI</span><span class="p">,</span> <span class="n">wcoulG</span><span class="p">)</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">e_lr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">e_fr</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">ecell</span><span class="o">.</span><span class="n">ewald</span><span class="p">()</span> <span class="c1"># The full-range Coulomb</span>
+            <span class="k">return</span> <span class="n">e_fr</span> <span class="o">-</span> <span class="n">e_lr</span></div>
 
 
 
@@ -1240,7 +1253,7 @@
 
   <p class="copyright">
     
-      © Copyright 2024, The PySCF Developers.
+      © Copyright 2025, The PySCF Developers.
       <br/>
     
   </p>

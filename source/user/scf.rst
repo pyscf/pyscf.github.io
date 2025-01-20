@@ -318,8 +318,10 @@ Spin-restricted, spin-unrestricted, restricted open-shell, and generalized calcu
 
 The general spin-orbital used in the HF or KS-DFT wave function can be
 written as
-    .. math::
-        \psi_i(1) = \phi_{i\alpha}(r)\alpha + \phi_{i\beta}(r)\beta \;,
+
+.. math::
+    
+    \psi_i(1) = \phi_{i\alpha}(r)\alpha + \phi_{i\beta}(r)\beta \;,
 
 Four variants of the ansatz :math:`\psi(1)` are commonly used in
 quantum chemistry; they are also all available in PySCF.
