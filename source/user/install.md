@@ -113,7 +113,14 @@ If you have a [Conda](https://conda.io/docs/) (or
 package can be installed from the Conda cloud (for Linux and macOS
 systems),
 ```bash
-conda install -c pyscf pyscf
+conda install -c pyscf -c conda-forge pyscf
+```
+
+To prevent potential conflict problems, it is recommended to enable the conda-forge channel in the ``.condarc``, 
+or create an environment enabling conda-forge like
+```bash
+conda create -n pyscf-env -c conda-forge -c pyscf python=3.9 pyscf
+conda activate pyscf-env
 ```
 
 <!-- 
