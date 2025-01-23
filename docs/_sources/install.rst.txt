@@ -83,7 +83,7 @@ Next, you need to build the C extensions in :file:`pyscf/lib`::
 This will automatically download the analytical GTO integral library
 `libcint <https://github.com/sunqm/libcint.git>`_ and the DFT exchange
 correlation functional libraries `Libxc
-<http://www.tddft.org/programs/Libxc>`_ and `XCFun
+<https://libxc.gitlab.io>`_ and `XCFun
 <https://github.com/dftlibs/xcfun.git>`_.  Finally, to allow Python to
 find the `pyscf` package, add the top-level `pyscf` directory (not the
 `pyscf/pyscf` subdirectory) to `PYTHONPATH`.  For example, if `pyscf`

@@ -15,7 +15,7 @@ List of features
 
 * Interface to XC functional library `XCFun <https://github.com/dftlibs/xcfun>`_
 
-* Interface to XC functional library `Libxc <http://www.tddft.org/programs/octopus/wiki/index.php/Libxc>`_
+* Interface to XC functional library `Libxc <https://libxc.gitlab.io>`_
 
 * Interface to tensor contraction library `TBLIS <https://github.com/devinamatthews/tblis>`_
 
