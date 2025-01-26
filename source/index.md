@@ -51,7 +51,6 @@ ecosystem of :ref:`installing_extproj`.
 
 quickstart
 user/index
-roadmap/index
 contributor/index
 About <about>
 News <news>
