@@ -14,20 +14,22 @@ example [benchmark data](benchmark).
 
 - [Timothy Berkelbach](https://berkelbach.chem.columbia.edu/), Columbia and Flatiron Institute
 - [Garnet Chan](https://www.chan-lab.caltech.edu/), Caltech
-- [Sandeep Sharma](https://www.colorado.edu/lab/sharmagroup/), CU Boulder
+- [Laura Gagliardi](https://gagliardigroup.uchicago.edu/), UChicago
+- [Sandeep Sharma](https://cce.caltech.edu/people/sandeep-sharma/), Caltech
 - [Alexander Sokolov](https://research.cbc.osu.edu/sokolov.8/), Ohio State
 - Qiming Sun, Bytedance Ltd.
-- [Laura Gagliardi](https://gagliardigroup.uchicago.edu/), Chicago
 
 ### Maintainers
 
-- [Xing Zhang](https://www.chan-lab.caltech.edu/people), Caltech :
-  [PySCF](https://github.com/pyscf/pyscf),
-  [PySCF-Forge](https://github.com/pyscf/pyscf-forge)
-- Xiaojie Wu, Bytedance Ltd :
-  [GPU4PySCF](https://github.com/pyscf/gpu4pyscf),
-- [Mattew Hermes](https://gagliardigroup.uchicago.edu/member/dr-matthew-hermes-2/), Chicago :
-  [PySCF-Forge](https://github.com/pyscf/pyscf-forge)
+- [Matthew Hermes](https://gagliardigroup.uchicago.edu/member/dr-matthew-hermes-2/), UChicago
+  ([PySCF-Forge](https://github.com/pyscf/pyscf-forge))
+- Xiaojie Wu, Bytedance Ltd
+  ([GPU4PySCF](https://github.com/pyscf/gpu4pyscf))
+- [Huanchen Zhai](https://www.simonsfoundation.org/people/huanchen-zhai/), Flatiron Institute
+  ([PySCF](https://github.com/pyscf/pyscf))
+- [Xing Zhang](https://www.chan-lab.caltech.edu/people), Caltech
+  ([PySCF](https://github.com/pyscf/pyscf),
+  [PySCF-Forge](https://github.com/pyscf/pyscf-forge))
 
 ## How to cite
 
