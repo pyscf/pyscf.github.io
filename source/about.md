@@ -8,6 +8,10 @@ teams in academia and industry across the world. For more details, see its
 extensive list of [features](features.rst), [version history](version), and 
 example [benchmark data](benchmark).
 
+## Code of conduct
+
+PySCF [Code of Conduct](code-of-conduct.rst)
+
 ## People
 
 ### Board of directors
