@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
+    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.8" />
+  <meta name="docsearch:version" content="2.9" />
   </head>
   
   
@@ -389,10 +389,12 @@
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="c1"># Author: Ivan Chernyshov &lt;ivan.chernyshov@gmail.com&gt;</span>
+<span class="c1">#</span>
 
 <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Provides functionality to generate COSMO files and sigma-profiles</span>
-<span class="sd">for the further use in COSMO-RS/COSMO-SAC computations and/or ML</span>
+<span class="sd">Provides functionality to generate COSMO-files for COSMO-RS computations</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
 <span class="c1">#%% Imports</span>
@@ -480,14 +482,14 @@
 <div class="viewcode-block" id="get_sas_volume">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.cosmors.get_sas_volume">[docs]</a>
 <span class="k">def</span> <span class="nf">get_sas_volume</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Computes volume [A**3] of space enclosed by solvent-accessible surface</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Computes volume [a.u.] of space enclosed by solvent-accessible surface</span>
 
 <span class="sd">    Arguments:</span>
 <span class="sd">        surface (dict): dictionary containing SAS parameters (mc.with_solvent.surface)</span>
 <span class="sd">        step (float): grid spacing parameter, [Bohr]</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        float: SAS-defined volume of the molecule [A**3]</span>
+<span class="sd">        float: SAS-defined volume of the molecule [a.u.]</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># get parameters</span>
@@ -510,36 +512,12 @@
     <span class="c1"># integration</span>
     <span class="n">V</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">dxdy</span> <span class="o">*</span> <span class="n">_get_line_sas_intersection_length</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">radii</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">_product</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">)])</span>
 
-    <span class="k">return</span> <span class="n">V</span> <span class="o">*</span> <span class="n">_BOHR</span><span class="o">**</span><span class="mi">3</span></div>
+    <span class="k">return</span> <span class="n">V</span></div>
 
 
 
 
 <span class="c1">#%% COSMO-files</span>
-
-<span class="k">def</span> <span class="nf">_check_feps</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Checks f_epsilon value and raises ValueError for f_eps &lt; 1</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">        mf: processed SCF with PCM solvation</span>
-<span class="sd">        ignore_low_feps (bool): if True, does not raise ValueError if feps &lt; 1</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if f_epsilon &lt; 1 and ignore_low_feps flag is set to False</span>
-
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">ignore_low_feps</span><span class="p">:</span>
-        <span class="k">return</span>
-
-    <span class="n">f_eps</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;f_epsilon&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">f_eps</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
-        <span class="n">message</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Low f_eps value: </span><span class="si">{</span><span class="n">f_eps</span><span class="si">}</span><span class="s1">. &#39;</span>
-        <span class="n">message</span> <span class="o">+=</span> <span class="s1">&#39;COSMO-RS requires f_epsilon=1.0 or eps=float(&quot;inf&quot;). &#39;</span>
-        <span class="n">message</span> <span class="o">+=</span> <span class="s1">&#39;Rerun computation with correct epsilon or use the ignore_low_feps argument.&#39;</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-
-    <span class="k">return</span>
-
 
 <span class="k">def</span> <span class="nf">_lot</span><span class="p">(</span><span class="n">mf</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns level of theory in method-disp/basis/solvation format (raw solution)</span>
@@ -551,206 +529,237 @@
 <span class="sd">        str: method-dispersion/basis/solvation</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">lot</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;dispersion&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s1">&#39;solvation_model&#39;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">}</span>
+
     <span class="c1"># method</span>
     <span class="n">method</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;xc&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">_re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;HF|MP2|CCSD&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">mf</span><span class="p">)))</span>
-        <span class="n">method</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="s1">&#39;???&#39;</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">lot</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">method</span>
+
+    <span class="c1"># basis</span>
+    <span class="n">lot</span><span class="p">[</span><span class="s1">&#39;basis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span>
+
     <span class="c1"># dispersion</span>
     <span class="n">match</span> <span class="o">=</span> <span class="n">_re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;D3|D4&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">mf</span><span class="p">)))</span>
-    <span class="n">disp</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
-    <span class="c1"># other</span>
-    <span class="n">basis</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span>
-    <span class="n">solv</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">method</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_solvent&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
-    <span class="c1"># approx</span>
-    <span class="n">lot</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}{</span><span class="n">disp</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">basis</span><span class="si">}{</span><span class="n">solv</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">disp</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">lot</span><span class="p">[</span><span class="s1">&#39;dispersion&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">disp</span>
+
+    <span class="c1"># solvation</span>
+    <span class="n">solv</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">method</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;with_solvent&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">lot</span><span class="p">[</span><span class="s1">&#39;solvation_model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">solv</span>
 
     <span class="k">return</span> <span class="n">lot</span>
 
 
+
+<div class="viewcode-block" id="get_pcm_parameters">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.cosmors.get_pcm_parameters">[docs]</a>
+<span class="k">def</span> <span class="nf">get_pcm_parameters</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns a dictionary containing the main PCM computation parameters.</span>
+<span class="sd">    All physical parameters are expressed in atomic units (a.u.).</span>
+<span class="sd">    Please also note, that outlying charge correction is not implemented yet.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        mf: processed SCF with PCM solvation</span>
+<span class="sd">        step (float): grid spacing parameter to compute volume, [Bohr]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: main PCM parameters, including dielectric energy and parameters</span>
+<span class="sd">            of surface segments</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># get params</span>
+    <span class="n">lot</span> <span class="o">=</span> <span class="n">_lot</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="n">f_epsilon</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;f_epsilon&#39;</span><span class="p">]</span>
+    <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]))</span> <span class="c1"># np.float is not json-seriazable</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">get_sas_volume</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span> <span class="n">step</span><span class="p">))</span>
+    <span class="n">E_tot</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">E_diel</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">&#39;e_solvent&#39;</span><span class="p">])</span>
+
+    <span class="c1"># atoms</span>
+    <span class="n">atom_idxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">natm</span><span class="p">))</span>
+    <span class="n">a_xs</span><span class="p">,</span> <span class="n">a_ys</span><span class="p">,</span> <span class="n">a_zs</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">elems</span> <span class="o">=</span> <span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span>
+    <span class="n">radii</span> <span class="o">=</span> <span class="p">[</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;R_vdw&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;gslice_by_atom&#39;</span><span class="p">]]</span>
+
+    <span class="c1"># segments</span>
+    <span class="n">s_xs</span><span class="p">,</span> <span class="n">s_ys</span><span class="p">,</span> <span class="n">s_zs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;grid_coords&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="n">segment_idxs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">s_xs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">atom_segment_idxs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;gslice_by_atom&#39;</span><span class="p">]):</span>
+        <span class="n">atom_segment_idxs</span> <span class="o">+=</span> <span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">charges</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
+    <span class="n">potentials</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;v_grids&#39;</span><span class="p">]</span>
+
+    <span class="c1"># output</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;pyscf_version&#39;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span>
+        <span class="s1">&#39;approximation&#39;</span><span class="p">:</span> <span class="n">lot</span><span class="p">,</span>
+        <span class="s1">&#39;pcm_data&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;f_eps&#39;</span><span class="p">:</span> <span class="n">f_epsilon</span><span class="p">,</span>
+            <span class="s1">&#39;n_segments&#39;</span><span class="p">:</span> <span class="n">n_segments</span><span class="p">,</span>
+            <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">),</span>
+            <span class="s1">&#39;volume&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;screening_charge&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;cosmo&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">charges</span><span class="p">)),</span>
+            <span class="s1">&#39;correction&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">charges</span><span class="p">))</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;energies&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;e_tot&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_tot</span><span class="p">),</span>
+            <span class="s1">&#39;e_tot_corr&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_tot</span><span class="p">),</span> <span class="c1"># TODO: implement OCC</span>
+            <span class="s1">&#39;e_diel&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_diel</span><span class="p">),</span>
+            <span class="s1">&#39;e_diel_corr&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_diel</span><span class="p">)</span> <span class="c1"># TODO: implement OCC</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;atoms&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;atom_index&#39;</span><span class="p">:</span> <span class="n">atom_idxs</span><span class="p">,</span>
+            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">a_xs</span><span class="p">,</span>
+            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">a_ys</span><span class="p">,</span>
+            <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">a_zs</span><span class="p">,</span>
+            <span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="n">elems</span><span class="p">,</span>
+            <span class="s1">&#39;radius&#39;</span><span class="p">:</span> <span class="n">radii</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;segments&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;segment_index&#39;</span><span class="p">:</span> <span class="n">segment_idxs</span><span class="p">,</span>
+            <span class="s1">&#39;atom_index&#39;</span><span class="p">:</span> <span class="n">atom_segment_idxs</span><span class="p">,</span>
+            <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">s_xs</span><span class="p">,</span>
+            <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">s_ys</span><span class="p">,</span>
+            <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">s_zs</span><span class="p">,</span>
+            <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="n">charges</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s1">&#39;charge_corr&#39;</span><span class="p">:</span> <span class="n">charges</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="c1"># TODO: implement OCC</span>
+            <span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="n">areas</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">charges</span> <span class="o">/</span> <span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s1">&#39;sigma_corr&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">charges</span> <span class="o">/</span> <span class="n">areas</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="c1"># TODO: implement OCC</span>
+            <span class="s1">&#39;potential&#39;</span><span class="p">:</span> <span class="n">potentials</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">params</span></div>
+
+
+
+
 <div class="viewcode-block" id="write_cosmo_file">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.cosmors.write_cosmo_file">[docs]</a>
-<span class="k">def</span> <span class="nf">write_cosmo_file</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Saves COSMO file</span>
+<span class="k">def</span> <span class="nf">write_cosmo_file</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Saves COSMO file in Turbomole format. Please note, that outlying charge</span>
+<span class="sd">    correction is not implemented yet</span>
 
 <span class="sd">    Arguments:</span>
 <span class="sd">        fout: writable file object</span>
 <span class="sd">        mf: processed SCF with PCM solvation</span>
 <span class="sd">        step (float): grid spacing parameter to compute volume, [Bohr]</span>
-<span class="sd">        ignore_low_feps (bool): if True, does not raise ValueError if feps &lt; 1</span>
+<span class="sd">        volume (float): uses given value (Bohr^3) as molecular volume</span>
+<span class="sd">            instead of the computed one</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if f_epsilon &lt; 1 and ignore_low_feps flag is set to False</span>
+<span class="sd">        ValueError: if f_epsilon &lt; 1</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_check_feps</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="p">)</span>
+    <span class="c1"># extract PCM parameters</span>
+    <span class="n">ps</span> <span class="o">=</span> <span class="n">get_pcm_parameters</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+
+    <span class="c1"># check F_epsilon</span>
+    <span class="n">f_eps</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;pcm_data&#39;</span><span class="p">][</span><span class="s1">&#39;f_eps&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">f_eps</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">message</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Low f_eps value: </span><span class="si">{</span><span class="n">f_eps</span><span class="si">}</span><span class="s1">. &#39;</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="s1">&#39;COSMO-RS requires f_epsilon=1.0 or eps=float(&quot;inf&quot;). &#39;</span>
+        <span class="n">message</span> <span class="o">+=</span> <span class="s1">&#39;Rerun computation with the correct epsilon value.&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
     <span class="c1"># qm params</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$info</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;PySCF v. </span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">_lot</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s1">&#39;program: PySCF, version </span><span class="si">{</span><span class="n">ps</span><span class="p">[</span><span class="s2">&quot;pyscf_version&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;solvation model: </span><span class="si">{</span><span class="n">ps</span><span class="p">[</span><span class="s2">&quot;approximation&quot;</span><span class="p">][</span><span class="s2">&quot;solvation_model&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;dispersion: </span><span class="si">{</span><span class="n">ps</span><span class="p">[</span><span class="s2">&quot;approximation&quot;</span><span class="p">][</span><span class="s2">&quot;dispersion&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ps</span><span class="p">[</span><span class="s2">&quot;approximation&quot;</span><span class="p">][</span><span class="s2">&quot;method&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ps</span><span class="p">[</span><span class="s2">&quot;approximation&quot;</span><span class="p">][</span><span class="s2">&quot;basis&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">]</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># cosmo data</span>
-    <span class="n">f_epsilon</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;f_epsilon&#39;</span><span class="p">]</span>
-    <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
-    <span class="n">area</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">])</span>
-    <span class="n">volume</span> <span class="o">=</span> <span class="n">get_sas_volume</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span> <span class="o">/</span>  <span class="n">_BOHR</span><span class="o">**</span><span class="mi">3</span>
+    <span class="n">n_segments</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;pcm_data&#39;</span><span class="p">][</span><span class="s1">&#39;n_segments&#39;</span><span class="p">]</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;pcm_data&#39;</span><span class="p">][</span><span class="s1">&#39;area&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;pcm_data&#39;</span><span class="p">][</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span>
     <span class="c1"># print</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$cosmo_data</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  fepsi  = </span><span class="si">{</span><span class="n">f_epsilon</span><span class="si">:</span><span class="s1">&gt;.8f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  fepsi  = </span><span class="si">{</span><span class="n">f_eps</span><span class="si">:</span><span class="s1">&gt;.8f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  nps    = </span><span class="si">{</span><span class="n">n_segments</span><span class="si">:</span><span class="s1">&gt;10d</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  area   = </span><span class="si">{</span><span class="n">area</span><span class="si">:</span><span class="s1">&gt;10.2f</span><span class="si">}</span><span class="s1">       # [Bohr**2]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  volume = </span><span class="si">{</span><span class="n">volume</span><span class="si">:</span><span class="s1">&gt;10.2f</span><span class="si">}</span><span class="s1">       # [Bohr**3]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  area   = </span><span class="si">{</span><span class="n">area</span><span class="si">:</span><span class="s1">&gt;10.2f</span><span class="si">}</span><span class="s1">       # [a.u.]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  volume = </span><span class="si">{</span><span class="n">volume</span><span class="si">:</span><span class="s1">&gt;10.2f</span><span class="si">}</span><span class="s1">       # [a.u.]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># atomic coordinates</span>
-    <span class="n">atoms</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">elements</span><span class="p">))</span>
-    <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-    <span class="n">elems</span> <span class="o">=</span> <span class="p">[</span><span class="n">elem</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">elements</span><span class="p">]</span>
-    <span class="n">radii</span> <span class="o">=</span> <span class="p">[</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;R_vdw&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;gslice_by_atom&#39;</span><span class="p">]]</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;atom_index&#39;</span><span class="p">]</span>
+    <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span> <span class="o">=</span> <span class="p">(</span><span class="n">ps</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="n">ax</span><span class="p">]</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+    <span class="n">elems</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;element&#39;</span><span class="p">]</span>
+    <span class="n">radii</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">*</span> <span class="n">_BOHR</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="s1">&#39;radius&#39;</span><span class="p">]]</span>
     <span class="c1"># print</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$coord_rad</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#atom   x [Bohr]           y [Bohr]           z [Bohr]      element  radius [Bohr]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#atom   x [a.u.]           y [a.u.]           z [a.u.]      element  radius [A]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">atom</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">elems</span><span class="p">,</span> <span class="n">radii</span><span class="p">):</span>
         <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">atom</span><span class="si">:</span><span class="s1">&gt;4d</span><span class="si">}{</span><span class="n">x</span><span class="si">:</span><span class="s1">&gt;19.14f</span><span class="si">}{</span><span class="n">y</span><span class="si">:</span><span class="s1">&gt;19.14f</span><span class="si">}{</span><span class="n">z</span><span class="si">:</span><span class="s1">&gt;19.14f</span><span class="si">}</span><span class="s1">  </span><span class="si">{</span><span class="n">elem</span><span class="si">:</span><span class="s1">&lt;2</span><span class="si">}{</span><span class="n">r</span><span class="si">:</span><span class="s1">&gt;12.5f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="c1"># cosmo parameters</span>
-    <span class="n">screening_charge</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
-    <span class="n">E_tot</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="n">E_diel</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">&#39;e_solvent&#39;</span><span class="p">]</span>
+    <span class="c1"># screening charges</span>
+    <span class="n">charge_cosmo</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;screening_charge&#39;</span><span class="p">][</span><span class="s1">&#39;cosmo&#39;</span><span class="p">]</span>
+    <span class="n">charge_correction</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;screening_charge&#39;</span><span class="p">][</span><span class="s1">&#39;correction&#39;</span><span class="p">]</span>
+    <span class="n">charge_total</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;screening_charge&#39;</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">]</span>
     <span class="c1"># print</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$screening_charge</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  cosmo                          = </span><span class="si">{</span><span class="n">screening_charge</span><span class="si">:</span><span class="s1">&gt;15.6f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  cosmo      = </span><span class="si">{</span><span class="n">charge_cosmo</span><span class="si">:</span><span class="s1">&gt;10.6f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  correction = </span><span class="si">{</span><span class="n">charge_correction</span><span class="si">:</span><span class="s1">&gt;10.6f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  total      = </span><span class="si">{</span><span class="n">charge_total</span><span class="si">:</span><span class="s1">&gt;10.6f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># energies</span>
+    <span class="n">E_tot</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">][</span><span class="s1">&#39;e_tot&#39;</span><span class="p">]</span>
+    <span class="n">E_tot_corr</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">][</span><span class="s1">&#39;e_tot_corr&#39;</span><span class="p">]</span>
+    <span class="n">E_diel</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">][</span><span class="s1">&#39;e_diel&#39;</span><span class="p">]</span>
+    <span class="n">E_diel_corr</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;energies&#39;</span><span class="p">][</span><span class="s1">&#39;e_diel_corr&#39;</span><span class="p">]</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$cosmo_energy</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  Total energy [a.u.]            = </span><span class="si">{</span><span class="n">E_tot</span><span class="si">:</span><span class="s1">&gt;19.10f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  Total energy + OC corr. [a.u.] = </span><span class="si">{</span><span class="n">E_tot_corr</span><span class="si">:</span><span class="s1">&gt;19.10f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  Total energy corrected [a.u.]  = </span><span class="si">{</span><span class="n">E_tot_corr</span><span class="si">:</span><span class="s1">&gt;19.10f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  Dielectric energy [a.u.]       = </span><span class="si">{</span><span class="n">E_diel</span><span class="si">:</span><span class="s1">&gt;19.10f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  Diel. energy + OC corr. [a.u.] = </span><span class="si">{</span><span class="n">E_diel_corr</span><span class="si">:</span><span class="s1">&gt;19.10f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># segments</span>
-    <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;grid_coords&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-    <span class="n">ns</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">atoms</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;gslice_by_atom&#39;</span><span class="p">]):</span>
-        <span class="n">atoms</span> <span class="o">+=</span> <span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-    <span class="n">qs</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span>
-    <span class="n">areas</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">_BOHR</span><span class="o">**</span><span class="mi">2</span>
-    <span class="n">sigmas</span> <span class="o">=</span> <span class="n">qs</span> <span class="o">/</span> <span class="n">areas</span>
-    <span class="n">pots</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;v_grids&#39;</span><span class="p">]</span>
+    <span class="n">ns</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="s1">&#39;segment_index&#39;</span><span class="p">]</span>
+    <span class="n">atoms</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="s1">&#39;atom_index&#39;</span><span class="p">]</span>
+    <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span> <span class="o">=</span> <span class="p">(</span><span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="n">ax</span><span class="p">]</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s1">&#39;xyz&#39;</span><span class="p">)</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="s1">&#39;charge_corr&#39;</span><span class="p">]</span>
+    <span class="n">areas</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="o">*</span> <span class="n">_BOHR</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="s1">&#39;area&#39;</span><span class="p">]]</span>
+    <span class="n">pots</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="o">/</span> <span class="n">_BOHR</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ps</span><span class="p">[</span><span class="s1">&#39;segments&#39;</span><span class="p">][</span><span class="s1">&#39;potential&#39;</span><span class="p">]]</span>
     <span class="c1"># print legend</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;$segment_information</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# n             - segment number</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# atom          - atom associated with segment n</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# x, y, z       - segment coordinates, [Bohr]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# charge        - segment charge</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# position      - segment coordinates, [a.u.]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# charge        - segment charge (corrected)</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# area          - segment area [A**2]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# charge/area   - segment charge density [e/A**2]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# potential     - solute potential on segment</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# potential     - solute potential on segment (A length scale)</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#  n   atom              position (X, Y, Z)                   &#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;charge         area        charge/area     potential</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="c1"># print params</span>
-    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">pot</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="n">areas</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">,</span> <span class="n">pots</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">area</span><span class="p">,</span> <span class="n">pot</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">qs</span><span class="p">,</span> <span class="n">areas</span><span class="p">,</span> <span class="n">pots</span><span class="p">):</span>
         <span class="n">line</span>  <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s1">&gt;5d</span><span class="si">}{</span><span class="n">atom</span><span class="si">:</span><span class="s1">&gt;5d</span><span class="si">}{</span><span class="n">x</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">y</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">z</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}</span><span class="s1">&#39;</span>
-        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">q</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">area</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">sigma</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">pot</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">q</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">area</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">q</span><span class="o">/</span><span class="n">area</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}{</span><span class="n">pot</span><span class="si">:</span><span class="s1">&gt;15.9f</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
         <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
     <span class="k">return</span></div>
-
-
-
-
-<span class="c1">#%% Sigma-profile</span>
-
-<div class="viewcode-block" id="get_sigma_profile">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.cosmors.get_sigma_profile">[docs]</a>
-<span class="k">def</span> <span class="nf">get_sigma_profile</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigmas_grid</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Computes sigma-profile in [-0.025..0.025] e/A**2 range as in</span>
-<span class="sd">    https://github.com/usnistgov/COSMOSAC/blob/master/profiles/to_sigma.py#L181</span>
-<span class="sd">    https://doi.org/10.1021/acs.jctc.9b01016</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">        mf: processed SCF with PCM solvation</span>
-<span class="sd">        sigmas_grid (_np.ndarray): grid of screening charge values,</span>
-<span class="sd">            e.g. np.linspace(-0.025, 0.025, 51)</span>
-<span class="sd">        ignore_low_feps (bool): if True, does not raise ValueError if feps &lt; 1</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        _np.ndarray: array of 51 elements corresponding to the p(sigma) values for</span>
-<span class="sd">            the screening charge values in [-0.025..0.025] e/A**2 range</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if f_epsilon &lt; 1 and ignore_low_feps flag is set to False</span>
-
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_check_feps</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="p">)</span>
-
-    <span class="c1"># prepare params</span>
-    <span class="n">qs</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">_intermediates</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">]</span>
-    <span class="n">areas</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">_BOHR</span><span class="o">**</span><span class="mi">2</span>
-    <span class="n">sigmas</span> <span class="o">=</span> <span class="n">qs</span> <span class="o">/</span> <span class="n">areas</span>
-    <span class="n">step</span> <span class="o">=</span> <span class="n">sigmas_grid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sigmas_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">max_sigma</span> <span class="o">=</span> <span class="n">sigmas_grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">step</span>
-    <span class="n">n_bins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigmas_grid</span><span class="p">)</span>
-
-    <span class="c1"># compute profile</span>
-    <span class="n">psigma</span> <span class="o">=</span> <span class="n">_np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">area</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">areas</span><span class="p">):</span>
-        <span class="c1"># get index of left sigma grid value</span>
-        <span class="n">left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">_np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">sigma</span> <span class="o">-</span> <span class="n">sigmas_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">step</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">left</span> <span class="o">&gt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="c1"># get impact of the segment to the left bin</span>
-        <span class="n">val_right</span> <span class="o">=</span> <span class="n">sigmas_grid</span><span class="p">[</span><span class="n">left</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">max_sigma</span>
-        <span class="n">w_left</span> <span class="o">=</span> <span class="p">(</span><span class="n">val_right</span> <span class="o">-</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">/</span> <span class="n">step</span>
-        <span class="c1"># add areas to p(sigma)</span>
-        <span class="k">if</span> <span class="n">left</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">psigma</span><span class="p">[</span><span class="n">left</span><span class="p">]</span> <span class="o">+=</span> <span class="n">area</span> <span class="o">*</span> <span class="n">w_left</span>
-        <span class="k">if</span> <span class="n">left</span> <span class="o">&lt;</span> <span class="n">n_bins</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">psigma</span><span class="p">[</span><span class="n">left</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">area</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">w_left</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">psigma</span></div>
-
-
-
-<div class="viewcode-block" id="get_cosmors_parameters">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.cosmors.get_cosmors_parameters">[docs]</a>
-<span class="k">def</span> <span class="nf">get_cosmors_parameters</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigmas_grid</span><span class="o">=</span><span class="n">_np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span>
-                           <span class="n">step</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Computes main COSMO-RS parameters</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">        mf: processed SCF with PCM solvation</span>
-<span class="sd">        step (float): grid spacing parameter to compute volume, [Bohr]</span>
-<span class="sd">        ignore_low_feps (bool): if True, does not raise ValueError if feps &lt; 1</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: main COSMO-RS parameters, including sigma-profile, volume, surface area,</span>
-<span class="sd">            SCF and dielectric energies</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if f_epsilon &lt; 1 and ignore_low_feps flag is set to False</span>
-
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_check_feps</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="p">)</span>
-
-    <span class="c1"># get params</span>
-    <span class="n">lot</span> <span class="o">=</span> <span class="n">_lot</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-    <span class="n">area</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="n">_BOHR</span><span class="o">**</span><span class="mi">2</span>
-    <span class="n">volume</span> <span class="o">=</span> <span class="n">get_sas_volume</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">surface</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
-    <span class="n">psigma</span> <span class="o">=</span> <span class="n">get_sigma_profile</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigmas_grid</span><span class="p">,</span> <span class="n">ignore_low_feps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">E_tot</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="n">E_diel</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">scf_summary</span><span class="p">[</span><span class="s1">&#39;e_solvent&#39;</span><span class="p">]</span>
-
-    <span class="c1"># output</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;PySCF version&#39;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span>
-              <span class="s1">&#39;Level of theory&#39;</span><span class="p">:</span> <span class="n">lot</span><span class="p">,</span>
-              <span class="s1">&#39;Surface area, A**2&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">),</span> <span class="c1"># since np.float is not json-seriazable</span>
-              <span class="s1">&#39;Volume, A**3&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume</span><span class="p">),</span>
-              <span class="s1">&#39;Total energy, a.u.&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_tot</span><span class="p">),</span>
-              <span class="s1">&#39;Dielectric energy, a.u.&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">E_diel</span><span class="p">),</span>
-              <span class="s1">&#39;Screening charge density, A**2&#39;</span><span class="p">:</span> <span class="n">psigma</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-              <span class="s1">&#39;Screening charge, e/A**2&#39;</span><span class="p">:</span> <span class="n">sigmas_grid</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
-
-    <span class="k">return</span> <span class="n">params</span></div>
 
 
 

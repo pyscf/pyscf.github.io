@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
+    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.8" />
+  <meta name="docsearch:version" content="2.9" />
   </head>
   
   
@@ -469,13 +469,32 @@
         <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">mo_occ</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">nocc</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
 
-    <span class="n">fermi</span> <span class="o">=</span> <span class="n">_get_fermi</span><span class="p">(</span><span class="n">mo_es</span><span class="p">,</span> <span class="n">nocc</span><span class="p">)</span>
+    <span class="n">mu0</span> <span class="o">=</span> <span class="n">_init_guess_mu</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
-        <span class="n">nelec_cost_fn</span><span class="p">,</span> <span class="n">fermi</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Powell&#39;</span><span class="p">,</span>
+        <span class="n">nelec_cost_fn</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Powell&#39;</span><span class="p">,</span>
         <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xtol&#39;</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="s1">&#39;ftol&#39;</span><span class="p">:</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">})</span>
     <span class="n">mu</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span>
     <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">mo_occs</span>
+
+<span class="k">def</span> <span class="nf">_init_guess_mu</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">],</span> <span class="n">step</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; Generate an initial guess for `mu` by manually minimizing the nocc error on a grid</span>
+<span class="sd">        around `fermi`. The grid is constructed as:</span>
+
+<span class="sd">            mus = fermi + numpy.arange(*box, step) / 27.211399</span>
+
+<span class="sd">        By default, `box = [-1, 1]` and `step = 1e-3`, which corresponds to searching</span>
+<span class="sd">        within a +/-1 eV window around `fermi` with a resolution of 1 meV (resulting</span>
+<span class="sd">        in 2000 grid points).</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            mu0 : float</span>
+<span class="sd">                Best initial guess within the searching window</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">fermi</span> <span class="o">=</span> <span class="n">_get_fermi</span><span class="p">(</span><span class="n">mo_es</span><span class="p">,</span> <span class="n">nocc</span><span class="p">)</span>
+    <span class="n">mus</span> <span class="o">=</span> <span class="n">fermi</span> <span class="o">+</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">*</span><span class="n">box</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span><span class="o">/</span><span class="mf">27.211399</span>
+    <span class="n">noccs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">f_occ</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mus</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">mus</span><span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">noccs</span><span class="o">-</span><span class="n">nocc</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span>
 
 <span class="k">def</span> <span class="nf">_get_fermi</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">nocc</span><span class="p">):</span>
     <span class="n">mo_e_sorted</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">)</span>

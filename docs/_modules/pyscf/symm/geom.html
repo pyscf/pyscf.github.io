@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=69ff2ef9"></script>
+    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.8" />
+  <meta name="docsearch:version" content="2.9" />
   </head>
   
   
@@ -436,21 +436,34 @@
 
 <div class="viewcode-block" id="argsort_coords">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.argsort_coords">[docs]</a>
-<span class="k">def</span> <span class="nf">argsort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">argsort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+    <span class="c1"># * np.round for decimal places can lead to more errors than the actual</span>
+    <span class="c1"># difference between two numbers. For example,</span>
+    <span class="c1"># np.round([0.1249999999,0.1250000001], 2) =&gt; [0.12, 0.13]</span>
+    <span class="c1"># np.round([0.1249999999,0.1250000001], 3) =&gt; [0.125, 0.125]</span>
+    <span class="c1"># When loosen tolerance is used, compared to the more strict tolerance,</span>
+    <span class="c1"># the coordinates might look more different.</span>
+    <span class="c1"># * Using the power of two as the factor can reduce such errors, although not</span>
+    <span class="c1"># faithfully rounding to the required decimals.</span>
+    <span class="c1"># * For normal molecules, tol~=0.1 in coordinates is enough to distinguish</span>
+    <span class="c1"># atoms in molecule. A very tight threshold is not appropriate here. With</span>
+    <span class="c1"># tight threshold, small differences in coordinates may lead to different</span>
+    <span class="c1"># arg orders.</span>
     <span class="k">if</span> <span class="n">decimals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">decimals</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">TOLERANCE</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">)</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">tol</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="nb">int</span><span class="p">(</span><span class="mf">3.3219281</span> <span class="o">*</span> <span class="n">decimals</span><span class="p">)</span>
+    <span class="c1"># +.5 for rounding to the nearest integer</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="o">*</span><span class="n">fac</span> <span class="o">+</span> <span class="mf">.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">lexsort</span><span class="p">((</span><span class="n">coords</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]))</span>
     <span class="k">return</span> <span class="n">idx</span></div>
 
 
 <div class="viewcode-block" id="sort_coords">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.sort_coords">[docs]</a>
-<span class="k">def</span> <span class="nf">sort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">decimals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">decimals</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">TOLERANCE</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="k">def</span> <span class="nf">sort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">argsort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="n">decimals</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">argsort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">coords</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
 
 
@@ -892,7 +905,11 @@
         <span class="n">newc</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">op</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">argsort_coords</span><span class="p">(</span><span class="n">newc</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">coords0</span><span class="p">,</span> <span class="n">newc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">atol</span><span class="o">=</span><span class="n">TOLERANCE</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">PointGroupSymmetryError</span><span class="p">(</span><span class="s1">&#39;Symmetry identical atoms not found&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PointGroupSymmetryError</span><span class="p">(</span>
+                <span class="s1">&#39;Symmetry identical atoms not found. This may be due to &#39;</span>
+                <span class="s1">&#39;the strict setting of the threshold symm.geom.TOLERANCE. &#39;</span>
+                <span class="s1">&#39;Consider adjusting the tolerance.&#39;</span><span class="p">)</span>
+
         <span class="n">dup_atom_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
 
     <span class="n">dup_atom_ids</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">dup_atom_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
@@ -930,10 +947,21 @@
     <span class="k">elif</span> <span class="n">gpname</span> <span class="o">==</span> <span class="s1">&#39;Coov&#39;</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">coords</span><span class="p">[:,:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">TOLERANCE</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">gpname</span> <span class="o">==</span> <span class="s1">&#39;SO3&#39;</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">TOLERANCE</span>
 
     <span class="n">opdic</span> <span class="o">=</span> <span class="n">symm_ops</span><span class="p">(</span><span class="n">gpname</span><span class="p">)</span>
     <span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">opdic</span><span class="p">[</span><span class="n">op</span><span class="p">]</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">OPERATOR_TABLE</span><span class="p">[</span><span class="n">gpname</span><span class="p">]]</span>
     <span class="n">rawsys</span> <span class="o">=</span> <span class="n">SymmSys</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+
+    <span class="c1"># A fast check using Casimir tensors</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">atoms</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">atoms</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_identical_geometry</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">op</span><span class="p">),</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
     <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">atomtypes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">rawsys</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">lst</span><span class="p">,</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">argsort_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
@@ -955,6 +983,33 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">])</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">orig</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[[</span><span class="n">atoms</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">))]</span></div>
+
+
+<div class="viewcode-block" id="is_identical_geometry">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.is_identical_geometry">[docs]</a>
+<span class="k">def</span> <span class="nf">is_identical_geometry</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;A fast check to compare the geometry of two molecules using Casimir tensors&#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">coords1</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">coords2</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">casimir_tensors</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span> <span class="o">-</span>
+               <span class="n">casimir_tensors</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">order</span><span class="p">))</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">TOLERANCE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="casimir_tensors">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.symm.html#pyscf.symm.geom.casimir_tensors">[docs]</a>
+<span class="k">def</span> <span class="nf">casimir_tensors</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">q</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,ix,iy-&gt;xy&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,ix,iy,iz-&gt;xyz&#39;</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
 
 
 <div class="viewcode-block" id="RotationAxisNotFound">

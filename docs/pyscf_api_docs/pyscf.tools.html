@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=69ff2ef9"></script>
+    <script src="../_static/documentation_options.js?v=182a64a0"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.8" />
+  <meta name="docsearch:version" content="2.9" />
   </head>
   
   
@@ -1078,6 +1078,106 @@ parameters with keys:  H1, H2, ECORE, NORB, NELEC, MS, ORBSYM, ISYM</p>
 <dd></dd></dl>
 
 </section>
+<section id="module-pyscf.tools.finite_diff">
+<span id="pyscf-tools-finite-diff-module"></span><h2>pyscf.tools.finite_diff module<a class="headerlink" href="#module-pyscf.tools.finite_diff" title="Link to this heading">#</a></h2>
+<p>Finite difference driver</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.GradScanner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyscf.tools.finite_diff.</span></span><span class="sig-name descname"><span class="pre">GradScanner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#GradScanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.GradScanner" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyscf.lib.html#pyscf.lib.misc.GradScanner" title="pyscf.lib.misc.GradScanner"><code class="xref py py-class docutils literal notranslate"><span class="pre">GradScanner</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Gradients">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyscf.tools.finite_diff.</span></span><span class="sig-name descname"><span class="pre">Gradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Gradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Gradients" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyscf.grad.html#pyscf.grad.rhf.GradientsBase" title="pyscf.grad.rhf.GradientsBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">GradientsBase</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Gradients.as_scanner">
+<span class="sig-name descname"><span class="pre">as_scanner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Gradients.as_scanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Gradients.as_scanner" title="Link to this definition">#</a></dt>
+<dd><p>Generating a nuclear gradients scanner/solver (for geometry optimizer).</p>
+<p>The returned solver is a function. This function requires one argument
+“mol” as input and returns energy and first order nuclear derivatives.</p>
+<p>The solver will automatically use the results of last calculation as the
+initial guess of the new calculation.  All parameters assigned in the
+nuc-grad object and SCF object (DIIS, conv_tol, max_memory etc) are
+automatically applied in the solver.</p>
+<p>Note scanner has side effects.  It may change many underlying objects
+(_scf, with_df, with_x2c, …) during calculation.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">grad</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hf_scanner</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">RHF</span><span class="p">)</span><span class="o">.</span><span class="n">as_scanner</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_tot</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">hf_scanner</span><span class="p">(</span><span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1.1&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e_tot</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">hf_scanner</span><span class="p">(</span><span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1.5&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Gradients.displacement">
+<span class="sig-name descname"><span class="pre">displacement</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></em><a class="headerlink" href="#pyscf.tools.finite_diff.Gradients.displacement" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Gradients.kernel">
+<span class="sig-name descname"><span class="pre">kernel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Gradients.kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Gradients.kernel" title="Link to this definition">#</a></dt>
+<dd><p>Kernel function is the main driver of a method.  Every method should
+define the kernel function as the entry of the calculation.  Note the
+return value of kernel function is not strictly defined.  It can be
+anything related to the method (such as the energy, the wave-function,
+the DFT mesh grids etc.).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Hessian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyscf.tools.finite_diff.</span></span><span class="sig-name descname"><span class="pre">Hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Hessian" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pyscf.hessian.html#pyscf.hessian.rhf.HessianBase" title="pyscf.hessian.rhf.HessianBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">HessianBase</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Hessian.as_scanner">
+<span class="sig-name descname"><span class="pre">as_scanner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Hessian.as_scanner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Hessian.as_scanner" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Hessian.displacement">
+<span class="sig-name descname"><span class="pre">displacement</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01</span></em><a class="headerlink" href="#pyscf.tools.finite_diff.Hessian.displacement" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.Hessian.kernel">
+<span class="sig-name descname"><span class="pre">kernel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#Hessian.kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.Hessian.kernel" title="Link to this definition">#</a></dt>
+<dd><p>Kernel function is the main driver of a method.  Every method should
+define the kernel function as the entry of the calculation.  Note the
+return value of kernel function is not strictly defined.  It can be
+anything related to the method (such as the energy, the wave-function,
+the DFT mesh grids etc.).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyscf.tools.finite_diff.kernel">
+<span class="sig-prename descclassname"><span class="pre">pyscf.tools.finite_diff.</span></span><span class="sig-name descname"><span class="pre">kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">displacement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/tools/finite_diff.html#kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.tools.finite_diff.kernel" title="Link to this definition">#</a></dt>
+<dd><p>Evaluate gradients or Hessians for a given method using finite difference approximation.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>method (callable):</dt><dd><p>The function for which the gradient or Hessian is to be computed.</p>
+</dd>
+</dl>
+</dd>
+<dt>Kwargs:</dt><dd><dl class="simple">
+<dt>displacement:</dt><dd><p>The small change for finite difference calculations. Default is 1e-2.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>An (n, 3) array for gradients or (n, n, 3, 3) array for hessian,
+depending on the given method.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-pyscf.tools.mo_mapping">
 <span id="pyscf-tools-mo-mapping-module"></span><h2>pyscf.tools.mo_mapping module<a class="headerlink" href="#module-pyscf.tools.mo_mapping" title="Link to this heading">#</a></h2>
 <dl class="py function">
@@ -1458,6 +1558,23 @@ mol object</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.fcidump.write_eri"><code class="docutils literal notranslate"><span class="pre">write_eri()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.fcidump.write_hcore"><code class="docutils literal notranslate"><span class="pre">write_hcore()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.fcidump.write_head"><code class="docutils literal notranslate"><span class="pre">write_head()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-pyscf.tools.finite_diff">pyscf.tools.finite_diff module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.GradScanner"><code class="docutils literal notranslate"><span class="pre">GradScanner</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Gradients"><code class="docutils literal notranslate"><span class="pre">Gradients</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Gradients.as_scanner"><code class="docutils literal notranslate"><span class="pre">Gradients.as_scanner()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Gradients.displacement"><code class="docutils literal notranslate"><span class="pre">Gradients.displacement</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Gradients.kernel"><code class="docutils literal notranslate"><span class="pre">Gradients.kernel()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Hessian"><code class="docutils literal notranslate"><span class="pre">Hessian</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Hessian.as_scanner"><code class="docutils literal notranslate"><span class="pre">Hessian.as_scanner()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Hessian.displacement"><code class="docutils literal notranslate"><span class="pre">Hessian.displacement</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.Hessian.kernel"><code class="docutils literal notranslate"><span class="pre">Hessian.kernel()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyscf.tools.finite_diff.kernel"><code class="docutils literal notranslate"><span class="pre">kernel()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-pyscf.tools.mo_mapping">pyscf.tools.mo_mapping module</a><ul class="nav section-nav flex-column">
