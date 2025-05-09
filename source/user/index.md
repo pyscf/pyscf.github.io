@@ -34,6 +34,7 @@ cc.rst
 adc.rst
 agf2.rst
 mcscf.rst
+mcpdft.rst
 mrpt.rst
 tddft.rst
 ```
