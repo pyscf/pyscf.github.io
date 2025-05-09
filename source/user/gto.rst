@@ -271,7 +271,7 @@ A shell can be a real atomic shell, formed as a linear combination of many Gauss
 or just a single primitive Gaussian function that may have several angular components. 
 In each shell, the spherical parts of the GTO basis follow the
 Condon-Shortley convention, with the ordering (and phase) given in 
-`the Wikipedia table of spherical harmonics <https://en.wikipedia.org/wiki/Table_of_spherical_harmonics>`, 
+`the Wikipedia table of spherical harmonics <https://en.wikipedia.org/wiki/Table_of_spherical_harmonics>`_, 
 except for the `p` functions for which the order of `px`, `py`, `pz` is used 
 instead of the order`py`, `pz`, `px` used in the table above.
 
