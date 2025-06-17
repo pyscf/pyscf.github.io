@@ -142,6 +142,7 @@ if html_theme == 'sphinx_material':
         "globaltoc_collapse": True,
         "master_doc": False,
         "heroes": {"index": "The Python-based Simulations of Chemistry Framework"},
+        "show_prev_next": False,
         "nav_links": [
             {"href": "index", "title": "Home", "internal": True},
             #{"href": "overview", "title": "Overview", "internal": True},
@@ -188,6 +189,7 @@ if html_theme == 'pydata_sphinx_theme':
         "secondary_sidebar_items": {
             "**": ["page-toc", "edit-this-page"],
         },
+        "show_prev_next": False,
         # "navbar_align": "left",
     }
 

@@ -1,6 +1,10 @@
 # Contributor Guide 
 
-A more complete Contributor Guide and planned tasks for PySCF for the future.
+A more complete Contributor Guide is planned for the future.  In the meantime,
+if you are interested in contributing to PySCF, please open an
+[Issue](https://github.com/pyscf/pyscf/issues) on GitHub (including bug
+reports, feature requests, and unexpected behaviors) or start a
+[Discussion](https://github.com/pyscf/pyscf/discussions).
 
 ```{toctree}
 :caption: Style guide
@@ -10,10 +14,11 @@ code-standard
 ```
 
 ```{toctree}
-:caption: API change proposals
+:caption: Roadmap
 :maxdepth: 1
 
-api-v3.rst
+roadmap
+proposals
 ```
 
 ```{toctree}
