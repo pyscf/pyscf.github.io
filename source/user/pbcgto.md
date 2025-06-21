@@ -76,10 +76,11 @@ PySCF uses crystalline Gaussian-type orbitals as basis functions for periodic
 calculations.  The predefined basis sets and ECPs for molecular calculations
 can be used in periodic calculations as well. 
 
-As described more in [](link), many PBC calculations require the use of
-ECPs (or pseudopotentials, as they are more commonly called in periodic codes).
-In addition to molecular ECPs, PySCF includes GTH pseudopotentials,
-which have been parameterized for use with HF or different DFT functionals,
+As described more in [Density fitting for crystalline
+calculations](pbc/df), many PBC calculations require the use of ECPs (or
+pseudopotentials, as they are more commonly called in periodic codes).  In
+addition to molecular ECPs, PySCF includes GTH pseudopotentials, which have
+been parameterized for use with HF or different DFT functionals,
 ```python
 cell.pseudo = 'gth-hf'
 cell.pseudo = 'gth-lda' # an alias for 'gth-pade'
