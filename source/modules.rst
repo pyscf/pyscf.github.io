@@ -27,6 +27,7 @@ API documentation
    modules/lib.rst
    modules/lo.rst
    modules/mcscf.rst
+   modules/mcpdft.rst
    modules/md.rst
    modules/mp.rst
    modules/mrpt.rst
