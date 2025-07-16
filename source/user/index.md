@@ -56,7 +56,14 @@ gpu.rst
 ```   
 
 ```{toctree}
-:caption: Extensions
+:caption: PySCF-forge 
+:maxdepth: 1
+
+pyscf-forge
+```
+
+```{toctree}
+:caption: Extensions 
 :maxdepth: 1
 
 extensions
