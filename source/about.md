@@ -32,7 +32,7 @@ We are dedicated to making participation in the PySCF community a harassment-fre
 - [Matthew Hermes](https://gagliardigroup.uchicago.edu/member/dr-matthew-hermes-2/), UChicago
   ([PySCF-Forge](https://github.com/pyscf/pyscf-forge))
 - Xiaojie Wu, Bytedance Ltd
-  ([GPU4PySCF](https://github.com/pyscf/gpu4pyscf))
+  ([GPU4PySCF](https://github.com/pyscf/gpu4pyscf)) (**2023-2025**)
 - [Huanchen Zhai](https://www.simonsfoundation.org/people/huanchen-zhai/), Flatiron Institute
   ([PySCF](https://github.com/pyscf/pyscf))
 - [Xing Zhang](https://www.chan-lab.caltech.edu/people), Caltech
