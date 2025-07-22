@@ -262,7 +262,7 @@ handling the two-electron integrals:
      eip,vip,pip,xip = myadc.kernel()
 
   Density fitting introduces small errors in excitation energies
-  ($\sim 10^{-3}$ eV), provided that the appropriate auxiliary basis
+  (~$10^{-3}$ eV), provided that the appropriate auxiliary basis
   set is used. :cite:`Banerjee2021`
   For calculations with more than 300 orbitals, using density fitting
   is strongly recommended.
@@ -281,8 +281,8 @@ Some limitations of current implementation are listed below:
 
 * The EE- and IP/EA-RADC codes compute only the states of lowest spin:
   S = 0 (singlet) and S = 1/2 (doublet), respectively. Using the
-  corresponding UADC code allows to compute excitations with $\Delta$(S) = 0,
-  $\pm$1 for EE and $\Delta$(S) = $\pm$1/2, $\pm$3/2 for IP and EA.
+  corresponding UADC code allows to compute excitations with ΔS = 0,
+  ±1 for EE and ΔS = ±1/2, ±3/2 for IP and EA.
 
 * Computing spin square expectation values is currently only available for
   EE-UADC.
