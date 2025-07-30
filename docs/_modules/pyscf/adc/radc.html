@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -393,7 +393,7 @@
 <span class="c1"># Author: Abdelrahman Ahmed &lt;&gt;</span>
 <span class="c1">#         Samragni Banerjee &lt;samragnibanerjee4@gmail.com&gt;</span>
 <span class="c1">#         James Serna &lt;jamcar456@gmail.com&gt;</span>
-<span class="c1">#         Terrence Stahl &lt;&gt;</span>
+<span class="c1">#         Terrence Stahl &lt;terrencestahl1@gmail.com&gt;</span>
 <span class="c1">#         Alexander Sokolov &lt;alexander.y.sokolov@gmail.com&gt;</span>
 <span class="c1">#</span>
 
@@ -401,15 +401,12 @@
 <span class="sd">Restricted algebraic diagrammatic construction</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pyscf.ao2mo</span> <span class="k">as</span> <span class="nn">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc_ao2mo</span>
-<span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">dfadc</span>
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc_amplitudes</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">symm</span>
 
 
 <span class="c1"># Excited-state kernel</span>
@@ -430,6 +427,20 @@
     <span class="k">if</span> <span class="n">eris</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">eris</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">transform_integrals</span><span class="p">()</span>
 
+    <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">approx_trans_moments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;adc(2)&quot;</span><span class="p">,</span> <span class="s2">&quot;adc(2)-x&quot;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="n">adc</span><span class="p">,</span>
+                <span class="s2">&quot;Approximations for transition moments are requested...</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">adc</span><span class="o">.</span><span class="n">method</span>
+                <span class="o">+</span> <span class="s2">&quot; transition properties will neglect second-order amplitudes...&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="n">adc</span><span class="p">,</span>
+                <span class="s2">&quot;Approximations for transition moments are requested...</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">adc</span><span class="o">.</span><span class="n">method</span>
+                <span class="o">+</span> <span class="s2">&quot; transition properties will neglect third-order amplitudes...&quot;</span><span class="p">)</span>
+
     <span class="n">imds</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_imds</span><span class="p">(</span><span class="n">eris</span><span class="p">)</span>
     <span class="n">matvec</span><span class="p">,</span> <span class="n">diag</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">gen_matvec</span><span class="p">(</span><span class="n">imds</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
 
@@ -437,24 +448,34 @@
 
     <span class="n">conv</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">davidson_nosym1</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">xs</span> <span class="p">:</span> <span class="p">[</span><span class="n">matvec</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">],</span>
-        <span class="n">guess</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span>
+        <span class="n">guess</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">max_memory</span><span class="p">,</span>
         <span class="n">max_cycle</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span> <span class="n">max_space</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">tol_residual</span><span class="o">=</span><span class="n">adc</span><span class="o">.</span><span class="n">tol_residual</span><span class="p">)</span>
 
     <span class="n">adc</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">U</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span> <span class="ow">and</span> <span class="n">adc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">!=</span> <span class="s2">&quot;ee&quot;</span><span class="p">:</span>
         <span class="n">adc</span><span class="o">.</span><span class="n">P</span><span class="p">,</span><span class="n">adc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">get_properties</span><span class="p">(</span><span class="n">nroots</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">adc</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">adc</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="n">nfalse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">conv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
 
+    <span class="n">spin_mult</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">method_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ip&quot;</span><span class="p">,</span> <span class="s2">&quot;ea&quot;</span><span class="p">):</span>
+        <span class="n">spin_mult</span> <span class="o">=</span> <span class="s2">&quot;doublet&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">spin_mult</span> <span class="o">=</span> <span class="s2">&quot;singlet&quot;</span>
+
     <span class="n">header</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************&quot;</span>
-              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">            ADC calculation summary&quot;</span>
+              <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">        ADC calculation summary (&quot;</span> <span class="o">+</span> <span class="n">spin_mult</span> <span class="o">+</span> <span class="s2">&quot; states only)&quot;</span>
               <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="n">header</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nroots</span><span class="p">):</span>
         <span class="n">print_string</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> root </span><span class="si">%d</span><span class="s1">  |  Energy (Eh) = </span><span class="si">%14.10f</span><span class="s1">  |  Energy (eV) = </span><span class="si">%12.8f</span><span class="s1">  &#39;</span> <span class="o">%</span>
                         <span class="p">(</span><span class="n">adc</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">*</span><span class="mf">27.2114</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">adc</span><span class="o">.</span><span class="n">compute_properties</span> <span class="ow">and</span> <span class="n">adc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">!=</span> <span class="s2">&quot;ee&quot;</span><span class="p">:</span>
             <span class="n">print_string</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;|  Spec. factor = </span><span class="si">%10.8f</span><span class="s2">  &quot;</span> <span class="o">%</span> <span class="n">adc</span><span class="o">.</span><span class="n">P</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
         <span class="n">print_string</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;|  conv = </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">conv</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="n">print_string</span><span class="p">)</span>
@@ -584,7 +605,6 @@
     <span class="p">}</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_occ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
 
         <span class="k">if</span> <span class="s1">&#39;dft&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__module__</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;DFT reference for UADC&#39;</span><span class="p">)</span>
@@ -602,8 +622,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">max_space</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_max_space&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_cycle</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_max_cycle&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_conv_tol&#39;</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tol_residual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_tol_residual&#39;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_conv_tol&#39;</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol_residual</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;adc_radc_RADC_tol_residual&#39;</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scf_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">e_tot</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="n">frozen</span>
@@ -766,6 +786,9 @@
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method_type</span> <span class="o">==</span> <span class="s2">&quot;ea&quot;</span><span class="p">):</span>
             <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adc_es</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ea_adc</span><span class="p">(</span><span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="n">guess</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="n">eris</span><span class="p">)</span>
 
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method_type</span> <span class="o">==</span> <span class="s2">&quot;ee&quot;</span><span class="p">):</span>
+            <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adc_es</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ee_adc</span><span class="p">(</span><span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="n">guess</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="n">eris</span><span class="p">)</span>
+
         <span class="k">elif</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method_type</span> <span class="o">==</span> <span class="s2">&quot;ip&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncvs</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncvs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adc_es</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_cvs_adc</span><span class="p">(</span>
@@ -790,6 +813,15 @@
     <span class="k">def</span> <span class="nf">ea_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc_ea</span>
         <span class="n">adc_es</span> <span class="o">=</span> <span class="n">radc_ea</span><span class="o">.</span><span class="n">RADCEA</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">adc_es</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adc_es</span></div>
+
+
+<div class="viewcode-block" id="RADC.ee_adc">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.adc.html#pyscf.adc.radc.RADC.ee_adc">[docs]</a>
+    <span class="k">def</span> <span class="nf">ee_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eris</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc_ee</span>
+        <span class="n">adc_es</span> <span class="o">=</span> <span class="n">radc_ee</span><span class="o">.</span><span class="n">RADCEE</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">adc_es</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">eris</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">e_exc</span><span class="p">,</span> <span class="n">v_exc</span><span class="p">,</span> <span class="n">spec_fac</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adc_es</span></div>
 

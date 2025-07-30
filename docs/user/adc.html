@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../_static/documentation_options.js?v=67920a36"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
@@ -56,7 +56,7 @@
     <link rel="prev" title="Coupled-cluster theory" href="cc.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -441,97 +441,114 @@
 <p><em>Modules</em>: <a class="reference internal" href="../pyscf_api_docs/pyscf.adc.html#module-pyscf.adc" title="pyscf.adc"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyscf.adc</span></code></a></p>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
-<p>The algebraic diagrammatic construction theory (ADC(n)) is a post-Hartree-Fock
-method used for computing correlated excited states of molecules.
-<span id="id1">[<a class="reference internal" href="reference.html#id2" title="J. Schirmer, L. S. Cederbaum, and O. Walter. New approach to the one-particle Green's function for finite Fermi systems. Phys. Rev. A, 28(3):1237–1259, 1983.">36</a>, <a class="reference internal" href="reference.html#id3" title="J. Schirmer, A. B. Trofimov, and G. Stelter. A non-Dyson third-order approximation scheme for the electron propagator. J. Chem. Phys., 109(12):4734, 1998. doi:10.1063/1.477085.">37</a>]</span>
-The ADC methods involve a perturbative expansion of a propagator followed
-by truncation at a certain order <span class="math notranslate nohighlight">\(n\)</span> that defines the ADC(n) approximation.
-Depending upon the property being investigated, propagators can be of different
+<p>Algebraic diagrammatic construction theory (ADC) is a post-Hartree-Fock
+approach for computing excited electronic states.
+<span id="id1">[<a class="reference internal" href="reference.html#id2" title="J. Schirmer, L. S. Cederbaum, and O. Walter. New approach to the one-particle Green's function for finite Fermi systems. Phys. Rev. A, 28(3):1237–1259, 1983.">36</a>, <a class="reference internal" href="reference.html#id3" title="J. Schirmer, A. B. Trofimov, and G. Stelter. A non-Dyson third-order approximation scheme for the electron propagator. J. Chem. Phys., 109(12):4734, 1998. doi:10.1063/1.477085.">37</a>, <a class="reference internal" href="reference.html#id5" title="Andreas Dreuw and Michael Wormit. The algebraic diagrammatic construction scheme for the polarization propagator for the calculation of excited states. WIREs Comput Mol Sci., 5(1):82 – 95, 09 2014. URL: http://doi.wiley.com/10.1002/wcms.1206, doi:10.1002/wcms.1206.">38</a>, <a class="reference internal" href="reference.html#id4" title="Samragni Banerjee and Alexander Yu. Sokolov. Algebraic Diagrammatic Construction Theory for Simulating Charged Excited States and Photoelectron Spectra. J. Chem. Theory Comput., 19(11):3037–3053, 2023. doi:10.1021/acs.jctc.3c00251.">39</a>]</span>
+This is done by approximating a linear-response function
+(so-called propagator) to the <span class="math notranslate nohighlight">\(n\)</span>-th order in perturbation theory,
+defining the hierarchy of ADC(n) methods.
+Depending on the property being investigated, propagators can be of different
 types. Some common examples include the polarization propagator for neutral
 electronic excitations, the one-particle Green’s function for charged excitations,
 and the two-electron propagator for Auger electron spectroscopy.
-The different propagators lead to different variants of the ADC method.</p>
-<p>At present, the <cite>adc</cite> module in PySCF can be used to calculate the one-particle
-Green’s function, that provides access to charged excitations,
-such as ionization potentials (IP-ADC) and
-electron affinities (EA-ADC) with different ADC(n) approximations
-(ADC(2), ADC(2)-X and ADC(3)). <span id="id2">[<a class="reference internal" href="reference.html#id4" title="A. B. Trofimov and J. Schirmer. Molecular ionization energies and ground- and ionic-state properties using a non-Dyson electron propagator approach. J. Chem. Phys., 123(14):144115, October 2005. doi:10.1063/1.2047550.">38</a>, <a class="reference internal" href="reference.html#id5" title="S. Banerjee and A. Yu. Sokolov. Third-order algebraic diagrammatic construction theory for electron attachment and ionization energies: Conventional and Green's function implementation. J. Chem. Phys., 151(22):224112, December 2019. doi:10.1063/1.5131771.">39</a>]</span>
-The ADC(n) methods provide access to the
-excitation energies and their corresponding transition intensities via a
-‘one-shot’ calculation.</p>
-<p>A simple ADC(n) computation involves the calculation of the ground-state energy
-and wavefunction that correspond to those of the <span class="math notranslate nohighlight">\(n\)</span>-th order
-Møller–Plesset perturbation theory (MPn), followed by the evaluation of the
-ADC(n) excitation energies (e.g., IP or EA) and the corresponding transition
-probabilities.</p>
-<p>An example of IP and EA computation using the default ADC method (ADC(2))
-is shown below:</p>
+The different propagators lead to different variants of the ADC methods.</p>
+<p>At present, the <cite>adc</cite> module in PySCF can be used to calculate neutral electronic
+excitations from the polarization propagator and charged excitations
+(ionization potentials, electron affinities) from the one-particle
+Green’s function.
+For each property (EE, IP, and EA) three ADC approximations are available:
+strict second-order (ADC(2)), extended second-order (ADC(2)-X), and
+strict third-order (ADC(3)) methods. <span id="id2">[<a class="reference internal" href="reference.html#id5" title="Andreas Dreuw and Michael Wormit. The algebraic diagrammatic construction scheme for the polarization propagator for the calculation of excited states. WIREs Comput Mol Sci., 5(1):82 – 95, 09 2014. URL: http://doi.wiley.com/10.1002/wcms.1206, doi:10.1002/wcms.1206.">38</a>, <a class="reference internal" href="reference.html#id4" title="Samragni Banerjee and Alexander Yu. Sokolov. Algebraic Diagrammatic Construction Theory for Simulating Charged Excited States and Photoelectron Spectra. J. Chem. Theory Comput., 19(11):3037–3053, 2023. doi:10.1021/acs.jctc.3c00251.">39</a>]</span>
+Each method provides access to the excitation energies and transition intensities
+via a ‘one-shot’ calculation.</p>
+<p>A conventional (single-reference) ADC(n) calculation involves computing the
+ground-state energy and wavefunction that correspond to those of the
+<span class="math notranslate nohighlight">\(n\)</span>-th order Møller–Plesset perturbation theory (MPn), followed by evaluating
+the ADC(n) excitation energies and the corresponding transition probabilities.</p>
+<p>Some examples of ADC calculations for the HF molecule are shown below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">adc</span>
 <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;ccpvdz&#39;</span><span class="p">)</span>
 <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
 <span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-<span class="n">myadc</span><span class="o">.</span><span class="n">kernel_gs</span><span class="p">()</span>
-<span class="n">e_ip</span><span class="p">,</span><span class="n">v_ip</span><span class="p">,</span><span class="n">p_ip</span><span class="p">,</span><span class="n">x_ip</span><span class="p">,</span><span class="n">adc_es</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">ip_adc</span><span class="p">()</span>
-<span class="n">e_ea</span><span class="p">,</span><span class="n">v_ea</span><span class="p">,</span><span class="n">p_ea</span><span class="p">,</span><span class="n">x_ea</span><span class="p">,</span><span class="n">adc_ea</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">ea_adc</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>In the example shown above, the ground state calculation is performed by
-running the function <code class="docutils literal notranslate"><span class="pre">kernel_gs()</span></code>, whereas the excited state calculations
-are carried out using the <code class="docutils literal notranslate"><span class="pre">ip_adc()</span></code> and <code class="docutils literal notranslate"><span class="pre">ea_adc()</span></code> functions.</p>
-<p>Alternatively, both the ground and excited state calculations can be run
-together using the <code class="docutils literal notranslate"><span class="pre">kernel()</span></code> function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">adc</span>
-<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;ccpvdz&#39;</span><span class="p">)</span>
-<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">RHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-<span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
-<span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>By default, the <code class="docutils literal notranslate"><span class="pre">kernel()</span></code> function performs a IP-ADC(2) calculation. One can specify the type of charged
-excitation and order of the desired ADC computation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(3)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1">#IP-ADC(3) for 1 root</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(3)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span>
+<span class="n">eip</span><span class="p">,</span><span class="n">vip</span><span class="p">,</span><span class="n">pip</span><span class="p">,</span><span class="n">xip</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1">#EA-ADC(2)-x for 1 root</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)-x&quot;</span>
 <span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ea&quot;</span>
-<span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+<span class="n">eea</span><span class="p">,</span><span class="n">vea</span><span class="p">,</span><span class="n">pea</span><span class="p">,</span><span class="n">xea</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+
+<span class="c1">#EE-ADC(2) for 3 roots</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">compute_properties</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ee&quot;</span>
+<span class="n">eee</span><span class="p">,</span><span class="n">vee</span><span class="p">,</span><span class="n">pee</span><span class="p">,</span><span class="n">xee</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The ADC functions return the <code class="docutils literal notranslate"><span class="pre">nroots</span></code> lowest-energy eigenvalues. The
-default value of <code class="docutils literal notranslate"><span class="pre">nroots</span></code> is set to 1. More roots can be requested using:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">method</span></code> specifies the level of ADC approximation,
+<code class="docutils literal notranslate"><span class="pre">method_type</span></code> defines the type of excitation (EE, IP, and EA), and
+<code class="docutils literal notranslate"><span class="pre">nroots</span></code> defines the number of excited states to be computed (default is 1).</p>
 <p>More examples can be found in
-<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/01-closed_shell.py">examples/adc/01-closed_shell.py</a>,
-<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/03-closed_shell_different_setup.py">examples/adc/03-closed_shell_different_setup.py</a>.</p>
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc">examples/adc</a>.</p>
 </section>
 <section id="spin-restricted-and-spin-unrestricted-calculations">
 <h2>Spin-restricted and spin-unrestricted calculations<a class="headerlink" href="#spin-restricted-and-spin-unrestricted-calculations" title="Link to this heading">#</a></h2>
-<p>The <cite>adc</cite> module can be used to perform calculations of IP’s and EA’s of closed- and
-open-shell molecules starting with the RHF and UHF reference
-wavefunctions, leading to the RADC(n) and UADC(n) methods, respectively.
-<span id="id3">[<a class="reference internal" href="reference.html#id6" title="S. Banerjee and A. Yu. Sokolov. Efficient implementation of the single-reference algebraic diagrammatic construction theory for charged excitations: Applications to the TEMPO radical and DNA base pairs. J. Chem. Phys., 154(7):074105, January 2021. doi:10.1063/5.0040317.">40</a>]</span>
+<p>The <cite>adc</cite> module can be used to compute EE’s, IP’s, and EA’s
+for closed- and open-shell molecules starting with the restricted (RHF) or
+unrestricted (UHF) Hartree-Fock reference wavefunctions using the RADC or UADC
+modules.
+Additionally, open-shell ADC calculations can be carried out using the
+restricted open-shell (ROHF) reference wavefunction, which are supported by
+the UADC module.
 See <a class="reference internal" href="scf.html#user-scf"><span class="std std-ref">Self-consistent field (SCF) methods</span></a> to learn more about the different reference wavefunctions.</p>
 <p>Shown below is an example of the IP- and EA-UADC(2) calculations for the
 open-shell OH radical:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">adc</span>
-<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;O 0 0 0; H 0 0 1&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;aug-cc-pvdz&#39;</span><span class="p">)</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span>
+<span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="p">(</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span>    <span class="p">,</span> <span class="mf">0.</span>   <span class="p">)],</span>
+<span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="p">(</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span>    <span class="p">,</span> <span class="mf">0.969</span><span class="p">)],]</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;aug-cc-pvdz&#39;</span>
 <span class="n">mol</span><span class="o">.</span><span class="n">spin</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
 <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>  <span class="c1"># This is a UADC calculation</span>
-<span class="n">myadc</span><span class="o">.</span><span class="n">kernel_gs</span><span class="p">()</span>
-<span class="n">eip</span><span class="p">,</span><span class="n">vip</span><span class="p">,</span><span class="n">pip</span><span class="p">,</span><span class="n">xip</span><span class="p">,</span><span class="n">ip_es</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">ip_adc</span><span class="p">()</span>
-<span class="n">eea</span><span class="p">,</span><span class="n">vea</span><span class="p">,</span><span class="n">pea</span><span class="p">,</span><span class="n">xea</span><span class="p">,</span><span class="n">ea_es</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">ea_adc</span><span class="p">()</span>
+<span class="c1">#IP-UADC calculation for 4 roots using the UHF reference</span>
+<span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span>
+<span class="n">eip</span><span class="p">,</span><span class="n">vip</span><span class="p">,</span><span class="n">pip</span><span class="p">,</span><span class="n">xip</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1">#EA-UADC calculation for 4 roots using the ROHF reference</span>
+<span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ea&quot;</span>
+<span class="n">eea</span><span class="p">,</span><span class="n">vea</span><span class="p">,</span><span class="n">pea</span><span class="p">,</span><span class="n">xea</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>More examples can be found in
-<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/ 02-open_shell.py">examples/adc/ 02-open_shell.py</a>,
-<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/`04-open_shell_different_setup.py">examples/adc/`04-open_shell_different_setup.py</a>.</p>
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc">examples/adc</a>.</p>
 </section>
-<section id="spectroscopic-properties">
-<h2>Spectroscopic properties<a class="headerlink" href="#spectroscopic-properties" title="Link to this heading">#</a></h2>
-<p>The <cite>adc</cite> module supports calculation of the spectroscopic factors, which provide
-information about probabilities of transitions in the photoelectron spectra. <span id="id4">[<a class="reference internal" href="reference.html#id6" title="S. Banerjee and A. Yu. Sokolov. Efficient implementation of the single-reference algebraic diagrammatic construction theory for charged excitations: Applications to the TEMPO radical and DNA base pairs. J. Chem. Phys., 154(7):074105, January 2021. doi:10.1063/5.0040317.">40</a>]</span>
-Computation of spectroscopic factors is performed by default and can be switched
+<section id="excited-state-properties">
+<h2>Excited-state properties<a class="headerlink" href="#excited-state-properties" title="Link to this heading">#</a></h2>
+<p>The <cite>adc</cite> module supports computing transition and excited-state properties.
+For EE, oscillator strengths are available (currently, only in the UADC
+implementation). <span id="id3">[<a class="reference internal" href="reference.html#id5" title="Andreas Dreuw and Michael Wormit. The algebraic diagrammatic construction scheme for the polarization propagator for the calculation of excited states. WIREs Comput Mol Sci., 5(1):82 – 95, 09 2014. URL: http://doi.wiley.com/10.1002/wcms.1206, doi:10.1002/wcms.1206.">38</a>]</span>
+The IP- and EA-ADC methods provide spectroscopic factors, which measure the
+probabilities of charged excitations in photoelectron spectra. <span id="id4">[<a class="reference internal" href="reference.html#id4" title="Samragni Banerjee and Alexander Yu. Sokolov. Algebraic Diagrammatic Construction Theory for Simulating Charged Excited States and Photoelectron Spectra. J. Chem. Theory Comput., 19(11):3037–3053, 2023. doi:10.1021/acs.jctc.3c00251.">39</a>]</span>
+Computation of transition properties is performed by default and can be switched
 off by setting <code class="docutils literal notranslate"><span class="pre">compute_properties</span> <span class="pre">=</span> <span class="pre">False</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myadc</span><span class="o">.</span><span class="n">compute_properties</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(3)&quot;</span>
@@ -539,55 +556,133 @@ off by setting <code class="docutils literal notranslate"><span class="pre">comp
 <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>After the ADC calculation is performed, the <cite>adc</cite> module can be used to compute
-the Dyson orbitals <span id="id5">[<a class="reference internal" href="reference.html#id7" title="C. M. Oana and A. I. Krylov. Dyson orbitals for ionization from the ground and electronically excited states within equation-of-motion coupled-cluster formalism: Theory, implementation, and examples. J. Chem. Phys., 127(23):234106, December 2007. doi:10.1063/1.2805393.">41</a>]</span> corresponding to ionized and electron-attached states:</p>
+<p>Open-shell calculations using EE-UADC further support evaluating the spin
+square operator expectation values for the excited states (&lt;S^2&gt;).
+The &lt;S^2&gt; values are not computed by default, they can be requested using
+the <code class="docutils literal notranslate"><span class="pre">compute_spin_square</span> <span class="pre">=</span> <span class="pre">True</span></code> flag. See a relevant example
+for more details: <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/08-open_shell_spin_square.py">examples/adc/08-open_shell_spin_square.py</a>.</p>
+<p>For the IP- and EA-ADC methods, the <cite>adc</cite> module can be used to compute
+the Dyson orbitals <span id="id5">[<a class="reference internal" href="reference.html#id9" title="C. M. Oana and A. I. Krylov. Dyson orbitals for ionization from the ground and electronically excited states within equation-of-motion coupled-cluster formalism: Theory, implementation, and examples. J. Chem. Phys., 127(23):234106, December 2007. doi:10.1063/1.2805393.">40</a>]</span> visualizing the wavefunction of
+ionized hole or attached electron for states with large
+spectroscopic factors (&gt; 0.5).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dyson_orb</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">compute_dyson_mo</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>Additionally, the ADC codes enable computing the one-particle reduced
+density matrices (1-RDMs) for the ground and excited electronic states.
+To obtain the ground-state 1-RDM, run the <code class="docutils literal notranslate"><span class="pre">make_ref_rdm1()</span></code> function
+after a successful ADC calculation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">rdm1_ref</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">make_ref_rdm1</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The excited-state 1-RDMs can be calculated as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rdm1_exc</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The 1-RDMs can be used to compute excited-state one-particle properties,
+such as dipole moments, see the following example:
+<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/07-closed_shell_1RDMS.py">examples/adc/07-closed_shell_1RDMS.py</a>.
+The 1-RDM functionality is currently limited, see below.</p>
+<p>Transition 1-RDMs between the ground and excited states are also available
+for all methods, except EE-RADC.
+They are returned as spectroscopic amplitudes at the end of a successful ADC
+calculation with <code class="docutils literal notranslate"><span class="pre">compute_properties</span> <span class="pre">=</span> <span class="pre">True</span></code>, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">adc</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">Mole</span><span class="p">()</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="p">[</span>
+<span class="p">[</span><span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="p">(</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span>    <span class="p">,</span> <span class="mf">0.</span>   <span class="p">)],</span>
+<span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="p">(</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span>    <span class="p">,</span> <span class="mf">0.969</span><span class="p">)],]</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="s1">&#39;aug-cc-pvdz&#39;</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">spin</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="n">mol</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">UHF</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="c1"># Transition 1-RDMs (alpha and beta spin) computed using EE-UADC(2)</span>
+<span class="n">myadc</span> <span class="o">=</span> <span class="n">adc</span><span class="o">.</span><span class="n">ADC</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;adc(2)&quot;</span>
+<span class="n">myadc</span><span class="o">.</span><span class="n">method_type</span> <span class="o">=</span> <span class="s2">&quot;ee&quot;</span>
+<span class="n">trdm_a</span><span class="p">,</span> <span class="n">trdm_b</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
 </section>
-<section id="analysis-of-spectroscopic-properties">
-<h2>Analysis of spectroscopic properties<a class="headerlink" href="#analysis-of-spectroscopic-properties" title="Link to this heading">#</a></h2>
-<p>The <cite>adc</cite> module allows to perform the analysis of the ADC(n) eigenvectors, that
-can be useful for characterizing the nature of electronic transitions. When
-<code class="docutils literal notranslate"><span class="pre">compute_properties</span></code> is set to True, this analysis will also display the largest
-contributions to the spectroscopic factors. The analysis of the ADC(n) eigenvectors
+<section id="analysis-of-excited-state-properties">
+<h2>Analysis of excited-state properties<a class="headerlink" href="#analysis-of-excited-state-properties" title="Link to this heading">#</a></h2>
+<p>The <cite>adc</cite> module allows to analyze the ADC(n) eigenvectors
+for characterizing the nature of electronic transitions. When
+<code class="docutils literal notranslate"><span class="pre">compute_properties</span> <span class="pre">=</span> <span class="pre">True</span></code> is set, this analysis will also display the largest
+contributions to the spectroscopic factors (IP, EA) or amplitudes (EE) for singly
+excited states. The analysis of ADC(n) eigenvectors
 and spectroscopic factors can be invoked using the <code class="docutils literal notranslate"><span class="pre">analyze()</span></code> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">nroots</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">myadc</span><span class="o">.</span><span class="n">analyze</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
+<section id="core-excitation-energies-and-spectra">
+<h2>Core excitation energies and spectra<a class="headerlink" href="#core-excitation-energies-and-spectra" title="Link to this heading">#</a></h2>
+<p>The IP-ADC code supports calculating core ionization energies and
+X-ray photoelectron spectra (XPS) using the core-valence separation technique
+(CVS). To invoke CVS, specify the <code class="docutils literal notranslate"><span class="pre">ncvs</span></code> parameter
+of IP-ADC object before running the <code class="docutils literal notranslate"><span class="pre">kernel()</span></code> function.
+The <code class="docutils literal notranslate"><span class="pre">ncvs</span></code> parameter should be set to an integer defining the index of the core
+orbital that is expected to be ionized first in the XPS spectrum.
+For example, probing the 1s orbital of C in CO can be done by setting
+<code class="docutils literal notranslate"><span class="pre">ncvs</span> <span class="pre">=</span> <span class="pre">2</span></code> since the C 1s orbitals are higher in energy than O 1s.</p>
+</section>
 <section id="algorithms-and-job-control">
 <h2>Algorithms and job control<a class="headerlink" href="#algorithms-and-job-control" title="Link to this heading">#</a></h2>
-<p>The capabilities of the <cite>adc</cite> module at present are summarized in in the
+<p>The current capabilities of the <cite>adc</cite> module are summarized in the
 following table:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <tbody>
 <tr class="row-odd"><td><p>Method</p></td>
 <td><p>Reference</p></td>
-<td><p>Spin-adaptation</p></td>
-<td><p>Properties</p></td>
+<td><p>Available properties</p></td>
 </tr>
-<tr class="row-even"><td><p>ADC(2)</p></td>
-<td><p>RHF, UHF</p></td>
-<td><p>Yes</p></td>
-<td><p>IP, EA, spectroscopic factors, Dyson orb</p></td>
+<tr class="row-even"><td><p>EE-ADC(2)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EEs, osc. strengths (UADC), spin square (UADC)</p></td>
 </tr>
-<tr class="row-odd"><td><p>ADC(2)-X</p></td>
-<td><p>RHF, UHF</p></td>
-<td><p>Yes</p></td>
-<td><p>IP, EA, spectroscopic factors, Dyson orb</p></td>
+<tr class="row-odd"><td><p>EE-ADC(2)-X</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EEs, osc. strengths (UADC), spin square (UADC)</p></td>
 </tr>
-<tr class="row-even"><td><p>ADC(3)</p></td>
-<td><p>RHF, UHF</p></td>
-<td><p>Yes</p></td>
-<td><p>IP, EA, spectroscopic factors, Dyson orb</p></td>
+<tr class="row-even"><td><p>EE-ADC(3)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EEs, osc. strengths (UADC), spin square (UADC)</p></td>
+</tr>
+<tr class="row-odd"><td><p>IP-ADC(2)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>IPs, core IPs, spec. factors, Dyson orb</p></td>
+</tr>
+<tr class="row-even"><td><p>IP-ADC(2)-X</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>IPs, core IPs, spec. factors, Dyson orb</p></td>
+</tr>
+<tr class="row-odd"><td><p>IP-ADC(3)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>IPs, core IPs, spec. factors, Dyson orb</p></td>
+</tr>
+<tr class="row-even"><td><p>EA-ADC(2)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EAs, spec. factors, Dyson orb</p></td>
+</tr>
+<tr class="row-odd"><td><p>EA-ADC(2)-X</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EAs, spec. factors, Dyson orb</p></td>
+</tr>
+<tr class="row-even"><td><p>EA-ADC(3)</p></td>
+<td><p>RHF, UHF, ROHF</p></td>
+<td><p>EAs, spec. factors, Dyson orb</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The ADC(n) calculations can be performed using different algorithms, depending on
-the available memory controlled by the <code class="docutils literal notranslate"><span class="pre">max_memory</span></code> keyword:</p>
+<p>The ADC(n) calculations are performed using one of the three algorithms for
+handling the two-electron integrals:</p>
 <ul>
 <li><p>In-core</p>
 <p>All tensors such as two-electron integrals and
@@ -595,16 +690,15 @@ amplitudes are stored in memory. This is the default algorithm used when
 sufficient memory is available.</p>
 </li>
 <li><p>Out-of-core</p>
-<p>Use of disk to store the expensive tensors.
-This algorithm is invoked by setting <code class="docutils literal notranslate"><span class="pre">max_memory</span></code> to a small value.
+<p>Uses disk to store expensive tensors.
+This algorithm is invoked when storing two-electron integrals requires
+more memory than specified by the <code class="docutils literal notranslate"><span class="pre">max_memory</span></code> keyword (in MB).
 See <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/05-outcore.py">examples/adc/05-outcore.py</a></p>
 </li>
-<li><p>Density-fitted (DF) algorithm</p></li>
-</ul>
-<blockquote>
-<div><p>The memory and disk usage can be greatly reduced by approximating the
-two-electron integrals with density-fitting. A simple example of a
-DF-ADC(2) calculation is:</p>
+<li><p>Density fitting (DF)</p>
+<p>The memory and disk usage can be greatly reduced by approximating the
+two-electron integrals with density fitting. An example of the ADC(2)
+calculation with density fitting is provided below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span><span class="p">,</span> <span class="n">scf</span><span class="p">,</span> <span class="n">adc</span><span class="p">,</span> <span class="n">df</span>
 <span class="n">mol</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;H 0 0 0; F 0 0 1&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;ccpvdz&#39;</span><span class="p">)</span>
 
@@ -613,9 +707,37 @@ DF-ADC(2) calculation is:</p>
 <span class="n">eip</span><span class="p">,</span><span class="n">vip</span><span class="p">,</span><span class="n">pip</span><span class="p">,</span><span class="n">xip</span> <span class="o">=</span> <span class="n">myadc</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
 </pre></div>
 </div>
-</div></blockquote>
-<p>More examples can be found in:
-<a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/06-dfadc.py">examples/adc/06-dfadc.py</a>.</p>
+<p>Density fitting introduces small errors in excitation energies
+(~$10^{-3}$ eV), provided that the appropriate auxiliary basis
+set is used. <span id="id6">[<a class="reference internal" href="reference.html#id8" title="S. Banerjee and A. Yu. Sokolov. Efficient implementation of the single-reference algebraic diagrammatic construction theory for charged excitations: Applications to the TEMPO radical and DNA base pairs. J. Chem. Phys., 154(7):074105, January 2021. doi:10.1063/5.0040317.">41</a>]</span>
+For calculations with more than 300 orbitals, using density fitting
+is strongly recommended.</p>
+<p>More examples can be found in: <a class="reference external" href="https://github.com/pyscf/pyscf/tree/master/examples/adc/06-dfadc.py">examples/adc/06-dfadc.py</a>.</p>
+</li>
+</ul>
+</section>
+<section id="current-limitations">
+<h2>Current limitations<a class="headerlink" href="#current-limitations" title="Link to this heading">#</a></h2>
+<p>Some limitations of current implementation are listed below:</p>
+<ul class="simple">
+<li><p>The EE-RADC code does not support calculating oscillator strengths.
+This property can be computed using the EE-UADC code (i.e., by using
+the UHF reference) for a closed- or open-shell molecule.</p></li>
+<li><p>The EE- and IP/EA-RADC codes compute only the states of lowest spin:
+S = 0 (singlet) and S = 1/2 (doublet), respectively. Using the
+corresponding UADC code allows to compute excitations with ΔS = 0,
+±1 for EE and ΔS = ±1/2, ±3/2 for IP and EA.</p></li>
+<li><p>Computing spin square expectation values is currently only available for
+EE-UADC.</p></li>
+<li><p>The reference and excited-state 1-RDMs are not implemented for EE-RADC.
+Also, the reference 1-RDMs are not available for any UADC method.</p></li>
+<li><p>The EE-UADC(3) calculations of excited-state one-particle reduced density
+matrices include correlation contributions up to EE-UADC(2)-X, i.e. the
+third-order terms are missing from the singles-singles and singles-doubles
+coupling sectors.</p></li>
+<li><p>The EE-UADC(3) oscillator strengths do not include the contributions from
+third-order amplitudes.</p></li>
+</ul>
 </section>
 </section>
 
@@ -644,9 +766,11 @@ DF-ADC(2) calculation is:</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spin-restricted-and-spin-unrestricted-calculations">Spin-restricted and spin-unrestricted calculations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spectroscopic-properties">Spectroscopic properties</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-spectroscopic-properties">Analysis of spectroscopic properties</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#excited-state-properties">Excited-state properties</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-excited-state-properties">Analysis of excited-state properties</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-excitation-energies-and-spectra">Core excitation energies and spectra</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithms-and-job-control">Algorithms and job control</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#current-limitations">Current limitations</a></li>
 </ul>
   </nav></div>
 

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -413,10 +413,15 @@
 
 <div class="viewcode-block" id="gen_tda_operation">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.gen_tda_operation">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_tda_operation</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">gen_tda_operation</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_nlc</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;A x</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span></div>
+
+<span class="n">gen_tda_hop</span> <span class="o">=</span> <span class="n">gen_tda_operation</span>
+
+<span class="k">def</span> <span class="nf">_gen_tda_operation</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">assert</span> <span class="n">fock_ao</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">_scf</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
     <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
@@ -434,7 +439,7 @@
     <span class="n">hdiag</span> <span class="o">=</span> <span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">orbo</span><span class="p">,</span><span class="n">orbv</span><span class="p">)),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-    <span class="n">vresp</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">gen_response</span><span class="p">(</span><span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">vresp</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">gen_response</span><span class="p">(</span><span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">vind</span><span class="p">(</span><span class="n">zs</span><span class="p">):</span>
         <span class="n">zs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">zs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
@@ -444,9 +449,7 @@
         <span class="n">v1mo</span> <span class="o">+=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;xia,ia-&gt;xia&#39;</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">e_ia</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">v1mo</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">v1mo</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span></div>
-
-<span class="n">gen_tda_hop</span> <span class="o">=</span> <span class="n">gen_tda_operation</span>
+    <span class="k">return</span> <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span>
 
 <div class="viewcode-block" id="get_ab">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.get_ab">[docs]</a>
@@ -797,14 +800,13 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDA.gen_vind">[docs]</a>
     <span class="k">def</span> <span class="nf">gen_vind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Generate function to compute Ax&#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="n">mf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
-        <span class="k">return</span> <span class="n">gen_tda_hop</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="k">assert</span> <span class="n">mf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">mf</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
+        <span class="k">return</span> <span class="n">_gen_tda_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TDA.init_guess">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDA.init_guess">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TDA.get_init_guess">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDA.get_init_guess">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">nstates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">nstates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span>
         <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
         <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
@@ -850,7 +852,7 @@
             <span class="k">return</span> <span class="n">w</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">v</span><span class="p">[:,</span><span class="n">idx</span><span class="p">],</span> <span class="n">idx</span>
 
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">lr_eigh</span><span class="p">(</span>
             <span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol_residual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>
@@ -876,12 +878,19 @@
 
 <div class="viewcode-block" id="gen_tdhf_operation">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.gen_tdhf_operation">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_tdhf_operation</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">gen_tdhf_operation</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_nlc</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Generate function to compute</span>
 
 <span class="sd">    [ A   B ][X]</span>
 <span class="sd">    [-B* -A*][Y]</span>
 <span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">td</span> <span class="o">=</span> <span class="n">TDHF</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+    <span class="n">td</span><span class="o">.</span><span class="n">exclude_nlc</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">with_nlc</span>
+    <span class="k">return</span> <span class="n">_gen_tdhf_operation</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">fock_ao</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_gen_tdhf_operation</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">fock_ao</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">_scf</span>
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span>
     <span class="n">mo_energy</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_energy</span>
     <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span>
@@ -899,7 +908,7 @@
     <span class="n">hdiag</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="o">-</span><span class="n">hdiag</span><span class="o">.</span><span class="n">ravel</span><span class="p">()))</span><span class="o">.</span><span class="n">real</span>
 
     <span class="n">mo_coeff</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">orbo</span><span class="p">,</span><span class="n">orbv</span><span class="p">)),</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
-    <span class="n">vresp</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">gen_response</span><span class="p">(</span><span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">vresp</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">gen_response</span><span class="p">(</span><span class="n">hermi</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">vind</span><span class="p">(</span><span class="n">xys</span><span class="p">):</span>
         <span class="n">xys</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xys</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
@@ -924,8 +933,7 @@
         <span class="n">hx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">v1_top</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="n">v1_bot</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nz</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">hx</span>
 
-    <span class="k">return</span> <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span></div>
-
+    <span class="k">return</span> <span class="n">vind</span><span class="p">,</span> <span class="n">hdiag</span>
 
 
 <div class="viewcode-block" id="TDHF">
@@ -938,15 +946,14 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDHF.gen_vind">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">gen_tdhf_operation</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">gen_vind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">mf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
-        <span class="k">return</span> <span class="n">gen_tdhf_operation</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span></div>
+        <span class="k">assert</span> <span class="n">mf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">mf</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scf</span>
+        <span class="k">return</span> <span class="n">_gen_tdhf_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TDHF.init_guess">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDHF.init_guess">[docs]</a>
-    <span class="k">def</span> <span class="nf">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="n">TDA</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
+<div class="viewcode-block" id="TDHF.get_init_guess">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.tdscf.html#pyscf.tdscf.dhf.TDHF.get_init_guess">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">wfnsym</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">TDA</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">nstates</span><span class="p">,</span> <span class="n">wfnsym</span><span class="p">)</span>
         <span class="n">y0</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">])</span></div>
 
@@ -979,7 +986,7 @@
                                                       <span class="n">real_eigenvectors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nstates</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">lr_eig</span><span class="p">(</span>
             <span class="n">vind</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">tol_residual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">lindep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lindep</span><span class="p">,</span>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -951,6 +951,20 @@
             <span class="n">ijlst_mapping</span><span class="p">[</span><span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kptij_lst</span><span class="p">))</span>
             <span class="n">kk_idx</span> <span class="o">=</span> <span class="n">kpti_idx</span> <span class="o">*</span> <span class="n">nkpts</span> <span class="o">+</span> <span class="n">kptj_idx</span>
 
+        <span class="c1"># TODO: Store rs_density_fit cderi tensor in v1 format for the moment.</span>
+        <span class="c1"># It should be changed to &#39;v2&#39; format in the future.</span>
+        <span class="n">data_version</span> <span class="o">=</span> <span class="s1">&#39;v1&#39;</span>
+        <span class="k">if</span> <span class="n">h5py</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">):</span>
+            <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;kpts&#39;</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">feri</span><span class="p">[</span><span class="s1">&#39;j3c-kptij&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">dataname</span> <span class="ow">in</span> <span class="n">feri</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Overwritting </span><span class="si">{</span><span class="n">dataname</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="n">cderi_file</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">feri</span><span class="p">[</span><span class="n">dataname</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">feri</span><span class="p">[</span><span class="s1">&#39;j3c-kptij&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kptij_lst</span>
+
         <span class="n">fswap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcore_auxe2</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="n">intor</span><span class="p">,</span> <span class="n">aosym</span><span class="p">,</span> <span class="n">comp</span><span class="p">,</span>
                                    <span class="n">kptij_lst</span><span class="p">,</span> <span class="n">j_only</span><span class="p">,</span> <span class="s1">&#39;j3c-junk&#39;</span><span class="p">,</span> <span class="n">shls_slice</span><span class="p">)</span>
         <span class="n">cpu1</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">timer_debug1</span><span class="p">(</span><span class="s1">&#39;3c2e&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">cpu1</span><span class="p">)</span>
@@ -967,16 +981,6 @@
         <span class="c1"># Add (1) short-range G=0 (i.e., charge) part and (2) long-range part</span>
         <span class="n">tspans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>    <span class="c1"># lr, j2c_inv, j2c_cntr</span>
         <span class="n">tspannames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ftaop+pw&quot;</span><span class="p">,</span> <span class="s2">&quot;j2c_inv&quot;</span><span class="p">,</span> <span class="s2">&quot;j2c_cntr&quot;</span><span class="p">]</span>
-        <span class="n">feri</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">H5FileWrap</span><span class="p">(</span><span class="n">cderi_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-
-        <span class="c1"># TODO: Store rs_density_fit cderi tensor in v1 format for the moment.</span>
-        <span class="c1"># It should be changed to &#39;v2&#39; format in the future.</span>
-        <span class="n">data_version</span> <span class="o">=</span> <span class="s1">&#39;v1&#39;</span>
-        <span class="k">if</span> <span class="n">data_version</span> <span class="o">==</span> <span class="s1">&#39;v1&#39;</span><span class="p">:</span>
-            <span class="n">feri</span><span class="p">[</span><span class="s1">&#39;j3c-kptij&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kptij_lst</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">feri</span><span class="p">[</span><span class="s1">&#39;kpts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kpts</span>
-            <span class="n">ijlst_mapping</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">def</span> <span class="nf">make_cderi</span><span class="p">(</span><span class="n">kpt</span><span class="p">,</span> <span class="n">kpt_ij_idx</span><span class="p">,</span> <span class="n">j2c</span><span class="p">):</span>
             <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">&#39;make_cderi for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">kpt</span><span class="p">)</span>
             <span class="n">kptjs</span> <span class="o">=</span> <span class="n">kpts</span><span class="p">[</span><span class="n">kpt_ij_idx</span> <span class="o">%</span> <span class="n">nkpts</span><span class="p">]</span>

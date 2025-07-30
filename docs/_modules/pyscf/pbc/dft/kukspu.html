@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -407,7 +407,8 @@
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">kuks</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.dft.krkspu</span> <span class="kn">import</span> <span class="n">set_U</span><span class="p">,</span> <span class="n">make_minao_lo</span><span class="p">,</span> <span class="n">mdot</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.dft.krkspu</span> <span class="kn">import</span> <span class="n">set_U</span><span class="p">,</span> <span class="n">make_minao_lo</span><span class="p">,</span> <span class="n">mdot</span><span class="p">,</span> <span class="n">KRKSpU</span>
+<span class="kn">from</span> <span class="nn">pyscf.data.nist</span> <span class="kn">import</span> <span class="n">HARTREE2EV</span>
 
 <div class="viewcode-block" id="get_veff">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.kukspu.get_veff">[docs]</a>
@@ -421,11 +422,15 @@
     <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">kpts</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">kpts</span>
 
     <span class="c1"># J + V_xc</span>
-    <span class="n">vxc</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">ks</span><span class="p">)</span><span class="o">.</span><span class="n">get_veff</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">dm_last</span><span class="o">=</span><span class="n">dm_last</span><span class="p">,</span>
-                                           <span class="n">vhf_last</span><span class="o">=</span><span class="n">vhf_last</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span>
-                                           <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
+    <span class="n">vxc</span> <span class="o">=</span> <span class="n">kuks</span><span class="o">.</span><span class="n">get_veff</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">dm_last</span><span class="o">=</span><span class="n">dm_last</span><span class="p">,</span> <span class="n">vhf_last</span><span class="o">=</span><span class="n">vhf_last</span><span class="p">,</span>
+                        <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">)</span>
+    <span class="n">vxc</span> <span class="o">=</span> <span class="n">_add_Vhubbard</span><span class="p">(</span><span class="n">vxc</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vxc</span></div>
 
-    <span class="c1"># V_U</span>
+
+<span class="k">def</span> <span class="nf">_add_Vhubbard</span><span class="p">(</span><span class="n">vxc</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">kpts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Add Hubbard U to Vxc matrix inplace.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">C_ao_lo</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">C_ao_lo</span>
     <span class="n">ovlp</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
     <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
@@ -441,11 +446,15 @@
     <span class="k">if</span> <span class="n">is_ibz</span><span class="p">:</span>
         <span class="n">rdm1_lo_0</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">dm_at_ref_cell</span><span class="p">(</span><span class="n">rdm1_lo</span><span class="p">)</span>
 
+    <span class="n">alphas</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">alpha</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span> <span class="c1"># not a list or tuple</span>
+        <span class="n">alphas</span> <span class="o">=</span> <span class="p">[</span><span class="n">alphas</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">U_idx</span><span class="p">)</span>
+
     <span class="n">E_U</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">weight</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="s2">&quot;weights_ibz&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">))</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">79</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">U_idx</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">U_val</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">U_lab</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">lab</span><span class="p">,</span> <span class="n">alpha</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">U_idx</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">U_val</span><span class="p">,</span> <span class="n">ks</span><span class="o">.</span><span class="n">U_lab</span><span class="p">,</span> <span class="n">alphas</span><span class="p">):</span>
             <span class="n">lab_string</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lab</span><span class="p">:</span>
                 <span class="n">lab_string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">%9s</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -459,10 +468,18 @@
                     <span class="n">S_k</span> <span class="o">=</span> <span class="n">ovlp</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                     <span class="n">C_k</span> <span class="o">=</span> <span class="n">C_ao_lo</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">][:,</span> <span class="n">idx</span><span class="p">]</span>
                     <span class="n">P_k</span> <span class="o">=</span> <span class="n">rdm1_lo</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">][</span><span class="n">U_mesh</span><span class="p">]</span>
-                    <span class="n">SC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S_k</span><span class="p">,</span> <span class="n">C_k</span><span class="p">)</span>
-                    <span class="n">vxc</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">mdot</span><span class="p">(</span><span class="n">SC</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">P_k</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">P_k</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span>
-                                      <span class="o">*</span> <span class="p">(</span><span class="n">val</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">SC</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">vxc</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span><span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="n">E_U</span> <span class="o">+=</span> <span class="n">weight</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">val</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">P_k</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">P_k</span><span class="p">)</span><span class="o">.</span><span class="n">trace</span><span class="p">())</span>
+                    <span class="n">vhub_loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">P_k</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">P_k</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">val</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">alpha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># The alpha perturbation is only applied to the linear term of</span>
+                        <span class="c1"># the local density.</span>
+                        <span class="n">E_U</span> <span class="o">+=</span> <span class="n">weight</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">P_k</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span>
+                        <span class="n">vhub_loc</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">P_k</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">alpha</span>
+                    <span class="n">SC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">S_k</span><span class="p">,</span> <span class="n">C_k</span><span class="p">)</span>
+                    <span class="n">vhub_loc</span> <span class="o">=</span> <span class="n">SC</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vhub_loc</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">SC</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">vxc</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+                        <span class="n">vhub_loc</span> <span class="o">=</span> <span class="n">vhub_loc</span><span class="o">.</span><span class="n">real</span>
+                    <span class="n">vxc</span><span class="p">[</span><span class="n">s</span><span class="p">,</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">vhub_loc</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">is_ibz</span><span class="p">:</span>
                         <span class="n">P_loc</span> <span class="o">+=</span> <span class="n">P_k</span>
                 <span class="k">if</span> <span class="n">is_ibz</span><span class="p">:</span>
@@ -473,10 +490,9 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">79</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">E_U</span><span class="o">.</span><span class="n">real</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">U_val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s2">&quot;E_U (</span><span class="si">%s</span><span class="s2">) is negative...&quot;</span><span class="p">,</span> <span class="n">E_U</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="s2">&quot;E_U (</span><span class="si">%g</span><span class="s2">) is negative...&quot;</span><span class="p">,</span> <span class="n">E_U</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
     <span class="n">vxc</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">vxc</span><span class="p">,</span> <span class="n">E_U</span><span class="o">=</span><span class="n">E_U</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">vxc</span></div>
-
+    <span class="k">return</span> <span class="n">vxc</span>
 
 <div class="viewcode-block" id="energy_elec">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.kukspu.energy_elec">[docs]</a>
@@ -511,7 +527,7 @@
 <span class="sd">    UKSpU class adapted for PBCs with k-point sampling.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;U_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;U_val&quot;</span><span class="p">,</span> <span class="s2">&quot;C_ao_lo&quot;</span><span class="p">,</span> <span class="s2">&quot;U_lab&quot;</span><span class="p">}</span>
+    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;U_idx&quot;</span><span class="p">,</span> <span class="s2">&quot;U_val&quot;</span><span class="p">,</span> <span class="s2">&quot;C_ao_lo&quot;</span><span class="p">,</span> <span class="s2">&quot;U_lab&quot;</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">}</span>
 
     <span class="n">get_veff</span> <span class="o">=</span> <span class="n">get_veff</span>
     <span class="n">energy_elec</span> <span class="o">=</span> <span class="n">energy_elec</span>
@@ -535,6 +551,13 @@
 <span class="sd">                     np.array, shape ((spin,), nkpts, nao, nlo),</span>
 <span class="sd">                     string, in &#39;minao&#39;.</span>
 <span class="sd">            minao_ref: reference for minao orbitals, default is &#39;MINAO&#39;.</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            U_idx: same as the input.</span>
+<span class="sd">            U_val: effectiv U-J [in AU]</span>
+<span class="sd">            C_ao_loc: np.array</span>
+<span class="sd">            alpha: the perturbation [in AU] used to compute U in LR-cDFT.</span>
+<span class="sd">                Refs: Cococcioni and de Gironcoli, PRB 71, 035105 (2005)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="n">xc</span><span class="p">,</span> <span class="n">exxdiv</span><span class="o">=</span><span class="n">exxdiv</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -556,11 +579,110 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span>
 
+        <span class="c1"># The perturbation (eV) used to compute U in LR-cDFT.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="KUKSpU.dump_flags">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.kukspu.KUKSpU.dump_flags">[docs]</a>
+    <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dump_flags</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">pyscf.pbc.dft.krkspu</span> <span class="kn">import</span> <span class="n">_print_U_info</span>
+            <span class="n">_print_U_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
 <div class="viewcode-block" id="KUKSpU.nuc_grad_method">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.kukspu.KUKSpU.nuc_grad_method">[docs]</a>
     <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
+
+
+<div class="viewcode-block" id="linear_response_u">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.kukspu.linear_response_u">[docs]</a>
+<span class="k">def</span> <span class="nf">linear_response_u</span><span class="p">(</span><span class="n">mf_plus_u</span><span class="p">,</span> <span class="n">alphalist</span><span class="o">=</span><span class="p">(</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Refs:</span>
+<span class="sd">        [1] M. Cococcioni and S. de Gironcoli, Phys. Rev. B 71, 035105 (2005)</span>
+<span class="sd">        [2] H. J. Kulik, M. Cococcioni, D. A. Scherlis, and N. Marzari, Phys. Rev. Lett. 97, 103001 (2006)</span>
+<span class="sd">        [3] Heather J. Kulik, J. Chem. Phys. 142, 240901 (2015)</span>
+<span class="sd">        [4] https://hjkgrp.mit.edu/tutorials/2011-05-31-calculating-hubbard-u/</span>
+<span class="sd">        [5] https://hjkgrp.mit.edu/tutorials/2011-06-28-hubbard-u-multiple-sites/</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        alphalist :</span>
+<span class="sd">            alpha parameters (in eV) are the displacements for the linear</span>
+<span class="sd">            response calculations. For each alpha in this list, the DFT+U with</span>
+<span class="sd">            U=u0+alpha, U=u0-alpha are evaluated. u0 is the U value from the</span>
+<span class="sd">            reference mf_plus_u object, which will be treated as a standard DFT</span>
+<span class="sd">            functional.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">is_ibz</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mf_plus_u</span><span class="o">.</span><span class="n">kpts</span><span class="p">,</span> <span class="s2">&quot;kpts_ibz&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_ibz</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf_plus_u</span><span class="p">,</span> <span class="n">KUKSpU</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">mf_plus_u</span><span class="o">.</span><span class="n">U_idx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mf_plus_u</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+        <span class="n">mf_plus_u</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">mf_plus_u</span><span class="o">.</span><span class="n">converged</span>
+    <span class="c1"># The bare density matrix without adding U</span>
+    <span class="n">bare_dm</span> <span class="o">=</span> <span class="n">mf_plus_u</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">()</span>
+
+    <span class="n">mf</span> <span class="o">=</span> <span class="n">mf_plus_u</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+
+    <span class="n">alphalist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">alphalist</span><span class="p">)</span>
+    <span class="n">alphalist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="n">alphalist</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">alphalist</span><span class="p">)</span>
+
+    <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+    <span class="n">C_ao_lo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">C_ao_lo</span>
+    <span class="n">ovlp</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
+    <span class="n">C_inv</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">local_idx</span> <span class="ow">in</span> <span class="n">mf</span><span class="o">.</span><span class="n">U_idx</span><span class="p">:</span>
+        <span class="n">C_inv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">[[</span><span class="n">C_ao_lo</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">k</span><span class="p">][:,</span><span class="n">local_idx</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ovlp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)],</span>
+             <span class="p">[</span><span class="n">C_ao_lo</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">k</span><span class="p">][:,</span><span class="n">local_idx</span><span class="p">]</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ovlp</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)]])</span>
+
+    <span class="n">bare_occupancies</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">final_occupancies</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">alpha</span> <span class="ow">in</span> <span class="n">alphalist</span><span class="p">:</span>
+        <span class="n">mf</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">HARTREE2EV</span>
+        <span class="n">mf</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">dm0</span><span class="o">=</span><span class="n">bare_dm</span><span class="p">)</span>
+        <span class="n">local_occ</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">C_inv</span><span class="p">:</span>
+            <span class="n">C_on_site</span> <span class="o">=</span> <span class="p">[[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)],</span>
+                         <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)]]</span>
+            <span class="n">rdm1_lo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">C_on_site</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">)</span>
+            <span class="n">local_occ</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rdm1_lo</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">local_occ</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rdm1_lo</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">local_occ</span> <span class="o">/=</span> <span class="n">nkpts</span>
+        <span class="n">final_occupancies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_occ</span><span class="p">)</span>
+
+        <span class="c1"># The first iteration of SCF</span>
+        <span class="n">fock</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_fock</span><span class="p">(</span><span class="n">dm</span><span class="o">=</span><span class="n">bare_dm</span><span class="p">)</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">mo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">fock</span><span class="p">,</span> <span class="n">ovlp</span><span class="p">)</span>
+        <span class="n">local_occ</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">C_inv</span><span class="p">:</span>
+            <span class="n">C_on_site</span> <span class="o">=</span> <span class="p">[[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)],</span>
+                         <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">mo</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">)]]</span>
+            <span class="n">rdm1_lo</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">C_on_site</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="n">mo_occ</span><span class="p">)</span>
+            <span class="n">local_occ</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rdm1_lo</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">local_occ</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">trace</span><span class="p">()</span><span class="o">.</span><span class="n">real</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rdm1_lo</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">local_occ</span> <span class="o">/=</span> <span class="n">nkpts</span>
+        <span class="n">bare_occupancies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">local_occ</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;alpha=</span><span class="si">%f</span><span class="s1"> bare_occ=</span><span class="si">%g</span><span class="s1"> final_occ=</span><span class="si">%g</span><span class="s1">&#39;</span><span class="p">,</span>
+                 <span class="n">alpha</span><span class="p">,</span> <span class="n">bare_occupancies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">final_occupancies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">chi0</span><span class="p">,</span> <span class="n">occ0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">alphalist</span><span class="p">,</span> <span class="n">bare_occupancies</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">chif</span><span class="p">,</span> <span class="n">occf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">alphalist</span><span class="p">,</span> <span class="n">final_occupancies</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Line fitting chi0 = </span><span class="si">%f</span><span class="s1"> x + </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">chi0</span><span class="p">,</span> <span class="n">occ0</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Line fitting chif = </span><span class="si">%f</span><span class="s1"> x + </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">chif</span><span class="p">,</span> <span class="n">occf</span><span class="p">)</span>
+    <span class="n">Uresp</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">chi0</span> <span class="o">-</span> <span class="mf">1.</span><span class="o">/</span><span class="n">chif</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">note</span><span class="p">(</span><span class="s1">&#39;Uresp = </span><span class="si">%f</span><span class="s1">, chi0 = </span><span class="si">%f</span><span class="s1">, chif = </span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">Uresp</span><span class="p">,</span> <span class="n">chi0</span><span class="p">,</span> <span class="n">chif</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Uresp</span></div>
 
 </pre></div>
 

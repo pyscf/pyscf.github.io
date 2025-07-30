@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pyscf.pbc.dft.multigrid &#8212; PySCF</title>
+    <title>pyscf.df.grad.mcpdft &#8212; PySCF</title>
   
   
   
@@ -39,19 +39,19 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyscf/pbc/dft/multigrid';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pyscf/df/grad/mcpdft';</script>
     <link rel="icon" href="../../../../_static/favicon-32x32.png"/>
     <link rel="author" title="About these documents" href="../../../../about.html" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -356,9 +356,9 @@
     <li class="breadcrumb-item"><a href="../../../pyscf.html" class="nav-link">pyscf</a></li>
     
     
-    <li class="breadcrumb-item"><a href="../dft.html" class="nav-link">pyscf.pbc.dft</a></li>
+    <li class="breadcrumb-item"><a href="../../df.html" class="nav-link">pyscf.df</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pyscf.pbc.dft.multigrid</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pyscf.df.grad.mcpdft</span></li>
   </ul>
 </nav>
 </div>
@@ -375,9 +375,9 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for pyscf.pbc.dft.multigrid</h1><div class="highlight"><pre>
+  <h1>Source code for pyscf.df.grad.mcpdft</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># Copyright 2014-2024 The PySCF Developers. All Rights Reserved.</span>
+<span class="c1"># Copyright 2014-2022 The PySCF Developers. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -391,53 +391,37 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
+<span class="kn">from</span> <span class="nn">pyscf.grad</span> <span class="kn">import</span> <span class="n">mcpdft</span> <span class="k">as</span> <span class="n">mcpdft_grad</span>
+<span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">sacasscf</span> <span class="k">as</span> <span class="n">dfsacasscf_grad</span>
+<span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">rhf</span> <span class="k">as</span> <span class="n">dfrhf_grad</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 
-<span class="kn">from</span> <span class="nn">.multigrid</span> <span class="kn">import</span> <span class="n">MultiGridFFTDF</span>
-<span class="kn">from</span> <span class="nn">.multigrid</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">multigrid_fftdf</span> <span class="k">as</span> <span class="n">multigrid_fftdf</span><span class="p">,</span>
-    <span class="n">_gen_rhf_response</span> <span class="k">as</span> <span class="n">_gen_rhf_response</span><span class="p">,</span>
-    <span class="n">_gen_uhf_response</span> <span class="k">as</span> <span class="n">_gen_uhf_response</span><span class="p">,</span>
-    <span class="n">nr_rks</span> <span class="k">as</span> <span class="n">nr_rks_v1</span><span class="p">,</span>
-    <span class="n">nr_rks_fxc</span> <span class="k">as</span> <span class="n">nr_rks_fxc</span><span class="p">,</span>
-    <span class="n">nr_rks_fxc_st</span> <span class="k">as</span> <span class="n">nr_rks_fxc_st</span><span class="p">,</span>
-    <span class="n">nr_uks</span> <span class="k">as</span> <span class="n">nr_uks_v1</span><span class="p">,</span>
-    <span class="n">nr_uks_fxc</span> <span class="k">as</span> <span class="n">nr_uks_fxc</span>
-<span class="p">)</span>
+<span class="c1"># I need to resolve the __init__ and get_ham_response members. Otherwise everything should be fine!</span>
+<div class="viewcode-block" id="Gradients">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.mcpdft.Gradients">[docs]</a>
+<span class="k">class</span> <span class="nc">Gradients</span> <span class="p">(</span><span class="n">dfsacasscf_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="p">,</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="p">):</span>
 
-<span class="kn">from</span> <span class="nn">.multigrid_pair</span> <span class="kn">import</span> <span class="n">MultiGridFFTDF2</span>
-<span class="kn">from</span> <span class="nn">.multigrid_pair</span> <span class="kn">import</span> <span class="n">nr_rks</span> <span class="k">as</span> <span class="n">nr_rks_v2</span>
-<span class="kn">from</span> <span class="nn">.multigrid_pair</span> <span class="kn">import</span> <span class="n">nr_uks</span> <span class="k">as</span> <span class="n">nr_uks_v2</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdft</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auxbasis_response</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdft</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
 
-<div class="viewcode-block" id="nr_rks">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.multigrid.html#pyscf.pbc.dft.multigrid.nr_rks">[docs]</a>
-<span class="k">def</span> <span class="nf">nr_rks</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-           <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_j</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">MultiGridFFTDF2</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">nr_rks_v2</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span>
-                         <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span>
-                         <span class="n">return_j</span><span class="o">=</span><span class="n">return_j</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span> 
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">MultiGridFFTDF</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">nr_rks_v1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span>
-                         <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span>
-                         <span class="n">return_j</span><span class="o">=</span><span class="n">return_j</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Wrong density fitting type for multigrid DFT.&quot;</span><span class="p">)</span></div>
+    <span class="c1"># TODO: rewrite the partialized fn to take the actual caller, use getattr,</span>
+    <span class="c1"># and delete this</span>
+<div class="viewcode-block" id="Gradients.get_ham_response">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.df.grad.html#pyscf.df.grad.mcpdft.Gradients.get_ham_response">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ham_response</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pfn</span> <span class="o">=</span> <span class="n">partial</span> <span class="p">(</span><span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">mcpdft_HellmanFeynman_grad</span><span class="p">,</span>
+         <span class="n">auxbasis_response</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">auxbasis_response</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">lib</span><span class="o">.</span><span class="n">temporary_env</span> <span class="p">(</span><span class="n">mcpdft_grad</span><span class="p">,</span> <span class="n">mcpdft_HellmanFeynman_grad</span><span class="o">=</span><span class="n">pfn</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_ham_response</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="nr_uks">
-<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.multigrid.html#pyscf.pbc.dft.multigrid.nr_uks">[docs]</a>
-<span class="k">def</span> <span class="nf">nr_uks</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-           <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_j</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">MultiGridFFTDF2</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">nr_uks_v2</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span>
-                         <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span>
-                         <span class="n">return_j</span><span class="o">=</span><span class="n">return_j</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">MultiGridFFTDF</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">nr_uks_v1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dm_kpts</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">,</span>
-                         <span class="n">kpts_band</span><span class="o">=</span><span class="n">kpts_band</span><span class="p">,</span> <span class="n">with_j</span><span class="o">=</span><span class="n">with_j</span><span class="p">,</span>
-                         <span class="n">return_j</span><span class="o">=</span><span class="n">return_j</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Wrong density fitting type for multigrid DFT.&quot;</span><span class="p">)</span></div>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">kernel</span>
+    <span class="n">get_wfn_response</span> <span class="o">=</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_wfn_response</span>
+    <span class="n">get_init_guess</span> <span class="o">=</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">get_init_guess</span>
+    <span class="n">project_Aop</span> <span class="o">=</span> <span class="n">mcpdft_grad</span><span class="o">.</span><span class="n">Gradients</span><span class="o">.</span><span class="n">project_Aop</span></div>
+
 
 </pre></div>
 

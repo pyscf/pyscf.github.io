@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -444,26 +444,34 @@
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
     <span class="kn">from</span> <span class="nn">pyscf.scf</span> <span class="kn">import</span> <span class="n">dhf</span>
+    <span class="kn">from</span> <span class="nn">pyscf.df.addons</span> <span class="kn">import</span> <span class="n">predefined_auxbasis</span>
     <span class="k">assert</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">SCF</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">with_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mol</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">mol</span>
+        <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
+                <span class="n">xc</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">xc</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xc</span> <span class="o">=</span> <span class="s1">&#39;HF&#39;</span>
+            <span class="k">if</span> <span class="n">xc</span> <span class="o">==</span> <span class="s1">&#39;LDA,VWN&#39;</span><span class="p">:</span>
+                <span class="c1"># This is likely the default xc setting of a KS instance.</span>
+                <span class="c1"># Postpone the auxbasis assignment to with_df.build().</span>
+                <span class="n">auxbasis</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="n">xc</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">dhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
-            <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF4C</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+            <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF4C</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">mol</span><span class="p">)</span>
+            <span class="n">with_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">DF</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">)</span>
         <span class="n">with_df</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">max_memory</span>
         <span class="n">with_df</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">stdout</span>
         <span class="n">with_df</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">verbose</span>
-        <span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxbasis</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">_DFHF</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
-        <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="p">,</span> <span class="s1">&#39;auxbasis&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="n">auxbasis</span><span class="p">:</span>
-            <span class="c1">#logger.warn(mf, &#39;DF might have been initialized twice.&#39;)</span>
-            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
-            <span class="n">mf</span><span class="o">.</span><span class="n">only_dfj</span> <span class="o">=</span> <span class="n">only_dfj</span>
+        <span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">with_df</span>
+        <span class="n">mf</span><span class="o">.</span><span class="n">only_dfj</span> <span class="o">=</span> <span class="n">only_dfj</span>
         <span class="k">return</span> <span class="n">mf</span>
 
     <span class="n">dfmf</span> <span class="o">=</span> <span class="n">_DFHF</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">with_df</span><span class="p">,</span> <span class="n">only_dfj</span><span class="p">)</span>
@@ -557,6 +565,12 @@
 
     <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.df.grad</span> <span class="kn">import</span> <span class="n">rhf</span><span class="p">,</span> <span class="n">rohf</span><span class="p">,</span> <span class="n">uhf</span><span class="p">,</span> <span class="n">rks</span><span class="p">,</span> <span class="n">roks</span><span class="p">,</span> <span class="n">uks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;_Solvation&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;Gradients of solvent are not computed. &#39;</span>
+                <span class="s1">&#39;Solvent must be applied after density fitting method, e.g.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;mf = mol.RKS().density_fit().PCM()&#39;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">uks</span><span class="o">.</span><span class="n">Gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -579,6 +593,12 @@
 
     <span class="k">def</span> <span class="nf">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf.df.hessian</span> <span class="kn">import</span> <span class="n">rhf</span><span class="p">,</span> <span class="n">uhf</span><span class="p">,</span> <span class="n">rks</span><span class="p">,</span> <span class="n">uks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;_Solvation&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;Hessian of solvent are not computed. &#39;</span>
+                <span class="s1">&#39;Solvent must be applied after density fitting method, e.g.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;mf = mol.RKS().density_fit().PCM()&#39;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">KohnShamDFT</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">uks</span><span class="o">.</span><span class="n">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -600,9 +620,21 @@
     <span class="n">NSR</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
     <span class="n">Polarizability</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
     <span class="n">RotationalGTensor</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
-    <span class="n">MP2</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
+
+    <span class="k">def</span> <span class="nf">MP2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mp_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DFMP2</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mp_obj</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxbasis</span>
+        <span class="k">return</span> <span class="n">mp_obj</span>
+
     <span class="n">CISD</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
-    <span class="n">CCSD</span> <span class="o">=</span> <span class="n">method_not_implemented</span>
+
+    <span class="k">def</span> <span class="nf">CCSD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.cc</span> <span class="kn">import</span> <span class="n">dfccsd</span><span class="p">,</span> <span class="n">dfuccsd</span>
+        <span class="n">cc_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DFCCSD</span><span class="p">(</span><span class="n">frozen</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cc_obj</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxbasis</span>
+        <span class="k">return</span> <span class="n">cc_obj</span>
 
     <span class="k">def</span> <span class="nf">CASCI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ncas</span><span class="p">,</span> <span class="n">nelecas</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ncore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">mcscf</span>

@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -399,6 +399,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">gto</span>
+<span class="kn">from</span> <span class="nn">pyscf.gto.basis</span> <span class="kn">import</span> <span class="n">_format_basis_name</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.data</span> <span class="kn">import</span> <span class="n">elements</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib.exceptions</span> <span class="kn">import</span> <span class="n">BasisNotFoundError</span>
@@ -418,9 +419,7 @@
 <span class="n">DEFAULT_AUXBASIS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># AO basis       JK-fit                     MP2-fit</span>
     <span class="s1">&#39;ccpvdz&#39;</span>      <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;cc-pvdz-jkfit&#39;</span>          <span class="p">,</span> <span class="s1">&#39;cc-pvdz-ri&#39;</span>         <span class="p">),</span>
-    <span class="s1">&#39;ccpvdpdz&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;cc-pvdz-jkfit&#39;</span>          <span class="p">,</span> <span class="s1">&#39;cc-pvdz-ri&#39;</span>         <span class="p">),</span>
     <span class="s1">&#39;augccpvdz&#39;</span>   <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;aug-cc-pvdz-jkfit&#39;</span>      <span class="p">,</span> <span class="s1">&#39;aug-cc-pvdz-ri&#39;</span>     <span class="p">),</span>
-    <span class="s1">&#39;augccpvdpdz&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;aug-cc-pvdz-jkfit&#39;</span>      <span class="p">,</span> <span class="s1">&#39;aug-cc-pvdz-ri&#39;</span>     <span class="p">),</span>
     <span class="s1">&#39;ccpvtz&#39;</span>      <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;cc-pvtz-jkfit&#39;</span>          <span class="p">,</span> <span class="s1">&#39;cc-pvtz-ri&#39;</span>         <span class="p">),</span>
     <span class="s1">&#39;augccpvtz&#39;</span>   <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;aug-cc-pvtz-jkfit&#39;</span>      <span class="p">,</span> <span class="s1">&#39;aug-cc-pvtz-ri&#39;</span>     <span class="p">),</span>
     <span class="s1">&#39;ccpvqz&#39;</span>      <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;cc-pvqz-jkfit&#39;</span>          <span class="p">,</span> <span class="s1">&#39;cc-pvqz-ri&#39;</span>         <span class="p">),</span>
@@ -436,7 +435,7 @@
     <span class="s1">&#39;def2mtzvpp&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-tzvpp-jkfit&#39;</span>       <span class="p">,</span> <span class="s1">&#39;def2-tzvpp-ri&#39;</span>      <span class="p">),</span>
     <span class="s1">&#39;def2tzvppd&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-tzvpp-jkfit&#39;</span>       <span class="p">,</span> <span class="s1">&#39;def2-tzvppd-ri&#39;</span>     <span class="p">),</span>
     <span class="s1">&#39;def2qzvp&#39;</span>    <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-qzvp-jkfit&#39;</span>        <span class="p">,</span> <span class="s1">&#39;def2-qzvp-ri&#39;</span>       <span class="p">),</span>
-    <span class="s1">&#39;def2qzvpd&#39;</span>   <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-qzvp-jkfit&#39;</span>        <span class="p">,</span> <span class="kc">None</span>                 <span class="p">),</span>
+    <span class="c1">#&#39;def2qzvpd&#39;   : (&#39;def2-qzvp-jkfit&#39;        , None                 ),</span>
     <span class="s1">&#39;def2qzvpp&#39;</span>   <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-qzvpp-jkfit&#39;</span>       <span class="p">,</span> <span class="s1">&#39;def2-qzvpp-ri&#39;</span>      <span class="p">),</span>
     <span class="s1">&#39;def2qzvppd&#39;</span>  <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-qzvpp-jkfit&#39;</span>       <span class="p">,</span> <span class="s1">&#39;def2-qzvppd-ri&#39;</span>     <span class="p">),</span>
     <span class="s1">&#39;sto3g&#39;</span>       <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;def2-svp-jkfit&#39;</span>         <span class="p">,</span> <span class="s1">&#39;def2-svp-ri&#39;</span>        <span class="p">),</span>
@@ -468,7 +467,7 @@
     <span class="n">emax_by_l</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">l_max</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">basis</span><span class="p">:</span>
         <span class="n">l</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
             <span class="n">e_c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">e_c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
@@ -553,45 +552,52 @@
 
 <div class="viewcode-block" id="make_auxbasis">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.df.html#pyscf.df.addons.make_auxbasis">[docs]</a>
-<span class="k">def</span> <span class="nf">make_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mp2fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">make_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s1">&#39;HF&#39;</span><span class="p">,</span> <span class="n">mp2fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Depending on the orbital basis, generating even-tempered Gaussians or</span>
 <span class="sd">    the optimized auxiliary basis defined in DEFAULT_AUXBASIS</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">uniq_atoms</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">_atom</span><span class="p">}</span>
+    <span class="n">auxbasis</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">_basis</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">}</span>
-    <span class="k">elif</span> <span class="s1">&#39;default&#39;</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">:</span>
-        <span class="n">default_basis</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
-        <span class="n">_basis</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">default_basis</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">}</span>
-        <span class="n">_basis</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
-        <span class="k">del</span> <span class="p">(</span><span class="n">_basis</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">])</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span>
-            <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">basis</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">values</span><span class="p">()])):</span>
-        <span class="n">_basis</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">}</span>
+        <span class="n">default_auxbasis</span> <span class="o">=</span> <span class="n">predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">mp2fit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">default_auxbasis</span><span class="p">:</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">default_auxbasis</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">}</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;Default auxbasis </span><span class="si">%s</span><span class="s1"> is applied universally&#39;</span><span class="p">,</span> <span class="n">default_auxbasis</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;default&#39;</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">:</span>
+            <span class="n">default_basis</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+            <span class="n">_basis</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">default_basis</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">uniq_atoms</span><span class="p">}</span>
+            <span class="n">_basis</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">_basis</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_basis</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">basis</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_basis</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">_basis</span> <span class="ow">or</span> <span class="p">{}</span>
 
-    <span class="n">auxbasis</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_basis</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_basis</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">balias</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">_format_basis_name</span><span class="p">(</span><span class="n">_basis</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">_basis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">auxbasis</span><span class="p">:</span>
+            <span class="n">auxb</span> <span class="o">=</span> <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Test if basis auxb for element k is available</span>
+                <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">auxb</span><span class="p">,</span> <span class="n">elements</span><span class="o">.</span><span class="n">_std_symbol_without_ghost</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">balias</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">balias</span><span class="p">):</span>
                 <span class="n">balias</span> <span class="o">=</span> <span class="n">balias</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;g&#39;</span>
-            <span class="k">if</span> <span class="n">balias</span> <span class="ow">in</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">mp2fit</span><span class="p">:</span>
-                    <span class="n">auxb</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">balias</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">auxb</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">balias</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">auxb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="c1"># Test if basis auxb for element k is available</span>
-                        <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">auxb</span><span class="p">,</span> <span class="n">elements</span><span class="o">.</span><span class="n">_std_symbol_without_ghost</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
-                    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-                        <span class="k">pass</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">auxb</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;Default auxbasis </span><span class="si">%s</span><span class="s1"> is used for </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
-                                    <span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">_basis</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">auxb</span> <span class="o">=</span> <span class="n">predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">balias</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">mp2fit</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">gto</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">auxb</span><span class="p">,</span> <span class="n">elements</span><span class="o">.</span><span class="n">_std_symbol_without_ghost</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+                <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">auxbasis</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">auxb</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;Default auxbasis </span><span class="si">%s</span><span class="s1"> is used for </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="n">auxb</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">obs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_basis</span><span class="p">):</span>
         <span class="c1"># Some AO basis not found in DEFAULT_AUXBASIS</span>
@@ -643,7 +649,22 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_basis</span> <span class="o">=</span> <span class="n">auxbasis</span>
 
-    <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span> <span class="o">=</span> <span class="n">pmol</span><span class="o">.</span><span class="n">format_basis</span><span class="p">(</span><span class="n">_basis</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pmol</span><span class="o">.</span><span class="n">_basis</span> <span class="o">=</span> <span class="n">pmol</span><span class="o">.</span><span class="n">format_basis</span><span class="p">(</span><span class="n">_basis</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auxbasis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">Some elements are not found in the specified auxiliary basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1">.</span>
+<span class="s1">To proceed, you can generate even-tempered Gaussian (ETB) functions for the missing elements.</span>
+<span class="s1">Three routines are available for this system:</span>
+<span class="s1">1. PySCF&#39;s built-in basis generation function</span>
+<span class="s1">    mf.with_df.auxbasis = pyscf.df.make_auxbasis(mol)</span>
+<span class="s1">2. ORCA recommended AutoAux ETB</span>
+<span class="s1">    mf.with_df.auxbasis = pyscf.df.autoaux(mol)</span>
+<span class="s1">3. Gaussian package recommended ETB</span>
+<span class="s1">    mf.with_df.auxbasis = pyscf.df.autoabs(mol)</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="k">raise</span>
 
     <span class="c1"># Note: To pass parameters like gauge origin, rsh-omega to auxmol,</span>
     <span class="c1"># mol._env[:PTR_ENV_START] must be copied to auxmol._env</span>
@@ -653,6 +674,71 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;num shells = </span><span class="si">%d</span><span class="s1">, num cGTOs = </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span>
                  <span class="n">pmol</span><span class="o">.</span><span class="n">nbas</span><span class="p">,</span> <span class="n">pmol</span><span class="o">.</span><span class="n">nao_nr</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">pmol</span></div>
+
+
+<div class="viewcode-block" id="bse_predefined_auxbasis">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.df.html#pyscf.df.addons.bse_predefined_auxbasis">[docs]</a>
+<span class="k">def</span> <span class="nf">bse_predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s1">&#39;HF&#39;</span><span class="p">,</span> <span class="n">mp2fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Find auxiliary basis sets for XC functionals from BSE database.</span>
+<span class="sd">    If no matching basis set is found, the function returns None.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dft.libxc</span> <span class="kn">import</span> <span class="n">is_hybrid_xc</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dft.xcfun</span> <span class="kn">import</span> <span class="n">is_hybrid_xc</span>
+    <span class="n">pyscf_basis_alias</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">basis_meta</span> <span class="o">=</span> <span class="n">gto</span><span class="o">.</span><span class="n">mole</span><span class="o">.</span><span class="n">BSE_META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pyscf_basis_alias</span><span class="p">)</span>
+    <span class="n">auxbasis</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">basis_meta</span><span class="p">:</span>
+        <span class="n">auxiliaries</span> <span class="o">=</span> <span class="n">basis_meta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mp2fit</span><span class="p">:</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxiliaries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rifit&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxbasis</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;BSE predefined RIFIT basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1"> for mp2fit&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">xc</span><span class="p">):</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxiliaries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;jkfit&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxbasis</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;BSE predefined JKFIT basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">xc</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxiliaries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;jfit&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxiliaries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dftjfit&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxbasis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">auxiliaries</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;jkfit&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auxbasis</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;BSE predefined JFIT basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">xc</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">auxbasis</span></div>
+
+
+<div class="viewcode-block" id="predefined_auxbasis">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.df.html#pyscf.df.addons.predefined_auxbasis">[docs]</a>
+<span class="k">def</span> <span class="nf">predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="s1">&#39;HF&#39;</span><span class="p">,</span> <span class="n">mp2fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Predefined auxiliary basis sets for the specified orbital basis set and</span>
+<span class="sd">    XC functional. The searching starts from the Psi4 recommendation. If not</span>
+<span class="sd">    found, the record in BSE database will be used. If no matching basis set is</span>
+<span class="sd">    found, the function returns None.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dft.libxc</span> <span class="kn">import</span> <span class="n">is_hybrid_xc</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">pyscf.dft.xcfun</span> <span class="kn">import</span> <span class="n">is_hybrid_xc</span>
+    <span class="n">pyscf_basis_alias</span> <span class="o">=</span> <span class="n">_format_basis_name</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">pyscf_basis_alias</span> <span class="ow">in</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mp2fit</span><span class="p">:</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">pyscf_basis_alias</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Psi4 predefined RIFIT basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1"> for mp2fit&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">auxbasis</span>
+        <span class="k">elif</span> <span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">xc</span><span class="p">):</span>
+            <span class="n">auxbasis</span> <span class="o">=</span> <span class="n">DEFAULT_AUXBASIS</span><span class="p">[</span><span class="n">pyscf_basis_alias</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Psi4 predefined JKFIT basis set </span><span class="si">{</span><span class="n">auxbasis</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">xc</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">auxbasis</span>
+    <span class="k">return</span> <span class="n">bse_predefined_auxbasis</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">mp2fit</span><span class="p">)</span></div>
 
 
 <span class="k">del</span> <span class="p">(</span><span class="n">DFBASIS</span><span class="p">,</span> <span class="n">ETB_BETA</span><span class="p">,</span> <span class="n">FIRST_ETB_ELEMENT</span><span class="p">)</span>

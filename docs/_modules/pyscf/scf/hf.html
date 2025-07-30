@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -627,7 +627,7 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&#39;&#39;&#39;Electronic part of Hartree-Fock energy, for given core hamiltonian and</span>
 <span class="sd">    HF potential</span>
 
-<span class="sd">    ... math::</span>
+<span class="sd">    .. math::</span>
 
 <span class="sd">        E = \sum_{ij}h_{ij} \gamma_{ji}</span>
 <span class="sd">          + \frac{1}{2}\sum_{ijkl} \gamma_{ji}\gamma_{lk} \langle ik||jl\rangle</span>
@@ -2735,7 +2735,32 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.x2c.x2c.SCF.density_fit">[docs]</a>
     <span class="k">def</span> <span class="nf">density_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auxbasis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">only_dfj</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="kn">import</span> <span class="nn">pyscf.df.df_jk</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;_Solvation&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="s1">&#39;It is recommended to call density_fit() before applying a solvent model. &#39;</span>
+                <span class="s1">&#39;Calling density_fit() after the solvent model may result in &#39;</span>
+                <span class="s1">&#39;incorrect nuclear gradients, TDDFT and other methods.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">df_jk</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auxbasis</span><span class="p">,</span> <span class="n">with_df</span><span class="p">,</span> <span class="n">only_dfj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SCF.multigrid_numint">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.x2c.x2c.SCF.multigrid_numint">[docs]</a>
+    <span class="k">def</span> <span class="nf">multigrid_numint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Apply the MultiGrid algorithm for XC numerical integartion.</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            margin : float</span>
+<span class="sd">                A box will be created to enclose the molecule, with the molecule</span>
+<span class="sd">                positioned at the center. &quot;margin&quot; specifies the distance from</span>
+<span class="sd">                the edge of the molecule to the edge of the box. If not provided,</span>
+<span class="sd">                a default margin is estimated, which ensures that the electron</span>
+<span class="sd">                density decays to approximately 1e-7 at the boundary of the box.</span>
+<span class="sd">            mesh : (3,) ndarray</span>
+<span class="sd">                The number of mesh grids along each axis. If not specified, the</span>
+<span class="sd">                number of mesh grids will be estimated based on the basis sets</span>
+<span class="sd">                and the margin.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="SCF.sfx2c1e">
@@ -2938,6 +2963,13 @@
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;This helper function transfers attributes from one SCF object to</span>
 <span class="sd">        another SCF object. It is invoked by to_ks and to_hf methods.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">pyscf.df.df_jk</span> <span class="kn">import</span> <span class="n">_DFHF</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_DFHF</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="s1">&#39;with_df&#39;</span><span class="p">):</span>
+            <span class="c1"># * Handle DF_SCF instances for to_xxx methods.</span>
+            <span class="c1"># * Only the molecular SCF methods need to be explicitly converted.</span>
+            <span class="c1">#   For PBC SCF methods, DF is enabled by default. calling density_fit()</span>
+            <span class="c1">#   may alter the DF class. Conversion should be avoided here.</span>
+            <span class="n">dst</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="n">auxbasis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">auxbasis</span><span class="p">)</span>
         <span class="c1"># Search for all tracked attributes, including those in base classes</span>
         <span class="n">cls_keys</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;_keys&#39;</span><span class="p">,</span> <span class="p">())</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">dst</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
         <span class="n">dst_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">dst</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="n">cls_keys</span><span class="p">)</span>

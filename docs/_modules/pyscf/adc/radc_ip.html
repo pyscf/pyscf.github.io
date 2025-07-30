@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -400,14 +400,11 @@
 <span class="sd">Restricted algebraic diagrammatic construction</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pyscf.ao2mo</span> <span class="k">as</span> <span class="nn">ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.lib</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc</span>
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">radc_ao2mo</span>
 <span class="kn">from</span> <span class="nn">pyscf.adc</span> <span class="kn">import</span> <span class="n">dfadc</span>
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">__config__</span>
-<span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">df</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">symm</span>
 
 
@@ -777,21 +774,18 @@
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eris</span><span class="o">.</span><span class="n">ovvv</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)):</span>
                 <span class="n">chnk_size</span> <span class="o">=</span> <span class="n">radc_ao2mo</span><span class="o">.</span><span class="n">calculate_chunk_size</span><span class="p">(</span><span class="n">adc</span><span class="p">)</span>
-                <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">chnk_size</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="n">lib</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nocc</span><span class="p">,</span><span class="n">chnk_size</span><span class="p">):</span>
                     <span class="n">eris_ovvv</span> <span class="o">=</span> <span class="n">dfadc</span><span class="o">.</span><span class="n">get_ovvv_df</span><span class="p">(</span>
-                        <span class="n">adc</span><span class="p">,</span> <span class="n">eris</span><span class="o">.</span><span class="n">Lov</span><span class="p">,</span> <span class="n">eris</span><span class="o">.</span><span class="n">Lvv</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">chnk_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
-                    <span class="n">k</span> <span class="o">=</span> <span class="n">eris_ovvv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">a</span><span class="o">+</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,icab-&gt;i&#39;</span><span class="p">,</span><span class="n">temp</span><span class="p">,</span> <span class="n">eris_ovvv</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">a</span><span class="o">+</span><span class="n">k</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,ibac-&gt;i&#39;</span><span class="p">,</span><span class="n">temp</span><span class="p">,</span> <span class="n">eris_ovvv</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">a</span><span class="o">+</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,icab-&gt;i&#39;</span><span class="p">,</span>
+                        <span class="n">adc</span><span class="p">,</span> <span class="n">eris</span><span class="o">.</span><span class="n">Lov</span><span class="p">,</span> <span class="n">eris</span><span class="o">.</span><span class="n">Lvv</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">chnk_size</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nvir</span><span class="p">,</span><span class="n">nvir</span><span class="p">)</span>
+                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,icab-&gt;i&#39;</span><span class="p">,</span><span class="n">temp</span><span class="p">,</span> <span class="n">eris_ovvv</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">-=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,ibac-&gt;i&#39;</span><span class="p">,</span><span class="n">temp</span><span class="p">,</span> <span class="n">eris_ovvv</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">temp_singles</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;abc,icab-&gt;i&#39;</span><span class="p">,</span>
                                                       <span class="n">temp_1</span><span class="p">,</span> <span class="n">eris_ovvv</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="n">temp_doubles</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,icab-&gt;cba&#39;</span><span class="p">,</span><span class="n">r1</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">a</span><span class="o">+</span><span class="n">k</span><span class="p">],</span><span class="n">eris_ovvv</span><span class="p">,</span><span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">temp_doubles</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,icab-&gt;cba&#39;</span><span class="p">,</span><span class="n">r1</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">],</span><span class="n">eris_ovvv</span><span class="p">,</span><span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="n">s</span><span class="p">[</span><span class="n">s2</span><span class="p">:</span><span class="n">f2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lib</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;cba,kjcb-&gt;ajk&#39;</span><span class="p">,</span><span class="n">temp_doubles</span><span class="p">,</span>
                                            <span class="n">t2_1</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
                     <span class="k">del</span> <span class="n">eris_ovvv</span>
                     <span class="k">del</span> <span class="n">temp_doubles</span>
-                    <span class="n">a</span> <span class="o">+=</span> <span class="n">k</span>
             <span class="k">else</span> <span class="p">:</span>
                 <span class="n">eris_ovvv</span> <span class="o">=</span> <span class="n">radc_ao2mo</span><span class="o">.</span><span class="n">unpack_eri_1</span><span class="p">(</span><span class="n">eris</span><span class="o">.</span><span class="n">ovvv</span><span class="p">,</span> <span class="n">nvir</span><span class="p">)</span>
 
@@ -1048,8 +1042,8 @@
 
             <span class="n">iter_num</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> | root </span><span class="si">%d</span><span class="s1"> | norm(1h)  = </span><span class="si">%6.4f</span><span class="s1"> | norm(2h1p) = </span><span class="si">%6.4f</span><span class="s1"> &#39;</span><span class="p">,</span>
-                    <span class="n">adc</span><span class="o">.</span><span class="n">method</span> <span class="p">,</span><span class="n">I</span><span class="p">,</span> <span class="n">U1dotU1</span><span class="p">,</span> <span class="n">U2dotU2</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> | root </span><span class="si">%d</span><span class="s1"> | Energy (eV) = </span><span class="si">%12.8f</span><span class="s1"> | norm(1h)  = </span><span class="si">%6.4f</span><span class="s1"> | norm(2h1p) = </span><span class="si">%6.4f</span><span class="s1"> &#39;</span><span class="p">,</span>
+                    <span class="n">adc</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">I</span><span class="p">]</span><span class="o">*</span><span class="mf">27.2114</span><span class="p">,</span> <span class="n">U1dotU1</span><span class="p">,</span> <span class="n">U2dotU2</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">singles_val</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">1h block: &quot;</span><span class="p">)</span>
@@ -1066,7 +1060,8 @@
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s1">&#39;  </span><span class="si">%4d</span><span class="s1">  </span><span class="si">%4d</span><span class="s1">  </span><span class="si">%4d</span><span class="s1">     </span><span class="si">%7.4f</span><span class="s1">&#39;</span><span class="p">,</span>
                             <span class="n">print_doubles</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">print_doubles</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">print_doubles</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">doubles_val</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span>
+            <span class="s2">&quot;***************************************************************************************</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 
@@ -1100,7 +1095,8 @@
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spec_Contribution</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">continue</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> | root </span><span class="si">%d</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">adc</span><span class="o">.</span><span class="n">method</span> <span class="p">,</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> | root </span><span class="si">%d</span><span class="s1"> | Energy (eV) = </span><span class="si">%12.8f</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+                <span class="n">adc</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">adc</span><span class="o">.</span><span class="n">E</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="mf">27.2114</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;     HF MO     Spec. Contribution     Orbital symmetry&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;-----------------------------------------------------------&quot;</span><span class="p">)</span>
 
@@ -1109,7 +1105,8 @@
                         <span class="n">index_mo</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">spec_Contribution</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">sym</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Partial spec. factor sum = </span><span class="si">%10.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spec_Contribution</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*************************************************************</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">adc</span><span class="p">,</span>
+        <span class="s2">&quot;***********************************************************</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 
@@ -1744,7 +1741,7 @@
 <span class="sd">        method : string</span>
 <span class="sd">            nth-order ADC method. Options are : ADC(2), ADC(2)-X, ADC(3). Default is ADC(2).</span>
 <span class="sd">        conv_tol : float</span>
-<span class="sd">            Convergence threshold for Davidson iterations.  Default is 1e-12.</span>
+<span class="sd">            Convergence threshold for Davidson iterations.  Default is 1e-8.</span>
 <span class="sd">        max_cycle : int</span>
 <span class="sd">            Number of Davidson iterations.  Default is 50.</span>
 <span class="sd">        max_space : int</span>
@@ -1755,7 +1752,7 @@
 <span class="sd">            Number of roots (eigenvalues) requested. Default value is 1.</span>
 
 <span class="sd">            &gt;&gt;&gt; myadc = adc.RADC(mf).run()</span>
-<span class="sd">            &gt;&gt;&gt; myadcip = adc.RADC(myadc).run()</span>
+<span class="sd">            &gt;&gt;&gt; myadcip = adc.RADCIP(myadc).run()</span>
 
 <span class="sd">    Saved results</span>
 
@@ -1766,6 +1763,8 @@
 <span class="sd">        v_ip : array</span>
 <span class="sd">            Eigenvectors for each IP transition.</span>
 <span class="sd">        p_ip : float</span>
+<span class="sd">            Spectroscopic factor for each IP transition.</span>
+<span class="sd">        x_ip : float</span>
 <span class="sd">            Spectroscopic amplitudes for each IP transition.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 

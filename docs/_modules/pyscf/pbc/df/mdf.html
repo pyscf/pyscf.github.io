@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -411,7 +411,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.aft</span> <span class="kn">import</span> <span class="n">_check_kpts</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.gdf_builder</span> <span class="kn">import</span> <span class="n">_CCGDFBuilder</span>
-<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.df.rsdf_builder</span> <span class="kn">import</span> <span class="n">_RSGDFBuilder</span><span class="p">,</span> <span class="n">estimate_rs_2c2e_rcut</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df.incore</span> <span class="kn">import</span> <span class="n">libpbc</span><span class="p">,</span> <span class="n">make_auxcell</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts</span> <span class="kn">import</span> <span class="n">KPoints</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span><span class="p">,</span> <span class="n">member</span><span class="p">,</span> <span class="n">unique</span>
@@ -535,14 +535,12 @@
             <span class="c1"># * AFT is computationally more efficient than MDF if the Coulomb</span>
             <span class="c1">#   attenuation tends to the long-range role (i.e. small omega).</span>
             <span class="c1"># * Note: changing to AFT integrator may cause small difference to</span>
-            <span class="c1">#   the MDF integrator. If a very strict MDF result is desired,</span>
-            <span class="c1">#   we can disable this trick by setting</span>
-            <span class="c1">#   LONGRANGE_AFT_TURNOVER_THRESHOLD to 0.</span>
+            <span class="c1">#   the MDF integrator.</span>
             <span class="c1"># * The sparse mesh is not appropriate for low dimensional systems</span>
             <span class="c1">#   with infinity vacuum since the ERI may require large mesh to</span>
             <span class="c1">#   sample density in vacuum.</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">omega</span> <span class="o">&lt;</span> <span class="n">df</span><span class="o">.</span><span class="n">LONGRANGE_AFT_TURNOVER_THRESHOLD</span> <span class="ow">and</span>
-                <span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">&#39;inf_vacuum&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">omega</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
+                <span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">dimension</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">cell</span><span class="o">.</span><span class="n">low_dim_ft_type</span> <span class="o">!=</span> <span class="s1">&#39;inf_vacuum&#39;</span><span class="p">)):</span>
                 <span class="n">mydf</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
                 <span class="n">ke_cutoff</span> <span class="o">=</span> <span class="n">aft</span><span class="o">.</span><span class="n">estimate_ke_cutoff_for_omega</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
                 <span class="n">mydf</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">cutoff_to_mesh</span><span class="p">(</span><span class="n">ke_cutoff</span><span class="p">)</span>
@@ -629,9 +627,11 @@
         <span class="c1">#    &lt;g|g&gt; - 2 &lt;g|G&gt;&lt;G|g&gt; + &lt;g|G&gt;&lt;G|G&gt;&lt;G|g&gt; = &lt;g|g&gt; - &lt;g|G&gt;&lt;G|g&gt;</span>
         <span class="n">auxcell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">auxcell</span>
         <span class="n">omega</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span>
-        <span class="n">rs_auxcell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rs_auxcell</span>
+        <span class="n">rs_auxcell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rs_auxcell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">auxcell_c</span> <span class="o">=</span> <span class="n">rs_auxcell</span><span class="o">.</span><span class="n">compact_basis_cell</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="n">auxcell_c</span><span class="o">.</span><span class="n">nbas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">auxcell_c</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="n">estimate_rs_2c2e_rcut</span><span class="p">(</span><span class="n">auxcell_c</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
             <span class="k">with</span> <span class="n">auxcell_c</span><span class="o">.</span><span class="n">with_short_range_coulomb</span><span class="p">(</span><span class="n">omega</span><span class="p">):</span>
                 <span class="n">sr_j2c</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">auxcell_c</span><span class="o">.</span><span class="n">pbc_intor</span><span class="p">(</span><span class="s1">&#39;int2c2e&#39;</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">uniq_kpts</span><span class="p">))</span>
 

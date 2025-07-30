@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=182a64a0"></script>
+    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.9" />
+  <meta name="docsearch:version" content="2.10" />
   </head>
   
   
@@ -689,6 +689,8 @@
     <span class="k">return</span> <span class="n">gcds</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">hartree2kcal</span><span class="p">,</span> <span class="n">dcds</span></div>
 
 
+<span class="c1"># Note: in various places, SMD instance is not explictly tested. It is checked</span>
+<span class="c1"># by the statement &quot;isinstance(solvent, PCM)&quot;</span>
 <div class="viewcode-block" id="SMD">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.smd.SMD">[docs]</a>
 <span class="k">class</span> <span class="nc">SMD</span><span class="p">(</span><span class="n">pcm</span><span class="o">.</span><span class="n">PCM</span><span class="p">):</span>
@@ -810,27 +812,47 @@
 <div class="viewcode-block" id="SMD.nuc_grad_method">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.smd.SMD.nuc_grad_method">[docs]</a>
     <span class="k">def</span> <span class="nf">nuc_grad_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_method</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">pyscf.solvent.grad</span> <span class="kn">import</span> <span class="n">smd</span> <span class="k">as</span> <span class="n">smd_grad</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Frozen solvent model is not supported&#39;</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grad_method</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">smd_grad</span><span class="o">.</span><span class="n">make_grad_object</span><span class="p">(</span><span class="n">grad_method</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Only SCF gradient is supported&#39;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">&#39;Use the make_grad_object function from &#39;</span>
+                                 <span class="s1">&#39;pyscf.solvent.grad.smd instead.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SMD.grad">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.smd.SMD.grad">[docs]</a>
+    <span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Computes the Jacobian for the energy associated with the solvent,</span>
+<span class="sd">        including the derivatives of the solvent itsself and the interactions</span>
+<span class="sd">        between the solvent and the charge density of the solute.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.grad.pcm</span> <span class="kn">import</span> <span class="n">grad_qv</span><span class="p">,</span> <span class="n">grad_nuc</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.grad.smd</span> <span class="kn">import</span> <span class="n">grad_solver</span><span class="p">,</span> <span class="n">get_cds</span>
+        <span class="n">de_solvent</span> <span class="o">=</span> <span class="n">grad_qv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">de_solvent</span><span class="o">+=</span> <span class="n">grad_solver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="n">de_solvent</span><span class="o">+=</span> <span class="n">grad_nuc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+        <span class="c1">#de_cds     = get_cds(self.base.with_solvent)</span>
+        <span class="n">de_cds</span>     <span class="o">=</span> <span class="n">get_cds_legacy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Cavitation, Dispersion and Solvent structure contribution </span><span class="si">%g</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">de_cds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">de_solvent</span> <span class="o">+</span> <span class="n">de_cds</span></div>
 
 
 <div class="viewcode-block" id="SMD.Hessian">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.smd.SMD.Hessian">[docs]</a>
     <span class="k">def</span> <span class="nf">Hessian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hess_method</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">pyscf.solvent.hessian</span> <span class="kn">import</span> <span class="n">smd</span> <span class="k">as</span> <span class="n">smd_hess</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frozen</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Frozen solvent model is not supported&#39;</span><span class="p">)</span>
-        <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">scf</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hess_method</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="p">(</span><span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">uhf</span><span class="o">.</span><span class="n">UHF</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">smd_hess</span><span class="o">.</span><span class="n">make_hess_object</span><span class="p">(</span><span class="n">hess_method</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Only SCF gradient is supported&#39;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">&#39;Use the make_hess_object function from &#39;</span>
+                                 <span class="s1">&#39;pyscf.solvent.hessian.smd instead.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SMD.hess">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.solvent.html#pyscf.solvent.smd.SMD.hess">[docs]</a>
+    <span class="k">def</span> <span class="nf">hess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.hessian.pcm</span> <span class="kn">import</span> <span class="p">(</span>
+            <span class="n">analytical_hess_nuc</span><span class="p">,</span> <span class="n">analytical_hess_qv</span><span class="p">,</span> <span class="n">analytical_hess_solver</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">pyscf.solvent.hessian.smd</span> <span class="kn">import</span> <span class="n">get_cds</span>
+        <span class="n">de_solvent</span>  <span class="o">=</span>    <span class="n">analytical_hess_nuc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">de_solvent</span> <span class="o">+=</span>     <span class="n">analytical_hess_qv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">de_solvent</span> <span class="o">+=</span> <span class="n">analytical_hess_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">de_cds</span> <span class="o">=</span> <span class="n">get_cds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">with_solvent</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Cavitation, Dispersion and Solvent structure contribution </span><span class="si">%g</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">de_cds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">de_solvent</span> <span class="o">+</span> <span class="n">de_cds</span></div>
 
 
 <div class="viewcode-block" id="SMD.reset">
