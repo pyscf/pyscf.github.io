@@ -12,8 +12,8 @@ evaluation functions offered by the `numint` module, the Multigrid algorithm
 can achieve an order of magnitude improvement in the computation of the Coulomb
 matrix and DFT XC matrix.
 
-Supported Applications
-======================
+Supported Features
+==================
 
 The Multigrid algorithm is designed to accelerate DFT calculations.
 It can also be utilized to speed up derived properties based on DFT, such as
@@ -80,8 +80,9 @@ apply the Multigrid algorithm.::
     mf._numint = MultiGridNumInt(cell)
     mf.run()
 
-Common Options
-==============
+Configurable Options
+====================
+
 In most scenarios, the Multigrid module can automatically configure parameters such
 as energy cutoff, radius cutoff, sub tasks to balance computational load and
 accuracy. If you need more precise control over the Multigrid algorithm,
