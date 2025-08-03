@@ -38,6 +38,7 @@ The list of modules described in this chapter is:
    pbc/scf.rst
    pbc/dft.rst
    pbc/df.rst
+   pbc/multigrid.rst
    pbc/tdscf.rst
    pbc/mp.rst
    pbc/ci.rst
