@@ -650,13 +650,14 @@ For more specific method instantiation, such as RHF, UKS, or GKS, the following 
 
 * `mol.DHF()` and `mol.DKS()` create four-component Dirac-Coulomb mean-field methods.
 
-Specifying Exchange-Correlation Functionals for DFT
----------------------------------------------------
-For DFT methods, the exchange-correlation (XC) functional can be specified using
-the `xc` keyword argument. All Kohn-Sham methods, including `RKS`, `ROKS`,
-`UKS`, `GKS`, and `DKS`, support the `xc` keyword::
+Keyword Parameters for Mean-field Methods
+-----------------------------------------
+When creating mean-field methods, their configuration parameters such as
+`conv_tol` and `max_cycle` can be specified through keyword arguments of the
+instantiation methods. For example, in DFT methods, the exchange-correlation
+(XC) functional can be specified using the `xc` keyword argument::
 
-  mf = mol.RKS(xc='b3lyp')
+  mf = mol.RKS(xc='b3lyp', conv_tol=1e-6)
   mf = mol.GKS(xc='pbe,p86')
 
 Instantiating Post-SCF Methods
@@ -673,7 +674,11 @@ directly apply the post-SCF method on the `Mole` instance::
 
 This approach automatically creates a mean-field instance and applies the
 post-SCF method. Any keyword arguments for the post-SCF methods will be passed
-to the `mf.CCSD()` method.
+to the `mf.CCSD()` method. It is important to note that, unlike the
+initialization of mean-field methods, configurational parameters for post-SCF
+methods cannot be set through keyword arguments. They must be explicitly
+assigned to the post-SCF instance. For example, the initialization statement
+`mol.CCSD(conv_tol=1e-5)` will fail.
 
 MCSCF Methods
 -------------

@@ -281,11 +281,12 @@ following rules apply:
 * K-point symmetry adaptation is available for K-prefixed methods, which is
   determined by the `kpts` argument.
 
-### Specifying Exchange-Correlation Functionals for DFT
-XC functional can be specified using the `xc` keyword argument. For example,
+### Keyword Parameters for Mean-field Methods
+Configuration parameters for mean-field methods can be specified through keyword
+arguments of the instantiation methods. For example,
 
 ```python
-mf = cell.RKS(xc='b3lyp')
+mf = cell.RKS(xc='b3lyp', max_cycle=20)
 mf = cell.KGKS(xc='pbe', kpts=cell.make_kpts([2,2,2]))
 ```
 
