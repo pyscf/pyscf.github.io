@@ -603,3 +603,101 @@ to obtain the one- and two-electron AO integrals::
   eri = mol.intor('int2e')
 
 For a full list of supported AO integrals, see :ref:`pyscf.gto.moleintor module`.
+
+
+Initializing Mean-Field and Post-SCF Methods
+============================================
+
+In PySCF, both mean-field and post-SCF methods are provided as classes (see also
+:doc:`using`). These classes can be imported and instantiated just like standard
+Python modules and functions. However, this requires users to remember the
+specific paths to these modules or classes. To simplify the initialization
+process, PySCF provides a convenient shortcut for initializing a mean-field or
+post-SCF method instance directly from the `Mole` instance.
+
+Instantiating Mean-Field Methods
+--------------------------------
+Mean-field methods can be easily instantiated as follows::
+
+  mf = mol.HF()
+  mf = mol.KS()
+
+This approach automatically determines the appropriate mean-field method to use,
+such as restricted closed-shell, open-shell, or symmetry-adapted methods. By
+default:
+* Restricted closed-shell methods are used for molecules without unpaired electrons (`mol.spin=0`).
+* Unrestricted methods (UHF, UKS) are used for molecules with unpaired electrons (`mol.spin > 0`).
+* Symmetry-adapted methods are used if `mol.symmetry` is enabled.
+
+Explicit Mean-field Methods
+---------------------------
+
+For more specific method instantiation, such as RHF, UKS, or GKS, the following can be used:
+
+* `mol.RHF()` and `mol.RKS()` creates restricted Hartree-Fock or Kohn-Sham
+  methods. It can be used for molecules with unpaired electrons, leading to ROHF
+  and ROKS methods.
+
+* `mol.ROHF()` and `mol.ROKS()` are applicable to molecules with `mol.spin=0`.
+  They create restricted open-shell HF or KS methods, even though these systems
+  can be modeled by restricted closed-shell methods.
+
+* `mol.UHF()` and `mol.UKS()` create unrestricted Hartree-Fock or Kohn-Sham
+  methods, regardless of the number of unpaired electrons in the molecule.
+
+* `mol.GHF()` and `mol.GKS()` create generalized mean-field methods, which
+  allow for the mixing of alpha and beta spins in the spin-orbitals.
+
+* `mol.DHF()` and `mol.DKS()` create four-component Dirac-Coulomb mean-field methods.
+
+Specifying Exchange-Correlation Functionals for DFT
+---------------------------------------------------
+For DFT methods, the exchange-correlation (XC) functional can be specified using
+the `xc` keyword argument. All Kohn-Sham methods, including `RKS`, `ROKS`,
+`UKS`, `GKS`, and `DKS`, support the `xc` keyword::
+
+  mf = mol.RKS(xc='b3lyp')
+  mf = mol.GKS(xc='pbe,p86')
+
+Instantiating Post-SCF Methods
+------------------------------
+Post-SCF methods can be instantiated on top of a mean-field instance::
+
+  mf = mol.HF().run()
+  mycc = mf.CCSD()
+
+Alternatively, you can bypass the creation of the mean-field instance and
+directly apply the post-SCF method on the `Mole` instance::
+
+  mycc = mol.CCSD(frozen=1)
+
+This approach automatically creates a mean-field instance and applies the
+post-SCF method. Any keyword arguments for the post-SCF methods will be passed
+to the `mf.CCSD()` method.
+
+MCSCF Methods
+-------------
+
+The initialization of MCSCF methods is similar to that of post-SCF methods. You
+can first create a mean-field instance and then apply a MCSCF method. Applying
+MCSCF methods directly on the `Mole` instance will also automatically
+create a mean-field instance and apply the MCSCF method::
+
+  norb_cas, nelec_cas = 6, 8
+  mycas = mol.CASSCF(norb_cas, nelec_cas)
+
+TDDFT Methods
+-------------
+Like post-SCF methods, TDDFT can be instantiated based on a mean-field instance.
+When creating a TDDFT method from the `Mole` instance, the XC functional can be
+specified as a keyword argument::
+
+  mytd = mol.TDA(xc='pbe')
+  mytd = mol.TDDFT(xc='pbe')
+
+Alternatively, the XC functional can be specified as part of the TDDFT function name:
+
+    mytd = mol.TDB3LYP() # == mol.TDA(xc='B3LYP')
+    mytd = mol.TDPBE() # == mol.TDA(xc='PBE')
+
+This API will create a TDA method with the specified XC functional.
