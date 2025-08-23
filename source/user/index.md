@@ -53,17 +53,18 @@ lo.rst
 sgx.rst
 geomopt.rst
 gpu.rst
-```   
-
-```{toctree}
-:caption: PySCF-forge 
-:maxdepth: 1
-
-pyscf-forge
 ```
 
 ```{toctree}
-:caption: Extensions 
+:caption: PySCF-forge
+:maxdepth: 1
+
+pyscf-forge
+pprpa.rst
+```
+
+```{toctree}
+:caption: Extensions
 :maxdepth: 1
 
 extensions
