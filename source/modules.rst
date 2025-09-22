@@ -32,6 +32,7 @@ API documentation
    modules/mp.rst
    modules/mrpt.rst
    modules/pbc.rst
+   modules/pprpa.rst
    modules/prop.rst
    modules/qmmm.rst
    modules/rt.rst
