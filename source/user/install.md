@@ -382,3 +382,49 @@ ExternalProject_Add(libcint
     https://github.com/sunqm/qcint.git
      ...
 ```
+
+## Troubleshooting
+
+* `error: command 'cmake' failed`
+
+In some cases, installing PySCF with `pip install pyscf` may raise an error like the following:
+```bash
+Building wheels for collected packages: pyscf
+  Building wheel for pyscf (setup.py) ... error
+  error: subprocess-exited-with-error
+  × python setup.py bdist_wheel did not run successfully.
+  │ exit code: 1
+  ╰─> [7 lines of output]
+      scipy>1.1.0 may crash when calling scipy.linalg.eigh. (Issues https://github.com/scipy/scipy/issues/15362 https://github.com/scipy/scipy/issues/16151)
+      running bdist_wheel
+      running build
+      running build_ext
+      Configuring extensions
+      cmake -S/Users/<user>/personal/codes/chemistry/pyscf/pyscf/lib -Bbuild/temp.macosx-12-x86_64-cpython-310
+      error: command 'cmake' failed: No such file or directory
+      [end of output]
+```
+Here, `pip` chose not to install a binary wheel and is trying to build from source.
+If this is not your intention, you can use the command `pip install --prefer-binary pyscf` to install the binary version.
+On the other hand, if your intention is to build from source, this error message warns that you are missing the necessary `cmake` program.
+For more details, see the documentation on building from source and issue [1684](https://github.com/pyscf/pyscf/issues/1684>)
+
+* MacOS: `Library not loaded`
+
+For Mac OS X/macOS, you may get an import error if your OS X/macOS version is 10.11 or newer.
+```bash
+OSError: dlopen(xxx/pyscf/pyscf/lib/libcgto.dylib, 6): Library not loaded: libcint.3.0.dylib
+Referenced from: xxx/pyscf/pyscf/lib/libcgto.dylib
+Reason: unsafe use of relative rpath libcint.3.0.dylib in xxx/pyscf/pyscf/lib/libcgto.dylib with restricted binary
+```
+
+This is caused by the incorrect `RPATH` configuration in the dynamic library.
+The script `pyscf/lib/_runme_to_fix_dylib_osx10.11.sh` in the `pyscf/lib` directory can be used to fix this problem:
+```bash
+$ cd pyscf/lib
+$ sh _runme_to_fix_dylib_osx10.11.sh
+```
+
+This script eliminates the `rpath` code from the library header.
+Another method to solve this issue is to set `-DCMAKE_SKIP_RPATH=1` and `-DCMAKE_MACOSX_RPATH=0` in the CMake command line.
+After removing the `rpath` code, you need ensure that `pyscf/lib` and `pyscf/lib/deps/lib` are included in the `LD_LIBRARY_PATH` environment variable.
