@@ -110,3 +110,38 @@ Using this definition of `PYSCF_EXT_PATH`, the three extension
 submodules (semiempirical, doci, dftd3) are loaded when PySCF is
 imported, and you don't have to use a Python virtual environment.
 
+
+## Examples
+
+### Installing DMRG solvers
+
+The Density Matrix Renormalization Group (DMRG) theory is a method for solving ab initio quantum chemistry problems.
+PySCF can be used with three implementations of DMRG: [Block](https://sanshar.github.io/Block), [block2](https://block2.readthedocs.io/en/latest), and [CheMPS2](http://sebwouters.github.io/CheMPS2/index.html).
+
+Installing [Block](https://sanshar.github.io/Block/build.html) requires a C++11
+compiler. Alternatively, you can download the precompiled Block binary from https://sanshar.github.io/Block/build.html .
+
+`block2` can be easily installed via `pip install block2` or `pip install block2-mpi`.
+To building block2 from source, please refer to the installation guide https://block2.readthedocs.io/en/latest/user/installation.html .
+
+Before using Block or CheMPS2, you need create a configuration file
+`pyscf/dmrgscf/settings.py` (as shown by the `settings.py.example`) to
+store the path where the DMRG solver was installed.
+
+### Installing TBLIS
+
+[TBLIS](https://github.com/devinamatthews/tblis) provides a native algorithm for
+performing tensor contraction for arbitrarily high-dimensional tensors. Unlike
+the implementation in `numpy.einsum`, which transforms tensors into matrices by
+permuting the indices, invokes BLAS for matrix contractions, and then
+back-permutes the results, TBLIS eliminates the need for tensor transpositions
+and data movements. TBLIS eliminates the need to transpose tensors and data
+movements. This results in improved performance in various correlated quantum
+chemistry methods in PySCF, such as the coupled cluster methods.
+
+The `tblis-einsum` extension provides an interface to TBLIS, which offers an
+efficient implementation for tensor contractions in the style of `numpy.einsum`.
+The `tblis-einsum` plugin can be installed using the command:
+```bash
+$ pip install pyscf-tblis
+```
