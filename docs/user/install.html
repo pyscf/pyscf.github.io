@@ -836,6 +836,51 @@ URL of the integral library in <code class="docutils literal notranslate"><span 
 </div>
 </section>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">command</span> <span class="pre">'cmake'</span> <span class="pre">failed</span></code></p></li>
+</ul>
+<p>In some cases, installing PySCF with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pyscf</span></code> may raise an error like the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Building<span class="w"> </span>wheels<span class="w"> </span><span class="k">for</span><span class="w"> </span>collected<span class="w"> </span>packages:<span class="w"> </span>pyscf
+<span class="w">  </span>Building<span class="w"> </span>wheel<span class="w"> </span><span class="k">for</span><span class="w"> </span>pyscf<span class="w"> </span><span class="o">(</span>setup.py<span class="o">)</span><span class="w"> </span>...<span class="w"> </span>error
+<span class="w">  </span>error:<span class="w"> </span>subprocess-exited-with-error
+<span class="w">  </span>×<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>bdist_wheel<span class="w"> </span>did<span class="w"> </span>not<span class="w"> </span>run<span class="w"> </span>successfully.
+<span class="w">  </span>│<span class="w"> </span><span class="nb">exit</span><span class="w"> </span>code:<span class="w"> </span><span class="m">1</span>
+<span class="w">  </span>╰─&gt;<span class="w"> </span><span class="o">[</span><span class="m">7</span><span class="w"> </span>lines<span class="w"> </span>of<span class="w"> </span>output<span class="o">]</span>
+<span class="w">      </span>scipy&gt;1.1.0<span class="w"> </span>may<span class="w"> </span>crash<span class="w"> </span>when<span class="w"> </span>calling<span class="w"> </span>scipy.linalg.eigh.<span class="w"> </span><span class="o">(</span>Issues<span class="w"> </span>https://github.com/scipy/scipy/issues/15362<span class="w"> </span>https://github.com/scipy/scipy/issues/16151<span class="o">)</span>
+<span class="w">      </span>running<span class="w"> </span>bdist_wheel
+<span class="w">      </span>running<span class="w"> </span>build
+<span class="w">      </span>running<span class="w"> </span>build_ext
+<span class="w">      </span>Configuring<span class="w"> </span>extensions
+<span class="w">      </span>cmake<span class="w"> </span>-S/Users/&lt;user&gt;/personal/codes/chemistry/pyscf/pyscf/lib<span class="w"> </span>-Bbuild/temp.macosx-12-x86_64-cpython-310
+<span class="w">      </span>error:<span class="w"> </span><span class="nb">command</span><span class="w"> </span><span class="s1">&#39;cmake&#39;</span><span class="w"> </span>failed:<span class="w"> </span>No<span class="w"> </span>such<span class="w"> </span>file<span class="w"> </span>or<span class="w"> </span>directory
+<span class="w">      </span><span class="o">[</span>end<span class="w"> </span>of<span class="w"> </span>output<span class="o">]</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">pip</span></code> chose not to install a binary wheel and is trying to build from source.
+If this is not your intention, you can use the command <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--prefer-binary</span> <span class="pre">pyscf</span></code> to install the binary version.
+On the other hand, if your intention is to build from source, this error message warns that you are missing the necessary <code class="docutils literal notranslate"><span class="pre">cmake</span></code> program.
+For more details, see the documentation on building from source and issue <a class="reference external" href="https://github.com/pyscf/pyscf/issues/1684%3E">1684</a></p>
+<ul class="simple">
+<li><p>MacOS: <code class="docutils literal notranslate"><span class="pre">Library</span> <span class="pre">not</span> <span class="pre">loaded</span></code></p></li>
+</ul>
+<p>For Mac OS X/macOS, you may get an import error if your OS X/macOS version is 10.11 or newer.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>OSError:<span class="w"> </span>dlopen<span class="o">(</span>xxx/pyscf/pyscf/lib/libcgto.dylib,<span class="w"> </span><span class="m">6</span><span class="o">)</span>:<span class="w"> </span>Library<span class="w"> </span>not<span class="w"> </span>loaded:<span class="w"> </span>libcint.3.0.dylib
+Referenced<span class="w"> </span>from:<span class="w"> </span>xxx/pyscf/pyscf/lib/libcgto.dylib
+Reason:<span class="w"> </span>unsafe<span class="w"> </span>use<span class="w"> </span>of<span class="w"> </span>relative<span class="w"> </span>rpath<span class="w"> </span>libcint.3.0.dylib<span class="w"> </span><span class="k">in</span><span class="w"> </span>xxx/pyscf/pyscf/lib/libcgto.dylib<span class="w"> </span>with<span class="w"> </span>restricted<span class="w"> </span>binary
+</pre></div>
+</div>
+<p>This is caused by the incorrect <code class="docutils literal notranslate"><span class="pre">RPATH</span></code> configuration in the dynamic library.
+The script <code class="docutils literal notranslate"><span class="pre">pyscf/lib/_runme_to_fix_dylib_osx10.11.sh</span></code> in the <code class="docutils literal notranslate"><span class="pre">pyscf/lib</span></code> directory can be used to fix this problem:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pyscf/lib
+$<span class="w"> </span>sh<span class="w"> </span>_runme_to_fix_dylib_osx10.11.sh
+</pre></div>
+</div>
+<p>This script eliminates the <code class="docutils literal notranslate"><span class="pre">rpath</span></code> code from the library header.
+Another method to solve this issue is to set <code class="docutils literal notranslate"><span class="pre">-DCMAKE_SKIP_RPATH=1</span></code> and <code class="docutils literal notranslate"><span class="pre">-DCMAKE_MACOSX_RPATH=0</span></code> in the CMake command line.
+After removing the <code class="docutils literal notranslate"><span class="pre">rpath</span></code> code, you need ensure that <code class="docutils literal notranslate"><span class="pre">pyscf/lib</span></code> and <code class="docutils literal notranslate"><span class="pre">pyscf/lib/deps/lib</span></code> are included in the <code class="docutils literal notranslate"><span class="pre">LD_LIBRARY_PATH</span></code> environment variable.</p>
+</section>
 </section>
 
 
@@ -878,6 +923,7 @@ URL of the integral library in <code class="docutils literal notranslate"><span 
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-qcint-optimized-integral-library">Using the Qcint optimized integral library</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
   </nav></div>
 
