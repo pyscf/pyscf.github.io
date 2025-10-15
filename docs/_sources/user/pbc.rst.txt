@@ -11,7 +11,7 @@ which has a directory structure that mirrors that of the molecular :mod:`pyscf`
 module, e.g. ``from pyscf.pbc import gto, scf``.
 Details of how to specify the system details, including the unit cell,
 basis sets, and pseudopotentials, are provided in
-:ref:`user_pbc_gto`.
+`Crystal structure <pbcgto.html>`_.
 
 All electronic structure methods can be applied with periodic
 boundary conditions at the Gamma point of the Brillouin zone, :math:`k=(0,0,0)`,
