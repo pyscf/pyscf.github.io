@@ -7,6 +7,13 @@ Multigrid is a numerical integration algorithm optimized for the computation of
 the Coulomb matrix and exchange-correlation (XC) functional. It can take
 advantage of the locality of density and orbitals when computing electron
 density and matrix elements.
+
+The Multigrid algorithm employs different integration grids for different types
+of orbitals. Diffuse orbitals use sparse integration grids, while compact
+orbitals utilize denser grids. The calculations for compact orbitals are only
+performed within smaller spatial regions. The numerical values from different
+grids are then aggregated in reciprocal space using the fast Fourier transform.
+
 Compared to the `get_j` function provided by the FFTDF module and the XC matrix
 evaluation functions offered by the `numint` module, the Multigrid algorithm
 can achieve an order of magnitude improvement in the computation of the Coulomb
@@ -197,7 +204,7 @@ multigrid method.
 
 With this `Cell` object, we can initialize the DFT instance as we would for
 typical PBC DFT calculations. The following example demonstrates another
-way to utlize the Multigrid algorithm, whihc integrates
+way which integrates
 the Multigrid XC matrix functionality into the the molecular DFT instances.::
 
     from pyscf.pbc.dft.multigrid import MultiGridNumInt2
@@ -233,7 +240,7 @@ Limitations of Multigrid algorithm
 
 * The `MultiGridNumInt` class does not support the calculation of analytical nuclear gradients.
 
-* The `MultiGridNumInt2` class does not support non-orthogonal lattices, k-point
+* The `MultiGridNumInt2` class does not support k-point
   calculations, meta-GGA functionals, or the computation of the TDDFT fxc kernel.
 
 
