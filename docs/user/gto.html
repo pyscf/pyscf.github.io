@@ -1200,6 +1200,104 @@ to obtain the one- and two-electron AO integrals:</p>
 </div>
 <p>For a full list of supported AO integrals, see <a class="reference internal" href="../pyscf_api_docs/pyscf.gto.html#module-pyscf.gto.moleintor"><span class="std std-ref">pyscf.gto.moleintor module</span></a>.</p>
 </section>
+<section id="initializing-mean-field-and-post-scf-methods">
+<h2>Initializing Mean-Field and Post-SCF Methods<a class="headerlink" href="#initializing-mean-field-and-post-scf-methods" title="Link to this heading">#</a></h2>
+<p>In PySCF, both mean-field and post-SCF methods are provided as classes (see also
+<a class="reference internal" href="using.html"><span class="doc">How to use PySCF</span></a>). These classes can be imported and instantiated just like standard
+Python modules and functions. However, this requires users to remember the
+specific paths to these modules or classes. To simplify the initialization
+process, PySCF provides a convenient shortcut for initializing a mean-field or
+post-SCF method instance directly from the <cite>Mole</cite> instance.</p>
+<section id="instantiating-mean-field-methods">
+<h3>Instantiating Mean-Field Methods<a class="headerlink" href="#instantiating-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>Mean-field methods can be easily instantiated as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">HF</span><span class="p">()</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">KS</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This approach automatically determines the appropriate mean-field method to use,
+such as restricted closed-shell, open-shell, or symmetry-adapted methods. By
+default:
+* Restricted closed-shell methods are used for molecules without unpaired electrons (<cite>mol.spin=0</cite>).
+* Unrestricted methods (UHF, UKS) are used for molecules with unpaired electrons (<cite>mol.spin &gt; 0</cite>).
+* Symmetry-adapted methods are used if <cite>mol.symmetry</cite> is enabled.</p>
+</section>
+<section id="explicit-mean-field-methods">
+<h3>Explicit Mean-field Methods<a class="headerlink" href="#explicit-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>For more specific method instantiation, such as RHF, UKS, or GKS, the following can be used:</p>
+<ul class="simple">
+<li><p><cite>mol.RHF()</cite> and <cite>mol.RKS()</cite> creates restricted Hartree-Fock or Kohn-Sham
+methods. It can be used for molecules with unpaired electrons, leading to ROHF
+and ROKS methods.</p></li>
+<li><p><cite>mol.ROHF()</cite> and <cite>mol.ROKS()</cite> are applicable to molecules with <cite>mol.spin=0</cite>.
+They create restricted open-shell HF or KS methods, even though these systems
+can be modeled by restricted closed-shell methods.</p></li>
+<li><p><cite>mol.UHF()</cite> and <cite>mol.UKS()</cite> create unrestricted Hartree-Fock or Kohn-Sham
+methods, regardless of the number of unpaired electrons in the molecule.</p></li>
+<li><p><cite>mol.GHF()</cite> and <cite>mol.GKS()</cite> create generalized mean-field methods, which
+allow for the mixing of alpha and beta spins in the spin-orbitals.</p></li>
+<li><p><cite>mol.DHF()</cite> and <cite>mol.DKS()</cite> create four-component Dirac-Coulomb mean-field methods.</p></li>
+</ul>
+</section>
+<section id="keyword-parameters-for-mean-field-methods">
+<h3>Keyword Parameters for Mean-field Methods<a class="headerlink" href="#keyword-parameters-for-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>When creating mean-field methods, their configuration parameters such as
+<cite>conv_tol</cite> and <cite>max_cycle</cite> can be specified through keyword arguments of the
+instantiation methods. For example, in DFT methods, the exchange-correlation
+(XC) functional can be specified using the <cite>xc</cite> keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">,</span> <span class="n">conv_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">GKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe,p86&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="instantiating-post-scf-methods">
+<h3>Instantiating Post-SCF Methods<a class="headerlink" href="#instantiating-post-scf-methods" title="Link to this heading">#</a></h3>
+<p>Post-SCF methods can be instantiated on top of a mean-field instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">HF</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">mycc</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">CCSD</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Alternatively, you can bypass the creation of the mean-field instance and
+directly apply the post-SCF method on the <cite>Mole</cite> instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mycc</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">CCSD</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This approach automatically creates a mean-field instance and applies the
+post-SCF method. Any keyword arguments for the post-SCF methods will be passed
+to the <cite>mf.CCSD()</cite> method. It is important to note that, unlike the
+initialization of mean-field methods, configurational parameters for post-SCF
+methods cannot be set through keyword arguments. They must be explicitly
+assigned to the post-SCF instance. For example, the initialization statement
+<cite>mol.CCSD(conv_tol=1e-5)</cite> will fail.</p>
+</section>
+<section id="mcscf-methods">
+<h3>MCSCF Methods<a class="headerlink" href="#mcscf-methods" title="Link to this heading">#</a></h3>
+<p>The initialization of MCSCF methods is similar to that of post-SCF methods. You
+can first create a mean-field instance and then apply a MCSCF method. Applying
+MCSCF methods directly on the <cite>Mole</cite> instance will also automatically
+create a mean-field instance and apply the MCSCF method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">norb_cas</span><span class="p">,</span> <span class="n">nelec_cas</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span>
+<span class="n">mycas</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">CASSCF</span><span class="p">(</span><span class="n">norb_cas</span><span class="p">,</span> <span class="n">nelec_cas</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="tddft-methods">
+<h3>TDDFT Methods<a class="headerlink" href="#tddft-methods" title="Link to this heading">#</a></h3>
+<p>Like post-SCF methods, TDDFT can be instantiated based on a mean-field instance.
+When creating a TDDFT method from the <cite>Mole</cite> instance, the XC functional can be
+specified as a keyword argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mytd</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">TDA</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">)</span>
+<span class="n">mytd</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">TDDFT</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, the XC functional can be specified as part of the TDDFT function name:</p>
+<blockquote>
+<div><p>mytd = mol.TDB3LYP() # == mol.TDA(xc=’B3LYP’)
+mytd = mol.TDPBE() # == mol.TDA(xc=’PBE’)</p>
+</div></blockquote>
+<p>This API will create a TDA method with the specified XC functional.</p>
+</section>
+</section>
 </section>
 
 
@@ -1237,6 +1335,15 @@ to obtain the one- and two-electron AO integrals:</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#access-ao-integrals">Access AO integrals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-mean-field-and-post-scf-methods">Initializing Mean-Field and Post-SCF Methods</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#instantiating-mean-field-methods">Instantiating Mean-Field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-mean-field-methods">Explicit Mean-field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyword-parameters-for-mean-field-methods">Keyword Parameters for Mean-field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#instantiating-post-scf-methods">Instantiating Post-SCF Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mcscf-methods">MCSCF Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tddft-methods">TDDFT Methods</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

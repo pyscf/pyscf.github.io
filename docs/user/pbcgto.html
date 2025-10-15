@@ -640,6 +640,88 @@ methods,</p>
 </div>
 <p>See <a class="reference internal" href="pbc/df.html"><span class="doc std std-doc">Periodic density fitting</span></a> for more details.</p>
 </section>
+<section id="initializing-mean-field-and-post-scf-methods">
+<h2>Initializing Mean-Field and Post-SCF Methods<a class="headerlink" href="#initializing-mean-field-and-post-scf-methods" title="Link to this heading">#</a></h2>
+<p>Mean-field and post-SCF methods can be initialized directly from the <code class="docutils literal notranslate"><span class="pre">Cell</span></code> instance.</p>
+<section id="instantiating-mean-field-methods">
+<h3>Instantiating Mean-Field Methods<a class="headerlink" href="#instantiating-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>For single k-point mean-field methods, you can pass the k-point to the <code class="docutils literal notranslate"><span class="pre">cell.HF</span></code>
+or <code class="docutils literal notranslate"><span class="pre">cell.KS</span></code> methods.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kpt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">HF</span><span class="p">(</span><span class="n">kpt</span><span class="o">=</span><span class="n">kpt</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KS</span><span class="p">(</span><span class="n">kpt</span><span class="o">=</span><span class="n">kpt</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To create mean-field methods with a k-point mesh, the HF and KS methods are
+prefixed with “K”. The k-points should be created and passed to these K-prefixed
+mean-field methods.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KHF</span><span class="p">(</span><span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KKS</span><span class="p">(</span><span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Based on the <code class="docutils literal notranslate"><span class="pre">cell.spin</span></code> setting, different mean-field instances are created. By default:</p>
+<ul class="simple">
+<li><p>Restricted closed-shell methods are used for molecules without unpaired electrons (<code class="docutils literal notranslate"><span class="pre">cell.spin=0</span></code>).</p></li>
+<li><p>Unrestricted methods (UHF, UKS) are used for molecules with unpaired electrons (<code class="docutils literal notranslate"><span class="pre">cell.spin</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>).</p></li>
+</ul>
+<p>The use of k-point symmetry in KHF  and KKS depends on the supplied <code class="docutils literal notranslate"><span class="pre">kpts</span></code>. If
+<code class="docutils literal notranslate"><span class="pre">kpts</span></code> are created as a k-point symmetry-enabled (<code class="docutils literal notranslate"><span class="pre">KPoint</span></code>) instance, k-point
+symmetry-adapted mean-field methods will be created.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">space_group_symmetry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KHF</span><span class="p">(</span><span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span> <span class="c1"># KsymAdaptedKRHF</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KKS</span><span class="p">(</span><span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span> <span class="c1"># KsymAdaptedKRKS</span>
+</pre></div>
+</div>
+</section>
+<section id="explicit-mean-field-methods">
+<h3>Explicit Mean-field Methods<a class="headerlink" href="#explicit-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>To create specific mean-field instances, such as unrestricted or generalized HF
+or KS methods, they can be explicitly called from the <code class="docutils literal notranslate"><span class="pre">Cell</span></code> instance. The
+following rules apply:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cell.RHF()</span></code> and <code class="docutils literal notranslate"><span class="pre">cell.RKS()</span></code> create single k-point restricted Hartree-Fock or
+Kohn-Sham methods. When <code class="docutils literal notranslate"><span class="pre">cell.spin</span> <span class="pre">!=</span> <span class="pre">0</span></code>, ROHF and ROKS methods are
+instantiated. However, for k-point mean-field methods, <code class="docutils literal notranslate"><span class="pre">cell.KRHF()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">cell.KRKS()</span></code> always create restricted closed-shell models, regardless of the
+<code class="docutils literal notranslate"><span class="pre">cell.spin</span></code> setting. This is different from the treatment in single k-point methods.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cell.ROHF()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.ROKS()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.KROHF()</span></code>, and <code class="docutils literal notranslate"><span class="pre">cell.KROKS()</span></code> create
+restricted open-shell HF or KS methods.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cell.UHF()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.UKS()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.KUHF()</span></code>, and <code class="docutils literal notranslate"><span class="pre">cell.KUKS()</span></code> create
+unrestricted Hartree-Fock or Kohn-Sham methods, regardless of the <code class="docutils literal notranslate"><span class="pre">cell.spin</span></code>
+setting.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cell.GHF()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.GKS()</span></code>, <code class="docutils literal notranslate"><span class="pre">cell.KGHF()</span></code> and <code class="docutils literal notranslate"><span class="pre">cell.KGKS()</span></code> create generalized
+mean-field methods.</p></li>
+<li><p>K-point symmetry adaptation is available for K-prefixed methods, which is
+determined by the <code class="docutils literal notranslate"><span class="pre">kpts</span></code> argument.</p></li>
+</ul>
+</section>
+<section id="keyword-parameters-for-mean-field-methods">
+<h3>Keyword Parameters for Mean-field Methods<a class="headerlink" href="#keyword-parameters-for-mean-field-methods" title="Link to this heading">#</a></h3>
+<p>Configuration parameters for mean-field methods can be specified through keyword
+arguments of the instantiation methods. For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">RKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;b3lyp&#39;</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KGKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+<section id="instantiating-post-scf-methods">
+<h3>Instantiating Post-SCF Methods<a class="headerlink" href="#instantiating-post-scf-methods" title="Link to this heading">#</a></h3>
+<p>Post-SCF methods at the gamma point can be specified for the <code class="docutils literal notranslate"><span class="pre">Cell</span></code> instance.
+Keyword arguments can be supplied, and they will be passed to the post-SCF
+methods.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mycc</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">CCSD</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mytd</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">TDA</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For post-SCF methods with k-point sampling, the method should be prefixed with “K”.
+Additionally, k-points can be supplied as keyword arguments, and they will be
+automatically applied when creating the underlying mean-field object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mycc</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KCCSD</span><span class="p">(</span><span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]),</span> <span class="n">frozen</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
@@ -673,6 +755,13 @@ methods,</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#low-dimensional-systems">Low-dimensional systems</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-parameters">Other parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accessing-ao-integrals">Accessing AO integrals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-mean-field-and-post-scf-methods">Initializing Mean-Field and Post-SCF Methods</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#instantiating-mean-field-methods">Instantiating Mean-Field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-mean-field-methods">Explicit Mean-field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#keyword-parameters-for-mean-field-methods">Keyword Parameters for Mean-field Methods</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#instantiating-post-scf-methods">Instantiating Post-SCF Methods</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
