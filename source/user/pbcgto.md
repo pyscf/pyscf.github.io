@@ -218,3 +218,92 @@ eri = df.DF(cell).get_eri()
 ```
 See [Periodic density fitting](pbc/df) for more details.
 
+
+## Initializing Mean-Field and Post-SCF Methods
+
+Mean-field and post-SCF methods can be initialized directly from the `Cell` instance.
+
+### Instantiating Mean-Field Methods
+For single k-point mean-field methods, you can pass the k-point to the `cell.HF`
+or `cell.KS` methods.
+
+```python
+kpt = np.array([0., 0., 0.])
+mf = cell.HF(kpt=kpt)
+mf = cell.KS(kpt=kpt)
+```
+
+To create mean-field methods with a k-point mesh, the HF and KS methods are
+prefixed with "K". The k-points should be created and passed to these K-prefixed
+mean-field methods.
+
+```python
+kpts = cell.make_kpts([3,3,3])
+mf = cell.KHF(kpts=kpts)
+mf = cell.KKS(kpts=kpts)
+```
+
+Based on the `cell.spin` setting, different mean-field instances are created. By default:
+* Restricted closed-shell methods are used for molecules without unpaired electrons (`cell.spin=0`).
+* Unrestricted methods (UHF, UKS) are used for molecules with unpaired electrons (`cell.spin > 0`).
+
+The use of k-point symmetry in KHF  and KKS depends on the supplied `kpts`. If
+`kpts` are created as a k-point symmetry-enabled (`KPoint`) instance, k-point
+symmetry-adapted mean-field methods will be created.
+
+```python
+kpts = cell.make_kpts([3,3,3], space_group_symmetry=True)
+mf = cell.KHF(kpts=kpts) # KsymAdaptedKRHF
+mf = cell.KKS(kpts=kpts) # KsymAdaptedKRKS
+```
+
+### Explicit Mean-field Methods
+To create specific mean-field instances, such as unrestricted or generalized HF
+or KS methods, they can be explicitly called from the `Cell` instance. The
+following rules apply:
+
+* `cell.RHF()` and `cell.RKS()` create single k-point restricted Hartree-Fock or
+  Kohn-Sham methods. When `cell.spin != 0`, ROHF and ROKS methods are
+  instantiated. However, for k-point mean-field methods, `cell.KRHF()` and
+  `cell.KRKS()` always create restricted closed-shell models, regardless of the
+  `cell.spin` setting. This is different from the treatment in single k-point methods.
+
+* `cell.ROHF()`, `cell.ROKS()`, `cell.KROHF()`, and `cell.KROKS()` create
+  restricted open-shell HF or KS methods.
+
+* `cell.UHF()`, `cell.UKS()`, `cell.KUHF()`, and `cell.KUKS()` create
+  unrestricted Hartree-Fock or Kohn-Sham methods, regardless of the `cell.spin`
+  setting.
+
+* `cell.GHF()`, `cell.GKS()`, `cell.KGHF()` and `cell.KGKS()` create generalized
+  mean-field methods.
+
+* K-point symmetry adaptation is available for K-prefixed methods, which is
+  determined by the `kpts` argument.
+
+### Keyword Parameters for Mean-field Methods
+Configuration parameters for mean-field methods can be specified through keyword
+arguments of the instantiation methods. For example,
+
+```python
+mf = cell.RKS(xc='b3lyp', max_cycle=20)
+mf = cell.KGKS(xc='pbe', kpts=cell.make_kpts([2,2,2]))
+```
+
+### Instantiating Post-SCF Methods
+Post-SCF methods at the gamma point can be specified for the `Cell` instance.
+Keyword arguments can be supplied, and they will be passed to the post-SCF
+methods.
+
+```python
+mycc = cell.CCSD(frozen=1)
+mytd = cell.TDA()
+```
+
+For post-SCF methods with k-point sampling, the method should be prefixed with "K".
+Additionally, k-points can be supplied as keyword arguments, and they will be
+automatically applied when creating the underlying mean-field object.
+
+```python
+mycc = cell.KCCSD(kpts=cell.make_kpts([2,2,2]), frozen=1)
+```
