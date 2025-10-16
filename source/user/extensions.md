@@ -20,30 +20,30 @@ MINDO3(mol).run()
 
  A list of PySCF extensions is given below.
 
-| Project         |   URL                                       |
-| --------------- | ------------------------------------------- |
-| cas_ac0         | https://github.com/CQCL/pyscf-ac0           |
-| cornell-shci    | https://github.com/pyscf/cornell-shci       |
-| ccpy            | https://github.com/piecuch-group/ccpy       |
-| cppe            | https://github.com/maxscheurer/cppe         |
-| dftd3           | https://github.com/pyscf/dftd3              |
-| dispersion      | https://github.com/pyscf/dispersion         |
-| dmrgscf         | https://github.com/pyscf/dmrgscf            |
-| doci            | https://github.com/pyscf/doci               |
-| fciqmc          | https://github.com/pyscf/fciqmc             |
-| forge           | https://github.com/pyscf/pyscf-forge        |
-| icmpspt         | https://github.com/pyscf/icmpspt            |
-| mbd             | https://github.com/pyscf/mbd                |
-| naive-hci       | https://github.com/pyscf/naive-hci          |
-| nao             | https://github.com/pyscf/nao                |
-| properties      | https://github.com/pyscf/properties         |
-| pyqmc           | https://github.com/WagnerGroup/pyqmc        |
-| qsdopt          | https://github.com/pyscf/qsdopt             |
-| rt              | https://github.com/pyscf/rt                 |
-| semiempirical   | https://github.com/pyscf/semiempirical      |
-| shciscf         | https://github.com/pyscf/shciscf            |
-| zquatev         | https://github.com/sunqm/zquatev            |
-| tblis           | https://github.com/pyscf/pyscf-tblis        |
+| Project       | URL                                                                              |
+| ------------- | -------------------------------------------------------------------------------- |
+| cas_ac0       | [github.com/CQCL/pyscf-ac0](https://github.com/CQCL/pyscf-ac0)           |
+| cornell-shci  | [github.com/pyscf/cornell-shci](https://github.com/pyscf/cornell-shci)   |
+| ccpy          | [github.com/piecuch-group/ccpy](https://github.com/piecuch-group/ccpy)   |
+| cppe          | [github.com/maxscheurer/cppe](https://github.com/maxscheurer/cppe)       |
+| dftd3         | [github.com/pyscf/dftd3](https://github.com/pyscf/dftd3)                 |
+| dispersion    | [github.com/pyscf/dispersion](https://github.com/pyscf/dispersion)       |
+| dmrgscf       | [github.com/pyscf/dmrgscf](https://github.com/pyscf/dmrgscf)             |
+| doci          | [github.com/pyscf/doci](https://github.com/pyscf/doci)                   |
+| fciqmc        | [github.com/pyscf/fciqmc](https://github.com/pyscf/fciqmc)               |
+| forge         | [github.com/pyscf/pyscf-forge](https://github.com/pyscf/pyscf-forge)     |
+| icmpspt       | [github.com/pyscf/icmpspt](https://github.com/pyscf/icmpspt)             |
+| mbd           | [github.com/pyscf/mbd](https://github.com/pyscf/mbd)                     |
+| naive-hci     | [github.com/pyscf/naive-hci](https://github.com/pyscf/naive-hci)         |
+| nao           | [github.com/pyscf/nao](https://github.com/pyscf/nao)                     |
+| properties    | [github.com/pyscf/properties](https://github.com/pyscf/properties)       |
+| pyqmc         | [github.com/WagnerGroup/pyqmc](https://github.com/WagnerGroup/pyqmc)     |
+| qsdopt        | [github.com/pyscf/qsdopt](https://github.com/pyscf/qsdopt)               |
+| rt            | [github.com/pyscf/rt](https://github.com/pyscf/rt)                       |
+| semiempirical | [github.com/pyscf/semiempirical](https://github.com/pyscf/semiempirical) |
+| shciscf       | [github.com/pyscf/shciscf](https://github.com/pyscf/shciscf)             |
+| zquatev       | [github.com/sunqm/zquatev](https://github.com/sunqm/zquatev)             |
+| tblis         | [github.com/pyscf/pyscf-tblis](https://github.com/pyscf/pyscf-tblis)     |
 
 ## How to install extensions
 
