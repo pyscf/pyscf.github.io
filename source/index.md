@@ -8,7 +8,7 @@ html_theme.sidebar_secondary.remove: true
 items: center; height: 60px; text-align: center; margin-bottom: 20px;">
 
   <p style="margin: 0;">
-    <a href="https://github.com/pyscf/pyscf/issues/3016">3rd PySCF Developers Meeting</a> is scheduled for **Aug 27-28, 2026, at the University of Chicago**!
+    <a href="news.html">3rd PySCF Developers Meeting</a> is scheduled for **Aug 27-28, 2026, at the University of Chicago**!
   </p>
 
 </div>
