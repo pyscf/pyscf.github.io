@@ -276,7 +276,7 @@ configurations in the PBC DFT calculations:
 In the following, we analyze each combination of these dimensions, and provide
 practical guidance for setting up efficient integral schemes and configurations.
 
-* Pseudopotential + Semi-local XC + 3D Periodicity
+#### Pseudopotential + Semi-local XC + 3D Periodicity
 
 This is one of the most common scenarios in PBC DFT calculations. The
 default settings of the KRKS and KUKS classes can directly handle this type of
@@ -290,7 +290,7 @@ mf = mf.multigrid_numint()
 mf.run()
 ```
 
-* Pseudopotential + Hybrid functional + 3D Periodicity
+#### Pseudopotential + Hybrid functional + 3D Periodicity
 
 Gaussian-based PBC DFT is considered more affordable for hybrid functional
 calculations than plane-wave DFT program. This feature makes hybrid functional
@@ -335,7 +335,7 @@ The order of applying `multigrid_numint()` and setting `mf.rsjk = ...`, does not
 affect the final setup.
 
 
-* Pseudopotential + Semi-local XC + Low-dimensional System (2D and 1D)
+#### Pseudopotential + Semi-local XC + Low-dimensional System (2D and 1D)
 
 The setup for 2D calculations is almost the same as that for the 3D calculations.
 To perform a 2D calculation, we can simply set
@@ -371,7 +371,7 @@ that use a truncated Coulomb potential with `cell.dimension=2`.
 Therefore, we will not discuss the integral configurations under the infinite
 vacuum mode here.
 
-* Pseudopotential + Hybrid functional + Low-dimensional System (2D and 1D)
+#### Pseudopotential + Hybrid functional + Low-dimensional System (2D and 1D)
 
 If the truncated Coulomb potential with `cell.dimension=2` is applied, the GDF
 and RSJK algorithms can still be used for 2D calculations with hybrid
@@ -379,7 +379,7 @@ functionals. However, the RSDF scheme does not support the truncated Coulomb
 potential. Settings for XC integration are the same as those for the semi-local
 XC functional scenario mentioned above.
 
-* All-electron + Semi-local XC + 3D Periodicity
+#### All-electron + Semi-local XC + 3D Periodicity
 
 When all-electron basis sets are used, the default FFTDF algorithm becomes
 inappropriate because of the extremely high PW energy cutoff. Even if HF
@@ -400,7 +400,7 @@ mf = cell.KRKS(xc='pbe', kpts=cell.make_kpts(kmesh)).density_fit()
 mf.run()
 ```
 
-* All-electron + Hybrid functional + 3D Periodicity
+#### All-electron + Hybrid functional + 3D Periodicity
 
 The settings required for all-electron calculations with hybrid functionals are
 the same as those for all-electron calculations with semi-local XC functionals.
@@ -419,7 +419,7 @@ mf = cell.KRKS(xc='pbe0', kpts=cell.make_kpts(kmesh)).density_fit()
 mf.run()
 ```
 
-* All-electron + Low-dimensional Systems
+#### All-electron + Low-dimensional Systems
 
 The setup for all-electron low-dimensional systems is similar to that for 3D
 systems. For Coulomb integrals, one should use GDF or RSJK, regardless of
