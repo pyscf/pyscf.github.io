@@ -34,3 +34,4 @@ prefixed with "K", e.g., KHF, KCCSD, etc.
    pbc/scf.rst
    pbc/df.rst
    pbc/mix_mol.rst
+   pbc/dft-settings.md
