@@ -4,6 +4,15 @@ html_theme.sidebar_secondary.remove: true
 
 # Quantum chemistry with Python 
 
+<div style="background-color: #013243; padding: 5px; border-radius: 2px; font-family: monospace; font-size: 20px; color: white; display: flex; justify-content: center; align
+items: center; height: 60px; text-align: center; margin-bottom: 20px;">
+
+  <p style="margin: 0;">
+    <a href="https://github.com/pyscf/pyscf/issues/3016">3rd PySCF Developers Meeting</a> is scheduled for **Aug 27, 2026, in University of Chicago**!
+  </p>
+
+</div>
+
 ```{gallery-grid}
 :grid-columns: 1 2 2 3
 
