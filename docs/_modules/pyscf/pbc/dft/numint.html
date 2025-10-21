@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../../../../_static/documentation_options.js?v=1647406f"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -823,11 +823,14 @@
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span> <span class="c1"># multiple k points</span>
             <span class="n">dms</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">transform_dm</span><span class="p">(</span><span class="n">dms</span><span class="p">)</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
         <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts</span>
-    <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
 
     <span class="n">xctype</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">_xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">&#39;LDA&#39;</span><span class="p">:</span>
@@ -891,7 +894,8 @@
             <span class="n">excsum</span> <span class="o">=</span> <span class="n">excsum</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">vmat</span> <span class="o">=</span> <span class="n">vmat</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">nelec</span> <span class="o">=</span> <span class="n">excsum</span> <span class="o">=</span> <span class="n">vmat</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">nelec</span> <span class="o">=</span> <span class="n">excsum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">vmat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">nao</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">nelec</span><span class="p">,</span> <span class="n">excsum</span><span class="p">,</span> <span class="n">vmat</span></div>
 
 
@@ -1393,6 +1397,12 @@
 
     <span class="n">cutoff</span> <span class="o">=</span> <span class="n">CUTOFF</span> <span class="o">*</span> <span class="mf">1e2</span>  <span class="c1"># cutoff for small AO product</span>
 
+<div class="viewcode-block" id="NumInt.reset">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.numint.NumInt.reset">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
 <div class="viewcode-block" id="NumInt.nr_vxc">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.numint.NumInt.nr_vxc">[docs]</a>
     <span class="k">def</span> <span class="nf">nr_vxc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -1575,8 +1585,15 @@
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Generalization of pyscf&#39;s NumInt class for k-point sampling and</span>
 <span class="sd">    periodic images.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># define this anonymous __init__ for backward compatibility</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="KNumInt.reset">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.dft.html#pyscf.pbc.dft.numint.KNumInt.reset">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 
     <span class="n">eval_ao</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">eval_ao_kpts</span><span class="p">)</span>
 
@@ -1658,13 +1675,10 @@
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">nr_rks</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">nr_rks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;kpt&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARN: KNumInt.nr_rks function finds keyword &#39;</span>
-                                 <span class="s1">&#39;argument &quot;kpt&quot; and converts it to &quot;kpts&quot;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kpt&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="k">if</span> <span class="s1">&#39;kpt&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARN: KNumInt.nr_rks function finds keyword &#39;</span>
+                             <span class="s1">&#39;argument &quot;kpt&quot; and converts it to &quot;kpts&quot;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kpt&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">nr_rks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
                       <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
 
@@ -1674,13 +1688,10 @@
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">nr_uks</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">nr_uks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="n">relativity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hermi</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kpts_band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;kpt&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARN: KNumInt.nr_uks function finds keyword &#39;</span>
-                                 <span class="s1">&#39;argument &quot;kpt&quot; and converts it to &quot;kpts&quot;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kpt&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="k">if</span> <span class="s1">&#39;kpt&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARN: KNumInt.nr_uks function finds keyword &#39;</span>
+                             <span class="s1">&#39;argument &quot;kpt&quot; and converts it to &quot;kpts&quot;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kpt&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">nr_uks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">grids</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">dms</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
                       <span class="n">hermi</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">kpts_band</span><span class="p">,</span> <span class="n">max_memory</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
 

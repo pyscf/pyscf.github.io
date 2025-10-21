@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../../../../_static/documentation_options.js?v=1647406f"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -1798,47 +1798,74 @@
         <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">scf</span><span class="p">,</span> <span class="n">dft</span>
         <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">XC</span>
 
-        <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="p">(</span><span class="n">scf</span><span class="p">,</span> <span class="n">dft</span><span class="p">):</span>
-            <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">method</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;K&#39;</span><span class="p">:</span>  <span class="c1"># with k-point sampling</span>
-            <span class="k">if</span> <span class="s1">&#39;TD&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">[:</span><span class="mi">4</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;KTDHF&#39;</span><span class="p">,</span> <span class="s1">&#39;KTDA&#39;</span><span class="p">):</span>
-                    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KHF</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">KKS</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-                    <span class="n">xc</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;TD&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">xc</span> <span class="ow">in</span> <span class="n">XC</span><span class="p">:</span>
-                        <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
-                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;KTDDFT&#39;</span>
-            <span class="k">elif</span> <span class="s1">&#39;CI&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;CC&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;MP&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KHF</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-            <span class="c1"># Remove prefix &#39;K&#39; because methods are registered without the leading &#39;K&#39;</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">attr_name</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">mf_xc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="p">(</span><span class="n">dft</span><span class="p">,</span> <span class="n">scf</span><span class="p">):</span>
+            <span class="n">mf_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">mf_method</span><span class="p">):</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;TD&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">[:</span><span class="mi">3</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;TDHF&#39;</span><span class="p">,</span> <span class="s1">&#39;TDA&#39;</span><span class="p">):</span>
-                    <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">HF</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;K&#39;</span><span class="p">:</span>  <span class="c1"># with k-point sampling</span>
+                <span class="k">if</span> <span class="s1">&#39;TD&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">[:</span><span class="mi">4</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;KTDHF&#39;</span><span class="p">,</span> <span class="s1">&#39;KTDA&#39;</span><span class="p">):</span>
+                        <span class="n">mf_method</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KHF</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mf_method</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">KKS</span>
+                        <span class="n">xc</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;TD&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">xc</span> <span class="ow">in</span> <span class="n">XC</span><span class="p">:</span>
+                            <span class="n">mf_xc</span> <span class="o">=</span> <span class="n">xc</span>
+                            <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;KTDDFT&#39;</span>
+                <span class="k">elif</span> <span class="s1">&#39;CI&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;CC&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;MP&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">mf_method</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">KHF</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">mf</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">KS</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-                    <span class="n">xc</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;TD&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">xc</span> <span class="ow">in</span> <span class="n">XC</span><span class="p">:</span>
-                        <span class="n">mf</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">xc</span>
-                        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;TDDFT&#39;</span>
-            <span class="k">elif</span> <span class="s1">&#39;CI&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;CC&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;MP&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-                <span class="n">mf</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">HF</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="c1"># Remove prefix &#39;K&#39; because methods are registered without the leading &#39;K&#39;</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;TD&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">[:</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;TDHF&#39;</span><span class="p">,</span> <span class="s1">&#39;TDA&#39;</span><span class="p">):</span>
+                        <span class="n">mf_method</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">HF</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mf_method</span> <span class="o">=</span> <span class="n">dft</span><span class="o">.</span><span class="n">KS</span>
+                        <span class="n">xc</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;TD&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">xc</span> <span class="ow">in</span> <span class="n">XC</span><span class="p">:</span>
+                            <span class="n">mf_xc</span> <span class="o">=</span> <span class="n">xc</span>
+                            <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;TDDFT&#39;</span>
+                <span class="k">elif</span> <span class="s1">&#39;CI&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;CC&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="ow">or</span> <span class="s1">&#39;MP&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                    <span class="n">mf_method</span> <span class="o">=</span> <span class="n">scf</span><span class="o">.</span><span class="n">HF</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
-        <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">post_mf_key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="n">SCF_KW</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;kpt&#39;</span><span class="p">,</span> <span class="s1">&#39;kpts&#39;</span><span class="p">,</span> <span class="s1">&#39;xc&#39;</span><span class="p">,</span> <span class="s1">&#39;exxdiv&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;U_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;U_val&#39;</span><span class="p">,</span> <span class="s1">&#39;C_ao_lo&#39;</span><span class="p">,</span> <span class="s1">&#39;minao_ref&#39;</span><span class="p">}</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelectron</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">method</span>
+        <span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mf_xc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="s1">&#39;xc&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;xc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf_xc</span>
+
+            <span class="n">mf_kw</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">remaining_kw</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">SCF_KW</span><span class="p">:</span>
+                    <span class="n">mf_kw</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">remaining_kw</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">mf</span> <span class="o">=</span> <span class="n">mf_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">mf_kw</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">post_mf_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;cell.</span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s1"> function does not support positional arguments&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">mf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">remaining_kw</span><span class="p">)</span>
+
+            <span class="n">post_mf</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">post_mf_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelectron</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">post_mf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">remaining_kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mole</span><span class="o">.</span><span class="n">_MoleLazyCallAdapter</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
 
     <span class="n">tot_electrons</span> <span class="o">=</span> <span class="n">tot_electrons</span>
 
@@ -1864,8 +1891,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">space_group_symmetry</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">mesh</span>
 
-        <span class="n">_</span><span class="p">,</span> <span class="n">mesh1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_symmetry</span><span class="o">.</span><span class="n">check_mesh_symmetry</span><span class="p">(</span><span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
-                                                             <span class="n">return_mesh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">mesh1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_symmetry</span><span class="o">.</span><span class="n">check_mesh_symmetry</span><span class="p">(</span>
+            <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">return_mesh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">mesh1</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;mesh </span><span class="si">%s</span><span class="s1"> is symmetrized as </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh1</span><span class="p">)</span>
         <span class="n">m1size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">mesh1</span><span class="p">)</span>
@@ -1908,6 +1935,10 @@
             <span class="n">_mesh_from_build</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh_from_build</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmetrize_mesh</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_mesh_from_build</span> <span class="o">=</span> <span class="n">_mesh_from_build</span>
+        <span class="c1"># lattice_symmetry introduces circular dependency to cell</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_symmetry</span><span class="o">.</span><span class="n">cell</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_symmetry</span><span class="o">.</span><span class="n">spacegroup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_symmetry</span><span class="o">.</span><span class="n">spacegroup</span><span class="o">.</span><span class="n">cell</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -2006,14 +2037,7 @@
         <span class="n">_built</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_built</span>
         <span class="n">mole</span><span class="o">.</span><span class="n">MoleBase</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">parse_arg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="n">exp_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bas_exp</span><span class="p">(</span><span class="n">ib</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">ib</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nbas</span><span class="p">)])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_to_discard</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">exp_min</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">):</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;WARNING!</span>
-<span class="s1">  Very diffused basis functions are found in the basis set. They may lead to severe</span>
-<span class="s1">  linear dependence and numerical instability.  You can set  cell.exp_to_discard=0.1</span>
-<span class="s1">  to remove the diffused Gaussians whose exponents are less than 0.1.</span><span class="se">\n\n</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">exp_min</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_to_discard</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_to_discard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Discard functions of small exponents in basis</span>
             <span class="n">_basis</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">symb</span><span class="p">,</span> <span class="n">basis_now</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -2463,6 +2487,68 @@
         <span class="k">if</span> <span class="n">mol</span><span class="o">.</span><span class="n">symmetry</span><span class="p">:</span>
             <span class="n">mol</span><span class="o">.</span><span class="n">_build_symmetry</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">mol</span></div>
+
+
+<div class="viewcode-block" id="Cell.set_geom_">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.gto.html#pyscf.pbc.gto.cell.Cell.set_geom_">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_geom_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms_or_coords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">symmetry</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;Update geometry and lattice parameters</span>
+
+<span class="sd">        Kwargs:</span>
+<span class="sd">            atoms_or_coords : list, str, or numpy.ndarray</span>
+<span class="sd">                When specified in list or str, it is processed as the Mole.atom</span>
+<span class="sd">                attribute. If inputing a (N, 3) numpy array, this array</span>
+<span class="sd">                represents the coordinates of the atoms in the molecule.</span>
+<span class="sd">            a : list, str, or numpy.ndarray</span>
+<span class="sd">                If specified, it is assigned to the cell.a attribute. Its data</span>
+<span class="sd">                format should be the same to cell.a</span>
+<span class="sd">            unit : str</span>
+<span class="sd">                The unit for the input `atoms_or_coords` and `a`. If specified,</span>
+<span class="sd">                cell.unit will be updated to this value. If not provided, the</span>
+<span class="sd">                current cell.unit will be used for the two inputs.</span>
+<span class="sd">            symmetry : bool</span>
+<span class="sd">                Whether to enable space_group_symmetry. It is a reserved input</span>
+<span class="sd">                argument. This functionality is not supported yet.</span>
+<span class="sd">            inplace : bool</span>
+<span class="sd">                Whether to overwrite the existing Mole object.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">_env</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">_env</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cell</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="n">unit</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">is_au</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+                    <span class="n">_unit</span> <span class="o">=</span> <span class="mf">1.</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_unit</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">BOHR</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_unit</span> <span class="o">=</span> <span class="n">unit</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice_vectors</span><span class="p">()</span> <span class="o">*</span> <span class="n">_unit</span>
+            <span class="k">if</span> <span class="n">atoms_or_coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">atoms_or_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_coords</span><span class="p">()</span> <span class="o">*</span> <span class="n">_unit</span>
+
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Set new lattice vectors&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mesh_from_build</span><span class="p">:</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rcut_from_build</span><span class="p">:</span>
+                <span class="n">cell</span><span class="o">.</span><span class="n">rcut</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">_built</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">cell</span><span class="o">.</span><span class="n">enuc</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">atoms_or_coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cell</span> <span class="o">=</span> <span class="n">mole</span><span class="o">.</span><span class="n">MoleBase</span><span class="o">.</span><span class="n">set_geom_</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">atoms_or_coords</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">symmetry</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cell</span><span class="o">.</span><span class="n">_built</span><span class="p">:</span>
+            <span class="n">cell</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cell</span></div>
 </div>
 
 

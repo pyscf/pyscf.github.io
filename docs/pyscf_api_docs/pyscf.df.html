@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../_static/documentation_options.js?v=1647406f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
@@ -54,7 +54,7 @@
     <link rel="search" title="Search" href="../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -391,7 +391,10 @@
 <li class="toctree-l2"><a class="reference internal" href="pyscf.pbc.x2c.html">pyscf.pbc.x2c package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="pyscf.qmmm.html">pyscf.qmmm package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pyscf.qmmm.html">pyscf.qmmm package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyscf.qmmm.pbc.html">pyscf.qmmm.pbc package</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="pyscf.scf.html">pyscf.scf package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyscf.sgx.html">pyscf.sgx package</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="pyscf.solvent.html">pyscf.solvent package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -781,14 +784,17 @@ J. Chem. Theory Comput. 13, 554 (2017)
 <dd><p>Bases: <a class="reference internal" href="pyscf.lib.html#pyscf.lib.misc.StreamObject" title="pyscf.lib.misc.StreamObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamObject</span></code></a></p>
 <p>Object to hold 3-index tensor</p>
 <dl class="simple">
-<dt>Attributes:</dt><dd><dl class="simple">
-<dt>auxbasis<span class="classifier">str or dict</span></dt><dd><p>Same input format as <code class="xref py py-attr docutils literal notranslate"><span class="pre">Mole.basis</span></code></p>
-</dd>
-<dt>auxmol<span class="classifier">Mole object</span></dt><dd><p>Read only Mole object to hold the auxiliary basis.  auxmol is
-generated automatically in the initialization step based on the
-given auxbasis.  It is used in the rest part of the code to
-determine the problem size, the integral batches etc.  This object
-should NOT be modified.</p>
+<dt>Input Attributes:</dt><dd><dl class="simple">
+<dt>auxbasis<span class="classifier">str or dict</span></dt><dd><p>Same format as the input attribute mol.basis. If auxbasis is set to
+None, an optimal auxiliary basis set will be selected based on the
+AO basis set, according to the records in the basis set exchange
+database and the predefined mappings in <cite>pyscf.df.addons.DEFAULT_AUXBASIS</cite>.
+For DFT methods, the selection of auxiliary basis sets is also
+influenced by the xc functional. The J-FIT basis set will be used for
+local and semi-local functionals (LDA, GGA, and meta-GGA). JK-FIT
+basis set will be employed for hybrid and RSH functionals.
+If optimal auxiliary basis sets are not available, the PySCF built-in
+even-tempered Gaussian basis set will be used.</p>
 </dd>
 <dt>_cderi_to_save<span class="classifier">str</span></dt><dd><p>If _cderi_to_save is specified, the DF integral tensor will be
 saved in this file.</p>
@@ -804,7 +810,9 @@ hermitian symmetry is assumed for the composite ij index, ie
 the elements of <span class="math notranslate nohighlight">\(V_{x,i,j}\)</span> with <span class="math notranslate nohighlight">\(i\geq j\)</span> are existed
 in the DF integral tensor.  Thus the shape of DF integral tensor
 is (M,N*(N+1)/2), where M is the number of auxbasis functions and
-N is the number of basis functions of the orbital basis.</p>
+N is the number of basis functions of the orbital basis.
+This attribute is not compatible between the CPU and GPU implementations.
+It will not be transferred during the to_cpu() and to_gpu() calls.</p>
 </dd>
 <dt>blockdim<span class="classifier">int</span></dt><dd><p>When reading DF integrals from disk the chunk size to load.  It is
 used to improve IO performance.</p>
@@ -812,6 +820,25 @@ used to improve IO performance.</p>
 </dl>
 </dd>
 </dl>
+<p>Intermediate Attributes (These attributes are generated during calculations
+and should not be modified. Additionally, they may not be compatible between
+GPU and CPU implementations.)</p>
+<blockquote>
+<div><dl class="simple">
+<dt>auxmol<span class="classifier">Mole object</span></dt><dd><p>Read only Mole object to hold the auxiliary basis.  auxmol is
+generated automatically in the initialization step based on the
+given auxbasis.  It is used in the rest part of the code to
+determine the problem size, the integral batches etc.  This object
+should NOT be modified.</p>
+</dd>
+<dt>_vjopt<span class="classifier">_VHFOpt instance</span></dt><dd><p>An instance that caches precomputation variables to optimize the
+computation of the Coulomb matrix.</p>
+</dd>
+<dt>_rsh_df<span class="classifier">dict</span></dt><dd><p>For range-separated DFT functionals, this object stores the density fitting
+instances for long-range or short-range Coulomb integrals.</p>
+</dd>
+</dl>
+</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.df.df.DF.ao2mo">
 <span class="sig-name descname"><span class="pre">ao2mo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mo_coeffs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/df/df.html#DF.ao2mo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.df.df.DF.ao2mo" title="Link to this definition">#</a></dt>
@@ -970,9 +997,16 @@ corresponding density fitting integrals.</p>
 <dt>Args:</dt><dd><p>mf : an SCF object</p>
 </dd>
 <dt>Kwargs:</dt><dd><dl class="simple">
-<dt>auxbasis<span class="classifier">str or basis dict</span></dt><dd><p>Same format to the input attribute mol.basis.  If auxbasis is
-None, optimal auxiliary basis based on AO basis (if possible) or
-even-tempered Gaussian basis will be used.</p>
+<dt>auxbasis<span class="classifier">str or basis dict</span></dt><dd><p>Same format as the input attribute mol.basis. If auxbasis is set to
+None, an optimal auxiliary basis set will be selected based on the
+AO basis set, according to the records in the basis set exchange
+database and the predefined mappings in <cite>pyscf.df.addons.DEFAULT_AUXBASIS</cite>.
+For DFT methods, the selection of auxiliary basis sets is also
+influenced by the xc functional. The J-FIT basis set will be used for
+local and semi-local functionals (LDA, GGA, and meta-GGA). JK-FIT
+basis set will be employed for hybrid and RSH functionals.
+If optimal auxiliary basis sets are not available, the PySCF built-in
+even-tempered Gaussian basis set will be used.</p>
 </dd>
 <dt>only_dfj<span class="classifier">str</span></dt><dd><p>Compute Coulomb integrals only and no approximation for HF
 exchange. Same to RIJONX in ORCA</p>

@@ -40,7 +40,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../_static/documentation_options.js?v=1647406f"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -389,7 +389,10 @@
 <li class="toctree-l2"><a class="reference internal" href="pyscf.pbc.x2c.html">pyscf.pbc.x2c package</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference internal" href="pyscf.qmmm.html">pyscf.qmmm package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="pyscf.qmmm.html">pyscf.qmmm package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyscf.qmmm.pbc.html">pyscf.qmmm.pbc package</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1"><a class="reference internal" href="pyscf.scf.html">pyscf.scf package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyscf.sgx.html">pyscf.sgx package</a></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">pyscf.solvent package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -1215,6 +1218,67 @@ Es = 1/2 f(eps) int rho(r) W(r) dr</p>
 <dt class="sig sig-object py" id="pyscf.solvent.pcm.PCM">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyscf.solvent.pcm.</span></span><span class="sig-name descname"><span class="pre">PCM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/pcm.html#PCM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.pcm.PCM" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="pyscf.lib.html#pyscf.lib.misc.StreamObject" title="pyscf.lib.misc.StreamObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">StreamObject</span></code></a></p>
+<p>PCM Solvent Model</p>
+<p>This class implements the Polarizable Continuum Model (PCM) for solvent effects.</p>
+<section id="input-attributes">
+<h3>Input Attributes:<a class="headerlink" href="#input-attributes" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>method<span class="classifier">str</span></dt><dd><p>The PCM model. Options include ‘C-PCM’, ‘IEF-PCM’, ‘COSMO’, and ‘SS(V)PE’.
+Default is ‘C-PCM’.</p>
+</dd>
+<dt>vdw_scale<span class="classifier">float</span></dt><dd><p>A scaling factor for van der Waals radii. Default is 1.2, consistent with Q-Chem settings.</p>
+</dd>
+<dt>r_probe<span class="classifier">float</span></dt><dd><p>An additional radius (in Angstrom) added to the van der Waals radii.
+Default is 0.0.</p>
+</dd>
+<dt>radii_table<span class="classifier">dict</span></dt><dd><p>Custom van der Waals radii for each element. By default, scaled van der Waals radii
+from <cite>vdw_scale</cite> and <cite>r_probe</cite> are used.</p>
+</dd>
+<dt>lebedev_order<span class="classifier">int</span></dt><dd><p>The order of the Lebedev mesh used for the cavity sphere. Default is 29 (302 grids).</p>
+</dd>
+<dt>eps<span class="classifier">float</span></dt><dd><p>The dielectric constant of the solvent. Default is 78.3553, the dielectric constant
+for water.</p>
+</dd>
+<dt>frozen<span class="classifier">bool</span></dt><dd><p>Whether to freeze the potential produced by the solvent during SCF iterations or
+other convergence processes. When frozen=True is set, the solvent is
+assumed to respond slowly, while the electron density relaxes quickly.
+Default is False.</p>
+</dd>
+<dt>max_cycle<span class="classifier">int</span></dt><dd><p>The maximum number of iterations to relax the solvent.</p>
+</dd>
+<dt>conv_tol<span class="classifier">float</span></dt><dd><p>The convergence tolerance for total energy during solvent relaxation.</p>
+</dd>
+<dt>equilibrium_solvation<span class="classifier">bool</span></dt><dd><p>Affects TDDFT and other excited state computations. Controls whether the solvent
+relaxes rapidly with respect to the electron density of the excited state.
+For vertical excitations, it is recommended to set this to False, as the solvent
+typically does not fully relax. In some software packages (e.g., Q-Chem),
+non-equilibrium solvation is applied with an optical dielectric constant of
+eps=1.78. Default is False.</p>
+</dd>
+<dt>state_id<span class="classifier">int</span></dt><dd><p>Specifies the target state in excited state calculations.
+<cite>state_id=0</cite> corresponds to the ground state, while <cite>state_id=1</cite> corresponds
+to the first excited state. Default is 0.</p>
+</dd>
+</dl>
+</section>
+<section id="saved-results">
+<h3>Saved Results:<a class="headerlink" href="#saved-results" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>e_tot<span class="classifier">float</span></dt><dd><p>The energy contribution from the solvent.</p>
+</dd>
+<dt>v<span class="classifier">ndarray</span></dt><dd><p>The potential matrix generated by the solvent.</p>
+</dd>
+</dl>
+</section>
+<section id="intermediate-attributes">
+<h3>Intermediate Attributes:<a class="headerlink" href="#intermediate-attributes" title="Link to this heading">#</a></h3>
+<p>These attributes are generated during calculations and should not be modified.
+Additionally, they may not be compatible between GPU and CPU implementations.</p>
+<ul class="simple">
+<li><p>surface</p></li>
+<li><p>_intermediates</p></li>
+<li><p>v_grids_n</p></li>
+</ul>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.solvent.pcm.PCM.Hessian">
 <span class="sig-name descname"><span class="pre">Hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hess_method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/pcm.html#PCM.Hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.pcm.PCM.Hessian" title="Link to this definition">#</a></dt>
@@ -1260,13 +1324,15 @@ between the solvent and the charge density of the solute.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.solvent.pcm.PCM.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/pcm.html#PCM.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.pcm.PCM.reset" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Clean up intermediates</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.solvent.pcm.PCM.to_gpu">
 <span class="sig-name descname"><span class="pre">to_gpu</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/pcm.html#PCM.to_gpu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.pcm.PCM.to_gpu" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py function">
@@ -1362,6 +1428,66 @@ notice the typo in the paper</p>
 <dt class="sig sig-object py" id="pyscf.solvent.smd.SMD">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyscf.solvent.smd.</span></span><span class="sig-name descname"><span class="pre">SMD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/smd.html#SMD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.smd.SMD" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyscf.solvent.pcm.PCM" title="pyscf.solvent.pcm.PCM"><code class="xref py py-class docutils literal notranslate"><span class="pre">PCM</span></code></a></p>
+<p>SMD Solvent Model</p>
+<section id="attributes">
+<h3>Attributes:<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>method<span class="classifier">str</span></dt><dd><p>No effects. It is set to ‘SMD’ as a placeholder</p>
+</dd>
+<dt>vdw_scale<span class="classifier">float</span></dt><dd><p>A scaling factor for van der Waals radii. Default is 1.0.</p>
+</dd>
+<dt>r_probe<span class="classifier">float</span></dt><dd><p>An additional radius (in Angstrom) added to the van der Waals radii.
+Default is 0.4 Angstrom.</p>
+</dd>
+<dt>radii_table<span class="classifier">dict</span></dt><dd><p>Custom van der Waals radii for each element. By default, scaled van der Waals radii
+from <cite>vdw_scale</cite> and <cite>r_probe</cite> are used.</p>
+</dd>
+<dt>sasa_ng<span class="classifier">int</span></dt><dd><p>The number of quadrature grids used for calculating the Solvent
+Accessible Surface Area (SASA). Default is 590.</p>
+</dd>
+<dt>solvent<span class="classifier">str</span></dt><dd><p>The name of the solvent, which is used to determine the dielectric constant and other
+relevant parameters. Supported solvents can be accessed via the variable
+<cite>pyscf.solvent.smd.solvent_db</cite>.</p>
+</dd>
+<dt>frozen<span class="classifier">bool</span></dt><dd><p>Whether to freeze the potential produced by the solvent during SCF iterations or
+other convergence processes. When frozen=True is set, the solvent is
+assumed to respond slowly, while the electron density relaxes quickly.
+Default is False.</p>
+</dd>
+<dt>max_cycle<span class="classifier">int</span></dt><dd><p>The maximum number of iterations to relax the solvent.</p>
+</dd>
+<dt>conv_tol<span class="classifier">float</span></dt><dd><p>The convergence tolerance for total energy during solvent relaxation.</p>
+</dd>
+<dt>equilibrium_solvation<span class="classifier">bool</span></dt><dd><p>Affects TDDFT and other excited state computations. Controls whether the solvent
+relaxes rapidly with respect to the electron density of the excited state.
+For vertical excitations, it is recommended to set this to False, as the solvent
+typically does not fully relax. In some software packages (e.g., Q-Chem),
+non-equilibrium solvation is applied with an optical dielectric constant of
+eps=1.78. Default is False.</p>
+</dd>
+<dt>state_id<span class="classifier">int</span></dt><dd><p>Specifies the target state in excited state calculations.
+<cite>state_id=0</cite> corresponds to the ground state, while <cite>state_id=1</cite> corresponds
+to the first excited state. Default is 0.</p>
+</dd>
+</dl>
+</section>
+<section id="id1">
+<h3>Saved Results:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>e_cds<span class="classifier">float</span></dt><dd><p>Cavitation, Dispersion and Solvent energy</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h3>Intermediate Attributes:<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>These attributes are generated during calculations and should not be modified.
+Additionally, they may not be compatible between GPU and CPU implementations.</p>
+<ul class="simple">
+<li><p>surface</p></li>
+<li><p>_intermediates</p></li>
+<li><p>v_grids_n</p></li>
+<li><p>solvent_descriptors</p></li>
+</ul>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.solvent.smd.SMD.Hessian">
 <span class="sig-name descname"><span class="pre">Hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hess_method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/smd.html#SMD.Hessian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.smd.SMD.Hessian" title="Link to this definition">#</a></dt>
@@ -1406,7 +1532,8 @@ between the solvent and the charge density of the solute.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyscf.solvent.smd.SMD.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyscf/solvent/smd.html#SMD.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyscf.solvent.smd.SMD.reset" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Clean up intermediates</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pyscf.solvent.smd.SMD.sol_desc">
@@ -1418,6 +1545,7 @@ between the solvent and the charge density of the solute.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">solvent</span></span><a class="headerlink" href="#pyscf.solvent.smd.SMD.solvent" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py function">

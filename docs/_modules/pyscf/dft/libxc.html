@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../../../_static/documentation_options.js?v=1647406f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -394,6 +394,17 @@
 <span class="c1">#</span>
 <span class="c1"># Authors: Qiming Sun &lt;osirpt.sun@gmail.com&gt;</span>
 <span class="c1">#          Susi Lehtola &lt;susi.lehtola@gmail.com&gt;</span>
+<span class="c1">#          Dayou Zhang &lt;dayouzhang@outlook.com&gt;</span>
+<span class="c1"># This file is adapted from `dft/libxc.py` of the PySCF core module</span>
+<span class="c1"># commit 25eaa9572977b903de24d5c11ad345cecd744728</span>
+<span class="c1">#</span>
+<span class="c1"># Implemented functions register_custom_functional_, update_custom_functional_,</span>
+<span class="c1"># and unregister_custom_functional_. To make this new functionality possible,</span>
+<span class="c1"># and to improve the memory management of the LibXC data structure, interface</span>
+<span class="c1"># functions which originally took arguments of type c_int were modified to take</span>
+<span class="c1"># arguments of type xc_func_type from LibXC. The LibXC data structure are cached</span>
+<span class="c1"># and managed in the python layer to avoid construction and destruction at every</span>
+<span class="c1"># API call.</span>
 
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">XC functional, the interface to libxc</span>
@@ -405,7 +416,7 @@
 <span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span><span class="p">,</span> <span class="n">cached_property</span>
 <span class="kn">from</span> <span class="nn">pyscf</span> <span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span> <span class="nn">pyscf.dft.xc.utils</span> <span class="kn">import</span> <span class="n">remove_dup</span><span class="p">,</span> <span class="n">format_xc_code</span>
 <span class="kn">from</span> <span class="nn">pyscf.dft</span> <span class="kn">import</span> <span class="n">xc_deriv</span>
@@ -415,48 +426,75 @@
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_lda</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_gga</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_meta_gga</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_needs_laplacian</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_needs_laplacian</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_needs_laplacian</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">]</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_hybrid</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_cam_rsh</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_cam_rsh</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_type</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_type</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_max_deriv_order</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_max_deriv_order</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_number_of_functionals</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_functional_numbers</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">intc</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">)),</span> <span class="p">)</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_functional_name</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">]</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_functional_name</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_hybrid_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">]</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_hybrid_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_hybrid_coeff</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_nlc_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)]</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_rsh_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)]</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_nlc_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">))</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_rsh_coeff</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">))</span>
 
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_version</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_reference</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_reference_doi</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
-<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_reference</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)]</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_reference</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">))</span>
 
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_init</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_end</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_type_size</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_eval_xc</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">),</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span>
+                                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_set_params</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span>
+                                           <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">),</span>
+                                           <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)</span>
+
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_version_string</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_reference</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_reference_doi</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_number_of_functionals</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_available_functional_numbers</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">intc</span><span class="p">,</span>
+                                                                            <span class="n">ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">)),</span> <span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_name</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_name</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_number</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">,</span> <span class="p">)</span>
 <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_number</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_get_info</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_get_info</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_info_get_n_ext_params</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="p">)</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_info_get_n_ext_params</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+<span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_set_ext_params</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">))</span>
+
+<span class="n">_XC_FUNC_TYPE_SIZE</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_type_size</span><span class="p">()</span>
 
 <div class="viewcode-block" id="libxc_version">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.libxc_version">[docs]</a>
 <span class="k">def</span> <span class="nf">libxc_version</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns the version of libxc&#39;&#39;&#39;</span>
-    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_version</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_version_string</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="libxc_reference">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.libxc_reference">[docs]</a>
 <span class="k">def</span> <span class="nf">libxc_reference</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns the reference to libxc&#39;&#39;&#39;</span>
-    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_reference</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_reference</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="libxc_reference_doi">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.libxc_reference_doi">[docs]</a>
 <span class="k">def</span> <span class="nf">libxc_reference_doi</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns the reference to libxc&#39;&#39;&#39;</span>
-    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_reference_doi</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_reference_doi</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span></div>
 
 
 <span class="n">__version__</span> <span class="o">=</span> <span class="n">libxc_version</span><span class="p">()</span>
@@ -467,12 +505,12 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.available_libxc_functionals">[docs]</a>
 <span class="k">def</span> <span class="nf">available_libxc_functionals</span><span class="p">():</span>
     <span class="c1"># Number of functionals is</span>
-    <span class="n">nfunc</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_number_of_functionals</span><span class="p">()</span>
+    <span class="n">nfunc</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_number_of_functionals</span><span class="p">()</span>
     <span class="c1"># Get functional numbers</span>
     <span class="n">func_ids</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">intc</span><span class="p">)</span>
-    <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_functional_numbers</span><span class="p">(</span><span class="n">func_ids</span><span class="p">)</span>
+    <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_available_functional_numbers</span><span class="p">(</span><span class="n">func_ids</span><span class="p">)</span>
     <span class="c1"># Returned array</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_functional_name</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="p">:</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">func_ids</span><span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="n">_itrf</span><span class="o">.</span><span class="n">xc_functional_get_name</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="p">:</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">func_ids</span><span class="p">}</span></div>
 
 
 <span class="n">XC</span> <span class="o">=</span> <span class="n">XC_CODES</span> <span class="o">=</span> <span class="n">available_libxc_functionals</span><span class="p">()</span>
@@ -622,7 +660,6 @@
     <span class="s1">&#39;SCAN0&#39;</span>             <span class="p">:</span> <span class="s1">&#39;SCAN0,SCAN&#39;</span><span class="p">,</span>
     <span class="s1">&#39;PBEOP&#39;</span>             <span class="p">:</span> <span class="s1">&#39;PBE,OP_PBE&#39;</span><span class="p">,</span>
     <span class="s1">&#39;BOP&#39;</span>               <span class="p">:</span> <span class="s1">&#39;B88,OP_B88&#39;</span><span class="p">,</span>
-    <span class="c1"># new in libxc-4.2.3</span>
     <span class="s1">&#39;REVSCAN&#39;</span>           <span class="p">:</span> <span class="s1">&#39;MGGA_X_REVSCAN,MGGA_C_REVSCAN&#39;</span><span class="p">,</span>
     <span class="s1">&#39;REVSCAN_VV10&#39;</span>      <span class="p">:</span> <span class="s1">&#39;MGGA_X_REVSCAN,MGGA_C_REVSCAN_VV10&#39;</span><span class="p">,</span>
     <span class="s1">&#39;SCAN_VV10&#39;</span>         <span class="p">:</span> <span class="s1">&#39;MGGA_X_SCAN,MGGA_C_SCAN_VV10&#39;</span><span class="p">,</span>
@@ -631,6 +668,7 @@
     <span class="s1">&#39;M06&#39;</span>               <span class="p">:</span> <span class="s1">&#39;HYB_MGGA_X_M06,MGGA_C_M06&#39;</span><span class="p">,</span>
     <span class="s1">&#39;M05_2X&#39;</span>            <span class="p">:</span> <span class="s1">&#39;HYB_MGGA_X_M05_2X,MGGA_C_M05_2X&#39;</span><span class="p">,</span>
     <span class="s1">&#39;M06_2X&#39;</span>            <span class="p">:</span> <span class="s1">&#39;HYB_MGGA_X_M06_2X,MGGA_C_M06_2X&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;M06_HF&#39;</span>            <span class="p">:</span> <span class="s1">&#39;HYB_MGGA_X_M06_HF,MGGA_C_M06_HF&#39;</span><span class="p">,</span>
     <span class="c1"># extra aliases</span>
     <span class="s1">&#39;SOGGA11X&#39;</span>          <span class="p">:</span> <span class="s1">&#39;SOGGA11_X&#39;</span><span class="p">,</span>
     <span class="s1">&#39;M06L&#39;</span>              <span class="p">:</span> <span class="s1">&#39;M06_L&#39;</span><span class="p">,</span>
@@ -641,6 +679,7 @@
     <span class="s1">&#39;MN12SX&#39;</span>            <span class="p">:</span> <span class="s1">&#39;MN12_SX&#39;</span><span class="p">,</span>
     <span class="s1">&#39;M052X&#39;</span>             <span class="p">:</span> <span class="s1">&#39;M05_2X&#39;</span><span class="p">,</span>
     <span class="s1">&#39;M062X&#39;</span>             <span class="p">:</span> <span class="s1">&#39;M06_2X&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;M06HF&#39;</span>             <span class="p">:</span> <span class="s1">&#39;M06_HF&#39;</span><span class="p">,</span>
 <span class="p">}</span>  <span class="c1"># noqa: E122</span>
 <span class="n">XC_ALIAS</span><span class="o">.</span><span class="n">update</span><span class="p">([(</span><span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">XC_ALIAS</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
                  <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">XC_ALIAS</span> <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">])</span>
@@ -649,42 +688,34 @@
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.xc_reference">[docs]</a>
 <span class="k">def</span> <span class="nf">xc_reference</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns the reference to the individual XC functional&#39;&#39;&#39;</span>
-    <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="n">refs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">c_refs</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)()</span>
-    <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">:</span>
-        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_reference</span><span class="p">(</span><span class="n">xid</span><span class="p">,</span> <span class="n">c_refs</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">c_refs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">ref</span><span class="p">:</span>
-                <span class="n">refs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">refs</span></div>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_xc_reference</span><span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span></div>
 
+
+<span class="k">def</span> <span class="nf">_xc_reference</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">):</span>
+    <span class="n">refs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">c_refs</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">nfunc</span> <span class="o">*</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)()</span>
+    <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_reference</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">,</span> <span class="n">c_refs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="n">c_refs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ref</span><span class="p">:</span>
+            <span class="n">refs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">refs</span>
 
 <div class="viewcode-block" id="xc_type">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.xc_type">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="s1">&#39;__VV10&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Deprecated notation for NLC functional.&#39;</span><span class="p">)</span>
-        <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
-        <span class="n">fn_facs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">xc_code</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>  <span class="c1"># mimic fn_facs</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns the type of a functional as a str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">xc_type</span></div>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">fn_facs</span><span class="p">:</span>
+
+<span class="k">def</span> <span class="nf">_xc_type</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">nfunc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="s1">&#39;HF&#39;</span>
-    <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_lda</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">))</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;LDA&#39;</span>
-    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_meta_gga</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">))</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;MGGA&#39;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># any(_itrf.LIBXC_is_gga(ctypes.c_int(xid)) for xid, fac in fn_facs)</span>
-        <span class="c1"># include hybrid_xc</span>
-        <span class="k">return</span> <span class="s1">&#39;GGA&#39;</span></div>
-
+        <span class="n">t</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_type</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;LDA&#39;</span><span class="p">,</span> <span class="s1">&#39;GGA&#39;</span><span class="p">,</span> <span class="s1">&#39;MGGA&#39;</span><span class="p">,</span> <span class="s1">&#39;UNKNOWN&#39;</span><span class="p">)[</span><span class="n">t</span><span class="p">]</span>
 
 <div class="viewcode-block" id="is_lda">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_lda">[docs]</a>
@@ -694,72 +725,81 @@
 
 <div class="viewcode-block" id="is_hybrid_xc">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_hybrid_xc">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">is_hybrid_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">xc_code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_hybrid</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;HF&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">if</span> <span class="n">hybrid_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">if</span> <span class="n">rsh_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s1">&#39;HF&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_is_hybrid_xc</span><span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">xc</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="n">xc</span><span class="o">.</span><span class="n">facs</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_hybrid</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xc_code</span><span class="p">))</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_is_hybrid_xc</span><span class="p">(</span><span class="n">xc</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">xc</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="n">xc</span><span class="o">.</span><span class="n">facs</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">((</span><span class="n">is_hybrid_xc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">))</span></div>
 
 
+<span class="k">def</span> <span class="nf">_is_hybrid_xc</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_hybrid_coeff</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">_rsh_coeff</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
 <div class="viewcode-block" id="is_meta_gga">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_meta_gga">[docs]</a>
 <span class="k">def</span> <span class="nf">is_meta_gga</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns True if a functional is a meta GGA</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="n">xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;MGGA&#39;</span></div>
 
 
 <div class="viewcode-block" id="is_gga">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_gga">[docs]</a>
 <span class="k">def</span> <span class="nf">is_gga</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Returns True if a functional is a GGA</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">return</span> <span class="n">xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;GGA&#39;</span></div>
 
 
 <div class="viewcode-block" id="is_nlc">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.is_nlc">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">is_nlc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
     <span class="c1"># identify nlc by xc_code itself if enable_nlc is None</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">xc_code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">))</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xc_code</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> \
+            <span class="n">numpy</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">is_nlc</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">((</span><span class="n">is_nlc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">))</span></div>
 
 
+<span class="k">def</span> <span class="nf">_is_nlc</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">)</span>
+
 <div class="viewcode-block" id="needs_laplacian">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.needs_laplacian">[docs]</a>
 <span class="k">def</span> <span class="nf">needs_laplacian</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_needs_laplacian</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span></div>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">needs_laplacian</span></div>
 
+
+<span class="k">def</span> <span class="nf">_needs_laplacian</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_needs_laplacian</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="max_deriv_order">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.max_deriv_order">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">max_deriv_order</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
-    <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fn_facs</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_max_deriv_order</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">))</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">3</span></div>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">max_deriv_order</span></div>
 
+
+<span class="k">def</span> <span class="nf">_max_deriv_order</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">nfunc</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">3</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_max_deriv_order</span><span class="p">(</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">xc_arr</span><span class="p">)</span>
 
 <div class="viewcode-block" id="test_deriv_order">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.test_deriv_order">[docs]</a>
@@ -788,34 +828,37 @@
 
 <div class="viewcode-block" id="hybrid_coeff">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.hybrid_coeff">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hybrid_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Support recursively defining hybrid functional</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="n">hybs</span> <span class="o">=</span> <span class="p">[</span><span class="n">fac</span> <span class="o">*</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_hybrid_coeff</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">))</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">hyb</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hybs</span><span class="p">)</span></div>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="n">spin</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">hybrid_coeff</span></div>
 
+
+<span class="k">def</span> <span class="nf">_hybrid_coeff</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">):</span>
+    <span class="n">hybs</span> <span class="o">=</span> <span class="p">(</span><span class="n">fac</span> <span class="o">*</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_hybrid_coeff</span><span class="p">(</span><span class="n">xc</span><span class="p">)</span> <span class="k">for</span> <span class="n">fac</span><span class="p">,</span> <span class="n">xc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">facs</span><span class="p">,</span> <span class="n">xc_objs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">hyb</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hybs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="nlc_coeff">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.nlc_coeff">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">nlc_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Get NLC coefficients</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">nlc_coeff</span></div>
+
+
+<span class="k">def</span> <span class="nf">_nlc_coeff</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">):</span>
     <span class="n">nlc_pars</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">nlc_tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="o">*</span><span class="mi">2</span><span class="p">)()</span>
-    <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">)):</span>
-            <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_nlc_coeff</span><span class="p">(</span><span class="n">xid</span><span class="p">,</span> <span class="n">nlc_tmp</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fac</span><span class="p">,</span> <span class="n">xc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">facs</span><span class="p">,</span> <span class="n">xc_objs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_nlc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">xc</span><span class="p">):</span>
+            <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_nlc_coeff</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">nlc_tmp</span><span class="p">)</span>
             <span class="n">nlc_pars</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">tuple</span><span class="p">(</span><span class="n">nlc_tmp</span><span class="p">),</span> <span class="n">fac</span><span class="p">))</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nlc_pars</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nlc_pars</span><span class="p">)</span>
 
 <div class="viewcode-block" id="rsh_coeff">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.rsh_coeff">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">rsh_coeff</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Range-separated parameter and HF exchange components: omega, alpha, beta</span>
 
@@ -831,6 +874,11 @@
     <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xc</span><span class="o">.</span><span class="n">rsh_coeff</span></div>
+
+
+<span class="k">def</span> <span class="nf">_rsh_coeff</span><span class="p">(</span><span class="n">xc_objs</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
     <span class="n">check_omega</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;,&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
         <span class="c1"># Parse only X part for the RSH coefficients.  This is to handle</span>
@@ -840,7 +888,7 @@
         <span class="k">if</span> <span class="s1">&#39;SR_HF&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span> <span class="ow">or</span> <span class="s1">&#39;LR_HF&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span> <span class="ow">or</span> <span class="s1">&#39;RSH(&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
             <span class="n">check_omega</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="p">(</span><span class="n">hyb</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">omega</span><span class="p">),</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="n">hyb</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">omega</span> <span class="o">=</span> <span class="n">hyb</span>
     <span class="k">if</span> <span class="n">omega</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># SR and LR Coulomb share the same coefficients</span>
         <span class="c1"># Note: this change breaks compatibility with pyscf-2.7</span>
@@ -850,22 +898,21 @@
         <span class="n">beta</span> <span class="o">=</span> <span class="n">hyb</span> <span class="o">-</span> <span class="n">alpha</span>
     <span class="n">rsh_pars</span> <span class="o">=</span> <span class="p">[</span><span class="n">omega</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">]</span>
     <span class="n">rsh_tmp</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="o">*</span><span class="mi">3</span><span class="p">)()</span>
-    <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">fac</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">:</span>
-        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_rsh_coeff</span><span class="p">(</span><span class="n">xid</span><span class="p">,</span> <span class="n">rsh_tmp</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fac</span><span class="p">,</span> <span class="n">xc</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">facs</span><span class="p">,</span> <span class="n">xc_objs</span><span class="p">):</span>
+        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_rsh_coeff</span><span class="p">(</span><span class="n">xc</span><span class="p">,</span> <span class="n">rsh_tmp</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rsh_pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">rsh_pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">check_omega</span><span class="p">:</span>
             <span class="c1"># Check functional is actually a CAM functional</span>
-            <span class="k">if</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_cam_rsh</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">xid</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_is_cam_rsh</span><span class="p">(</span><span class="n">xc</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Libxc functional </span><span class="si">%i</span><span class="s1"> employs a range separation &#39;</span>
-                               <span class="s1">&#39;kernel that is not supported in PySCF&#39;</span> <span class="o">%</span> <span class="n">xid</span><span class="p">)</span>
+                               <span class="s1">&#39;kernel that is not supported in PySCF&#39;</span> <span class="o">%</span> <span class="n">xc</span><span class="o">.</span><span class="n">xc_code</span><span class="p">)</span>
             <span class="c1"># Check omega</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">rsh_pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Different values of omega found for RSH functionals&#39;</span><span class="p">)</span>
         <span class="n">rsh_pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span>
         <span class="n">rsh_pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rsh_tmp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rsh_pars</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rsh_pars</span><span class="p">)</span>
 
 <div class="viewcode-block" id="parse_xc_name">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.parse_xc_name">[docs]</a>
@@ -878,7 +925,6 @@
 
 <div class="viewcode-block" id="parse_xc">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.parse_xc">[docs]</a>
-<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">parse_xc</span><span class="p">(</span><span class="n">description</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&#39;&#39;&#39;Rules to input functional description:</span>
 
@@ -940,16 +986,6 @@
         <span class="kn">from</span> <span class="nn">pyscf.scf.dispersion</span> <span class="kn">import</span> <span class="n">parse_dft</span>
         <span class="n">description</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parse_dft</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
         <span class="n">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">description</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;B3P86&#39;</span><span class="p">,</span> <span class="s1">&#39;B3LYP&#39;</span><span class="p">,</span> <span class="s1">&#39;X3LYP&#39;</span><span class="p">)</span> <span class="ow">and</span>
-        <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parse_xc</span><span class="p">,</span> <span class="s1">&#39;b3lyp5_warned&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span>
-        <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;B3LYP_WITH_VWN5&#39;</span><span class="p">)):</span>
-        <span class="n">parse_xc</span><span class="o">.</span><span class="n">b3lyp5_warned</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Since PySCF-2.3, B3LYP (and B3P86) are changed to the VWN-RPA variant, &#39;</span>
-                      <span class="s1">&#39;corresponding to the original definition by Stephens et al. (issue 1480) &#39;</span>
-                      <span class="s1">&#39;and the same as the B3LYP functional in Gaussian. &#39;</span>
-                      <span class="s1">&#39;To restore the VWN5 definition, you can put the setting &#39;</span>
-                      <span class="s1">&#39;&quot;B3LYP_WITH_VWN5 = True&quot; in pyscf_conf.py&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">assign_omega</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">hyb_or_sr</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">omega</span> <span class="ow">or</span> <span class="n">omega</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1478,34 +1514,16 @@
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_eval_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">deriv</span> <span class="o">&lt;=</span> <span class="n">max_deriv_order</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="n">xctype</span> <span class="o">=</span> <span class="n">xc_type</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">deriv</span> <span class="o">&lt;=</span> <span class="n">xc</span><span class="o">.</span><span class="n">max_deriv_order</span>
+    <span class="n">xctype</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">xc_type</span>
     <span class="k">assert</span> <span class="n">xctype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;HF&#39;</span><span class="p">,</span> <span class="s1">&#39;LDA&#39;</span><span class="p">,</span> <span class="s1">&#39;GGA&#39;</span><span class="p">,</span> <span class="s1">&#39;MGGA&#39;</span><span class="p">)</span>
 
     <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s1">&#39;MGGA&#39;</span> <span class="ow">and</span> <span class="n">rho</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
         <span class="n">rho</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rho</span><span class="p">[</span><span class="o">...</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">],:],</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
 
-    <span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">hyb</span> <span class="o">=</span> <span class="n">hyb</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">omega</span><span class="p">),)</span>
-
-    <span class="n">fn_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">]</span>
-    <span class="n">facs</span>   <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fn_facs</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># Current implementation does not support different omegas for</span>
-        <span class="c1"># different RSH functionals if there are multiple RSHs</span>
-        <span class="n">omega</span> <span class="o">=</span> <span class="p">[</span><span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">facs</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">omega</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">facs</span><span class="p">)</span>
-    <span class="n">fn_ids_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">fn_ids</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">fn_ids_set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">PROBLEMATIC_XC</span><span class="p">):</span>
-        <span class="n">problem_xc</span> <span class="o">=</span> <span class="p">[</span><span class="n">PROBLEMATIC_XC</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                      <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fn_ids_set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">PROBLEMATIC_XC</span><span class="p">)]</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Libxc functionals </span><span class="si">%s</span><span class="s1"> may have discrepancy to xcfun &#39;</span>
-                      <span class="s1">&#39;library.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">problem_xc</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">needs_laplacian</span><span class="p">(</span><span class="n">fid</span><span class="p">)</span> <span class="k">for</span> <span class="n">fid</span> <span class="ow">in</span> <span class="n">fn_ids</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">xc</span><span class="o">.</span><span class="n">needs_laplacian</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;laplacian in meta-GGA method&#39;</span><span class="p">)</span>
 
     <span class="n">nvar</span><span class="p">,</span> <span class="n">xlen</span> <span class="o">=</span> <span class="n">xc_deriv</span><span class="o">.</span><span class="n">_XC_NVAR</span><span class="p">[</span><span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">]</span>
@@ -1513,19 +1531,16 @@
     <span class="n">rho</span> <span class="o">=</span> <span class="n">rho</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">spin</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">nvar</span><span class="p">,</span><span class="n">ngrids</span><span class="p">)</span>
     <span class="n">outlen</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="n">xlen</span><span class="o">+</span><span class="n">deriv</span><span class="p">,</span> <span class="n">deriv</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">outlen</span><span class="p">,</span><span class="n">ngrids</span><span class="p">))</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fn_ids</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">nfunc</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">density_threshold</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_eval_xc</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-                            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="o">*</span><span class="n">n</span><span class="p">)(</span><span class="o">*</span><span class="n">fn_ids</span><span class="p">),</span>
-                            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="o">*</span><span class="n">n</span><span class="p">)(</span><span class="o">*</span><span class="n">facs</span><span class="p">),</span>
-                            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="o">*</span><span class="n">n</span><span class="p">)(</span><span class="o">*</span><span class="n">omega</span><span class="p">),</span>
-                            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">spin</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">deriv</span><span class="p">),</span>
-                            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">nvar</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">ngrids</span><span class="p">),</span>
-                            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">outlen</span><span class="p">),</span>
-                            <span class="n">rho</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-                            <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">),</span>
-                            <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">(</span><span class="n">density_threshold</span><span class="p">))</span>
+        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_eval_xc</span><span class="p">(</span><span class="n">n</span><span class="p">,</span>
+                            <span class="n">xc</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">,</span>
+                            <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="o">*</span><span class="n">n</span><span class="p">)(</span><span class="o">*</span><span class="n">xc</span><span class="o">.</span><span class="n">facs</span><span class="p">),</span>
+                            <span class="n">spin</span><span class="p">,</span> <span class="n">deriv</span><span class="p">,</span>
+                            <span class="n">nvar</span><span class="p">,</span> <span class="n">ngrids</span><span class="p">,</span>
+                            <span class="n">outlen</span><span class="p">,</span>
+                            <span class="n">rho</span><span class="o">.</span><span class="n">ctypes</span><span class="p">,</span>
+                            <span class="n">out</span><span class="o">.</span><span class="n">ctypes</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">out</span>
 
 <div class="viewcode-block" id="eval_xc_eff">
@@ -1662,12 +1677,10 @@
         <span class="k">if</span> <span class="n">deriv</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">kxc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kxc</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
-
         <span class="k">if</span> <span class="n">spin</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># Returns of eval_xc are structured as [grid_id,deriv_component]</span>
             <span class="c1"># for each term in libxc_out. Change the shape to [deriv_comp, grid_id]</span>
             <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">T</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">out</span><span class="p">]</span>
-
         <span class="n">out</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">out</span><span class="p">)[:</span><span class="n">outlen</span><span class="p">]</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="n">outlen</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">_libxc_to_xcfun_indices</span><span class="p">(</span><span class="n">xctype</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">deriv</span><span class="p">)</span>
@@ -1682,6 +1695,307 @@
     <span class="k">return</span> <span class="n">define_xc_</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">description</span><span class="p">,</span> <span class="n">xctype</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">rsh</span><span class="p">)</span></div>
 
 <span class="n">define_xc</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">define_xc_</span><span class="o">.</span><span class="vm">__doc__</span>
+
+<div class="viewcode-block" id="XCFunctionalCache">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.XCFunctionalCache">[docs]</a>
+<span class="k">class</span> <span class="nc">XCFunctionalCache</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Data structure for caching LibXC C data structures</span>
+
+<span class="sd">    Attributes for XCFunctionalCache:</span>
+<span class="sd">        xc_code : str</span>
+<span class="sd">            A string to describe the XC functional. See `parse_xc` for details.</span>
+<span class="sd">        spin : int</span>
+<span class="sd">            spin polarized if spin &gt; 0</span>
+<span class="sd">        xc_arr : ctypes array containing all `xc_func_type` struct of each</span>
+<span class="sd">            functional component</span>
+<span class="sd">        xc_objs : list of ctypes pointers of the `xc_func_type` struct of each</span>
+<span class="sd">            functional component. The objects point to the same memory address</span>
+<span class="sd">            in `xc_arr`</span>
+<span class="sd">        nfunc : int</span>
+<span class="sd">            number of LibXC functional components</span>
+<span class="sd">        hyb : hybrid coefficients as produced by `parse_xc()`</span>
+<span class="sd">        fn_ids : tuple of int</span>
+<span class="sd">            LibXC ID of each functional component</span>
+<span class="sd">        facs : tuple of float</span>
+<span class="sd">            factor of each functional component</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">density_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;__VV10&#39;</span> <span class="ow">in</span> <span class="n">xc_code</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Deprecated notation for NLC functional.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc_code</span> <span class="o">=</span> <span class="n">xc_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spin</span> <span class="o">=</span> <span class="n">spin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="n">fn_facs</span> <span class="o">=</span> <span class="n">parse_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fn_facs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fn_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">facs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">fn_facs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fn_ids</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">facs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">omega</span><span class="p">),)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Current implementation does not support different omegas for</span>
+            <span class="c1"># different RSH functionals if there are multiple RSHs</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">omega</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">)</span>
+        <span class="n">fn_ids_ctypes</span> <span class="o">=</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">)(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fn_ids</span><span class="p">)</span>
+        <span class="n">problem_xc</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fn_ids</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">PROBLEMATIC_XC</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">problem_xc</span><span class="p">:</span>
+            <span class="n">problem_xc</span> <span class="o">=</span> <span class="p">[</span><span class="n">PROBLEMATIC_XC</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">problem_xc</span><span class="p">]</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Libxc functionals </span><span class="si">%s</span><span class="s1"> may have discrepancy to xcfun &#39;</span>
+                          <span class="s1">&#39;library.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">problem_xc</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_init</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="n">fn_ids_ctypes</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xc_code</span><span class="si">}</span><span class="s2"> is not a valid functional&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">density_threshold</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">omega</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_omega_density_threshold_</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">density_threshold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc_objs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span> <span class="o">+</span> <span class="n">_XC_FUNC_TYPE_SIZE</span> <span class="o">*</span> <span class="n">i</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">)]</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">xc_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_xc_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">is_nlc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_is_nlc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">needs_laplacian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_needs_laplacian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">max_deriv_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_max_deriv_order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">hybrid_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_hybrid_coeff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">nlc_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_nlc_coeff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">rsh_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_rsh_coeff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">facs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_code</span><span class="p">)</span>
+
+<div class="viewcode-block" id="XCFunctionalCache.customize_">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.XCFunctionalCache.customize_">[docs]</a>
+    <span class="k">def</span> <span class="nf">customize_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hyb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">facs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">density_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Customize the functional in place. See `register_custom_functional_` for</span>
+<span class="sd">        a detailed description of the arguments.</span>
+
+<span class="sd">        Additional argument:</span>
+<span class="sd">            clear: bool</span>
+<span class="sd">                If True, clear all cached properties. Set to False may have a slight performace</span>
+<span class="sd">                gain, but one must manually clear cached properties that might change prior to</span>
+<span class="sd">                any productive calculations, preferably in the callback.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">obj_by_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_by_id</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">density_threshold</span> <span class="ow">or</span> <span class="p">(</span><span class="n">omega</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">omega</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_omega_density_threshold_</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">density_threshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hyb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyb</span> <span class="o">=</span> <span class="n">hyb</span>
+        <span class="k">if</span> <span class="n">facs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">facs</span> <span class="o">=</span> <span class="n">facs</span>
+        <span class="k">if</span> <span class="n">ext_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">ext_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">param</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">obj_by_id</span><span class="p">[</span><span class="n">xid</span><span class="p">]</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_get_info</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_info_get_n_ext_params</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">param</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">n</span><span class="p">,</span> \
+                    <span class="sa">f</span><span class="s2">&quot;&quot;&quot;Unexpected size of external parameters for functional </span><span class="si">{</span><span class="n">xid</span><span class="si">}</span><span class="s2">.</span>
+<span class="s2">Expected </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> but </span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> provided.&quot;&quot;&quot;</span>
+                <span class="n">_itrf</span><span class="o">.</span><span class="n">xc_func_set_ext_params</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">callback</span><span class="p">):</span>
+            <span class="n">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_by_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spin</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+            <span class="c1"># clear all cached properties</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;xc_type&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;is_nlc&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;needs_laplacian&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;max_deriv_order&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;hybrid_coeff&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;nlc_coeff&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cached_property</span><span class="p">(</span><span class="s1">&#39;rsh_coeff&#39;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_clear_cached_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_set_omega_density_threshold_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">density_threshold</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">density_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">density_threshold</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_set_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">,</span>
+                                       <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">)(</span><span class="o">*</span><span class="n">omega</span><span class="p">),</span>
+                                       <span class="n">density_threshold</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_itrf</span><span class="o">.</span><span class="n">LIBXC_xc_func_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_arr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># skip destructor call when XC failed to initialize</span>
+            <span class="k">pass</span>
+
+<div class="viewcode-block" id="XCFunctionalCache.obj_by_id">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.XCFunctionalCache.obj_by_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">obj_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns a dict where LibXC functional IDs are used as the key,</span>
+<span class="sd">        and the corresponding ctypes void pointer of the `xc_func_type`</span>
+<span class="sd">        structs are used as the value.  This dict is useful for users who</span>
+<span class="sd">        wish to perform low-level operations on the underlying LibXC data</span>
+<span class="sd">        structure.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">xid</span><span class="p">:</span> <span class="n">func</span> <span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fn_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc_objs</span><span class="p">)}</span></div>
+</div>
+
+
+<span class="n">_CUSTOM_FUNC_R</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_CUSTOM_FUNC_U</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_get_system_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">XCFunctionalCache</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_get_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">spin</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">_CUSTOM_FUNC_U</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_CUSTOM_FUNC_U</span><span class="p">[</span><span class="n">xc_code</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">_CUSTOM_FUNC_R</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_CUSTOM_FUNC_R</span><span class="p">[</span><span class="n">xc_code</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_get_system_xc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>
+
+<div class="viewcode-block" id="register_custom_functional_">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.register_custom_functional_">[docs]</a>
+<span class="k">def</span> <span class="nf">register_custom_functional_</span><span class="p">(</span><span class="n">new_xc_code</span><span class="p">,</span> <span class="n">based_on_xc_code</span><span class="p">,</span> <span class="n">ext_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">hyb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">facs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">density_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">restricted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unrestricted</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Register a custom functional with name `new_xc_code` based on an existing LibXC</span>
+<span class="sd">    functional with xc_code `based_on_xc_code`. When this function is called, the</span>
+<span class="sd">    functional with xc_code `based_on_xc_code` will be constructed first. Then users can</span>
+<span class="sd">    perform customization to the functional by setting the respective keyword arguments.</span>
+<span class="sd">    Common customization include setting functional external parameters, adjust mixing</span>
+<span class="sd">    factors of each functional components, and adjusting hybrid coefficients. Users can</span>
+<span class="sd">    also use a callback function to perform more advanced modification to the LibXC data</span>
+<span class="sd">    structure using ctypes or modify the parameters in XCFunctionalCache. Once registered,</span>
+<span class="sd">    users may use the custom functional by passing `new_xc_code` to any PySCF module that</span>
+<span class="sd">    uses LibXC. If `new_xc_code` has previously been registered, the older functional will</span>
+<span class="sd">    be replaced with the new definition. In this case, however, users are encouraged to use</span>
+<span class="sd">    `update_custom_functional_` instead to avoid reconstructing the LibXC C data structure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    new_xc_code : str</span>
+<span class="sd">        The string identifier of the customized functional</span>
+<span class="sd">    based_on_xc_code : str</span>
+<span class="sd">        The string identifier of the parent functional</span>
+<span class="sd">    ext_params : dict, with LibXC functional integer ID as key, and an array-like</span>
+<span class="sd">        object containing the functional parameters as value.</span>
+<span class="sd">        If not None, set the external parameters of the functional componet from</span>
+<span class="sd">        the dict using the xc_func_set_ext_params API.</span>
+<span class="sd">    omega : float</span>
+<span class="sd">        If not None, set the omega value in self.hyb. If hyb argument is set,</span>
+<span class="sd">        this argument is ignored.</span>
+<span class="sd">    hyb : tuple of float</span>
+<span class="sd">        If not None, set the hybrid coefficients self.hyb</span>
+<span class="sd">    facs : tuple of float</span>
+<span class="sd">        If not None, set the factors of each functional component self.facs</span>
+<span class="sd">    callback : callable</span>
+<span class="sd">        Callback function to perform more advanced customization.</span>
+<span class="sd">        The function takes 3 parameters:</span>
+<span class="sd">            xc: a XCFunctionalCache instance of the functional</span>
+<span class="sd">            obj_by_id: a dict constructed through xc.obj_by_id, used to access</span>
+<span class="sd">                underlying LibXC C data structure</span>
+<span class="sd">            spin: 0 for restricted and 1 for unrestricted</span>
+<span class="sd">        The callback function will make inplace modifications to xc object or</span>
+<span class="sd">        the underlying LibXC C data structure. Depending on the `restricted`</span>
+<span class="sd">        and `unrestricted` arguments, the callback may be called more than once.</span>
+<span class="sd">    restricted : bool</span>
+<span class="sd">        If True, create the spin-restricted version of the custom functional</span>
+<span class="sd">    unrestricted : bool</span>
+<span class="sd">        If True, create the spin-unrestricted version of the custom functional</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">spin</span><span class="p">):</span>
+        <span class="n">xc</span> <span class="o">=</span> <span class="n">XCFunctionalCache</span><span class="p">(</span><span class="n">based_on_xc_code</span><span class="p">,</span> <span class="n">spin</span><span class="p">)</span>
+        <span class="n">xc</span><span class="o">.</span><span class="n">xc_code</span> <span class="o">=</span> <span class="n">new_xc_code</span>
+        <span class="n">xc</span><span class="o">.</span><span class="n">customize_</span><span class="p">(</span><span class="n">ext_params</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">,</span> <span class="n">density_threshold</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xc</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parse_xc</span><span class="p">(</span><span class="n">new_xc_code</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Attempting to register a custom functional with xc_code &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">new_xc_code</span><span class="si">}</span><span class="s1">&quot;, which is a valid built-in xc_code. &#39;</span>
+                      <span class="s1">&#39;Consider using a different xc_code to avoid confusion.&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">restricted</span><span class="p">:</span>
+        <span class="n">_CUSTOM_FUNC_R</span><span class="p">[</span><span class="n">new_xc_code</span><span class="p">]</span> <span class="o">=</span> <span class="n">build</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">unrestricted</span><span class="p">:</span>
+        <span class="n">_CUSTOM_FUNC_U</span><span class="p">[</span><span class="n">new_xc_code</span><span class="p">]</span> <span class="o">=</span> <span class="n">build</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="update_custom_functional_">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.update_custom_functional_">[docs]</a>
+<span class="k">def</span> <span class="nf">update_custom_functional_</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">ext_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">omega</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">hyb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">facs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">density_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">restricted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unrestricted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Update the custom functional with name `xc_code` that was previously registered</span>
+<span class="sd">    through `register_custom_functional_`. See `register_custom_functional_` for</span>
+<span class="sd">    a detailed description of the keyword arguments.</span>
+
+<span class="sd">    Additional keyword argument:</span>
+<span class="sd">        clear: bool</span>
+<span class="sd">            If True, clear all cached properties. Clearing cached properties are</span>
+<span class="sd">            required if one or more cached properties (such as hybrid_coeff) are</span>
+<span class="sd">            changed after the update. Set to False allows users to manually handle</span>
+<span class="sd">            cache; one can clear only the properties that are expected to change</span>
+<span class="sd">            for a slight performace gain.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">xc</span><span class="p">):</span>
+        <span class="n">xc</span><span class="o">.</span><span class="n">customize_</span><span class="p">(</span><span class="n">ext_params</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">hyb</span><span class="p">,</span> <span class="n">facs</span><span class="p">,</span> <span class="n">density_threshold</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">clear</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">restricted</span><span class="p">:</span>
+        <span class="n">update</span><span class="p">(</span><span class="n">_CUSTOM_FUNC_R</span><span class="p">[</span><span class="n">xc_code</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">unrestricted</span><span class="p">:</span>
+        <span class="n">update</span><span class="p">(</span><span class="n">_CUSTOM_FUNC_U</span><span class="p">[</span><span class="n">xc_code</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="unregister_custom_functional_">
+<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.dft.html#pyscf.dft.libxc.unregister_custom_functional_">[docs]</a>
+<span class="k">def</span> <span class="nf">unregister_custom_functional_</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Unregister a custom functional with name `xc_code` that was previously registered</span>
+<span class="sd">    through `register_custom_functional_`.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">_CUSTOM_FUNC_R</span><span class="p">[</span><span class="n">xc_code</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">_CUSTOM_FUNC_U</span><span class="p">[</span><span class="n">xc_code</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
 </pre></div>
 
                 </article>

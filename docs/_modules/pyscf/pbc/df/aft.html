@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../../../../_static/documentation_options.js?v=1647406f"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -404,6 +404,7 @@
 <span class="kn">from</span> <span class="nn">pyscf.pbc</span> <span class="kn">import</span> <span class="n">gto</span> <span class="k">as</span> <span class="n">pbcgto</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.gto.pseudo</span> <span class="kn">import</span> <span class="n">pp_int</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts_helper</span> <span class="kn">import</span> <span class="n">is_zero</span><span class="p">,</span> <span class="n">gamma_point</span>
+<span class="kn">from</span> <span class="nn">pyscf.pbc.lib.kpts</span> <span class="kn">import</span> <span class="n">KPoints</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">ft_ao</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft_jk</span>
 <span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">aft_ao2mo</span>
@@ -563,7 +564,10 @@
         <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;DF for symmetry-adapted Kpoints is not supported&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
         <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span>
@@ -577,9 +581,16 @@
 <span class="k">def</span> <span class="nf">get_pp</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Get the periodic pseudopotential nuc-el AO matrix, with G=0 removed.</span>
 
-<span class="sd">    Kwargs:</span>
-<span class="sd">        mesh: custom mesh grids. By default mesh is determined by the</span>
-<span class="sd">        function _guess_eta from module pbc.df.gdf_builder.</span>
+<span class="sd">    The output of this function depends on the input `kpts`. Generally, the</span>
+<span class="sd">    output is a (Nk, Nao, Nao) array, where Nk is the number of k-points in the</span>
+<span class="sd">    provided `kpts`. If `kpts` is a (3,) array, corresponding to a single</span>
+<span class="sd">    k-point, the output will be a (Nao, Nao) matrix. If the optional input</span>
+<span class="sd">    `kpts` is not specified, this function will read the AFTDF.kpts for the</span>
+<span class="sd">    k-mesh and return a (Nk, Nao, Nao) array.</span>
+
+<span class="sd">    Note: This API has changed since PySCF-2.10. In PySCF 2.9 (or older), if</span>
+<span class="sd">    `kpts` is not specified, this funciton may return a (Nao, Nao) matrix for</span>
+<span class="sd">    the gamma point and a (Nk, Nao, Nao) array for other k-points.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">kpts</span><span class="p">,</span> <span class="n">is_single_kpt</span> <span class="o">=</span> <span class="n">_check_kpts</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
@@ -603,8 +614,16 @@
 <span class="k">def</span> <span class="nf">get_nuc</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;Get the periodic nuc-el AO matrix, with G=0 removed.</span>
 
-<span class="sd">    Kwargs:</span>
-<span class="sd">        function _guess_eta from module pbc.df.gdf_builder.</span>
+<span class="sd">    The output of this function depends on the input `kpts`. Generally, the</span>
+<span class="sd">    output is a (Nk, Nao, Nao) array, where Nk is the number of k-points in the</span>
+<span class="sd">    provided `kpts`. If `kpts` is a (3,) array, corresponding to a single</span>
+<span class="sd">    k-point, the output will be a (Nao, Nao) matrix. If the optional input</span>
+<span class="sd">    `kpts` is not specified, this function will read the AFTDF.kpts for the</span>
+<span class="sd">    k-mesh and return a (Nk, Nao, Nao) array.</span>
+
+<span class="sd">    Note: This API has changed since PySCF-2.10. In PySCF 2.9 (or older), if</span>
+<span class="sd">    `kpts` is not specified, this funciton may return a (Nao, Nao) matrix for</span>
+<span class="sd">    the gamma point and a (Nk, Nao, Nao) array for other k-points.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">process_clock</span><span class="p">(),</span> <span class="n">logger</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">())</span>
     <span class="n">nuc</span> <span class="o">=</span> <span class="n">_get_pp_loc_part1</span><span class="p">(</span><span class="n">mydf</span><span class="p">,</span> <span class="n">kpts</span><span class="p">,</span> <span class="n">with_pseudo</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -897,9 +916,9 @@
             <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span>
         <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="p">(</span><span class="n">is_zero</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
-            <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
-        <span class="n">kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
-        <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
+            <span class="n">nkpts</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">)</span>
 
         <span class="n">ao_loc</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">ao_loc_nr</span><span class="p">()</span>
         <span class="n">Gv</span><span class="p">,</span> <span class="n">Gvbase</span><span class="p">,</span> <span class="n">kws</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">get_Gv_weights</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
@@ -919,7 +938,10 @@
             <span class="n">nij</span> <span class="o">=</span> <span class="n">ni</span><span class="o">*</span><span class="n">nj</span>
 
         <span class="k">if</span> <span class="n">bvk_kmesh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">bvk_kmesh</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">kpts_to_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">kpts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bvk_kmesh</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bvk_kmesh</span> <span class="o">=</span> <span class="n">k2gamma</span><span class="o">.</span><span class="n">kpts_to_kmesh</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
         <span class="c1">#TODO:</span>
         <span class="c1"># ke_cutoff = pbctools.mesh_to_cutoff(cell.lattice_vectors(), mesh)</span>
         <span class="c1"># rs_cell = ft_ao._RangeSeparatedCell.from_cell(cell, ke_cutoff, ft_ao.RCUT_THRESHOLD)</span>
@@ -990,7 +1012,7 @@
     <span class="c1"># to mimic molecular DF object</span>
     <span class="n">blockdim</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;pbc_df_df_DF_blockdim&#39;</span><span class="p">,</span> <span class="mi">240</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">))):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">stdout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">verbose</span>
@@ -1005,14 +1027,34 @@
         <span class="c1"># The following attributes are not input options.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Range separated Coulomb DF objects</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">get_abs_kpts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span><span class="p">)</span>
+
+    <span class="nd">@kpts</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">kpts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">get_scaled_kpts</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
 <div class="viewcode-block" id="AFTDF.dump_flags">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.scf.rsjk.AFTDF.dump_flags">[docs]</a>
     <span class="k">def</span> <span class="nf">dump_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;******** </span><span class="si">%s</span><span class="s1"> ********&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;mesh = </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> PWs)&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;len(kpts) = </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">))</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    kpts = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="p">)</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&lt;</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;******** </span><span class="si">%s</span><span class="s1"> ********&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;mesh = </span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> PWs)&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">))</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;len(kpts) = </span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">kpts</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug1</span><span class="p">(</span><span class="s1">&#39;    kpts = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
@@ -1020,6 +1062,8 @@
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.df.html#pyscf.pbc.scf.rsjk.AFTDF.reset">[docs]</a>
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">cell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span><span class="p">,</span> <span class="n">KPoints</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kpts</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rsh_df</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="bp">self</span></div>

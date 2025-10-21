@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=67920a36"></script>
+    <script src="../../../_static/documentation_options.js?v=1647406f"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.10" />
+  <meta name="docsearch:version" content="2.11" />
   </head>
   
   
@@ -438,6 +438,9 @@
     <span class="c1"># GHF or customized RHF/UHF may be of complex type</span>
     <span class="n">real_system</span> <span class="o">=</span> <span class="p">(</span><span class="n">eom</span><span class="o">.</span><span class="n">_cc</span><span class="o">.</span><span class="n">_scf</span><span class="o">.</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
 
+    <span class="n">mem_now</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">current_memory</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">max_memory</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">eom</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">-</span> <span class="n">mem_now</span><span class="p">)</span>
+
     <span class="n">eig</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">davidson_nosym1</span>
     <span class="k">if</span> <span class="n">user_guess</span> <span class="ow">or</span> <span class="n">koopmans</span><span class="p">:</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">guess</span><span class="p">)</span> <span class="o">==</span> <span class="n">nroots</span>
@@ -449,14 +452,14 @@
             <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">_eigs_cmplx2real</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">real_system</span><span class="p">)</span>
         <span class="n">conv</span><span class="p">,</span> <span class="n">es</span><span class="p">,</span> <span class="n">vs</span> <span class="o">=</span> <span class="n">eig</span><span class="p">(</span><span class="n">matvec</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">eig_close_to_init_guess</span><span class="p">,</span>
                            <span class="n">tol</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
-                           <span class="n">max_space</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+                           <span class="n">max_space</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">def</span> <span class="nf">pickeig</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">envs</span><span class="p">):</span>
             <span class="n">real_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">linalg_helper</span><span class="o">.</span><span class="n">_eigs_cmplx2real</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">real_idx</span><span class="p">,</span> <span class="n">real_system</span><span class="p">)</span>
         <span class="n">conv</span><span class="p">,</span> <span class="n">es</span><span class="p">,</span> <span class="n">vs</span> <span class="o">=</span> <span class="n">eig</span><span class="p">(</span><span class="n">matvec</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">precond</span><span class="p">,</span> <span class="n">pick</span><span class="o">=</span><span class="n">pickeig</span><span class="p">,</span>
                            <span class="n">tol</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">conv_tol</span><span class="p">,</span> <span class="n">max_cycle</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_cycle</span><span class="p">,</span>
-                           <span class="n">max_space</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
+                           <span class="n">max_space</span><span class="o">=</span><span class="n">eom</span><span class="o">.</span><span class="n">max_space</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="n">max_memory</span><span class="p">,</span> <span class="n">nroots</span><span class="o">=</span><span class="n">nroots</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">log</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">eom</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">INFO</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">en</span><span class="p">,</span> <span class="n">vn</span><span class="p">,</span> <span class="n">convn</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nroots</span><span class="p">),</span> <span class="n">es</span><span class="p">,</span> <span class="n">vs</span><span class="p">,</span> <span class="n">conv</span><span class="p">):</span>
