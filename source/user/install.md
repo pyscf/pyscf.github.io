@@ -111,19 +111,27 @@ See [CMake options](#cmake-options) for details about CMake configuration.
 
 ## Install with conda
 
-If you have a [Conda](https://conda.io/docs/) (or
-[Anaconda](https://www.continuum.io/downloads) environment, PySCF
-package can be installed from the Conda cloud (for Linux and macOS
-systems),
+If you use [Conda](https://conda.io/docs/) (or
+[Anaconda](https://www.continuum.io/downloads), PySCF can be installed from the
+conda-forge channel on Linux and MacOS
 ```bash
 conda install -c conda-forge pyscf
 ```
 
-To prevent potential conflict problems, it is recommended to enable the conda-forge channel in the ``.condarc``, 
-or create an environment enabling conda-forge like
+To avoid potential conflict problems, it is recommended to create a dedicated
+environment that uses conda-forge
 ```bash
-conda create -n pyscf-env -c conda-forge python=3.9 pyscf
+conda create -n pyscf-env -c conda-forge python=3.12 pyscf
 conda activate pyscf-env
+```
+
+The conda-forge build of PySCF is available for various platforms, including
+Apple Silicon and other ARM64 systems. These builds are linked against OpenBLAS,
+which may be less efficient than the MKL library on x86 hardware. If you are
+using an x86 CPU and prefer MKL for BLAS functions, an alternative release is
+available from the pyscf channel
+```bash
+conda install -c pyscf pyscf
 ```
 
 <!-- 
