@@ -22,8 +22,19 @@ from pyscf import dft, gto
 from pyscf.geomopt import optimize
 
 
-def build_cu_complex():
-    """Construct the molecule from user-supplied Cartesian coordinates."""
+def build_cu_complex(spin: int = 1, charge: int = 0):
+    """Construct the molecule from user-supplied Cartesian coordinates.
+
+    Parameters
+    ----------
+    spin
+        ``2S = N_alpha - N_beta``. The default ``spin=1`` is needed because
+        the complex has 185 electrons (open-shell doublet). Adjust only if you
+        intentionally change the electron count or oxidation state.
+    charge
+        Total molecular charge. Keep at ``0`` unless you modify the complex to
+        represent a charged species.
+    """
 
     atom_coords = """
     C  -6.48761  -4.97242   1.48230
@@ -68,7 +79,8 @@ def build_cu_complex():
     mol = gto.M(
         atom=atom_coords,
         unit="Angstrom",
-        spin=1,  # 2S = N_alpha - N_beta; required because the system has 185 electrons
+        spin=spin,  # 2S = N_alpha - N_beta; required because the system has 185 electrons
+        charge=charge,
         basis={
             "Cu": "def2-svp",  # use def2-tzvp for Cu in production
             "default": "def2-svp",
@@ -77,10 +89,15 @@ def build_cu_complex():
     return mol
 
 
-def optimize_cu_complex():
-    """Set up a DFT calculation and perform geometry optimization."""
+def optimize_cu_complex(spin: int = 1, charge: int = 0):
+    """Set up a DFT calculation and perform geometry optimization.
 
-    mol = build_cu_complex()
+    The default ``spin=1`` and ``charge=0`` match the provided coordinates.
+    Override them only if you adjust the electron count (e.g., by adding or
+    removing hydrogens) or wish to model a charged state.
+    """
+
+    mol = build_cu_complex(spin=spin, charge=charge)
     mf = dft.UKS(mol)
     mf.xc = "b3lyp"
     mf.kernel()
