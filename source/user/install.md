@@ -34,6 +34,9 @@ pip install pyscf-forge
 Some other features are only maintained as [Extensions](user/extensions) to PySCF. 
 :::
 
+To achieve better performance, additional install options are described in
+[Advanced build options](#advanced-build-options)
+
 ## Build from source with pip
 
 If you're interested in a new feature that's not included in the latest release or you simply 
@@ -382,6 +385,22 @@ ExternalProject_Add(libcint
     https://github.com/sunqm/qcint.git
      ...
 ```
+
+### Install an optimized einsum backend
+
+Many modules in PySCF rely on `numpy.einsum` to perform tensor contractions.
+However, `numpy.einsum` is not efficient due to the lack of parallel execution.
+[TBLIS](https://github.com/devinamatthews/tblis) provides an optimized
+implementation for tensor contractions. It can deliver performance improvements
+of 10x to 100x than `numpy.einsum`.
+
+TBLIS can be used as a drop-in backend for einsum operations. The backend can be
+installed via the `pytblis` package:
+```bash
+pip install pytblis
+```
+Once pytblis is installed, PySCF will automatically detect and use it as the
+backend for einsum operations.
 
 ## Troubleshooting
 
