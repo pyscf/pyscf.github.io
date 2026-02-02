@@ -199,6 +199,10 @@ html_sidebars = {
   "about": [],
 }
 
+# Use announcement for banners.
+html_theme_options = {
+   "announcement": "The third PySCF Developers Meeting is scheduled for Aug 27-28, 2026, at the University of Chicago! Details coming soon.",
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = [alabaster.get_path()]
