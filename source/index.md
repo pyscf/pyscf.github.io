@@ -44,5 +44,6 @@ ecosystem of :ref:`installing_extproj`.
 quickstart
 user/index
 contributor/index
+Benchmarks <benchmarks>
 About <about>
 ```

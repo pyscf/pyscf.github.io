@@ -196,6 +196,7 @@ if html_theme == 'pydata_sphinx_theme':
 html_sidebars = {
   "install": [],
   "quickstart": [],
+  "benchmarks": [],
   "about": [],
 }
 

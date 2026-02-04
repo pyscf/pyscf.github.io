@@ -1,0 +1,996 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Guidelines for PBC DFT Parameter Settings &#8212; PySCF</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/pyscf-pst.css?v=ed6b5f64" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=20401a9d"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/pbc/dft-settings';</script>
+    <link rel="icon" href="../../_static/favicon-32x32.png"/>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Electron-phonon coupling" href="../eph.html" />
+    <link rel="prev" title="Mixing PBC and molecular modules" href="mix_mol.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2.12" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">The third PySCF Developers Meeting is scheduled for Aug 27-28, 2026, at the University of Chicago! Details coming soon.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PySCF</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributor/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../benchmarks.html">
+    Benchmarks
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../quickstart.html">
+    Quickstart
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributor/index.html">
+    Contributor Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../benchmarks.html">
+    Benchmarks
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about.html">
+    About
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">How to install PySCF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../using.html">How to use PySCF</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Building molecules and crystals</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../gto.html">Molecular structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pbcgto.html">Crystal structure</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Electronic structure methods</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../scf.html">Self-consistent field (SCF) methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dft.html">Density functional theory (DFT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mp.html">Second-order Møller–Plesset perturbation theory (MP2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gw.html">GW approximation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ci.html">Configuration interaction (CISD and FCI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cc.html">Coupled-cluster theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../adc.html">Algebraic diagrammatic construction (ADC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../agf2.html">Auxiliary second-order Green’s function perturbation theory (AGF2)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mcscf.html">Multi-configuration self-consistent field (MCSCF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mcpdft.html">Multi-configuration pair-density functional theory (MC-PDFT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mrpt.html">Multi-reference perturbation theory (MRPT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tddft.html">Time-dependent Hartree-Fock and density functional theory</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Other functionalities</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../solvent.html">Solvation models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../qmmm.html">QM/MM methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md.html">Molecular Dynamics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../df.html">Density fitting (DF)</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../pbc.html">Periodic boundary conditions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="scf.html">SCF and DFT methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="df.html">Density fitting for crystalline calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mix_mol.html">Mixing PBC and molecular modules</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Guidelines for PBC DFT Parameter Settings</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../eph.html">Electron-phonon coupling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lo.html">Localized orbitals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sgx.html">Seminumerical exchange (SGX)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../geomopt.html">Geometry optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gpu.html">GPU Acceleration (GPU4PySCF)</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">PySCF-forge</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../pyscf-forge.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pprpa.html">particle-particle Random Phase Approximation (ppRPA)</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Extensions</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../extensions.html">Extensions</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">User Guide</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../pbc.html" class="nav-link">Periodic boundary conditions</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Guidelines for PBC DFT Parameter Settings</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="guidelines-for-pbc-dft-parameter-settings">
+<h1>Guidelines for PBC DFT Parameter Settings<a class="headerlink" href="#guidelines-for-pbc-dft-parameter-settings" title="Link to this heading">#</a></h1>
+<p>DFT calculations for extended systems with PBC involve multiple parameters
+to control how integrals are evaluated. Compared to molecular DFT calculations,
+these settings are significantly more complex. In molecular DFT calculations,
+integral-related settings mainly affect computational efficiency, with only
+minor impact on accuracy. However, in periodic DFT, integral parameters are
+coupled to the choice of pseudopotential, the type of exchange-correlation
+functional, basis sets, boundary conditions, and the available memory and disk
+space.</p>
+<p>To support various computation scenarios, PySCF provides multiple algorithms for
+computing Coulomb integrals and the numerical integration options for DFT XC
+functional. This document discusses how to select the suitable schemes for
+different use cases.</p>
+<section id="overview-of-the-available-integral-schemes">
+<h2>Overview of the Available Integral Schemes<a class="headerlink" href="#overview-of-the-available-integral-schemes" title="Link to this heading">#</a></h2>
+<section id="coulomb-integral-schemes">
+<h3>Coulomb Integral Schemes<a class="headerlink" href="#coulomb-integral-schemes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>FFTDF</strong> (aka the GPW algorithm):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">FFTDF</span>
+<span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe0&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">FFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span> <span class="c1"># Unecessary, this is the default</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This algorithm employs plane-wave (PW) functions as auxiliary functions in the
+density fitting method. Coulomb integrals are computed using real-space
+density evaluation with fast-Fourier transform. In this approach, electron
+density is evaluated on real space grids and the Poisson equation is solved in
+reciprocal space to evaluate Coulomb integrals. The fast Fourier transforms
+(FFTs) are used to transform quantities between real space and reciprocal
+space.</p>
+<p>With a sufficiently high energy cutoff in reciprocal space (approaching the
+complete basis limit for plane waves), the FFTDF method does not introduce any
+approximations. This algorithm primarily serves as the reference
+implementation for other integral algorithms. Various features, such as the
+nuclear gradients, stress tensor, are first developed and validated with FFTDF.</p>
+<p>However, FFTDF is generally considered computationally inefficient and
+intensive in memory consumption. It is not suitable for treating core
+electrons or evaluating exact exchange in hybrid or HF methods. Nevertheless,
+due to its formally exact, FFTDF remains the default integral scheme for DFT,
+HF, and post-HF calculations.</p>
+<ul class="simple">
+<li><p><strong>AFTDF</strong> (Analytical Fourier Transform Density Fitting):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.df</span> <span class="kn">import</span> <span class="n">AFTDF</span>
+<span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe0&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span> <span class="o">=</span> <span class="n">AFTDF</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>AFTDF extends the FFTDF approach by analytically evaluating the Fourier
+transforms of Gaussian basis functions.
+Compared to FFTDF, when using the same PW energy cutoff, AFTDF introduces
+smaller errors in Coulomb integrals, also consumes significantly less memory.
+However, AFTDF is generally slower than FFTDF. Similar to the FFTDF, AFTDF is
+generally not suitable for describing core electrons and exact exchange, due
+to the requirement of a high energy cutoff for PWs and the large number of
+auxiliary plane waves required.</p>
+<p>A unique feature of AFTDF, however, is its ability to perform Fourier
+transforms for non-uniform PW grids. This property allows AFTDF to efficiently
+handle low-dimensional systems (like surfaces, and wires) by introducing
+infinite vacuum regions and using non-uniform grids along non-periodic
+directions.</p>
+<ul class="simple">
+<li><p><strong>GDF</strong> (Gaussian density fitting):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">(</span><span class="n">auxbasis</span><span class="o">=</span><span class="s1">&#39;weigend&#39;</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The GDF (Gaussian Density Fitting) algorithm uses Gaussian auxiliary basis
+functions to represent the product of atomic orbitals. Unlike the plane-wave
+auxiliary functions used in FFTDF or AFTDF, Gaussian auxiliary functions can
+efficiently describe both core and valence electrons with a small number of
+basis functions. This property makes GDF effective for all-electron
+calculations and hybrid functional DFT computations.</p>
+<p>GDF method has a significant overhead to construct the three-index tensor
+during initialization. Once the this tensor is generated, it is very efficient
+to evaluate the HF exchange matrix in GDF due to the small number of auxiliary
+functions. The available disk space and memory will limit the problem size.
+GDF may become impractical for very dense k-point sampling.</p>
+<p>In the PySCF CPU version, the GDF three-index tensor is stored on disk. In
+GPU4PySCF, this tensor is compressed and held completely in host memory.
+The compression reduces the size of the tensor to approximately 20% of the
+original PySCF size. However, the compression storage in GPU4PySCF requires
+additional work to decompress the tensor, which can become more expensive than
+evaluating HF exchange when many k-points are involved.</p>
+<p>GDF supports all types of periodicity, including fully 3D periodic systems
+and low-dimensional systems. It also allows the evaluation of four-index
+Coulomb integrals in both AO and MO representations. Other features, like the
+computation of nuclear gradients, are currently limited.</p>
+<p>Compared to the auxiliary PW fitting functions (FFTDF and AFTDF),
+GDF can produce larger errors in Coulomb integrals due to the incompleteness
+of the Gaussian fitting functions. Diffuse fitting functions can cause linear
+dependencies, which further increases the error. These errors are typically
+more significant than those observed in standard molecular DF calculations.</p>
+<p>Another known limitation of the current GDF implementation is its handling
+of k-point band calculations. Even a small number of k-points can trigger
+the generation of many three-index tensors, which often leads to huge
+memory and disk usage.</p>
+<p>Despite these limitations, in various scenarios, GDF remains a practical and
+preferred option for hybrid functional DFT and post-HF calculations. GDF often
+provides the best trade-off between accuracy and computational efficiency for
+all-electron and hybrid functional calculations.</p>
+<p>See <a class="reference internal" href="#pbc_df"><span class="xref myst">PBC denisty fitting</span></a> for more details of the GDF,
+FFTDF, and AFTDF modules.</p>
+<ul class="simple">
+<li><p><strong>RSDF</strong> (Range-separated density fitting):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">rs_density_fit</span><span class="p">(</span><span class="n">auxbasis</span><span class="o">=</span><span class="s1">&#39;weigend&#39;</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>RSDF is an alternative implementation of the GDF method. RSDF is designed to
+produce the same results as the GDF program. The implementation of RSDF is
+generally more efficient than GDF; however, it may introduce slightly larger
+errors. The GDF implementation is more conservative in terms of integral
+screening and various cutoff thresholds.</p>
+<p>The functionalities of RSDF are less comprehensive than the GDF module. It
+supports 3D calculations but does not support low-dimensional calculations.</p>
+<ul class="simple">
+<li><p><strong>MDF</strong> Mixed density fitting):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">mix_density_fit</span><span class="p">(</span><span class="n">auxbasis</span><span class="o">=</span><span class="s1">&#39;weigend&#39;</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">with_df</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>MDF combines PWs and Gaussian functions as auxiliary basis functions. In
+principle, MDF should be more accurate than GDF, while computationally being
+cheaper than FFTDF and AFTDF.</p>
+<p>However, in practice, MDF often suffers from severe linear dependency between
+the plane-wave and Gaussian components of the fitting basis. Attempts to
+remove these linear dependencies can introduce additional numerical errors,
+which in some cases make MDF less accurate than GDF. From a computational
+perspective, MDF is significantly slower than GDF.</p>
+<p>As a result, MDF is typically not recommended. It is only considered in
+scenarios where GDF errors are unacceptably large and alternative methods such
+as RSJK are too slow.</p>
+<ul class="simple">
+<li><p><strong>ISDF</strong> (Interpolative separable density fitting):
+This method is under development. This method is efficient for hybrid DFT.</p></li>
+<li><p><strong>RSJK</strong> (Range-separated J/K builder):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.scf.rsjk</span> <span class="kn">import</span> <span class="n">RangeSeparatedJKBuilder</span>
+<span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">rsjk</span> <span class="o">=</span> <span class="n">RangeSeparatedJKBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The RSJK method evaluates Coulomb integrals (the short-range part) in real
+space, with the long-range integrals augmented by AFTDF. RSJK is an accurate
+integral evaluation algorithm. It can produce results identical to FFTDF (or
+AFTDF) with an infinite high energy cutoff.</p>
+<p>RSJK is suitable for all-electron and hybrid functional DFT calculations. It
+also supports 3D periodic systems and low-dimensional systems.</p>
+<p>RSJK is efficient for the evaluation of HF exchange over a large number
+k-points. However, it is not as efficient for a small number of k-points. Its
+scaling against the number of k-points is low. For hybrid DFT calculations
+with a 5x5x5 k-mesh or larger, RSJK can become more efficient than any of the
+previously mentioned density fitting methods.</p>
+</section>
+<section id="numerical-integration-grids">
+<h3>Numerical Integration Grids<a class="headerlink" href="#numerical-integration-grids" title="Link to this heading">#</a></h3>
+<p>In periodic DFT calculations, XC integrals are evaluated numerically on a set of
+real-space mesh grids. Two primary types of grids are commonly used: uniform
+grids and atomic-centered grids.</p>
+<ul class="simple">
+<li><p><strong>UniformGrids</strong>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">UniformGrids</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="n">UniformGrids</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Uniform grids consist of an evenly spaced mesh that spans the unit cell. These
+mesh grids can be shared with the mesh used in the FFTDF-based Coulomb integral
+computation code. The XC and Coulomb computations can be combined to reduce the
+overall computational cost.</p>
+<p>Although a sufficient dense uniform mesh can accurately describe the core electron
+density, it require significantly more grids than atomic-centered grids. As a
+result, uniform grids are usually employed when pseudopotentials are used.</p>
+<ul class="simple">
+<li><p><strong>BeckeGrids</strong>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">BeckeGrids</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">grids</span> <span class="o">=</span> <span class="n">BeckeGrids</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Becke grids are classical atom-centered numerical grids adapted for periodic
+boundary conditions. These grids are suitable for all-electron calculations.
+The number of grid points in periodic BeckeGrids is significantly larger than
+those in molecular DFT. Despite this, the total number of Becke grids required
+is still substantially smaller than that needed for equivalent accuracy with
+uniform grids.</p>
+</section>
+<section id="numerical-integration-schemes">
+<h3>Numerical Integration Schemes<a class="headerlink" href="#numerical-integration-schemes" title="Link to this heading">#</a></h3>
+<p>Each type of DFT integration grid is associated with a corresponding
+XC integration algorithm. Two algorithms are implemented in PySCF:</p>
+<ul class="simple">
+<li><p><strong>NumInt</strong>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.dft</span> <span class="kn">import</span> <span class="n">NumInt</span><span class="p">,</span> <span class="n">KNumInt</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="c1"># mf.grids = KNumInt() # Unecessary, this is the default</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The NumInt module follows the implementation used in molecular DFT. It
+supports both UniformGrids and BeckeGrids. The computational cost of NumInt is
+roughly proportional to the number of grid points. The locality of orbitals
+and the sparsity of the XC matrix are not explored in the NumInt code. As a
+result, the cost scales roughly cubicly with system size. Despite this, NumInt
+remains the default XC integration scheme as it supports most functionalities
+(such as the fxc kernel integration in TDDFT).</p>
+<p>For uniform grids, NumInt can often be replaced by the more efficient
+MultiGrid algorithm.</p>
+<ul class="simple">
+<li><p><strong>MultiGridNumInt</strong>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The MultiGrid algorithm is a numerical integration scheme optimized for Coulomb
+and XC functional evaluation. It takes advantage of the locality of orbitals,
+employing different integration grids for different orbital types.</p>
+<p>MultiGrid is designed to work only with UniformGrids and does not support
+BeckeGrids. It is commonly used for calculations with pseudopotentials.</p>
+<p>More details of Multigrid integration code are documented in <a class="reference internal" href="#pbc_dft_multigrid"><span class="xref myst">Multigrid Integration</span></a></p>
+</section>
+</section>
+<section id="scenarios-and-suggested-configurations">
+<h2>Scenarios and Suggested Configurations<a class="headerlink" href="#scenarios-and-suggested-configurations" title="Link to this heading">#</a></h2>
+<section id="summary-of-scenarios-and-integration-options">
+<h3>Summary of Scenarios and Integration Options<a class="headerlink" href="#summary-of-scenarios-and-integration-options" title="Link to this heading">#</a></h3>
+<p>The following table summarizes common PBC DFT scenarios and the available
+integral or XC integration algorithms for each case:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>Available Algorithms</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>All-electron calculations</p></td>
+<td><p>GDF, RSDF, RSJK, NumInt-BeckeGrids</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pseudopotentials</p></td>
+<td><p>FFTDF, MultiGrid, NumInt</p></td>
+</tr>
+<tr class="row-even"><td><p>Semi-local functionals (w/o HFX)</p></td>
+<td><p>FFTDF, GDF, RSDF, MultiGrid, NumInt-BeckeGrids</p></td>
+</tr>
+<tr class="row-odd"><td><p>Hybrid DFT</p></td>
+<td><p>GDF, RSDF, RSJK</p></td>
+</tr>
+<tr class="row-even"><td><p>2D systems with truncated Coulomb</p></td>
+<td><p>FFTDF, GDF, RSJK, MultiGrid, NumInt-BeckeGrids</p></td>
+</tr>
+<tr class="row-odd"><td><p>1D systems with infinite vacuum</p></td>
+<td><p>AFTDF, GDF, RSJK, NumInt-BeckeGrids</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="typical-scenarios">
+<h3>Typical Scenarios<a class="headerlink" href="#typical-scenarios" title="Link to this heading">#</a></h3>
+<p>Several key dimensions influence the choice of integral algorithms and numerical
+configurations in the PBC DFT calculations:</p>
+<ul class="simple">
+<li><p>Functional type: Semi-local (without HFX) vs. hybrid (with HFX)</p></li>
+<li><p>Core treatment: All-electron vs. pseudopotential</p></li>
+<li><p>Periodicity: Fully 3D periodic vs. low-dimensional systems (1D/2D slab models)</p></li>
+</ul>
+<p>In the following, we analyze each combination of these dimensions, and provide
+practical guidance for setting up efficient integral schemes and configurations.</p>
+<section id="pseudopotential-semi-local-xc-3d-periodicity">
+<h4>Pseudopotential + Semi-local XC + 3D Periodicity<a class="headerlink" href="#pseudopotential-semi-local-xc-3d-periodicity" title="Link to this heading">#</a></h4>
+<p>This is one of the most common scenarios in PBC DFT calculations. The
+default settings of the KRKS and KUKS classes can directly handle this type of
+system. However, the default <code class="docutils literal notranslate"><span class="pre">NumInt</span></code> calculator is not computationally
+efficient for large systems. For better performance, it is recommended to use
+the <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> calculator. For example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">pseudo</span><span class="o">=</span><span class="s1">&#39;gth-pbe&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;gth-dzvp&#39;</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="pseudopotential-hybrid-functional-3d-periodicity">
+<h4>Pseudopotential + Hybrid functional + 3D Periodicity<a class="headerlink" href="#pseudopotential-hybrid-functional-3d-periodicity" title="Link to this heading">#</a></h4>
+<p>Gaussian-based PBC DFT is considered more affordable for hybrid functional
+calculations than plane-wave DFT program. This feature makes hybrid functional
+also a common scenario in PBC DFT simulations.</p>
+<p>In this setting, the default FFTDF algorithm can be used
+for small systems. It is inefficient for larger unit cells or
+dense k-point meshes due to its high memory and computational requirements.</p>
+<p>For larger systems, it is recommended to switch to more efficient integral
+algorithms for evaluating the HF exchange integrals. The available options
+include <strong>GDF</strong>, <strong>RSDF</strong>, and <strong>RSJK</strong>.
+The size of the three-index integral tensors generated by GDF and RSDF scales
+with the square of the number of k-points and the cube of the unit-cell size. In
+practice, these methods are suitable when the product <span class="math notranslate nohighlight">\(N_{AO} * N_{k}\)</span> is below
+approximately 15,000. Beyond this limit, the RSJK algorithm is more appropriate
+due to its lower memory requirements.</p>
+<p>For the semi-local XC functional part of the hybrid DFT, the default
+<code class="docutils literal notranslate"><span class="pre">NumInt</span></code> calculator can be safely used. It can also be replaced by the
+<code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> calculator. Since the XC integration typically takes a small
+fraction of the total computational cost in hybrid DFT, the choice between
+<code class="docutils literal notranslate"><span class="pre">NumInt</span></code> and <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> has little impact on overall performance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">pseudo</span><span class="o">=</span><span class="s1">&#39;gth-pbe&#39;</span><span class="p">,</span> <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;gth-dzvp&#39;</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;hse06&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To perform RSJK algorithm, we can execute</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyscf.pbc.scf.rsjk</span> <span class="kn">import</span> <span class="n">RangeSeparatedJKBuilder</span>
+<span class="n">kpts</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">rsjk</span> <span class="o">=</span> <span class="n">RangeSeparatedJKBuilder</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">kpts</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The order of applying <code class="docutils literal notranslate"><span class="pre">multigrid_numint()</span></code> and setting <code class="docutils literal notranslate"><span class="pre">mf.rsjk</span> <span class="pre">=</span> <span class="pre">...</span></code>, does not
+affect the final setup.</p>
+</section>
+<section id="pseudopotential-semi-local-xc-low-dimensional-system-2d-and-1d">
+<h4>Pseudopotential + Semi-local XC + Low-dimensional System (2D and 1D)<a class="headerlink" href="#pseudopotential-semi-local-xc-low-dimensional-system-2d-and-1d" title="Link to this heading">#</a></h4>
+<p>The setup for 2D calculations is almost the same as that for the 3D calculations.
+To perform a 2D calculation, we can simply set
+<code class="docutils literal notranslate"><span class="pre">cell.dimension</span> <span class="pre">=</span> <span class="pre">2</span></code>. This will apply a truncated Coulomb potential along
+the z-axis. Note, a reasonable vacuum is still required in the
+z-direction as that in the 3D case. Both the <code class="docutils literal notranslate"><span class="pre">NumInt</span></code> and <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code>
+calculators fully support 2D calculations. The <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> is more
+favorable as it is more efficient than <code class="docutils literal notranslate"><span class="pre">NumInt</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">3.6</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">,</span> <span class="mi">15</span><span class="p">]))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>For 1D (wire) systems, a practical and commonly used approach is to
+perform the calculation in 3D or 2D with a sufficiently large vacuum
+along the non-periodic directions. For example, we can use the 2D setup with a
+large vacuum along the y-axis. However, this setting may slightly break the
+symmetry between the y-axis and z-axis.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">3.6</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">]))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">multigrid_numint</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>PySCF also offers methods for infinite vacuum boundaries in low-dimensional
+systems. The <code class="docutils literal notranslate"><span class="pre">FFTDF</span></code>, <code class="docutils literal notranslate"><span class="pre">NumInt</span></code>, and <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> algorithms cannot be used
+in this mode. In the infinite vacuum mode, achieving similar accuracy
+requires a significantly larger computational cost than the above configurations
+that use a truncated Coulomb potential with <code class="docutils literal notranslate"><span class="pre">cell.dimension=2</span></code>.
+Therefore, we will not discuss the integral configurations under the infinite
+vacuum mode here.</p>
+</section>
+<section id="pseudopotential-hybrid-functional-low-dimensional-system-2d-and-1d">
+<h4>Pseudopotential + Hybrid functional + Low-dimensional System (2D and 1D)<a class="headerlink" href="#pseudopotential-hybrid-functional-low-dimensional-system-2d-and-1d" title="Link to this heading">#</a></h4>
+<p>If the truncated Coulomb potential with <code class="docutils literal notranslate"><span class="pre">cell.dimension=2</span></code> is applied, the GDF
+and RSJK algorithms can still be used for 2D calculations with hybrid
+functionals. However, the RSDF scheme does not support the truncated Coulomb
+potential. Settings for XC integration are the same as those for the semi-local
+XC functional scenario mentioned above.</p>
+</section>
+<section id="all-electron-semi-local-xc-3d-periodicity">
+<h4>All-electron + Semi-local XC + 3D Periodicity<a class="headerlink" href="#all-electron-semi-local-xc-3d-periodicity" title="Link to this heading">#</a></h4>
+<p>When all-electron basis sets are used, the default FFTDF algorithm becomes
+inappropriate because of the extremely high PW energy cutoff. Even if HF
+exchange is <strong>not</strong> computed, it is still necessary to employ one of the GDF,
+RSDF, or RSJK methods to evaluate the Coulomb matrix efficiently and accurately.</p>
+<p>Due to the limitations in the implementation of GDF and RSDF, we cannot use a
+very large k-point mesh when employing these integral methods.</p>
+<p>For the XC numerical integration, the default <code class="docutils literal notranslate"><span class="pre">NumInt</span></code> with uniform grids is
+also not suitable for all-electron calculations. The <code class="docutils literal notranslate"><span class="pre">MultiGridNumInt</span></code> algorithm
+does not support all-electron calculations. In this case, one has to use
+the <code class="docutils literal notranslate"><span class="pre">NumInt</span></code> calculator with atomic <code class="docutils literal notranslate"><span class="pre">BeckeGrids</span></code>. As a result, all-electron +
+semi-local XC calculations are much slower than their corresponding
+pseudopotential + semi-local XC counterparts.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="all-electron-hybrid-functional-3d-periodicity">
+<h4>All-electron + Hybrid functional + 3D Periodicity<a class="headerlink" href="#all-electron-hybrid-functional-3d-periodicity" title="Link to this heading">#</a></h4>
+<p>The settings required for all-electron calculations with hybrid functionals are
+the same as those for all-electron calculations with semi-local XC functionals.
+The GDF, RSDF, or RSJK integral schemes should be used for Coulomb and HF
+exchange evaluations, together with NumInt-BeckeGrids for XC integration.</p>
+<p>Although hybrid functional calculations are still slower than semi-local XC
+calculations, the difference in computational cost is moderate compared to the
+pseudopotential-based hybrid DFT. The all-electron hybrid DFT is about 3-5 times
+slower than semi-local XC during the initialization of the GDF three-index
+tensor. This slowdown is notably smaller than the performance gap in
+corresponding pseudopotential calculations, where hybrid functionals can be
+orders of magnitude more expensive.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe0&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="all-electron-low-dimensional-systems">
+<h4>All-electron + Low-dimensional Systems<a class="headerlink" href="#all-electron-low-dimensional-systems" title="Link to this heading">#</a></h4>
+<p>The setup for all-electron low-dimensional systems is similar to that for 3D
+systems. For Coulomb integrals, one should use GDF or RSJK, regardless of
+whether HF exchange is required. The RSDF algorithm is not suitable in this
+scenario because it does not account for the truncated Coulomb potential
+(<code class="docutils literal notranslate"><span class="pre">cell.dimension=2</span></code>).</p>
+<p>For XC integration, the only suitable option is NumInt with BeckeGrids.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cell</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">3.6</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">,</span> <span class="mi">15</span><span class="p">]))</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">KRKS</span><span class="p">(</span><span class="n">xc</span><span class="o">=</span><span class="s1">&#39;pbe0&#39;</span><span class="p">,</span> <span class="n">kpts</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">make_kpts</span><span class="p">(</span><span class="n">kmesh</span><span class="p">))</span><span class="o">.</span><span class="n">density_fit</span><span class="p">()</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="mix_mol.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Mixing PBC and molecular modules</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../eph.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Electron-phonon coupling</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-the-available-integral-schemes">Overview of the Available Integral Schemes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coulomb-integral-schemes">Coulomb Integral Schemes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-integration-grids">Numerical Integration Grids</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#numerical-integration-schemes">Numerical Integration Schemes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scenarios-and-suggested-configurations">Scenarios and Suggested Configurations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-scenarios-and-integration-options">Summary of Scenarios and Integration Options</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#typical-scenarios">Typical Scenarios</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pseudopotential-semi-local-xc-3d-periodicity">Pseudopotential + Semi-local XC + 3D Periodicity</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pseudopotential-hybrid-functional-3d-periodicity">Pseudopotential + Hybrid functional + 3D Periodicity</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pseudopotential-semi-local-xc-low-dimensional-system-2d-and-1d">Pseudopotential + Semi-local XC + Low-dimensional System (2D and 1D)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pseudopotential-hybrid-functional-low-dimensional-system-2d-and-1d">Pseudopotential + Hybrid functional + Low-dimensional System (2D and 1D)</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#all-electron-semi-local-xc-3d-periodicity">All-electron + Semi-local XC + 3D Periodicity</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#all-electron-hybrid-functional-3d-periodicity">All-electron + Hybrid functional + 3D Periodicity</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#all-electron-low-dimensional-systems">All-electron + Low-dimensional Systems</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/user/pbc/dft-settings.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, The PySCF Developers.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

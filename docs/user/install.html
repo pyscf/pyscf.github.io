@@ -155,6 +155,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarks.html">
+    Benchmarks
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../about.html">
     About
   </a>
@@ -255,6 +262,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../benchmarks.html">
+    Benchmarks
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../about.html">
     About
   </a>
@@ -322,6 +336,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pbc/scf.html">SCF and DFT methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pbc/df.html">Density fitting for crystalline calculations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pbc/mix_mol.html">Mixing PBC and molecular modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pbc/dft-settings.html">Guidelines for PBC DFT Parameter Settings</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="eph.html">Electron-phonon coupling</a></li>
@@ -429,6 +444,8 @@ installed with <code class="docutils literal notranslate"><span class="pre">pip<
 </div>
 <p>Some other features are only maintained as <a class="reference internal" href="#user/extensions"><span class="xref myst">Extensions</span></a> to PySCF.</p>
 </div>
+<p>To achieve better performance, additional install options are described in
+<a class="reference internal" href="#advanced-build-options"><span class="std std-ref">Advanced build options</span></a></p>
 </section>
 <section id="build-from-source-with-pip">
 <h2>Build from source with pip<a class="headerlink" href="#build-from-source-with-pip" title="Link to this heading">#</a></h2>
@@ -498,17 +515,24 @@ try to import and pring the PySCF version,</p>
 </section>
 <section id="install-with-conda">
 <h2>Install with conda<a class="headerlink" href="#install-with-conda" title="Link to this heading">#</a></h2>
-<p>If you have a <a class="reference external" href="https://conda.io/docs/">Conda</a> (or
-<a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a> environment, PySCF
-package can be installed from the Conda cloud (for Linux and macOS
-systems),</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>pyscf<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pyscf
+<p>If you use <a class="reference external" href="https://conda.io/docs/">Conda</a> (or
+<a class="reference external" href="https://www.continuum.io/downloads">Anaconda</a>, PySCF can be installed from the
+conda-forge channel on Linux and MacOS</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pyscf
 </pre></div>
 </div>
-<p>To prevent potential conflict problems, it is recommended to enable the conda-forge channel in the <code class="docutils literal notranslate"><span class="pre">.condarc</span></code>,
-or create an environment enabling conda-forge like</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>pyscf-env<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>-c<span class="w"> </span>pyscf<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9<span class="w"> </span>pyscf
+<p>To avoid potential conflict problems, it is recommended to create a dedicated
+environment that uses conda-forge</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>pyscf-env<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>pyscf
 conda<span class="w"> </span>activate<span class="w"> </span>pyscf-env
+</pre></div>
+</div>
+<p>The conda-forge build of PySCF is available for various platforms, including
+Apple Silicon and other ARM64 systems. These builds are linked against OpenBLAS,
+which may be less efficient than the MKL library on x86 hardware. If you are
+using an x86 CPU and prefer MKL for BLAS functions, an alternative release is
+available from the pyscf channel</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>pyscf<span class="w"> </span>pyscf
 </pre></div>
 </div>
 <!-- 
@@ -798,6 +822,21 @@ URL of the integral library in <code class="docutils literal notranslate"><span 
 </div>
 </div>
 </section>
+<section id="install-an-optimized-einsum-backend">
+<h3>Install an optimized einsum backend<a class="headerlink" href="#install-an-optimized-einsum-backend" title="Link to this heading">#</a></h3>
+<p>Many modules in PySCF rely on <code class="docutils literal notranslate"><span class="pre">numpy.einsum</span></code> to perform tensor contractions.
+However, <code class="docutils literal notranslate"><span class="pre">numpy.einsum</span></code> is not efficient due to the lack of parallel execution.
+<a class="reference external" href="https://github.com/devinamatthews/tblis">TBLIS</a> provides an optimized
+implementation for tensor contractions. It can deliver performance improvements
+of 10x to 100x than <code class="docutils literal notranslate"><span class="pre">numpy.einsum</span></code>.</p>
+<p>TBLIS can be used as a drop-in backend for einsum operations. The backend can be
+installed via the <code class="docutils literal notranslate"><span class="pre">pytblis</span></code> package:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pytblis
+</pre></div>
+</div>
+<p>Once pytblis is installed, PySCF will automatically detect and use it as the
+backend for einsum operations.</p>
+</section>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
@@ -908,6 +947,7 @@ After removing the <code class="docutils literal notranslate"><span class="pre">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-without-internet">Install without internet</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-optimized-blas">Using optimized BLAS</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-qcint-optimized-integral-library">Using the Qcint optimized integral library</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-an-optimized-einsum-backend">Install an optimized einsum backend</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
