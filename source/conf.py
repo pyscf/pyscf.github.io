@@ -202,7 +202,7 @@ html_sidebars = {
 
 # Use announcement for banners.
 html_theme_options = {
-   "announcement": "The third PySCF Developers Meeting is scheduled for Aug 27-28, 2026, at the University of Chicago! Details coming soon.",
+   "announcement": "The <a href='https://pyscf.psd.uchicago.edu/'>third PySCF Developers Meeting</a> will take place Aug 27-28, 2026, at the University of Chicago!",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
