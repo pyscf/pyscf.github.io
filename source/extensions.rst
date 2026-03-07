@@ -50,7 +50,6 @@ forge               https://github.com/pyscf/pyscf-forge
 icmpspt             https://github.com/pyscf/icmpspt
 mbd                 https://github.com/pyscf/mbd
 naive-hci           https://github.com/pyscf/naive-hci
-nao                 https://github.com/pyscf/nao
 properties          https://github.com/pyscf/properties
 qsdopt              https://github.com/pyscf/qsdopt
 rt                  https://github.com/pyscf/rt
