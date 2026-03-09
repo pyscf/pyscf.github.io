@@ -6,7 +6,7 @@ license.  The development of PySCF began in 2014. Since then, it has grown
 from being a single-group code to one relied on daily by over 100 research
 teams in academia and industry across the world. For more details, see its
 extensive list of [features](features.rst), [version history](version), and 
-example [benchmark data](benchmark).
+performance [benchmarks](benchmarks).
 
 ## Code of conduct
 

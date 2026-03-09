@@ -196,9 +196,14 @@ if html_theme == 'pydata_sphinx_theme':
 html_sidebars = {
   "install": [],
   "quickstart": [],
+  "benchmarks": [],
   "about": [],
 }
 
+# Use announcement for banners.
+html_theme_options = {
+   "announcement": "The <a href='https://pyscf.psd.uchicago.edu/'>third PySCF Developers Meeting</a> will take place Aug 27-28, 2026, at the University of Chicago!",
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = [alabaster.get_path()]
