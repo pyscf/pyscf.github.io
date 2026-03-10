@@ -1,23 +1,19 @@
 #!/usr/bin/env python
 """
 Geometry optimization for a copper complex using PySCF.
-
 This example builds a Cu complex from user-supplied Cartesian coordinates,
 sets up an unrestricted KS-DFT calculation with the B3LYP functional, and
 performs a geometry optimization through :func:`pyscf.geomopt.optimize`.
-
 The molecule has an odd number of electrons (185), so you must provide
-``spin=1`` to :class:`pyscf.gto.Mole` (``2S = N_\alpha - N_\beta``) and use an
+``spin=1`` to :class:`pyscf.gto.Mole` (``2S = N_alpha - N_beta``) and use an
 open-shell mean-field object such as :class:`pyscf.dft.UKS`. Omitting the spin
 information leads to the ``Electron number ... and spin ... are not
 consistent`` error reported by PySCF.
-
-For production work, consider using a larger basis on the transition metal
-(e.g. ``def2-tzvp`` for Cu) while keeping lighter atoms in a smaller basis
-(e.g. ``def2-svp``) to control cost. For illustration, this example assigns
-``def2-svp`` uniformly.
+For production work, consider using a larger, uniformly applied basis set
+(e.g. ``def2-tzvp`` for all atoms) to improve accuracy. Mixing basis sets of
+different quality across atoms leads to uncontrollable errors and is not
+recommended. For illustration, this example assigns ``def2-svp`` uniformly.
 """
-
 from pyscf import dft, gto
 from pyscf.geomopt import optimize
 
@@ -35,7 +31,6 @@ def build_cu_complex(spin: int = 1, charge: int = 0):
         Total molecular charge. Keep at ``0`` unless you modify the complex to
         represent a charged species.
     """
-
     atom_coords = """
     C  -6.48761  -4.97242   1.48230
     C  -7.93727  -4.98602   0.94199
@@ -75,16 +70,12 @@ def build_cu_complex(spin: int = 1, charge: int = 0):
     H  -8.30389  -1.11923   2.35558
     H  -5.35116  -2.45939  -0.49326
     """
-
     mol = gto.M(
         atom=atom_coords,
         unit="Angstrom",
         spin=spin,  # 2S = N_alpha - N_beta; required because the system has 185 electrons
         charge=charge,
-        basis={
-            "Cu": "def2-svp",  # use def2-tzvp for Cu in production
-            "default": "def2-svp",
-        },
+        basis="def2-svp",  # use def2-tzvp uniformly across all atoms in production
     )
     return mol
 
@@ -96,12 +87,10 @@ def optimize_cu_complex(spin: int = 1, charge: int = 0):
     Override them only if you adjust the electron count (e.g., by adding or
     removing hydrogens) or wish to model a charged state.
     """
-
     mol = build_cu_complex(spin=spin, charge=charge)
     mf = dft.UKS(mol)
     mf.xc = "b3lyp"
     mf.kernel()
-
     mol_opt = optimize(mf)
     print("Optimized geometry (Angstrom):")
     for sym, coord in zip(
