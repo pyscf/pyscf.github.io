@@ -44,6 +44,7 @@ ecosystem of :ref:`installing_extproj`.
 quickstart
 user/index
 contributor/index
+Virtual Seminars <pyscf-virtual-seminar-series/index>
 Benchmarks <benchmarks>
 About <about>
 ```
