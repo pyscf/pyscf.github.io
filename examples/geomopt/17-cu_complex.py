@@ -88,7 +88,7 @@ def optimize_cu_complex(spin: int = 1, charge: int = 0):
     removing hydrogens) or wish to model a charged state.
     """
     mol = build_cu_complex(spin=spin, charge=charge)
-    mf = dft.UKS(mol)
+    mf = dft.KS(mol)
     mf.xc = "b3lyp"
     mf.kernel()
     mol_opt = optimize(mf)
