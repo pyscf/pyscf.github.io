@@ -159,7 +159,6 @@ The excited-state 1-RDMs can be calculated as follows::
 The 1-RDMs can be used to compute excited-state one-particle properties,
 such as dipole moments, see the following example:
 :source:`examples/adc/07-closed_shell_1RDMS.py`.
-The 1-RDM functionality is currently limited, see below.
 
 Transition 1-RDMs between the ground and excited states are also available
 for all methods, except EE-RADC.
@@ -275,10 +274,6 @@ Current limitations
 
 Some limitations of current implementation are listed below:
 
-* The EE-RADC code does not support calculating oscillator strengths.
-  This property can be computed using the EE-UADC code (i.e., by using
-  the UHF reference) for a closed- or open-shell molecule.
-
 * The EE- and IP/EA-RADC codes compute only the states of lowest spin:
   S = 0 (singlet) and S = 1/2 (doublet), respectively. Using the
   corresponding UADC code allows to compute excitations with ΔS = 0,
@@ -286,15 +281,4 @@ Some limitations of current implementation are listed below:
 
 * Computing spin square expectation values is currently only available for
   EE-UADC.
-
-* The reference and excited-state 1-RDMs are not implemented for EE-RADC.
-  Also, the reference 1-RDMs are not available for any UADC method.
-
-* The EE-UADC(3) calculations of excited-state one-particle reduced density
-  matrices include correlation contributions up to EE-UADC(2)-X, i.e. the
-  third-order terms are missing from the singles-singles and singles-doubles
-  coupling sectors.
-
-* The EE-UADC(3) oscillator strengths do not include the contributions from
-  third-order amplitudes.
 
