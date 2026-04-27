@@ -26,20 +26,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=20401a9d"></script>
+    <script src="../../../_static/documentation_options.js?v=f5edd4dd"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.12" />
+  <meta name="docsearch:version" content="2.13" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -70,7 +70,9 @@
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -396,11 +398,19 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">os.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">join</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyscf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.gto.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_nwchem</span><span class="p">,</span> <span class="n">parse_nwchem_ecp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.gto.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_cp2k</span><span class="p">,</span> <span class="n">parse_cp2k_pp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.lib.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisNotFoundError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">__config__</span>
+
+<span class="n">USER_BASIS_DIR</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_BASIS_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">USER_BASIS_ALIAS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_BASIS_ALIAS&#39;</span><span class="p">,</span> <span class="p">{})</span>
+<span class="n">USER_GTH_ALIAS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_GTH_ALIAS&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+<span class="n">OPTIMIZE_CONTRACTION</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;gto_basis_parse_optimize&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">ENFORCE_ELEMENT_MATCH</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;gto_basis_enforce_element_match&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
 <span class="n">ALIAS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;ano&#39;</span>        <span class="p">:</span> <span class="s1">&#39;ano.dat&#39;</span>        <span class="p">,</span>
@@ -720,6 +730,30 @@
     <span class="s1">&#39;ccecpregaugccpvtz&#39;</span><span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_reg&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVTZ.dat&#39;</span><span class="p">),</span>
     <span class="s1">&#39;ccecpregaugccpvqz&#39;</span><span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_reg&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVQZ.dat&#39;</span><span class="p">),</span>
     <span class="s1">&#39;ccecpregaugccpv5z&#39;</span><span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_reg&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pV5Z.dat&#39;</span><span class="p">),</span>
+<span class="c1"># ccECP_28_core (Sr, In with 28-electron Ar+3d10 core)</span>
+    <span class="s1">&#39;ccecp28&#39;</span>            <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP.dat&#39;</span>   <span class="p">),</span>
+    <span class="s1">&#39;ccecp28ccpvdz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVDZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28ccpvtz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVTZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28ccpvqz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVQZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28ccpv5z&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pV5Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28ccpv6z&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pV6Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28augccpvdz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVDZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28augccpvtz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVTZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28augccpvqz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVQZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28augccpv5z&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pV5Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp28augccpv6z&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_28_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pV6Z.dat&#39;</span><span class="p">),</span>
+<span class="c1"># ccECP_36_core (Sr with 36-electron Kr core)</span>
+    <span class="s1">&#39;ccecp36&#39;</span>            <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP.dat&#39;</span>   <span class="p">),</span>
+    <span class="s1">&#39;ccecp36ccpvdz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVDZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36ccpvtz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVTZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36ccpvqz&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pVQZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36ccpv5z&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pV5Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36ccpv6z&#39;</span>      <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_cc-pV6Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36augccpvdz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVDZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36augccpvtz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVTZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36augccpvqz&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pVQZ.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36augccpv5z&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pV5Z.dat&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;ccecp36augccpv6z&#39;</span>   <span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="s1">&#39;ccecp-basis&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_36_core&#39;</span><span class="p">,</span> <span class="s1">&#39;ccECP_aug-cc-pV6Z.dat&#39;</span><span class="p">),</span>
 <span class="c1">#spin-orbit ECPs</span>
     <span class="s1">&#39;ecpds10mdfso&#39;</span> <span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;soecp&#39;</span><span class="p">,</span> <span class="s1">&#39;ECPDS10MDFSO.dat&#39;</span><span class="p">),</span>
     <span class="s1">&#39;ecpds28mdfso&#39;</span> <span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;soecp&#39;</span><span class="p">,</span> <span class="s1">&#39;ECPDS28MDFSO.dat&#39;</span><span class="p">),</span>
@@ -757,10 +791,6 @@
     <span class="s1">&#39;sapgrasplarge&#39;</span>   <span class="p">:</span> <span class="s1">&#39;sap_grasp_large.dat&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 
-<span class="n">USER_BASIS_DIR</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_BASIS_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-<span class="n">USER_BASIS_ALIAS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_BASIS_ALIAS&#39;</span><span class="p">,</span> <span class="p">{})</span>
-<span class="n">USER_GTH_ALIAS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;USER_GTH_ALIAS&#39;</span><span class="p">,</span> <span class="p">{})</span>
-
 <span class="k">if</span> <span class="n">USER_BASIS_ALIAS</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">ALIAS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
     <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;USER_BASIS_ALIAS keys conflict with predefined basis sets&#39;</span><span class="p">)</span>
 
@@ -780,6 +810,8 @@
     <span class="s1">&#39;gthccdzvp&#39;</span>   <span class="p">:</span> <span class="s1">&#39;gth-cc-dzvp.dat&#39;</span><span class="p">,</span>
     <span class="s1">&#39;gthcctzvp&#39;</span>   <span class="p">:</span> <span class="s1">&#39;gth-cc-tzvp.dat&#39;</span><span class="p">,</span>
     <span class="s1">&#39;gthccqzvp&#39;</span>   <span class="p">:</span> <span class="s1">&#39;gth-cc-qzvp.dat&#39;</span><span class="p">,</span>
+    <span class="c1"># TODO: Remove the legacy database after verifying whether they are</span>
+    <span class="c1"># consistent with the latest version of BASIS_MOLOPT</span>
     <span class="s1">&#39;gthszvmolopt&#39;</span>      <span class="p">:</span> <span class="s1">&#39;gth-szv-molopt.dat&#39;</span><span class="p">,</span>
     <span class="s1">&#39;gthdzvpmolopt&#39;</span>     <span class="p">:</span> <span class="s1">&#39;gth-dzvp-molopt.dat&#39;</span><span class="p">,</span>
     <span class="s1">&#39;gthtzvpmolopt&#39;</span>     <span class="p">:</span> <span class="s1">&#39;gth-tzvp-molopt.dat&#39;</span><span class="p">,</span>
@@ -842,8 +874,6 @@
             <span class="k">return</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">mbas</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">ALIAS</span><span class="p">[</span><span class="n">mbas</span><span class="p">]]</span> <span class="o">+</span> <span class="n">convert</span><span class="p">(</span><span class="n">extension</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
-
-<span class="n">OPTIMIZE_CONTRACTION</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;gto_basis_parse_optimize&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
 <div class="viewcode-block" id="parse">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.parse">[docs]</a>
@@ -952,6 +982,20 @@
 <span class="n">optimize_contraction</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">optimize_contraction</span>
 <span class="n">to_general_contraction</span> <span class="o">=</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">to_general_contraction</span>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_basis_str</span><span class="p">(</span><span class="n">parse_fn</span><span class="p">,</span> <span class="n">input_str</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">parse_fn</span><span class="p">(</span><span class="n">input_str</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ENFORCE_ELEMENT_MATCH</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">parse_fn</span><span class="p">(</span><span class="n">input_str</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;The basis set string does not explicitly match the element &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1">. It is stilled parsed and assigned to </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1"> without &#39;</span>
+                <span class="s1">&#39;enforcing element matching. If you want to enforce a strict &#39;</span>
+                <span class="s1">&#39;match between the basis set and elements, set</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    gto_basis_enforce_element_match = True</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;in ~/.pyscf_conf.py&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
 
 <div class="viewcode-block" id="load">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.load">[docs]</a>
@@ -1001,6 +1045,7 @@
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">USER_BASIS_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">basis_dir</span> <span class="o">=</span> <span class="n">USER_BASIS_DIR</span>
     <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">GTH_ALIAS</span><span class="p">:</span>
+        <span class="c1">#TODO: _load_MOLOPT(_to_MOLOPT_name(name), symb, _GTH_BASIS_DIR)</span>
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">GTH_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">fload</span> <span class="o">=</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">load</span>
         <span class="n">basis_dir</span> <span class="o">=</span> <span class="n">_GTH_BASIS_DIR</span>
@@ -1010,44 +1055,40 @@
         <span class="n">basis_dir</span> <span class="o">=</span> <span class="n">USER_BASIS_DIR</span>
     <span class="k">elif</span> <span class="n">_is_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">_parse_pople_basis</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span>
-                                      <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid basis </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="n">optimize</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid basis </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-
-        <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.gto.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">bse</span>
-        <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s1">&#39;Basis may be available in basis-set-exchange. &#39;</span>
-                <span class="s1">&#39;It is recommended to install basis-set-exchange: &#39;</span>
-                <span class="s1">&#39;pip install basis-set-exchange&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;GTH&#39;</span> <span class="ow">in</span> <span class="n">filename_or_basisname</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">contr_scheme</span> <span class="o">==</span> <span class="s1">&#39;Full&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">filename_or_basisname</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_parse_basis_str</span><span class="p">(</span><span class="n">parse_cp2k</span><span class="o">.</span><span class="n">parse</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
-                    <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">symb</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_orbital_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="n">symb</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">parse_cp2k</span><span class="o">.</span><span class="n">_load_MOLOPT</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">_GTH_BASIS_DIR</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filename_or_basisname</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.gto.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">bse</span>
+            <span class="k">if</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s1">&#39;Basis may be available in basis-set-exchange. &#39;</span>
+                    <span class="s1">&#39;It is recommended to install basis-set-exchange: &#39;</span>
+                    <span class="s1">&#39;pip install basis-set-exchange&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">bse_obj</span> <span class="o">=</span> <span class="n">bse</span><span class="o">.</span><span class="n">basis_set_exchange</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_basis</span><span class="p">(</span>
+                        <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">elements</span><span class="o">=</span><span class="n">symb</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">bse</span><span class="o">.</span><span class="n">_orbital_basis</span><span class="p">(</span><span class="n">bse_obj</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="n">symb</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown basis format or basis name</span><span class="se">\n</span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_parse_basis_str</span><span class="p">(</span><span class="n">parse_nwchem</span><span class="o">.</span><span class="n">parse</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span>
+                                    <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_parse_basis_str</span><span class="p">(</span><span class="n">parse_cp2k</span><span class="o">.</span><span class="n">parse</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span>
+                                    <span class="n">symb</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
 
         <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown basis format or basis name for </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -1081,19 +1122,27 @@
         <span class="n">basmod</span> <span class="o">=</span> <span class="n">ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_BASIS_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filename_or_basisname</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unable to parse the input ECP data</span><span class="se">\n</span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
         <span class="k">pass</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid ECP </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ENFORCE_ELEMENT_MATCH</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">parse_nwchem_ecp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;The ECP input does not explicitly match the element </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1">. &#39;</span>
+                <span class="s1">&#39;It is stilled parsed and assigned to </span><span class="si">{symb}</span><span class="s1"> without enforcing &#39;</span>
+                <span class="s1">&#39;element matching. If you want to enforce a strict match &#39;</span>
+                <span class="s1">&#39;between the ECP input and elements, set</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;    gto_basis_enforce_element_match = True</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;in ~/.pyscf_conf.py&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+        <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
 
     <span class="c1"># Last, a trial to access Basis Set Exchange database</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.gto.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">bse</span>
@@ -1112,6 +1161,10 @@
     <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="s1">&#39;Unknown ECP format or ECP name&#39;</span><span class="p">)</span></div>
 
 
+<span class="c1"># PP_NAME_PATTERN follows the convention of CP2K orbital basis and pseudo names</span>
+<span class="c1"># https://pierre-24.github.io/cp2k-basis/users/basis_sets_and_pseudos</span>
+<span class="n">PP_NAME_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^GTH-[A-Z0-9]+-q\d+$&#39;</span><span class="p">)</span>
+
 <div class="viewcode-block" id="load_pseudo">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.gto.basis.html#pyscf.gto.basis.load_pseudo">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_pseudo</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">):</span>
@@ -1121,17 +1174,35 @@
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_load_external</span><span class="p">(</span><span class="n">parse_cp2k_pp</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">PP_NAME_PATTERN</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">):</span>
+        <span class="c1"># Note: the default *-GTH basis for Na has been changed, compared to</span>
+        <span class="c1"># eariler versions. The default one in earlier versions are renamed to</span>
+        <span class="c1"># *-GTH-q9_old in the new database (see GTH_POTENTIALS).</span>
+        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">_load_GTH_POTENTIALS</span><span class="p">(</span>
+            <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">_GTH_PP_DIR</span><span class="p">)</span>
+
+    <span class="c1"># TODO: remove the lagecy parser, except gth-hf-rev. gth-hf-rev data are not</span>
+    <span class="c1"># available in the GTH_POTENTIALS or POTENTIAL_UZH databases</span>
     <span class="n">name</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">_format_pseudo_name</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">PP_ALIAS</span><span class="p">:</span>
-        <span class="n">basmod</span> <span class="o">=</span> <span class="n">PP_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_GTH_PP_DIR</span><span class="p">,</span> <span class="n">basmod</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+        <span class="n">ppfile</span> <span class="o">=</span> <span class="n">PP_ALIAS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">_GTH_PP_DIR</span><span class="p">,</span> <span class="n">ppfile</span><span class="p">),</span> <span class="n">symb</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">BasisNotFoundError</span><span class="p">:</span>
-        <span class="k">raise</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid PP </span><span class="si">{</span><span class="n">filename_or_basisname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ENFORCE_ELEMENT_MATCH</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parse_cp2k_pp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">filename_or_basisname</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;The pseudo string does not explicitly match the element </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1">. &#39;</span>
+            <span class="s1">&#39;It is stilled parsed and assigned to </span><span class="si">{symb}</span><span class="s1"> without enforcing &#39;</span>
+            <span class="s1">&#39;element matching. If you want to enforce a strict match &#39;</span>
+            <span class="s1">&#39;between the ECP input and elements, set</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="s1">&#39;    gto_basis_enforce_element_match = True</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="s1">&#39;in ~/.pyscf_conf.py&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_load_external</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">filename_or_basisname</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1184,8 +1255,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1219,7 +1290,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
 </p></div>
       
     </div>

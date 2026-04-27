@@ -26,20 +26,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=20401a9d"></script>
+    <script src="../../../../_static/documentation_options.js?v=f5edd4dd"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.12" />
+  <meta name="docsearch:version" content="2.13" />
   
     
     <script src="../../../../_static/searchtools.js"></script>
@@ -70,7 +70,9 @@
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -392,13 +394,18 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.linalg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">__config__</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">lib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.scf</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf</span> <span class="k">as</span> <span class="n">mol_hf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc</span><span class="w"> </span><span class="kn">import</span> <span class="n">tools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc.lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">kpts</span> <span class="k">as</span> <span class="n">libkpts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc.lib.kpts_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_trim</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc.scf</span><span class="w"> </span><span class="kn">import</span> <span class="n">khf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc.scf</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf</span> <span class="k">as</span> <span class="n">pbchf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.symm</span><span class="w"> </span><span class="kn">import</span> <span class="n">symmetrize_matrix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.scf.hf_symm</span><span class="w"> </span><span class="kn">import</span> <span class="n">so2ao_mo_coeff</span>
 
 <div class="viewcode-block" id="get_occ">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.get_occ">[docs]</a>
@@ -438,7 +445,7 @@
         <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
 
     <span class="n">mo_occ_kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">check_mo_occ_symmetry</span><span class="p">(</span><span class="n">mo_occ_kpts</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">mo_occ_kpts</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mo_occ_kpts</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="energy_elec">
@@ -485,21 +492,62 @@
 
 <div class="viewcode-block" id="eig">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.eig">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">eig</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">eig</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.scf.hf_symm</span><span class="w"> </span><span class="kn">import</span> <span class="n">eig</span> <span class="k">as</span> <span class="n">eig_symm</span>
     <span class="n">cell</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">cell</span>
     <span class="n">symm_orb</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">symm_orb</span>
     <span class="n">irrep_id</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">irrep_id</span>
 
-    <span class="n">nkpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">h_kpts</span><span class="p">)</span>
+    <span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span> <span class="o">=</span> <span class="n">h_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">symm_orb</span><span class="p">)</span> <span class="o">==</span> <span class="n">nkpts</span>
     <span class="n">eig_kpts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">mo_coeff_kpts</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
-        <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">eig_symm</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">irrep_id</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">eig_symm</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">s_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">overwrite</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">irrep_id</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
         <span class="n">eig_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="n">mo_coeff_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">eig_kpts</span><span class="p">,</span> <span class="n">mo_coeff_kpts</span></div>
+
+
+<div class="viewcode-block" id="eig_trs">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.eig_trs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">eig_trs</span><span class="p">(</span><span class="n">kmf</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39; Forcing real orbitals at time-reversal invariant momenta.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">cell</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">cell</span>
+    <span class="n">kpts</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">kpts</span>
+    <span class="n">trs_mask</span> <span class="o">=</span> <span class="n">is_trim</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts_ibz</span><span class="p">)</span>
+
+    <span class="n">nao</span> <span class="o">=</span> <span class="n">h_kpts</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">nkpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">nkpts_ibz</span>
+    <span class="n">eig_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span><span class="p">))</span>
+    <span class="n">mo_coeff_kpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">nao</span><span class="p">,</span> <span class="n">nao</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h_kpts</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">h_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">_eigh</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">_eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">eig_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">mo_coeff_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">_eigh</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">_eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">e1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">kmf</span><span class="o">.</span><span class="n">_eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">nmo_k</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">eig_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">,:</span><span class="n">nmo_k</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="n">mo_coeff_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">,:,:</span><span class="n">nmo_k</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+            <span class="k">if</span> <span class="n">nmo_k</span> <span class="o">&lt;</span> <span class="n">nao</span><span class="p">:</span>
+                <span class="n">eig_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">nmo_k</span><span class="p">:]</span> <span class="o">=</span> <span class="n">pbchf</span><span class="o">.</span><span class="n">INVALID_ORBITAL_ENERGY</span>
+                <span class="n">mo_coeff_kpts</span><span class="p">[</span><span class="n">k</span><span class="p">,:,</span><span class="n">nmo_k</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="k">return</span> <span class="n">eig_kpts</span><span class="p">,</span> <span class="n">mo_coeff_kpts</span></div>
 
 
@@ -607,6 +655,46 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
 
+<div class="viewcode-block" id="KsymAdaptedKSCF.check_linear_dependency">
+<a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF.check_linear_dependency">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_linear_dependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span>
+        <span class="n">symm_orb</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">symm_orb</span>
+        <span class="k">if</span> <span class="n">symm_orb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">check_linear_dependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">symm_orb</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="s1">&#39;Number of k-points mismatch&#39;</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">new_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="n">irrep_id</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">irrep_id</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kpts</span><span class="p">,</span> <span class="n">libkpts</span><span class="o">.</span><span class="n">KPoints</span><span class="p">):</span>
+            <span class="n">kpts</span> <span class="o">=</span> <span class="n">kpts</span><span class="o">.</span><span class="n">kpts_ibz</span>
+        <span class="n">trs_mask</span> <span class="o">=</span> <span class="n">is_trim</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">kpts</span><span class="p">)</span>
+        <span class="n">x_kpts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">s_k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">nirrep</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">trs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="n">s_k</span> <span class="o">=</span> <span class="n">s_k</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">s_k</span> <span class="o">=</span> <span class="n">symmetrize_matrix</span><span class="p">(</span><span class="n">s_k</span><span class="p">,</span> <span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">orbsym</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">xs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">ir</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nirrep</span><span class="p">):</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">s_k</span><span class="p">[</span><span class="n">ir</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">remove_overlap_zero_eigenvalue</span><span class="p">:</span>
+                    <span class="n">mask</span> <span class="o">=</span> <span class="n">e</span> <span class="o">&gt;</span> <span class="n">mol_hf</span><span class="o">.</span><span class="n">overlap_zero_eigenvalue_threshold</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span><span class="n">mask</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+                    <span class="n">nao</span><span class="p">,</span> <span class="n">nmo</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+                    <span class="k">if</span> <span class="n">nmo</span> <span class="o">&lt;</span> <span class="n">nao</span><span class="p">:</span>
+                        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kpt </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">nao</span><span class="o">-</span><span class="n">nmo</span><span class="si">}</span><span class="s2"> small eigenvectors of overlap matrix removed&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                <span class="n">orbsym</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">irrep_id</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">ir</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">x_orth</span> <span class="o">=</span> <span class="n">so2ao_mo_coeff</span><span class="p">(</span><span class="n">symm_orb</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">xs</span><span class="p">)</span>
+            <span class="n">x_kpts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">tag_array</span><span class="p">(</span><span class="n">x_orth</span><span class="p">,</span> <span class="n">orbsym</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">orbsym</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">x_kpts</span></div>
+
+
 <div class="viewcode-block" id="KsymAdaptedKSCF.get_ovlp">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF.get_ovlp">[docs]</a>
     <span class="nd">@lib</span><span class="o">.</span><span class="n">with_doc</span><span class="p">(</span><span class="n">khf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
@@ -680,11 +768,13 @@
 
 <div class="viewcode-block" id="KsymAdaptedKSCF.eig">
 <a class="viewcode-back" href="../../../../pyscf_api_docs/pyscf.pbc.scf.html#pyscf.pbc.scf.kghf_ksymm.KsymAdaptedKSCF.eig">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_ao_symmetry</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpts</span><span class="o">.</span><span class="n">time_reversal</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">eig_trs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">khf</span><span class="o">.</span><span class="n">KSCF</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h_kpts</span><span class="p">,</span> <span class="n">s_kpts</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="KsymAdaptedKSCF.get_orbsym">
@@ -844,8 +934,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -879,7 +969,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
 </p></div>
       
     </div>

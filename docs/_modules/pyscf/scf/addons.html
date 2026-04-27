@@ -26,20 +26,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=20401a9d"></script>
+    <script src="../../../_static/documentation_options.js?v=f5edd4dd"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.12" />
+  <meta name="docsearch:version" content="2.13" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -70,7 +70,9 @@
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -400,251 +402,24 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.lib.scipy_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">pivoted_cholesky</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">__config__</span>
+<span class="c1"># The smearing utilities were moved to a separate module. They were implemented</span>
+<span class="c1"># in the addons module. Import them into this namespace for backward compatibility</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.scf.smearing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa</span>
+    <span class="n">SMEARING_METHOD</span><span class="p">,</span>
+    <span class="n">smearing</span><span class="p">,</span>
+    <span class="n">smearing_</span><span class="p">,</span>
+    <span class="n">_get_grad_tril</span><span class="p">,</span>
+    <span class="n">_fermi_smearing_occ</span><span class="p">,</span>
+    <span class="n">_gaussian_smearing_occ</span><span class="p">,</span>
+    <span class="n">_smearing_optimize</span><span class="p">,</span>
+    <span class="n">_get_fermi</span><span class="p">,</span>
+    <span class="n">_SmearingSCF</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">LINEAR_DEP_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;scf_addons_remove_linear_dep_threshold&#39;</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)</span>
 <span class="n">CHOLESKY_THRESHOLD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;scf_addons_cholesky_threshold&#39;</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>
 <span class="n">FORCE_PIVOTED_CHOLESKY</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;scf_addons_force_cholesky&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">LINEAR_DEP_TRIGGER</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;scf_addons_remove_linear_dep_trigger&#39;</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>
-
-<span class="n">SMEARING_METHOD</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">__config__</span><span class="p">,</span> <span class="s1">&#39;pbc_scf_addons_smearing_method&#39;</span><span class="p">,</span> <span class="s1">&#39;fermi&#39;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="smearing">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.smearing">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">smearing</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">SMEARING_METHOD</span><span class="p">,</span> <span class="n">mu0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_spin</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Fermi-Dirac or Gaussian smearing&#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">_SmearingSCF</span><span class="p">):</span>
-        <span class="n">mf</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-        <span class="n">mf</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
-        <span class="n">mf</span><span class="o">.</span><span class="n">mu0</span> <span class="o">=</span> <span class="n">mu0</span>
-        <span class="n">mf</span><span class="o">.</span><span class="n">fix_spin</span> <span class="o">=</span> <span class="n">fix_spin</span>
-        <span class="k">return</span> <span class="n">mf</span>
-
-    <span class="k">assert</span> <span class="ow">not</span> <span class="n">mf</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;KSCF&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mf</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;ROHF&#39;</span><span class="p">):</span>
-        <span class="c1"># Roothaan Fock matrix does not make much sense for smearing.</span>
-        <span class="c1"># Restore the conventional RHF treatment.</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">scf</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">dft</span>
-        <span class="n">known_class</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">ROKS</span><span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">rks_symm</span><span class="o">.</span><span class="n">RKS</span><span class="p">,</span>
-            <span class="n">dft</span><span class="o">.</span><span class="n">roks</span><span class="o">.</span><span class="n">ROKS</span>    <span class="p">:</span> <span class="n">dft</span><span class="o">.</span><span class="n">rks</span><span class="o">.</span><span class="n">RKS</span>     <span class="p">,</span>
-            <span class="n">scf</span><span class="o">.</span><span class="n">hf_symm</span><span class="o">.</span><span class="n">ROHF</span> <span class="p">:</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf_symm</span><span class="o">.</span><span class="n">RHF</span> <span class="p">,</span>
-            <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span>    <span class="p">:</span> <span class="n">scf</span><span class="o">.</span><span class="n">hf</span><span class="o">.</span><span class="n">RHF</span>      <span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">mf</span> <span class="o">=</span> <span class="n">_object_without_soscf</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">known_class</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">lib</span><span class="o">.</span><span class="n">set_class</span><span class="p">(</span><span class="n">_SmearingSCF</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">fix_spin</span><span class="p">),</span>
-                         <span class="p">(</span><span class="n">_SmearingSCF</span><span class="p">,</span> <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="smearing_">
-<a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.smearing_">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">smearing_</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">mf1</span> <span class="o">=</span> <span class="n">smearing</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">mf</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">mf1</span><span class="o">.</span><span class="vm">__class__</span>
-    <span class="n">mf</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">mf1</span><span class="o">.</span><span class="vm">__dict__</span>
-    <span class="k">return</span> <span class="n">mf</span></div>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_grad_tril</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="p">):</span>
-    <span class="n">f_mo</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">mo_coeff</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">conj</span><span class="p">(),</span> <span class="n">fock</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">f_mo</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">tril_indices_from</span><span class="p">(</span><span class="n">f_mo</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_fermi_smearing_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Fermi-Dirac smearing&#39;&#39;&#39;</span>
-    <span class="n">occ</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">)</span>
-    <span class="n">de</span> <span class="o">=</span> <span class="p">(</span><span class="n">mo_energy</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span>
-    <span class="n">occ</span><span class="p">[</span><span class="n">de</span><span class="o">&lt;</span><span class="mi">40</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">de</span><span class="p">[</span><span class="n">de</span><span class="o">&lt;</span><span class="mi">40</span><span class="p">])</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">occ</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_gaussian_smearing_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;Gaussian smearing&#39;&#39;&#39;</span>
-    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">erfc</span><span class="p">((</span><span class="n">mo_energy</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">nocc</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rootfn</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-        <span class="n">mo_occ</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mo_occ</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">nocc</span>
-
-    <span class="c1"># it&#39;s okay to set small xtol according to the docs.</span>
-    <span class="n">mu</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">bisect</span><span class="p">(</span><span class="n">rootfn</span><span class="p">,</span> <span class="n">mo_es</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">-</span><span class="mf">10.</span><span class="p">,</span> <span class="n">mo_es</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mf">10.</span><span class="p">,</span>
-                               <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-
-    <span class="n">cur_err</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rootfn</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
-
-    <span class="c1"># Check if we can further improve mu by moving it up/down</span>
-    <span class="c1"># by the minimum machine-representable amount.</span>
-    <span class="c1"># In many cases with Fermi-type smearing and sigma~1e-6,</span>
-    <span class="c1"># the minimum possible error is still &gt;1e-11 because the</span>
-    <span class="c1"># smearing function is just so sharp. Because xtol is set to 1e-16 above,</span>
-    <span class="c1"># this should not take too many iterations.</span>
-
-    <span class="n">iters</span><span class="p">,</span> <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span>
-
-    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rootfn</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">nextafter</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="n">cur_err</span> <span class="ow">and</span> <span class="n">iters</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">:</span>
-        <span class="n">mu</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nextafter</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
-        <span class="n">cur_err</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rootfn</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
-        <span class="n">iters</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rootfn</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">nextafter</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="n">cur_err</span> <span class="ow">and</span> <span class="n">iters</span> <span class="o">&lt;</span> <span class="n">maxiter</span><span class="p">:</span>
-        <span class="n">mu</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nextafter</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
-        <span class="n">cur_err</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rootfn</span><span class="p">(</span><span class="n">mu</span><span class="p">))</span>
-        <span class="n">iters</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_get_fermi</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">nocc</span><span class="p">):</span>
-    <span class="n">mo_e_sorted</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nocc</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
-        <span class="k">return</span> <span class="n">mo_e_sorted</span><span class="p">[</span><span class="n">nocc</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span> <span class="c1"># nocc = ?.5 or nocc = ?.0</span>
-        <span class="k">return</span> <span class="n">mo_e_sorted</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">nocc</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">_SmearingSCF</span><span class="p">:</span>
-
-    <span class="n">__name_mixin__</span> <span class="o">=</span> <span class="s1">&#39;Smearing&#39;</span>
-
-    <span class="n">_keys</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;smearing_method&#39;</span><span class="p">,</span> <span class="s1">&#39;mu0&#39;</span><span class="p">,</span> <span class="s1">&#39;fix_spin&#39;</span><span class="p">,</span> <span class="s1">&#39;entropy&#39;</span><span class="p">,</span> <span class="s1">&#39;e_free&#39;</span><span class="p">,</span> <span class="s1">&#39;e_zero&#39;</span>
-    <span class="p">}</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">fix_spin</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mf</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span> <span class="o">=</span> <span class="n">method</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">=</span> <span class="n">mu0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fix_spin</span> <span class="o">=</span> <span class="n">fix_spin</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">e_free</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">e_zero</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">undo_smearing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">obj</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="o">.</span><span class="n">drop_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">_SmearingSCF</span><span class="p">))</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">sigma</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">smearing_method</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">fix_spin</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">entropy</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">e_free</span>
-        <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">e_zero</span>
-        <span class="k">return</span> <span class="n">obj</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&#39;&#39;&#39;Label the occupancies for each orbital</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf</span><span class="w"> </span><span class="kn">import</span> <span class="n">scf</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.pbc.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_mo_energy_occ</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="p">):</span>
-            <span class="n">mo_occ</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_occ</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">mo_occ</span>
-
-        <span class="n">is_uhf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;UHF&#39;</span><span class="p">)</span>
-        <span class="n">is_rhf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;RHF&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scf</span><span class="o">.</span><span class="n">rohf</span><span class="o">.</span><span class="n">ROHF</span><span class="p">):</span>
-            <span class="c1"># ROHF leads to two Fock matrices. It&#39;s not clear how to define the</span>
-            <span class="c1"># Roothaan effective Fock matrix from the two.</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Smearing-ROHF&#39;</span><span class="p">)</span>
-
-        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;fermi&#39;</span><span class="p">:</span>
-            <span class="n">f_occ</span> <span class="o">=</span> <span class="n">_fermi_smearing_occ</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">f_occ</span> <span class="o">=</span> <span class="n">_gaussian_smearing_occ</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_spin</span> <span class="ow">and</span> <span class="n">is_uhf</span><span class="p">:</span> <span class="c1"># spin separated fermi level</span>
-            <span class="n">mo_es</span> <span class="o">=</span> <span class="n">mo_energy</span>
-            <span class="n">nocc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nelec</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mu_a</span><span class="p">,</span> <span class="n">occa</span> <span class="o">=</span> <span class="n">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="n">mu_b</span><span class="p">,</span> <span class="n">occb</span> <span class="o">=</span> <span class="n">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="p">):</span>
-                    <span class="n">mu_a</span> <span class="o">=</span> <span class="n">mu_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
-                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">mu_a</span><span class="p">,</span> <span class="n">mu_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unsupported mu0: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">occa</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu_a</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-                <span class="n">occb</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu_b</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sigma</span><span class="p">)</span>
-            <span class="n">mu</span> <span class="o">=</span> <span class="p">[</span><span class="n">mu_a</span><span class="p">,</span> <span class="n">mu_b</span><span class="p">]</span>
-            <span class="n">mo_occs</span> <span class="o">=</span> <span class="p">[</span><span class="n">occa</span><span class="p">,</span> <span class="n">occb</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">fermi</span> <span class="o">=</span> <span class="p">(</span><span class="n">_get_fermi</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">_get_fermi</span><span class="p">(</span><span class="n">mo_es</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    Alpha-spin Fermi level </span><span class="si">%g</span><span class="s1">  Sum mo_occ = </span><span class="si">%s</span><span class="s1">  should equal nelec = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
-                         <span class="n">fermi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    Beta-spin  Fermi level </span><span class="si">%g</span><span class="s1">  Sum mo_occ = </span><span class="si">%s</span><span class="s1">  should equal nelec = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
-                         <span class="n">fermi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_occs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">nocc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    sigma = </span><span class="si">%g</span><span class="s1">  Optimized mu_alpha = </span><span class="si">%.12g</span><span class="s1">  entropy = </span><span class="si">%.12g</span><span class="s1">&#39;</span><span class="p">,</span>
-                        <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    sigma = </span><span class="si">%g</span><span class="s1">  Optimized mu_beta  = </span><span class="si">%.12g</span><span class="s1">  entropy = </span><span class="si">%.12g</span><span class="s1">&#39;</span><span class="p">,</span>
-                        <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-                <span class="n">print_mo_energy_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_occs</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span> <span class="c1"># all orbitals treated with the same fermi level</span>
-            <span class="n">nelectron</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">nelectron</span>
-            <span class="k">if</span> <span class="n">is_uhf</span><span class="p">:</span>
-                <span class="n">mo_es</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">mo_energy</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">mo_es</span> <span class="o">=</span> <span class="n">mo_energy</span>
-            <span class="k">if</span> <span class="n">is_rhf</span><span class="p">:</span>
-                <span class="n">nelectron</span> <span class="o">=</span> <span class="n">nelectron</span> <span class="o">/</span> <span class="mi">2</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">mu</span><span class="p">,</span> <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">_smearing_optimize</span><span class="p">(</span><span class="n">f_occ</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">nelectron</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># If mu0 is given, fix mu instead of electron number. XXX -Chong Sun</span>
-                <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span>
-                <span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
-                <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">f_occ</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mo_es</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_entropy</span><span class="p">(</span><span class="n">mo_es</span><span class="p">,</span> <span class="n">mo_occs</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">is_rhf</span><span class="p">:</span>
-                <span class="n">mo_occs</span> <span class="o">*=</span> <span class="mi">2</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">*=</span> <span class="mi">2</span>
-
-            <span class="n">fermi</span> <span class="o">=</span> <span class="n">_get_fermi</span><span class="p">(</span><span class="n">mo_es</span><span class="p">,</span> <span class="n">nelectron</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    Fermi level </span><span class="si">%g</span><span class="s1">  Sum mo_occ = </span><span class="si">%s</span><span class="s1">  should equal nelec = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
-                         <span class="n">fermi</span><span class="p">,</span> <span class="n">mo_occs</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">nelectron</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    sigma = </span><span class="si">%g</span><span class="s1">  Optimized mu = </span><span class="si">%.12g</span><span class="s1">  entropy = </span><span class="si">%.12g</span><span class="s1">&#39;</span><span class="p">,</span>
-                        <span class="n">sigma</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">is_uhf</span><span class="p">:</span>
-                <span class="n">mo_occs</span> <span class="o">=</span> <span class="n">mo_occs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="n">logger</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-                <span class="n">print_mo_energy_occ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_occs</span><span class="p">,</span> <span class="n">is_uhf</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mo_occs</span>
-
-    <span class="c1"># See https://www.vasp.at/vasp-workshop/slides/k-points.pdf</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_energy</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;fermi&#39;</span><span class="p">:</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">mo_occ</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">[(</span><span class="n">f</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">f</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)]</span>
-            <span class="n">entropy</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">f</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">f</span><span class="p">)</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">entropy</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">mo_energy</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                       <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span><span class="p">)))</span>
-        <span class="k">return</span> <span class="n">entropy</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_grad</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">fock</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">dm1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_rdm1</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">)</span>
-            <span class="n">fock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hcore</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_veff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">dm1</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">istype</span><span class="p">(</span><span class="s1">&#39;UHF&#39;</span><span class="p">):</span>
-            <span class="n">ga</span> <span class="o">=</span> <span class="n">_get_grad_tril</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mo_occ</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fock</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">gb</span> <span class="o">=</span> <span class="n">_get_grad_tril</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mo_occ</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">fock</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">ga</span><span class="p">,</span><span class="n">gb</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span> <span class="c1"># rhf and ghf</span>
-            <span class="k">return</span> <span class="n">_get_grad_tril</span><span class="p">(</span><span class="n">mo_coeff</span><span class="p">,</span> <span class="n">mo_occ</span><span class="p">,</span> <span class="n">fock</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">energy_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h1e</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vhf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">e_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy_elec</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">h1e</span><span class="p">,</span> <span class="n">vhf</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy_nuc</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">smearing_method</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">e_free</span> <span class="o">=</span> <span class="n">e_tot</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">e_zero</span> <span class="o">=</span> <span class="n">e_tot</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span> <span class="o">*</span> <span class="mf">.5</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;    Total E(T) = </span><span class="si">%.15g</span><span class="s1">  Free energy = </span><span class="si">%.15g</span><span class="s1">  E0 = </span><span class="si">%.15g</span><span class="s1">&#39;</span><span class="p">,</span>
-                        <span class="n">e_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_free</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_zero</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">e_tot</span>
 
 <div class="viewcode-block" id="frac_occ_">
 <a class="viewcode-back" href="../../../pyscf_api_docs/pyscf.scf.html#pyscf.scf.addons.frac_occ_">[docs]</a>
@@ -1182,6 +957,15 @@
 <span class="sd">            The threshold that triggers the special treatment of the linear</span>
 <span class="sd">            dependence issue.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
+        <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;remove_linear_dep_ is deprecated and will be removed in a future release. &quot;</span>
+             <span class="s2">&quot;Linear dependency handling is now built into the SCF procedure by default. &quot;</span>
+             <span class="s2">&quot;Linear dependency removal can be controlled using the following settings:</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;  pyscf.scf.hf.remove_overlap_zero_eigenvalue = True</span><span class="se">\n</span><span class="s2">&quot;</span>
+             <span class="s2">&quot;  pyscf.scf.hf.overlap_zero_eigenvalue_threshold = 1e-6</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+             <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
     <span class="n">s</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">get_ovlp</span><span class="p">()</span>
     <span class="n">cond</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">cond</span> <span class="o">&lt;</span> <span class="mf">1.</span><span class="o">/</span><span class="n">lindep</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_pivoted_cholesky</span><span class="p">:</span>
@@ -1193,6 +977,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;Using canonical orthogonalization with threshold </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold</span><span class="p">))</span>
         <span class="n">mf</span><span class="o">.</span><span class="n">_eigh</span> <span class="o">=</span> <span class="n">_eigh_with_canonical_orth</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">s</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float64</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;Using partial Cholesky orthogonalization &#39;</span>
                     <span class="s1">&#39;(doi:10.1063/1.5139948, doi:10.1103/PhysRevA.101.032504)&#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span> <span class="s1">&#39;Using threshold </span><span class="si">{}</span><span class="s1"> for pivoted Cholesky&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cholesky_threshold</span><span class="p">))</span>
@@ -1203,7 +988,7 @@
 <span class="n">remove_linear_dep</span> <span class="o">=</span> <span class="n">remove_linear_dep_</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_eigh_with_canonical_orth</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">canonical_orth_</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
         <span class="n">xhx</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
         <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">xhx</span><span class="p">)</span>
@@ -1213,7 +998,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_eigh_with_pivot_cholesky</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">LINEAR_DEP_THRESHOLD</span><span class="p">,</span>
                               <span class="n">cholesky_threshold</span><span class="o">=</span><span class="n">CHOLESKY_THRESHOLD</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eigh</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">partial_cholesky_orth_</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">canthr</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">cholthr</span><span class="o">=</span><span class="n">cholesky_threshold</span><span class="p">)</span>
         <span class="n">xhx</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">dot</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
         <span class="n">e</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">xhx</span><span class="p">)</span>
@@ -1721,8 +1506,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1756,7 +1541,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
 </p></div>
       
     </div>

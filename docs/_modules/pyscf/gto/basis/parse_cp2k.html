@@ -26,20 +26,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/pyscf-pst.css?v=ed6b5f64" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../../_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=20401a9d"></script>
+    <script src="../../../../_static/documentation_options.js?v=f5edd4dd"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -52,7 +52,7 @@
     <link rel="search" title="Search" href="../../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2.12" />
+  <meta name="docsearch:version" content="2.13" />
   
     
     <script src="../../../../_static/searchtools.js"></script>
@@ -70,7 +70,9 @@
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -449,6 +451,69 @@
     <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">search_seg</span><span class="p">(</span><span class="n">basisfile</span><span class="p">,</span> <span class="n">symb</span><span class="p">),</span> <span class="n">optimize</span><span class="p">)</span></div>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_MOLOPT_name</span><span class="p">(</span><span class="n">basis_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Convert the alias name (such as gthszvmoloptsr) to the standard MOLOPT</span>
+<span class="sd">    basis set name</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="c1"># If a full CP2K basis set name is specified</span>
+        <span class="k">return</span> <span class="n">basis_name</span>
+
+    <span class="n">basis_name</span> <span class="o">=</span> <span class="n">basis_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s1">&#39;MOLOPT&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">basis_name</span><span class="si">}</span><span class="s1"> is not a valid MOLOPT basis set&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">basis_name</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GTH&#39;</span><span class="p">:</span>
+        <span class="n">basis_name</span> <span class="o">=</span> <span class="n">basis_name</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="c1"># handle GTHSZVMOLOPTSR</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">basis_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;MOLOPT&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">if</span> <span class="n">x</span><span class="p">]</span>
+    <span class="n">parts</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;MOLOPT&#39;</span><span class="p">)</span>
+    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;GTH&#39;</span><span class="p">)</span>
+    <span class="n">basis_name</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">basis_name</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_MOLOPT</span><span class="p">(</span><span class="n">basis_name</span><span class="p">,</span> <span class="n">symb</span><span class="p">,</span> <span class="n">basis_dir</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;MOLOPT-PBE-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span> <span class="ow">or</span> <span class="s1">&#39;MOLOPT-GGA-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BASIS_MOLOPT_UZH&#39;</span><span class="p">,)</span>
+    <span class="k">elif</span> <span class="s1">&#39;MOLOPT-SCAN-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span> <span class="ow">or</span> <span class="s1">&#39;MOLOPT-MGGA-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BASIS_MOLOPT_UZH&#39;</span><span class="p">,)</span>
+    <span class="k">elif</span> <span class="s1">&#39;MOLOPT-PBE0-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span> <span class="ow">or</span> <span class="s1">&#39;MOLOPT-HYB-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BASIS_MOLOPT_UZH&#39;</span><span class="p">,)</span>
+    <span class="k">elif</span> <span class="s1">&#39;MOLOPT-SR-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BASIS_MOLOPT&#39;</span><span class="p">,</span> <span class="s1">&#39;BASIS_MOLOPT_UCL&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;MOLOPT-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;BASIS_MOLOPT&#39;</span><span class="p">,)</span>
+    <span class="k">elif</span> <span class="s1">&#39;-GTH&#39;</span> <span class="ow">in</span> <span class="n">basis_name</span><span class="p">:</span>
+        <span class="n">basisfiles</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;GTH_BASIS_SETS&#39;</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;MOLOPT basis set </span><span class="si">{</span><span class="n">basis_name</span><span class="si">}</span><span class="s1"> is not available in the built-in database.&#39;</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">basisfile</span> <span class="ow">in</span> <span class="n">basisfiles</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">basis_dir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">basisfile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">searchfile</span><span class="p">:</span>
+            <span class="n">in_block</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">searchfile</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;#&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">in_block</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">symb</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">basis_name</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="n">in_block</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">continue</span>
+
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">if</span> <span class="s1">&#39;GTH&#39;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="s1">&#39;END&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span> <span class="c1"># next block</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">BasisNotFoundError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">basis_name</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">symb</span><span class="si">}</span><span class="s1"> not found in files </span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basisfiles</span><span class="p">)</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">optimize</span><span class="p">)</span>
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse</span><span class="p">(</span><span class="n">blines</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">blines_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">blines</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -460,7 +525,8 @@
     <span class="n">basis</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsets</span><span class="p">):</span>
-            <span class="n">comp</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">next</span><span class="p">(</span><span class="n">blines_iter</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">blines_iter</span><span class="p">)</span>
+            <span class="n">comp</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
             <span class="n">lmin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nexps</span><span class="p">,</span> <span class="n">ncontractions</span> <span class="o">=</span> <span class="n">comp</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">comp</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">comp</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">comp</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
             <span class="n">basis_n</span> <span class="o">=</span> <span class="p">[[</span><span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmin</span><span class="p">,</span><span class="n">lmax</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
             <span class="k">for</span> <span class="n">nexp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nexps</span><span class="p">):</span>
@@ -540,8 +606,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -575,7 +641,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
 </p></div>
       
     </div>
