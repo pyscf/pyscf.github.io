@@ -61,6 +61,13 @@ For complete lists of the available density functional approximations, the user 
 
 The constant maintenance and development of density functional libraries is hard work at little personal benefit, while everyone benefits from having a huge variety of density functionals in numerically stable form for use in applications. If you use Libxc in your calculations, please cite the most up-to-date work on Libxc in your paper. You can see the most up-to-date citation on the `Libxc web page <https://libxc.gitlab.io>`_; at the moment, this is :cite:`lehtola_libxc_softwarex_2018`. Likewise, if you use XCFun in your calculations, please cite the most up-to-date work on XCFun in your paper. You can find recent citations on the `XCFun web page <https://github.com/dftlibs/xcfun/>`_; at present, this is :cite:`ekstroem_xcfun_jctc_2010`. Please check your log files for the library used in your calculation (you may need to increase the ``DFT.verbose`` setting of your calculation to see this).
 
+Dispersion Corrections
+----------------------
+Dispersion corrections can be specified through the ``xc`` keyword. For example, ``'wb97x-d3bj'`` enables the ``wb97x`` functional with the ``d3bj`` dispersion correction.
+
+More details on the dispersion keyword conventions are provided in :doc:`dispersion`.
+
+
 .. _user_dft_custom_func:
 
 Customizing *xc* functionals

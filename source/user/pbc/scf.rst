@@ -257,7 +257,7 @@ Multi-grid    5000             N/A
 RS            1000             1000
 ============= ================ ================
 
-3. Relative performance for systems of 100 AOs per unit cell, 10 k-points
+3. Relative costs for systems of 100 AOs per unit cell, 10 k-points
 
 ============= ================ ================
 Scheme        Pure DFT         hybrid DFT
