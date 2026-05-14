@@ -41,11 +41,11 @@ mf.disp = 'd4'
 This uses D4 dispersion instead of D3(BJ).
 
 ## 2-Body vs 3-Body Convention
-Internally, the normalized representation separates the dispersion version and
-the 3-body flag. Rules:
-* suffix 2b disables the 3-body term,
-* suffix atm enables the ATM 3-body term,
-* D4 always includes the 3-body contribution.
+Internally, the normalized representation separates the dispersion version from
+the 3-body flag. By default, D4 includes the 3-body contribution, whereas D3
+does not. They can both be adjusted by suffix 2b and atm:
+* suffix 2b disables the 3-body term;
+* suffix atm enables the ATM 3-body term.
 
 For example,
 ```
