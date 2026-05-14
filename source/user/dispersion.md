@@ -13,7 +13,6 @@ Some functionals encode the dispersion model directly in the XC name. For exampl
 ```
 mf.xc = 'wb97x-d3bj'
 mf.xc = 'wb97x-d4'
-mf.xc = 'wb97x-3c'
 ```
 These automatically enable dispersion corrections.
 
@@ -24,7 +23,6 @@ When calling the dispersion module, the `xc` attribute is parsed and normalized 
 |'b3lyp'      |no dispersion            |
 |'wb97x-d3bj' |('wb97x', 'd3bj', False) |
 |'wb97x-d4'   |('wb97x', 'd4', True)    |
-|'wb97x-3c'   |('wb97x-3c', 'd4', True) |
 
 ## Enabling Dispersion through `disp`
 
@@ -63,11 +61,11 @@ disp_version:method
 
 For example, 
 ```
-mf.disp = 'd4:wb97x-3c'
+mf.disp = 'd4:pbe0'
 ```
-employs DFTD4 dispersion and passes `wb97x-3c` as the DFT functional name to the underlying dispersion library.
+employs DFTD4 dispersion and passes `pbe0` as the DFT functional name to the underlying dispersion library.
 In the internal representation (returned by `parse_disp` function), this
-setting leads to `('wb97x-3c', 'd4', True)`.
+setting leads to `('pbe0', 'd4', True)`.
 Another example,
 ```
 mf.disp = 'd3bj:pbe'
