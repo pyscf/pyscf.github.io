@@ -47,7 +47,8 @@ We are dedicated to making participation in the PySCF community a harassment-fre
 ## Funding
 
 The development of PySCF has been and continues to be generously supported by a
-number of funding agencies. Most of the molecular quantum chemistry software
+number of funding agencies. Currently, the development of PySCF is supported in part by the US National Science Foundation under Award Nos. OAC-2513473, OAC-2513474, OAC-2513475, and OAC-2513476. 
+Most of the molecular quantum chemistry software
 infrastructure was developed with support from the US National Science
 Foundation, through grants CHE-1650436 and ACI-1657286. The periodic mean-field
 infrastructure was developed with support from ACI-1657286. The excited-state
