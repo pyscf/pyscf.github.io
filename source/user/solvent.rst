@@ -91,6 +91,11 @@ state methods::
 Please note that the flag ``equilibrium_solvation`` needs to be set to ``True``
 in this case. PySCF by default assumes the slow solvent model for TDDFT.
 
+The slow solvent uses the optical dielectric constant ``eps_optical`` rather
+than the static one. It is taken from the solvent database when the solvent is
+specified by name, so prefer ``PCM('acetonitrile')`` over setting ``eps``
+directly here, see `Solvent parameters`_.
+
 In the complicated procedure which involves for example electronic states from
 different states (typically in the MCSCF calculations with state-average or
 state-specific approximations), PySCF PCM implementation allows to input a
@@ -133,9 +138,8 @@ solute::
 
 Solvent parameters
 ------------------
-The default solvent in the PCM module is water. When studying other types of
-solvents, you can consider to modify the dielectric parameter ``eps`` using the
-constants listed below::
+The default solvent in the PCM module is water. Other solvents can be selected
+by name::
 
   import pyscf
   mol = pyscf.M(atom='''
@@ -144,13 +148,53 @@ constants listed below::
        H  0.    0.935   -1.082
        H  0.   -0.935   -1.082''',
                 basis='6-31g*', verbose=4)
+  mf = mol.RHF().PCM('methanol')
+  mf.run()
+
+The name can be given to the ``PCM`` constructor, to the ``.PCM()`` method of a
+mean-field object, or assigned to the solvent object at any point::
+
+  from pyscf.solvent import pcm
+  cm = pcm.PCM(mol, 'methanol')
+  cm.solvent = 'DMSO'
+
+Names are matched case-insensitively and ignoring spaces and hyphens, so
+``N,N-dimethylformamide``, ``N,N-DiMethylFormamide`` and ``dmf`` all select the
+same solvent. The abbreviations ``h2o``, ``dmso``, ``dmf``, ``dma``, ``thf``,
+``dcm``, ``ccl4``, ``chcl3``, ``mecn``, ``acn``, ``meoh``, ``etoh``, ``et2o``
+and ``ether`` are recognized as well. The full list of solvents is the set of
+keys of ``pyscf.solvent.smd.solvent_db``.
+
+Assigning ``solvent`` sets two parameters:
+
+* ``eps``, the static dielectric constant, which determines the ground state
+  solvation;
+* ``eps_optical``, the optical (high-frequency) dielectric constant, which is
+  the square of the refractive index of the solvent. It is used only by the
+  non-equilibrium solvation of excited states, see `Solvent for excited
+  states`_.
+
+Without a solvent name, ``eps_optical`` falls back to the value for water and a
+warning is issued whenever ``eps`` indicates a different solvent. Specifying the
+solvent by name is therefore the recommended way to set up a non-equilibrium
+excited state calculation::
+
+  mf = mol.RHF().PCM('tetrahydrofuran').run()
+  td = mf.TDA()
+  td.kernel()
+
+Either parameter can still be assigned by hand, which overrides the value taken
+from the database::
+
   mf = mol.RHF().PCM()
   mf.with_solvent.eps = 32.613   # methanol
   mf.run()
 
-These dielectric constants are obtained from https://gaussian.com/scrf/.
-More dataset can be found in Minnesota Solvent Descriptor Database
-(https://comp.chem.umn.edu/solvation)
+The solvent parameters are taken from the Minnesota Solvent Descriptor Database
+(https://comp.chem.umn.edu/solvation/mnsddb.pdf), except for the dielectric
+constant of water, which is the more accurate value 78.3553 used by
+https://gaussian.com/scrf/. The SMD model reads its solvent names and its
+descriptors from the same database.
 
 ddCOSMO
 =======
