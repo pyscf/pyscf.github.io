@@ -536,6 +536,10 @@ state methods:</p>
 </div>
 <p>Please note that the flag <code class="docutils literal notranslate"><span class="pre">equilibrium_solvation</span></code> needs to be set to <code class="docutils literal notranslate"><span class="pre">True</span></code>
 in this case. PySCF by default assumes the slow solvent model for TDDFT.</p>
+<p>The slow solvent uses the optical dielectric constant <code class="docutils literal notranslate"><span class="pre">eps_optical</span></code> rather
+than the static one. It is taken from the solvent database when the solvent is
+specified by name, so prefer <code class="docutils literal notranslate"><span class="pre">PCM('acetonitrile')</span></code> over setting <code class="docutils literal notranslate"><span class="pre">eps</span></code>
+directly here, see <a class="reference internal" href="#solvent-parameters">Solvent parameters</a>.</p>
 <p>In the complicated procedure which involves for example electronic states from
 different states (typically in the MCSCF calculations with state-average or
 state-specific approximations), PySCF PCM implementation allows to input a
@@ -578,9 +582,8 @@ solute:</p>
 </section>
 <section id="solvent-parameters">
 <h3>Solvent parameters<a class="headerlink" href="#solvent-parameters" title="Link to this heading">#</a></h3>
-<p>The default solvent in the PCM module is water. When studying other types of
-solvents, you can consider to modify the dielectric parameter <code class="docutils literal notranslate"><span class="pre">eps</span></code> using the
-constants listed below:</p>
+<p>The default solvent in the PCM module is water. Other solvents can be selected
+by name:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyscf</span>
 <span class="n">mol</span> <span class="o">=</span> <span class="n">pyscf</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">atom</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">     C  0.    0.      -0.542</span>
@@ -588,14 +591,53 @@ constants listed below:</p>
 <span class="s1">     H  0.    0.935   -1.082</span>
 <span class="s1">     H  0.   -0.935   -1.082&#39;&#39;&#39;</span><span class="p">,</span>
               <span class="n">basis</span><span class="o">=</span><span class="s1">&#39;6-31g*&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">PCM</span><span class="p">()</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">PCM</span><span class="p">(</span><span class="s1">&#39;methanol&#39;</span><span class="p">)</span>
+<span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The name can be given to the <code class="docutils literal notranslate"><span class="pre">PCM</span></code> constructor, to the <code class="docutils literal notranslate"><span class="pre">.PCM()</span></code> method of a
+mean-field object, or assigned to the solvent object at any point:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyscf.solvent</span><span class="w"> </span><span class="kn">import</span> <span class="n">pcm</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">pcm</span><span class="o">.</span><span class="n">PCM</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="s1">&#39;methanol&#39;</span><span class="p">)</span>
+<span class="n">cm</span><span class="o">.</span><span class="n">solvent</span> <span class="o">=</span> <span class="s1">&#39;DMSO&#39;</span>
+</pre></div>
+</div>
+<p>Names are matched case-insensitively and ignoring spaces and hyphens, so
+<code class="docutils literal notranslate"><span class="pre">N,N-dimethylformamide</span></code>, <code class="docutils literal notranslate"><span class="pre">N,N-DiMethylFormamide</span></code> and <code class="docutils literal notranslate"><span class="pre">dmf</span></code> all select the
+same solvent. The abbreviations <code class="docutils literal notranslate"><span class="pre">h2o</span></code>, <code class="docutils literal notranslate"><span class="pre">dmso</span></code>, <code class="docutils literal notranslate"><span class="pre">dmf</span></code>, <code class="docutils literal notranslate"><span class="pre">dma</span></code>, <code class="docutils literal notranslate"><span class="pre">thf</span></code>,
+<code class="docutils literal notranslate"><span class="pre">dcm</span></code>, <code class="docutils literal notranslate"><span class="pre">ccl4</span></code>, <code class="docutils literal notranslate"><span class="pre">chcl3</span></code>, <code class="docutils literal notranslate"><span class="pre">mecn</span></code>, <code class="docutils literal notranslate"><span class="pre">acn</span></code>, <code class="docutils literal notranslate"><span class="pre">meoh</span></code>, <code class="docutils literal notranslate"><span class="pre">etoh</span></code>, <code class="docutils literal notranslate"><span class="pre">et2o</span></code>
+and <code class="docutils literal notranslate"><span class="pre">ether</span></code> are recognized as well. The full list of solvents is the set of
+keys of <code class="docutils literal notranslate"><span class="pre">pyscf.solvent.smd.solvent_db</span></code>.</p>
+<p>Assigning <code class="docutils literal notranslate"><span class="pre">solvent</span></code> sets two parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">eps</span></code>, the static dielectric constant, which determines the ground state
+solvation;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eps_optical</span></code>, the optical (high-frequency) dielectric constant, which is
+the square of the refractive index of the solvent. It is used only by the
+non-equilibrium solvation of excited states, see <a class="reference internal" href="#solvent-for-excited-states">Solvent for excited
+states</a>.</p></li>
+</ul>
+<p>Without a solvent name, <code class="docutils literal notranslate"><span class="pre">eps_optical</span></code> falls back to the value for water and a
+warning is issued whenever <code class="docutils literal notranslate"><span class="pre">eps</span></code> indicates a different solvent. Specifying the
+solvent by name is therefore the recommended way to set up a non-equilibrium
+excited state calculation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">PCM</span><span class="p">(</span><span class="s1">&#39;tetrahydrofuran&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">td</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">TDA</span><span class="p">()</span>
+<span class="n">td</span><span class="o">.</span><span class="n">kernel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Either parameter can still be assigned by hand, which overrides the value taken
+from the database:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mf</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">RHF</span><span class="p">()</span><span class="o">.</span><span class="n">PCM</span><span class="p">()</span>
 <span class="n">mf</span><span class="o">.</span><span class="n">with_solvent</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="mf">32.613</span>   <span class="c1"># methanol</span>
 <span class="n">mf</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>These dielectric constants are obtained from <a class="reference external" href="https://gaussian.com/scrf/">https://gaussian.com/scrf/</a>.
-More dataset can be found in Minnesota Solvent Descriptor Database
-(<a class="reference external" href="https://comp.chem.umn.edu/solvation">https://comp.chem.umn.edu/solvation</a>)</p>
+<p>The solvent parameters are taken from the Minnesota Solvent Descriptor Database
+(<a class="reference external" href="https://comp.chem.umn.edu/solvation/mnsddb.pdf">https://comp.chem.umn.edu/solvation/mnsddb.pdf</a>), except for the dielectric
+constant of water, which is the more accurate value 78.3553 used by
+<a class="reference external" href="https://gaussian.com/scrf/">https://gaussian.com/scrf/</a>. The SMD model reads its solvent names and its
+descriptors from the same database.</p>
 </section>
 </section>
 <section id="ddcosmo">
