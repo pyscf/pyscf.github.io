@@ -114,6 +114,10 @@ automatically calls the available `reset` method and performs additional
 method-specific checks between systems.
 
 
+### Serialization
+TODO
+
+
 ### Conversion to GPU4PySCF
 
 `to_gpu()` converts a supported PySCF object to its corresponding GPU4PySCF

@@ -1,0 +1,276 @@
+outline:
+  - The SCF driver call sequence and method dependency graph.
+
+  - How to customize SCF? Methods that need to be overloaded/customized for a custom SCF method.
+
+  - multiple density matrices
+
+  - Incremental Fock-building contracts, convergence hooks, callbacks, and
+    result state.
+
+  - The chkfile, storage format, what are stored in the chkfile
+
+  - Implicitly supported features: post-HF if get_hcore and `._eri` attribute is
+    provided. the attribute `.incore_anyway` must be enabled to ensure the
+    `._eri` is utilized by post-HF
+
+  - Limitations: derivative computation (like Gradients, Hessian), response methods
+
+
+---
+
+# SCF customization API
+
+This page describes the interfaces used by the molecular SCF driver. It is
+intended for implementations that replace the Hamiltonian or part of the SCF
+procedure. It does not list all SCF settings.
+
+## SCF driver contract
+
+`SCF.kernel()` and `SCF.scf()` are aliases. They run the same driver, update
+the SCF object, and return the final total energy. The lower-level
+`pyscf.scf.hf.kernel()` function instead returns
+`(converged, e_tot, mo_energy, mo_coeff, mo_occ)` and does not provide the
+normal object-level setup and finalization by itself.
+
+For each calculation, the object-level driver performs these operations:
+
+1. Report settings with `dump_flags()` and initialize caches with `build()`.
+2. Select an initial density matrix with `get_init_guess()` or reuse the
+   existing orbitals when possible.
+3. Obtain the AO overlap and one-electron Hamiltonian from `get_ovlp()` and
+   `get_hcore()`.
+4. Build the effective potential with `get_veff()` and evaluate the total
+   energy with `energy_tot()`.
+5. In each iteration, call `get_fock()`, `eig()`, `get_occ()`, `make_rdm1()`,
+   `get_veff()`, and `energy_tot()`.
+6. Test convergence using `get_grad()` and either the default thresholds or
+   `check_convergence`.
+
+The driver stores its final state in `converged`, `e_tot`, `mo_energy`,
+`mo_coeff`, `mo_occ`, and `cycles`. A finite energy does not imply
+convergence; callers that require a converged reference should inspect
+`converged`.
+
+`max_cycle <= 0` requests a non-iterative energy evaluation. If the object has
+not been initialized, the driver still constructs an initial wavefunction. If
+orbitals already exist, this mode preserves them and updates only `e_tot`.
+
+
+## SCF results
+
+After a calculation, the SCF object holds the total energy in `e_tot` and
+orbitals in `mo_energy`, `mo_coeff`, and `mo_occ`. `cycles` records the number
+of iterations. `converged` indicates whether the calculation converged. Results
+are stored even when convergence is not reached.
+
+Typically, (for instance, the RHF method), the shape of `mo_coeff` is a square
+matrix. Each column of `mo_coeff` represents an MO, and each row corresponds to
+an AO. `mo_energy` and `mo_occ` vectors give the energy and occupation of each
+column. When AO functions are linearly dependent, `mo_coeff` has fewer columns.
+The `mo_energy` and `mo_occ` arrays shrink accordingly.
+
+UHF and UKS store alpha and beta orbitals separately. Their `mo_coeff` has shape
+`(2, nao, nmo)`, and `mo_energy` and `mo_occ` have shape `(2, nmo)`.
+
+GHF and GKS store a single set of orbitals. General GHF/GKS orbitals need not be
+eigenvectors of the spin operator $S_z$. The orbital can mix alpha and beta
+spin. For generalized orbitals, `scf.ghf.guess_orbspin(mo_coeff)` returns 0 for a
+pure alpha orbital, 1 for a pure beta orbital, and -1 when both spin components
+are present.
+
+Converting an RHF/RKS or UHF/UKS object with `to_ghf()` or `to_gks()` initially
+preserves pure alpha and beta orbitals. The conversion records their spin
+labels in `mo_coeff.orbspin`. For closed-shell RHF/RKS, each spatial orbital
+becomes an adjacent alpha--beta pair with the same energy. For UHF/UKS,
+occupied orbitals come first, followed by unoccupied orbitals. Each group is
+sorted by energy rather than arranged in alpha--beta pairs.
+
+The `reset(mol)` method of SCF classes replaces the molecular system and clears
+integral caches, but keeps these result attributes. Calling `kernel()` again
+without an explicit initial density uses the stored orbitals and occupations as
+the initial guess. Note, they are reused without projection, even if the
+geometry, basis, or atom ordering has changed. (If a basis change or atom
+reordering, `init_guess_by_chkfile()` can construct one by projecting checkpoint
+orbitals onto the current basis).
+
+In addition to the result attributes, the `scf_summary` attribute of SCF class
+records the energy components created by SCF iterations. This attribute is a
+dictionary. Its common keys include `e1` (one-electron energy), `e2`
+(two-electron energy), `coul` (Coulomb energy), `exc` (exchange energy for HF or
+exchange-correlation energy for DFT), `gap` (HOMO-LUMO gap), and `nuc` (nuclear
+repulsion). Depending on the calculation, it can also contain `dispersion`,
+`e_solvent`. Note, energy components are in Hartree, while `gap` is in eV.
+
+The `reset()` method clears this dictionary.
+
+
+## Defining a custom Hamiltonian
+
+For a model Hamiltonian in an AO-like basis, configure the following pieces:
+
+- Set the electron count on the `Mole` object. For an unrestricted calculation,
+  `mf.nelec = (nalpha, nbeta)` can be used to specify the two spin populations.
+- Override `get_hcore(mol)` and `get_ovlp(mol)`. They normally return square
+  `(nao, nao)` matrices. A spin-dependent UHF core Hamiltonian may have shape
+  `(2, nao, nao)`; a common two-dimensional Hamiltonian is broadcast to both
+  spins.
+- Supply the two-electron interaction through `_eri` or override `get_jk()`.
+- Supply an initial density through `kernel(dm0=...)` when the molecule does
+  not provide a meaningful atomic initial guess.
+- Override `energy_nuc()` when the constant part of the model Hamiltonian is
+  not `mol.enuc`.
+
+For real, permutation-symmetric integrals, `_eri` should use the four-fold or
+eight-fold packed format accepted by `pyscf.ao2mo`. `ao2mo.restore(8, eri,
+nao)` converts a full four-index tensor to the common eight-fold format. The
+number of basis functions implied by `_eri`, `get_hcore()`, `get_ovlp()`, and
+the initial density must agree.
+
+Assigning methods on one object is supported and convenient for a single
+calculation:
+
+```python
+import numpy
+from pyscf import ao2mo, gto, scf
+
+mol = gto.M()
+mol.nelectron = 2
+
+h1 = numpy.array([[0.0, -1.0], [-1.0, 0.0]])
+eri = numpy.zeros((2, 2, 2, 2))
+eri[0, 0, 0, 0] = eri[1, 1, 1, 1] = 2.0
+
+mf = scf.RHF(mol)
+mf.get_hcore = lambda mol=None: h1
+mf.get_ovlp = lambda mol=None: numpy.eye(2)
+mf._eri = ao2mo.restore(8, eri, 2)
+mf.kernel(dm0=numpy.eye(2))
+```
+
+`check_sanity()` reports instance methods such as `get_hcore` and `get_ovlp`
+as overwritten attributes. This diagnostic is expected for this customization
+style. A reusable implementation should normally subclass the appropriate
+RHF, ROHF, or UHF class instead.
+
+
+## Use by post-HF methods
+
+After overwriting the Hcore and `_eri`,
+post-HF methods (MP, CI, CC, MCSCF, etc) can use these integrals from a customized SCF calculation,
+
+Some transformation paths choose an out-of-core calculation from `mol` when
+the stored `_eri` is considered too large for the memory limit. For a model
+Hamiltonian, that fallback would generate the molecule's ordinary integrals
+instead. Set
+
+```python
+mol.incore_anyway = True
+```
+
+to force supported post-HF paths to use `mf._eri`. This can require substantial memory.
+
+NOTE: Method decomposition including Density fitting, X2C, solvent models, and SOSCF may replace the customization.
+It's recommend apply these method composition first, then apply customization.
+
+NOTE: Analytical gradient, Hessian, and response methods requires the
+derivatives of Hcore and ERI integrals. This customization does not automatically enable the derivative computation
+
+
+## Method type
+
+Each SCF method is associated to a class, such as `RKS`, `UKS`, `GKS`, `ROHF`,
+and `DHF`, etc.
+Derived methods such as density fitting, solvent models, and QM/MM are build on
+these classes through [dynamic composition](#dynamically-composed-methods).
+For example, `mol.RKS().density_fit().PCM().newton()` creates an object whose
+class is named `SecondOrderPCMDFRKS`.
+
+To check the underlying method, one method is to use `isinstance()` with the
+relevant class, e.g.:
+```python
+isinstance(mf, rks.RKS)
+isinstance(mf, gks.GKS)
+```
+Another approach is to use the `istype()` method of SCF classes, e.g.:
+```python
+mf.istype('RKS')
+mf.istype('GKS')
+```
+
+
+## J/K builders
+get_jk can handle multiple density matrices as input. The output J and K
+matrices has the same shape as the input density matrices.
+
+If providing the entire `._eri` is not available, an alternative option is to
+customize get_jk.
+
+For UHF, leading dimension corresponds to spin channels, ordered as alpha then beta.
+- In response calculations (such as the CPHF solver for Hessian), the leading
+  dimension is still spin channel, then the multiple entries of density matrices.
+- In the PBC k-point sampling calculations, the spin-channels still placed at the leading dimension
+The next dimension is k-point indices.
+
+When `._eri` is provided, the default get_jk function can automatically utilize this attribute.
+
+custom get_jk will also affect get_j and get_k
+
+
+## Hooks for SCF iteration
+
+Following hooks are provided in SCF driver. They can access all variables in the
+SCF driver via a Python `locals()` dict.
+
+- `check_convergence(envs)` replaces the default energy-and-orbital-gradient
+  test and must return a boolean..
+
+- `pre_kernel(envs)` runs before the first iteration, after the initial density, potential, energy, and
+  optional DIIS object have been constructed.
+
+- `callback(envs)` runs at the end of each iteration.
+
+- `post_kernel(envs)` runs before terminating the SCF driver.
+
+## Checkpoint files
+
+Use `mf.chkfile` to specify an HDF5 file as checkpoint. By default, an SCF
+object creates a temporary file that is removed with the temporary-file object.
+Assign a path to retain the checkpoint, or set `mf.chkfile = None` to disable
+checkpoint writes.
+
+The molecular SCF info is stored under the `scf/` key in the checkpoint.
+chkfile does not serialize the SCF object. Instead, it only saves key info,
+including
+- `scf/e_tot`: the current total energy;
+- `scf/mo_energy`: orbital energies;
+- `scf/mo_coeff`: orbital coefficients;
+- `scf/mo_occ`: orbital occupations.
+
+The field name is identical to that in the SCF objects. This supports a quick
+initializing an SCF object from chkfile
+```
+mf.__dict__.update(chkfile.load('chkfile_name', 'scf'))
+```
+
+chkfile also stores the System info under `mol` field.
+mol is a serialization of Mole instance.
+mol can be deserialized from a chkfile using lib.chkfile.load_mol(chkfile)
+
+## Dynamically composed methods
+Density fitting, X2C, solvent models, and SOSCF are provided via the method class composition.
+
+The order matters.
+Although some composition are exchangable, as they modify different part of the code, but no guarantee.
+It's recommended to perform the following order
+X2C -> density_fitting -> PCM -> SOSCF
+
+- X2C (mf.x2c()), density fitting (mf.density_fit()), and solvent models (mf.PCM()) are decoupled at mean-field level. They can be applied in arbitrary order.
+
+- Density fitting and SOSCF are coupled. Their order matters. Applying `density_fit().soscf()` will use SOSCF for the density fitting mean-field calculation. It should produce the same results as `density_fit().run()` when converged. Applying in a flipped order `mf.soscf().density_fit()` will use density fitting approximation to speed up integral computation for orbital hessian in SOSCF, this would produce the same results as the basic `mf.run()` when converged
+
+- in the derivative computations, the current implementation only supports `density_fit().PCM()` type of method composition. Although the order of `density_fit()` and `PCM()` does not affect SCF results, it's recommended to perform `density_fit().PCM()` initialization than the flipped way due to the limitation of derivatives functionality.
+
+- QM/MM module also provide an initializer for mean-field objects, which can apply MM charges as external field to the Hcore.
+  QM/MM cannot be used with PCM. Their composition are not properly implemented, will lead to undefined results.
+  QM/MM and X2c order matters. when applying both QM/MM and X2C, X2C must be applied first. performing X2c on top of QM/MM are not handled in current implementation

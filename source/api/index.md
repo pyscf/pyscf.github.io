@@ -11,12 +11,18 @@ For learning how to use PySCF, see the User Guide
 
 general
 
+naming conventions
+
+global_configurations
+  - PYSCF_DISABLE_EVAL environment variable
+
 numpy_helper
 
 logger
 
-global_configurations
-  - PYSCF_DISABLE_EVAL environment variable
+gto
+
+chkfile
 
 SCF
    how to custom SCF class, which methods need to be overridden
