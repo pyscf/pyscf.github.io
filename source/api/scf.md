@@ -1,24 +1,3 @@
-outline:
-  - The SCF driver call sequence and method dependency graph.
-
-  - How to customize SCF? Methods that need to be overloaded/customized for a custom SCF method.
-
-  - multiple density matrices
-
-  - Incremental Fock-building contracts, convergence hooks, callbacks, and
-    result state.
-
-  - The chkfile, storage format, what are stored in the chkfile
-
-  - Implicitly supported features: post-HF if get_hcore and `._eri` attribute is
-    provided. the attribute `.incore_anyway` must be enabled to ensure the
-    `._eri` is utilized by post-HF
-
-  - Limitations: derivative computation (like Gradients, Hessian), response methods
-
-
----
-
 # SCF customization API
 
 This page describes the interfaces used by the molecular SCF driver. It is
@@ -156,8 +135,8 @@ RHF, ROHF, or UHF class instead.
 
 ## Use by post-HF methods
 
-After overwriting the Hcore and `_eri`,
-post-HF methods (MP, CI, CC, MCSCF, etc) can use these integrals from a customized SCF calculation,
+After overwriting the Hcore and `_eri`, post-HF methods (MP, CI, CC, MCSCF, etc)
+can use these integrals from a customized SCF calculation.
 
 Some transformation paths choose an out-of-core calculation from `mol` when
 the stored `_eri` is considered too large for the memory limit. For a model
@@ -170,11 +149,23 @@ mol.incore_anyway = True
 
 to force supported post-HF paths to use `mf._eri`. This can require substantial memory.
 
-NOTE: Method decomposition including Density fitting, X2C, solvent models, and SOSCF may replace the customization.
-It's recommend apply these method composition first, then apply customization.
+Method composition, including density fitting, X2C, solvent models, and SOSCF,
+may replace customized methods. It's recommend apply these method composition
+first, then apply customization.
 
-NOTE: Analytical gradient, Hessian, and response methods requires the
-derivatives of Hcore and ERI integrals. This customization does not automatically enable the derivative computation
+Analytical gradients and Hessians require derivatives of the customized
+Hamiltonian, overlap, and two-electron interaction with respect to nuclear
+coordinates. Overriding their ground-state values does not supply those
+derivatives. The ordinary molecular derivative routines can therefore be
+inconsistent with a custom Hamiltonian unless their derivative interfaces are
+customized as well.
+
+Electronic response has a different requirement: it needs the change in the
+effective potential caused by a density perturbation. `gen_response()` returns
+a callable that maps a perturbed density to that induced potential. Standard
+HF response routines use J/K builders, so customizing `get_jk()` can also serve
+response calculations. Overriding `get_veff()` alone does not update
+this response kernel.
 
 
 ## Method type
@@ -183,7 +174,7 @@ Each SCF method is associated to a class, such as `RKS`, `UKS`, `GKS`, `ROHF`,
 and `DHF`, etc.
 Derived methods such as density fitting, solvent models, and QM/MM are build on
 these classes through [dynamic composition](#dynamically-composed-methods).
-For example, `mol.RKS().density_fit().PCM().newton()` creates an object whose
+For example, `mol.RKS().density_fit().PCM().soscf()` creates an object whose
 class is named `SecondOrderPCMDFRKS`.
 
 To check the underlying method, one method is to use `isinstance()` with the
@@ -200,21 +191,43 @@ mf.istype('GKS')
 
 
 ## J/K builders
-get_jk can handle multiple density matrices as input. The output J and K
-matrices has the same shape as the input density matrices.
 
-If providing the entire `._eri` is not available, an alternative option is to
-customize get_jk.
+`get_jk()` returns `(vj, vk)`, the Coulomb and exchange matrices for the supplied
+density. It accepts a single `(nao, nao)` matrix or a batch with shape
+`(..., nao, nao)`. The output J and K matrices has the same shape as the input
+density matrices.
 
-For UHF, leading dimension corresponds to spin channels, ordered as alpha then beta.
-- In response calculations (such as the CPHF solver for Hessian), the leading
-  dimension is still spin channel, then the multiple entries of density matrices.
-- In the PBC k-point sampling calculations, the spin-channels still placed at the leading dimension
-The next dimension is k-point indices.
+For UHF/UKS, a ground-state density has shape `(2, nao, nao)`, with alpha first
+and beta second. A batch of unrestricted response densities can have shape
+`(2, npert, nao, nao)`, where `npert` counts perturbations. `get_jk()` contracts
+each density separately. Periodic k-point methods have additional k-point
+conventions. The spin-channels still placed at the leading dimension. The next
+dimension is k-point indices.
 
-When `._eri` is provided, the default get_jk function can automatically utilize this attribute.
+When a custom `get_jk()` method is provided, the inherited `get_j()` and
+`get_k()` also use the custom builder.
 
-custom get_jk will also affect get_j and get_k
+
+### Incremental potential builds
+
+The driver passes the current density and the previous density/potential pair
+to `get_veff(mol, dm, dm_last, vhf_last)`. The method must return the **full
+potential for `dm`**, not just its change since the previous iteration.
+
+For HF, the potential is linear in the density. An incremental build therefore
+evaluates the potential of `dm - dm_last` and adds it to `vhf_last`. The previous
+potential must correspond to `dm_last` for the same Hamiltonian and AO basis.
+With `direct_scf` enabled and no stored `_eri`, the standard molecular HF
+implementation uses this approach. With stored integrals, or when direct SCF
+is disabled, it rebuilds the potential from the full density.
+
+A custom `get_veff()` may ignore `dm_last` and `vhf_last` and always rebuild
+from `dm`. It must still accept these arguments because the driver supplies
+them. Density differences are not ordinary physical densities: a custom J/K
+builder must handle them without assuming positive occupations or a fixed
+electron count. For nonlinear potentials such as exchange-correlation, the HF
+increment formula cannot be applied to the entire potential; use a full build
+or a method-specific update.
 
 
 ## Hooks for SCF iteration
@@ -223,14 +236,18 @@ Following hooks are provided in SCF driver. They can access all variables in the
 SCF driver via a Python `locals()` dict.
 
 - `check_convergence(envs)` replaces the default energy-and-orbital-gradient
-  test and must return a boolean..
+  test and must return a boolean. Returning `True` requests convergence; the
+  optional final convergence check can call it again.
 
 - `pre_kernel(envs)` runs before the first iteration, after the initial density, potential, energy, and
   optional DIIS object have been constructed.
 
-- `callback(envs)` runs at the end of each iteration.
+- `callback(envs)` runs at the end of each regular iteration, after the
+  convergence test and checkpoint write. Its return value is ignored. One common
+  scenario is to use it to observe or save iteration data.
 
-- `post_kernel(envs)` runs before terminating the SCF driver.
+- `post_kernel(envs)` runs after the iteration loop and any final convergence
+  check, before the driver returns.
 
 ## Checkpoint files
 
@@ -239,23 +256,25 @@ object creates a temporary file that is removed with the temporary-file object.
 Assign a path to retain the checkpoint, or set `mf.chkfile = None` to disable
 checkpoint writes.
 
-The molecular SCF info is stored under the `scf/` key in the checkpoint.
-chkfile does not serialize the SCF object. Instead, it only saves key info,
-including
+The checkpoint is an HDF5 file. Its `scf/` group stores the energy and orbital
+arrays, rather than a serialization of the SCF object:
+
 - `scf/e_tot`: the current total energy;
 - `scf/mo_energy`: orbital energies;
 - `scf/mo_coeff`: orbital coefficients;
 - `scf/mo_occ`: orbital occupations.
 
-The field name is identical to that in the SCF objects. This supports a quick
-initializing an SCF object from chkfile
-```
+The dataset names match the SCF result attributes, so saved results can be
+assigned directly:
+
+```python
+from pyscf.scf import chkfile
+
 mf.__dict__.update(chkfile.load('chkfile_name', 'scf'))
 ```
 
-chkfile also stores the System info under `mol` field.
-mol is a serialization of Mole instance.
-mol can be deserialized from a chkfile using lib.chkfile.load_mol(chkfile)
+The `mol` dataset stores a serialized `Mole` object.
+`mol` can be deserialized from a chkfile using `lib.chkfile.load_mol(filename)`.
 
 ## Dynamically composed methods
 Density fitting, X2C, solvent models, and SOSCF are provided via the method class composition.
