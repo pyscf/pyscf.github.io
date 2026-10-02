@@ -16,8 +16,6 @@ naming conventions
 global_configurations
   - PYSCF_DISABLE_EVAL environment variable
 
-numpy_helper
-
 logger
 
 gto
