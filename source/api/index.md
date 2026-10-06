@@ -1,40 +1,23 @@
 # PySCF API Reference
 
-This manual documents the exposed API functions, modules in PySCF.
-For learning how to use PySCF, see the User Guide 
-
-
+This manual describes PySCF interfaces, their expected behavior, and extension
+points. For guidance on running calculations, see the [User Guide](../user/index.md).
 
 ```{toctree}
 :caption: Python APIs
 :maxdepth: 1
 
 general
-
-naming conventions
-
 global_configurations
-
 logger
-
+NumPy helpers <numpy_helper>
 gto
-
-chkfile
-
-SCF
-   how to custom SCF class, which methods need to be overridden
-
-XC and NumInt overriding
-  - which methods required by fock build in SCF
-  - which methods required by gradients computation
-  - higher order derivatives:
-    - energy_nuclear_gradients
+Checkpoint files <chkfile>
+scf
+xc_numint
 ```
 
-```{toctree}
-:caption: C API
-:maxdepth: 1
+## C API
 
-C extensions are not supposed to be accessed directly. There is no guarantee of
-stable C APIs
-```
+PySCF's C extensions are intended for internal use. Their interfaces are not
+guaranteed to remain stable.
