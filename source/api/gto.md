@@ -4,6 +4,9 @@ The `pyscf.gto.Mole` class holds molecular data and settings used to initialize
 calculation objects, including `stdout`, `verbose`, and `max_memory`. It also
 prepares the `_atm`, `_bas`, and `_env` arrays used by the integral libraries.
 
+For integral storage, AO-to-MO transformations, and mixed-basis overlaps,
+see [Integral and density-fitting conventions](integrals.md).
+
 ## Units
 
 Input geometry uses Angstrom by default. Set `mol.unit = 'Bohr'` to supply

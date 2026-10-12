@@ -156,8 +156,9 @@ shape `(naux, nao * (nao + 1) // 2)` in C-contiguous order. Each row contains
 the lower triangle of a symmetric AO matrix, ordered as
 `(0,0), (1,0), (1,1), (2,0), ...`.
 
-These tensors are factors of the two-electron interaction, not raw
-three-center integrals. They are related to `_eri` in the four-fold packed
+These tensors are factors of the two-electron interaction, not
+[raw three-center integrals](integrals.md#raw-three-center-integrals-versus-fitted-factors).
+They are related to `_eri` in the four-fold packed
 format by:
 
 ```python
@@ -167,8 +168,14 @@ _eri = einsum('pi,pj->ij', _cderi, _cderi)
 `_cderi` can be a NumPy array held in memory or a path to an HDF5 file.
 The HDF5 file must contain the three-index tensor in a dataset named `j3c`.
 
-Assigning `mf._eri` to a DF-SCF object does not change the integrals used
-by its DF J/K builder.
+With DF enabled for both J and K, assigning `mf._eri` does not change the
+integrals used by the DF builder.
+
+The `only_dfj=True` option is an exception. A supplied `mf._eri` is used to
+construct the exchange matrix. See [DF for J only](#df-for-j-only).
+This is not an intended design. The code does not reject this combination or
+check that the J and K integrals are consistent, and it happens to work. Avoid
+it unless you intend to supply J and K through these separate inputs.
 
 ### Limitations
 
@@ -201,7 +208,8 @@ complex orbitals. A complex spatial AO two-electron interaction must be
 supplied as a full tensor.
 
 Support at SCF level does not guarantee support in a post-HF solver or
-its AO-to-MO transformation. Some post-HF methods, such as
+its [AO-to-MO transformation](integrals.md#complex-integral-support).
+Some post-HF methods, such as
 `pyscf.cc.rccsd.RCCSD`, support complex integrals.
 Other CC methods, such as UCCSD and EOM-CC, do not generally support
 complex integrals or orbitals.
@@ -270,7 +278,7 @@ mf.istype('GKS')
 
 `get_jk()` returns `(vj, vk)`, the Coulomb and exchange matrices for the supplied
 density. It accepts a single `(nao, nao)` matrix or a batch with shape
-`(..., nao, nao)`. The output J and K matrices have the same shape as the input
+`(..., nao, nao)`. The requested J and K matrices have the same shape as the input
 density matrices.
 
 For UHF/UKS, a ground-state density has shape `(2, nao, nao)`, with alpha first
@@ -282,6 +290,21 @@ conventions: the spin axis still comes first, followed by the k-point axis.
 When a custom `get_jk()` method is provided, the inherited `get_j()` and
 `get_k()` also use the custom builder.
 
+### Requesting J or K separately
+
+`with_j` and `with_k` select which results are needed. With `with_j=False`
+or `with_k=False`, the corresponding return value may be `None`, a NumPy
+array of zeros, or a scalar such as `0`. Ignore that value and use only
+the requested result.
+
+### DF for J only
+
+`mf.density_fit(only_dfj=True)` uses density fitting for the J matrix and
+the ordinary exchange builder for K. This setting also affects custom
+Hamiltonians: `mf.with_df._cderi` will be used to evaluate J matrix, while
+the custom `mf._eri` will be used for K matrix. This is not an intended design.
+The code happens to work as it does not reject this combination for custom
+Hamiltonian.
 
 ### Incremental potential builds
 

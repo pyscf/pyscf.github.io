@@ -12,6 +12,7 @@ global_configurations
 logger
 NumPy helpers <numpy_helper>
 gto
+integrals
 Checkpoint files <chkfile>
 scf
 pbc
