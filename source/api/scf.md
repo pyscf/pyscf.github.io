@@ -91,10 +91,10 @@ For a model Hamiltonian in an AO-like basis, configure the following pieces:
 - Set the electron count on the `Mole` object. For an unrestricted calculation,
   `mf.nelec = (nalpha, nbeta)` can be used to specify the two spin populations.
 - Override `get_hcore(mol)` and `get_ovlp(mol)`. They normally return square
-  `(nao, nao)` matrices. A spin-dependent UHF core Hamiltonian may have shape
-  `(2, nao, nao)`; a common two-dimensional Hamiltonian is broadcast to both
-  spins.
+  `(nao, nao)` matrices. [For UHF with different alpha-beta core hamiltonian,
+  and add a hyperlink to the subsection which provides detailed description]
 - Supply the two-electron interaction through `_eri` or override `get_jk()`.
+  [For AO integrals in spinor basis or complex-valued orbitals]
 - Supply an initial density through `kernel(dm0=...)` when the molecule does
   not provide a meaningful atomic initial guess.
 - Override `energy_nuc()` when the constant part of the model Hamiltonian is
@@ -132,6 +132,25 @@ as overwritten attributes. This diagnostic is expected for this customization
 style. A reusable implementation should normally subclass the appropriate
 RHF, ROHF, or UHF class instead.
 
+### add a description for different alpha and beta core Hamiltonians.
+    - the UHF get_hcore produces alpha-beta degenerated core Hamiltonian (N,N) matrix.
+    - A spin-dependent UHF core Hamiltonian may have shape
+      `(2, nao, nao)`; a common two-dimensional Hamiltonian is broadcast to both
+      spins.
+    - get_fock and energy_elec can use spin-resolved hcore
+      while the overlap matrix is shared between the two eigensolves.
+
+
+### two-electron integrals for GHF
+The custom integrals supplied to the ._eri attribute must be integrals for
+scalar basis.
+  - integrals with 4-fold and 8-fold permutation symmetry, and N^4 without
+    permutation symmetry, which of them are supported
+  - Is complex integrals supported.
+  - integrals of two-component spinor bases are not supported. To handle such
+    case, `get_jk` needs to be customized accordingly. However, the subsequent
+    MO integral transformation in post-HF calculations does not automatically
+    recogonize this extension, it will still break the post-HF.
 
 ## Use by post-HF methods
 
@@ -293,3 +312,48 @@ X2C -> density_fitting -> PCM -> SOSCF
 - QM/MM module also provide an initializer for mean-field objects, which can apply MM charges as external field to the Hcore.
   QM/MM cannot be used with PCM. Their composition are not properly implemented, will lead to undefined results.
   QM/MM and X2c order matters. when applying both QM/MM and X2C, X2C must be applied first. performing X2c on top of QM/MM are not handled in current implementation
+
+
+
+
+
+
+
+
+
+
+## CCSD recomputes a Fock matrix for the supplied orbitals
+
+**Status:** current convention. **Sources:** [Discussion #2650](https://github.com/pyscf/pyscf/discussions/2650).
+
+**Question or historical answer.** Supplying mo_energy from another program does not necessarily control the CC denominators.
+
+**Current code.** _ChemistsERIs._common_init_ builds a density, calls the reference get_veff/get_fock, transforms the Fock matrix and takes its real diagonal as eris.mo_energy. This step is not a full SCF optimization. A custom CC ao2mo implementation can control its ERI object, but its integrals, Fock matrix and reference must agree.
+
+**Documentation task.** Document the CC ERI-object boundary and the distinction between reference mo_energy, eris.mo_energy and the full Fock matrix. Treat the subclass snippet in the thread as an advanced customization, not a standalone guarantee of physical consistency.
+
+**Code evidence:** [`pyscf/cc/ccsd.py:1393`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/cc/ccsd.py#L1393).
+
+## Decorators and custom optimizer hooks
+
+**Status:** current convention with caveats. **Sources:** [Issue #2212](https://github.com/pyscf/pyscf/issues/2212), [Issue #2788](https://github.com/pyscf/pyscf/issues/2788), [Issue #874](https://github.com/pyscf/pyscf/issues/874), [Discussion #2802](https://github.com/pyscf/pyscf/discussions/2802), [Discussion #3242](https://github.com/pyscf/pyscf/discussions/3242), [Discussion #3034](https://github.com/pyscf/pyscf/discussions/3034).
+
+**Question or historical answer.** SOSCF, density fitting and method conversion can change which customized hooks are used.
+
+**Current code.** DF copies instance state but clears _eri and supplies its own JK and derivative methods. SOSCF uses an underlying _scf reference, so assigning a method only to an outer wrapper is not a universal customization recipe. Repeated CASSCF density_fit now checks for an existing DF mixin; a local repeat call succeeded. The old conversion/DF-loss issue has corresponding conversion changes, but custom subclasses still need individual checks.
+
+**Documentation task.** Extend scf.md's composition section with hook ownership and a supported-combination matrix. Cross-link the ML-XC discussion rather than implying a single override survives every wrapper. Omit the old repeated-DF MRO workaround.
+
+**Code evidence:** [`pyscf/df/df_jk.py:109`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/df/df_jk.py#L109), [`pyscf/soscf/newton_ah.py:670`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/soscf/newton_ah.py#L670), [`pyscf/mcscf/df.py:30`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/mcscf/df.py#L30), [`pyscf/dft/uks.py:207`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/dft/uks.py#L207), [`pyscf/scf/hf.py:2430`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/scf/hf.py#L2430).
+
+## Complex Hamiltonian support is solver and path specific
+
+**Status:** current limitation. **Sources:** [Discussion #2628](https://github.com/pyscf/pyscf/discussions/2628), [Discussion #2659](https://github.com/pyscf/pyscf/discussions/2659), [Discussion #3184](https://github.com/pyscf/pyscf/discussions/3184).
+
+**Question or historical answer.** A successful complex SCF or RCCSD run is taken to imply unrestricted CCSD support.
+
+**Current code.** The molecular UCCSD implementation still uses optimized real/symmetric integral contractions; the shared _contract_s4vvvv_t2 asserts float64 amplitudes. GCCSD has explicit complex-capable paths, but its integral representation and orbital conventions differ. Removing a dtype assertion is not enough to establish correct complex conjugations throughout UCCSD.
+
+**Documentation task.** Add a solver/input/path support matrix, with complex MO coefficients distinguished from arbitrary complex custom AO ERIs. Keep the reported local patch and suggested GCCSD comparison as validation leads, not as upstream support claims.
+
+**Code evidence:** [`pyscf/cc/uccsd.py:454`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/cc/uccsd.py#L454), [`pyscf/cc/ccsd.py:487`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/cc/ccsd.py#L487), [`pyscf/cc/gccsd.py:344`](https://github.com/pyscf/pyscf/blob/9ceafa41b217bd3afbe6a0399d875d805ff81306/pyscf/cc/gccsd.py#L344).

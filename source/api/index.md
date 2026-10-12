@@ -14,6 +14,7 @@ NumPy helpers <numpy_helper>
 gto
 Checkpoint files <chkfile>
 scf
+pbc
 xc_numint
 ```
 
