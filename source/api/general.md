@@ -5,20 +5,25 @@ This page describes API patterns shared by PySCF method objects.
 ## Stream objects
 
 Most method objects inherit from `pyscf.lib.StreamObject`. Their `kernel()`
-method performs the calculation and has a method-specific output. These output
-are normally stored as result attributes on the method object. Consult each
-method class's docstring for the relevant attributes.
+method performs the calculation and returns results that depend on the method.
+These results are normally also stored as attributes on the method object.
+See each method class's docstring for the relevant attributes.
 
-Stream objects provide common operations that allow methods to be chained in a
-computation:
+Stream objects provide common operations that let you chain method calls:
 
-- `run(*args, **kwargs)` first applies keyword arguments with `set`, invokes
+- `run(*args, **kwargs)` first applies keyword arguments with `set`, calls
   `kernel(*args)`, and returns the same object rather than the kernel result.
 
+  Keyword arguments to `run()` are settings, not arguments to `kernel()`.
+  In particular, `mf.run(dm0=dm)` sets an attribute named `dm0`; it does not
+  supply the initial density to SCF. Use `mf.kernel(dm0=dm)` or `mf.run(dm)`
+  to start SCF from that density. Settings such as `conv_tol` can be passed
+  through `run(conv_tol=...)`.
+
   **Intermediate `run()` calls.** Some constructors and property methods can be
-  chained without an intermediate `run()`. A prerequisite calculation is
-  triggered automatically. For example, the following TDDFT gradient workflows
-  are equivalent
+  chained without calling `run()` between them. Any required earlier
+  calculation is run automatically. For example, the following TDDFT gradient
+  calculations are equivalent:
 
   ```python
   td_grad = pyscf.M(atom='H 0 0 0; H 0 0 1.1').RHF().run().TDA().run().Gradients().run()
@@ -28,10 +33,10 @@ computation:
   td_grad = pyscf.M(atom='H 0 0 0; H 0 0 1.1').RHF().TDA().Gradients().run()
   ```
 
-  Calling `run()` or `kernel()` at the end to complete a calculation is still required.
+  You still need to call `run()` or `kernel()` at the end to complete the calculation.
 
 - `set(**kwargs)` assigns attributes and returns the same object. It supports
-  keyword arguments only and does not validate attribute names.
+  keyword arguments only and does not check attribute names.
 
 - `copy()` makes a shallow copy of the object.
 
@@ -40,42 +45,44 @@ computation:
 
 ### Output control
 
-`StreamObject` provides two default attributes for controlling logging. See the
+`StreamObject` provides two default attributes for controlling output. See the
 logger API page for logging levels and timer utilities.
 
-* `stdout = sys.stdout`: by default, PySCF output is written to the standard
-  system stdout. If you want to redirect default output to a file, you can
-  set `StreamObject.stdout` to that open file.
+* `stdout = sys.stdout`: by default, PySCF writes output to standard output,
+  usually the terminal. To redirect the default output to a file, set
+  `StreamObject.stdout` to that open file.
 
 * `verbose = 0`: `logger.Logger` uses this default verbosity level. Classes
   inheriting from `StreamObject` can be passed to `Logger`. The default is
-  silent. Most methods initialize their verbosity from `mol.verbose`. So
-  changing a class-level default may not affect existing method instances.
+  silent. Most methods take their initial verbosity from `mol.verbose`, so
+  changing the class default may not affect objects that already exist.
 
 ### Attribute spelling check with `check_sanity()`
 
 `check_sanity()` checks public instance attributes (names not starting with `_`).
 
 - Supported attributes are registered in each class's `_keys` set. `_keys` from
-  parent classes are also included in the checking. Key registration does not
-  need to be repeated in a child class.
+  parent classes are checked too, so a child class does not need to register
+  the same keys again.
 
 - A message such as `<class ...> does not have attributes ...` often indicates
   a typo or an attribute omitted from `_keys`, rather than a calculation error.
 
-- It reports an unknown public attribute or an overwritten of a class method.
-  For example, `RHF` instance does not support configuration `spin`, setting
-  this attribute leads to
+- It reports unknown public attributes and methods that have been replaced
+  on an object. For example, an `RHF` object does not support the setting
+  `spin`. Assigning it produces the following message:
 
 ```python
 mf = mol.RHF()
 mf.spin = 1
 mf.check_sanity()
+```
 
+```text
 <class 'pyscf.scf.hf.RHF'> does not have attributes  spin
 ```
 
-  Overwriting `the get_hcore` method of the `RHF` instance,
+Replacing the `get_hcore` method on an `RHF` object:
 
 ```python
 mf = mol.RHF()
@@ -83,7 +90,7 @@ mf.get_hcore = lambda *args, **kwargs: None
 mf.check_sanity()
 ```
 
-can report:
+can produce:
 
 ```
 Overwritten attributes  get_hcore  of <class 'pyscf.scf.hf.RHF'>
@@ -91,27 +98,103 @@ Overwritten attributes  get_hcore  of <class 'pyscf.scf.hf.RHF'>
 
 ### Reset method
 
-`reset()` is implemented by individual method classes. It updates the method's
-associated system and clears cached data tied to the old system while preserving
-method settings such as convergence thresholds and frozen orbitals.
+Use `method.reset(new_mol)` to reuse a method with a new molecule or cell.
+It clears saved integrals and other temporary data for the old system while
+keeping settings such as convergence thresholds and frozen orbitals.
 
-It does not clear results from a previous calculation. This can allow old
-results to be used as an initial guess for a new system.
+Results from the previous calculation are kept and may be reused as an
+initial guess. `reset()` does not run a calculation, so stored energies and
+convergence flags still refer to the previous calculation.
 
-It is common to run the same calculation settings for molecules with slightly
-different geometries (or other configurations). A `Mole` (or `Cell`) object may
-be referenced by several method objects. Updating it in place can appear to work
-in some cases, but is not generally safe. A nested object such as an
-implicit-solvent model may keep its own copy of the molecule geometry
-separately.
+When scanning geometries, changing the `Mole` or `Cell` object alone may
+not update every part of the calculation. Several method objects can share
+the same molecule, while an attached solvent model may keep a separate copy
+of the geometry. Assigning `mf.mol = new_mol` also leaves old integrals and
+attached objects unchanged.
 
-`method.reset(new_mol)` can update the system recursively. Cached intermediates
-are cleared during this update to avoid mixing quantities pre-computed from
-different systems.
+The recommended approach is to call `method.reset(new_mol)`. This also updates
+the attached objects supported by the method, such as `_numint`, `with_df`,
+and `with_solvent`, so the calculation does not mix data from different geometries.
 
-`Scanner <Scanners>_` is another tool designed for this workflow. It
-automatically calls the available `reset` method and performs additional
-method-specific checks between systems.
+SCF keeps its orbitals and occupations after `reset()`. Calling `kernel()`
+without an explicit initial density reuses them as they are; it does not
+adapt them to a new basis or atom order. If either has changed, supply an
+initial density that matches the new system. For example,
+`init_guess_by_chkfile()` can project saved orbitals into the new basis,
+as described under [checkpoint restoration](scf.md#restoring-a-calculation).
+
+[Scanners](#scanners) handle the geometry update and run the calculation in
+one call. They also manage the reuse of previous results according to the
+method.
+
+
+## Scanners
+
+`as_scanner()` creates a scanner that can be called repeatedly with different
+geometries. Calling an energy scanner with a `Mole` or `Cell` runs the
+calculation and returns the total energy. A nuclear-gradient scanner returns
+`(energy, gradient)`. Results are also available on the scanner:
+
+* Energy scanners store `e_tot` and `converged`.
+* Gradient scanners store `e_tot`, `de` (nuclear gradients), and `converged`.
+
+```python
+scanner = gto.M().RHF().as_scanner()
+energy = scanner(gto.M(atom='H 0 0 0; H 0 0 1.2'))
+print(scanner.converged)
+```
+
+The scanner keeps the method settings and, when possible, uses the previous
+result as the initial guess for the next geometry. This is useful for
+potential-energy scans and geometry optimization. Each call updates the
+scanner's results to those of the latest calculation.
+
+**Side effects.** A scanner is not an independent copy of the original
+method. The two can share attached objects, such as density-fitting, X2C,
+or solvent objects. A scan can update these shared objects to the new
+geometry while the original method's `mol` or `cell` still refers to the
+old geometry. For example:
+
+```python
+mf = gto.M(atom='H 0 0 0; H 0 0 1.0').RHF().density_fit()
+scanner = mf.as_scanner()
+scanner(gto.M(atom='H 0 0 0; H 0 0 1.2'))
+```
+
+After this scan, `mf.mol` and `mf.with_df.mol` refer to different geometries.
+Running `mf` again without resetting it can mix data from the two geometries.
+
+Before reusing the original `mf`, reset it to the geometry you want:
+
+```python
+# Return mf and its DF object to the original geometry.
+mf.reset(mf.mol)
+
+# Or update both to the scanner's latest geometry.
+mf.reset(scanner.mol)
+```
+
+### Orbital reuse in CASCI and CASSCF scanners
+
+CASCI and CASSCF energy scanners reuse orbitals differently:
+
+- `casci_scanner(mol)`: Uses new SCF orbitals, even if the CASCI object already
+  has saved orbitals.
+- `casci_scanner(mol, mo_coeff=mo)`: Uses the supplied orbitals without an SCF
+  calculation or automatic projection.
+- `casscf_scanner(mol)`: Adapts saved CASSCF orbitals to the new geometry by
+  projection. If no orbitals have been initialized, it uses new SCF orbitals.
+- `casscf_scanner(mol, mo_coeff=mo)`: Adapts the supplied orbitals by projection,
+  then uses them as the CASSCF starting guess.
+
+Assigning orbitals to `casci_scanner.mo_coeff` does not make the next scan
+use them. This differs from SCF calculations, which automatically reuse
+existing orbitals as the initial guess when no initial density is supplied.
+
+A CASSCF scanner runs an SCF calculation even when starting orbitals are
+supplied. Both scanners reuse their previous CI solution as a guess unless
+an explicit initial guess `ci0` is supplied. After the call, the new orbitals
+and CI solution are available as `scanner.mo_coeff` and `scanner.ci`.
 
 
 ### Serialization
@@ -121,35 +204,34 @@ TODO
 ### Conversion to GPU4PySCF
 
 `to_gpu()` converts a supported PySCF object to its corresponding GPU4PySCF
-object. It recursively converts supported attributes, including NumPy arrays
-and nested method attributes.
+object. It also converts supported attributes, including NumPy arrays and
+attached method objects.
 
 Some arrays intentionally remain NumPy arrays, including `kpt`, `kpts`,
-`_kpts`, `kpts_band`, `mesh`, and `frozen`. This setting is currently provided
-by a global list, `_ATTRIBUTES_IN_NPARRAY` in the `pyscf.lib.misc` module.
+`_kpts`, `kpts_band`, `mesh`, and `frozen`. These exceptions are listed in
+`_ATTRIBUTES_IN_NPARRAY` in the `pyscf.lib.misc` module.
 
 `from_cpu()` is the complementary conversion hook and is implemented by
 GPU4PySCF modules or classes. When GPU4PySCF provides `from_cpu()`, it takes
 precedence over PySCF's `to_gpu` conversion code.
 
-PySCF and GPU4PySCF evolve separately, support and return details can vary
-between GPU4PySCF versions.
+PySCF and GPU4PySCF evolve separately, so the supported methods and conversion
+results can vary between GPU4PySCF versions.
 
-Not every PySCF method or scanner supports `to_gpu()`. Although a global
-conversion is implmented, the to gpu conversion still relies on each individual
-method for many methods. 
+Not every PySCF method or scanner supports `to_gpu()`. The shared conversion
+code still relies on support from individual methods.
 
 
 ## Dynamically composed method classes
 
 Features such as density fitting (DF), one-electron X2C, second-order SCF
-(SOSCF), and solvent models decorate an existing method by constructing a new
-class at runtime. The resulting class retains the behavior of the original class
-while adding the requested functionality.
+(SOSCF), and solvent models add features to an existing method by creating a
+new class at runtime. The new class keeps the original method's behavior and
+adds the requested feature. This is called decorating the method.
 
-These dynamically composed classes are created and registered in the
-`pyscf.lib` module at runtime. They do not exist in the source tree, but can be
-accessed like any other class through `pyscf.lib`.
+These classes are made available through `pyscf.lib` when they are created.
+They are not defined in source files, but you can access them through
+`pyscf.lib` like any other class.
 
 To remove a decoration, use the corresponding `undo_*()` method. For example:
 
@@ -165,49 +247,3 @@ leaving the composed class unchanged.
 To permanently remove a supported decoration, use the corresponding undo method,
 such as `undo_df()`, `undo_x2c()`, or `undo_soscf()`. These methods return a
 view of the object with the corresponding mixin removed.
-
-
-## Scanners
-
-`as_scanner()` creates a callable, stateful derivative of a method object for
-evaluating related geometries. Calling an energy scanner with a `Mole`, `Cell`
-returns total energy. A nuclear-gradient scanner returns `(energy, gradient)`.
-Additional attributes are accessible via the scanner:
-* Energy scanners expose `e_tot` and `converged`.
-* Gradient scanners expose `e_tot`, `de` (nuclear gradients), and `converged`.
-
-```python
-scanner = gto.M().RHF().as_scanner()
-energy = scanner(gto.M(atom='H 0 0 0; H 0 0 1.2'))
-print(scanner.converged)
-```
-
-The scanner retains method options and reuses the previous result as an initial
-guess when compatible, which is useful for potential-energy scans and geometry
-optimization. After a call, its normal result attributes are updated, as the
-original method class.
-
-**Side effects.** Scanners share nested attributes with the method from which
-they were created, such as `_scf`, `with_df`, `with_x2c`, or solvent models.
-A scan can leave these nested attributes changed for the last geometry while
-the parent method still refers to its original `mol` or `cell`. For example:
-
-```python
-mf = gto.M(atom='H 0 0 0; H 0 0 1.0').RHF().density_fit()
-scanner = mf.as_scanner()
-scanner(gto.M(atom='H 0 0 0; H 0 0 1.2'))
-```
-
-After this scan, `mf.mol` and `mf.with_df.mol` refer to different systems.
-Running `mf` directly can then mix data associated with the original molecule
-and the scanned molecule.
-
-If you intend to reuse the original `mf`, restore consistent system state first:
-
-```python
-# Restore the parent and its nested DF object to the parent's original geometry.
-mf.reset(mf.mol)
-
-# Or update the parent and its nested DF object to the scanner's latest geometry.
-mf.reset(scanner.mol)
-```
