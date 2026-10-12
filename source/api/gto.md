@@ -7,10 +7,18 @@ prepares the `_atm`, `_bas`, and `_env` arrays used by the integral libraries.
 ## Units
 
 Input geometry uses Angstrom by default. Set `mol.unit = 'Bohr'` to supply
-coordinates in atomic units.
+coordinates in atomic units. **`mol.unit` controls geometry input only**.
+It does not change the units used internally or for other inputs and results.
+For example, internal coordinates are always in Bohr.
+`atom_coord(i)` and `atom_coords()` return Bohr by default.
 
-Internal coordinates are always in Bohr. `atom_coord(i)` and `atom_coords()`
-return Bohr by default.
+Coordinates passed to `eval_gto()` or `dft.numint.eval_ao()` must be in
+Bohr, regardless of `mol.unit`.
+
+`mol.unit` applies when geometry input is read, including when building a
+molecule or updating its geometry. Changing `mol.unit` alone after
+`mol.build()` does not convert stored coordinates or change the units of
+energies, gradients, or Hessians.
 
 A numeric `mol.unit` divides input coordinates by that value to obtain Bohr.
 Thus `unit=1` means Bohr, while `unit=0.52917721092` interprets coordinates as
@@ -77,6 +85,12 @@ Within each shell, AO ordering follows contraction, then angular component.
 `ao_labels()` returns spherical or Cartesian labels according to `mol.cart`;
 `spinor_labels()` returns spinor labels.
 
+## Cartesian AO normalization
+
+With `mol.cart = True`, Cartesian AOs in PySCF are not necessarily normalized
+to one. The diagonal entries of the AO overlap matrix can therefore differ
+from one.
+
 ## Spinor ordering and time reversal
 
 For each contraction with angular momentum `l`, a basis entry with `kappa=0`
@@ -109,14 +123,30 @@ Each row is `(shell_start, shell_stop, ao_start, ao_stop)` for one atom, with
 zero-based, exclusive stop indices suitable for Python slices. Pass
 `ao_loc=mol.ao_loc_2c()` to obtain spinor AO boundaries.
 
+## AO label searches
+
+`search_ao_label()` returns indices in the same AO order as `ao_labels()`
+and the rows of `mo_coeff`. Numbered atom labels must match the atom index
+exactly. For example, `mol.search_ao_label('0 H')` selects hydrogen AOs on
+atom 0; it must not also select atoms 10 or 20. Atom indices are zero-based
+by default.
+
+General patterns such as `'H.*s'` can still use regular expressions. Exact
+matching of the atom number in a numbered label does not make all searches
+literal-string searches. The earlier behavior where `'0 H'` also matched
+`'10 H'` was a bug, not a search convention.
+
 ## Updating geometry with `set_geom_`
 
 `set_geom_(atoms_or_coords, unit=None, symmetry=None, inplace=True)` accepts
 an `atom` string/list or a NumPy coordinate array of shape `(mol.natm, 3)`
 for the existing atoms. It returns the updated molecule.
 
-`unit=None` uses `mol.unit`; supplying a different conversion factor updates
-the returned molecule's unit.
+`unit=None` uses `mol.unit`. Supplying a different conversion factor updates
+the returned molecule's unit. This setting describes the units of the input
+coordinates; the updated internal coordinates are still in Bohr. When passing
+the default output of `mol.atom_coords()` back to `set_geom_()`, explicitly
+specify `unit='Bohr'` so the coordinates are interpreted correctly.
 
 The update follows two paths:
 
@@ -167,14 +197,34 @@ and defaults to zero. Parsers split combined SP input into s and p shells.
 
 `gto.basis.load(name, symbol)` and `gto.basis.parse(text)` return shell lists
 for `mol.basis` dictionary values. `gto.format_basis()` formats the dictionary;
-`build()` also expands a common basis name or `default` entry over atom types.
-Exact atom-label entries take precedence over element entries.
+`build()` also accepts a common basis name or a `default` entry.
+An exact atom-label entry, such as `'H@1'`, takes precedence over an element
+entry such as `'H'`.
+
+Take care when combining tagged atoms with `default`. An element entry does
+not override the default basis for a tagged atom. For atoms labeled `H` and
+`H@1`, these assignments give:
+
+| `mol.basis` | Basis for `H` | Basis for `H@1` |
+| --- | --- | --- |
+| `{'H': 'cc-pvdz'}` | cc-pVDZ | cc-pVDZ |
+| `{'default': 'sto-3g', 'H': 'cc-pvdz'}` | cc-pVDZ | STO-3G |
+| `{'default': 'sto-3g', 'H': 'cc-pvdz', 'H@1': 'cc-pvtz'}` | cc-pVDZ | cc-pVTZ |
+
+To override the default for a tagged atom, specify its exact label.
+For example, when `default` is set, changing the `'H'` entry does not change
+the basis for `'H@1'`. Set `'H@1'` separately.
 
 Building absorbs primitive normalization into `_env` coefficients and, by
 default, normalizes contractions. Use `bas_exp()` and `bas_ctr_coeff()` to
 access basis data with these normalization conventions accounted for.
 
 ### Effective core potentials
+
+The basis and ECP are separate inputs. Selecting a basis designed for an
+ECP does not automatically attach that ECP. Specify both `mol.basis` and
+`mol.ecp` when the intended calculation requires them. A molecule can build
+successfully even when the intended ECP is missing.
 
 `mol._ecp` maps symbols to the following structure:
 
