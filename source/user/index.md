@@ -53,6 +53,7 @@ lo.rst
 sgx.rst
 geomopt.rst
 gpu.rst
+trexio.rst
 ```
 
 ```{toctree}
