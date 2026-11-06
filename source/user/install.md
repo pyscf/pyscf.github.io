@@ -1,9 +1,10 @@
 # How to install PySCF 
 
-:::{warning}
+:::{note}
 
-PySCF is not supported natively on Windows. You must use the Windows
-Subsystem for Linux.
+Starting with PySCF 2.15.0, prebuilt wheels are available for native Windows
+on x86-64. See [Native Windows](#native-windows) below. The Windows Subsystem
+for Linux (WSL) remains an alternative, using the Linux installation steps.
 
 :::
 
@@ -14,9 +15,23 @@ This is the recommended way to install PySCF for non-developers,
 pip install --prefer-binary pyscf
 ```
 
-The pip package provides a precompiled PySCF code (python wheel) that
-works on almost all Linux systems, most macOS systems, and
-the Windows Subsystem for Linux.
+The [PySCF 2.15.0 release files](https://pypi.org/project/pyscf/2.15.0/#files)
+include precompiled wheels for Linux x86-64 and AArch64 (manylinux),
+macOS x86-64 and ARM64, and native Windows x86-64 (`win_amd64`). WSL uses
+the Linux wheels. This release does not provide Windows ARM64 or 32-bit wheels.
+
+The [runtime requirements for PySCF 2.15.0](https://github.com/pyscf/pyscf/blob/v2.15.0/pyproject.toml)
+are:
+- Python >= 3.9
+- NumPy `>=1.13,!=1.16,!=1.17`
+- SciPy >= 1.6.0
+- h5py >= 2.7
+- setuptools
+- psutil on Windows
+
+These are PySCF's declared requirements; pip selects dependency versions
+compatible with your Python interpreter. For other PySCF releases, consult
+the corresponding package metadata.
 
 If you already have installed
 PySCF via pip, you can upgrade it to the new version,
@@ -31,13 +46,46 @@ installed with `pip`,
 ```bash
 pip install pyscf-forge
 ```
-Some other features are only maintained as [Extensions](user/extensions) to PySCF. 
+Some other features are only maintained as [Extensions](extensions.md) to PySCF.
 :::
 
-To achieve better performance, additional install options are described in
-[Advanced build options](#advanced-build-options)
+### Native Windows
+
+For PySCF 2.15.0, use a 64-bit x86-64 Python installation, version 3.9 or
+newer. In PowerShell, install the core package with:
+```powershell
+python -m pip install --only-binary=pyscf pyscf
+```
+The `--only-binary=pyscf` option requires a PySCF wheel instead of falling
+back to a source build. If pip reports no matching distribution, check your
+Python version, interpreter architecture, and the available release files.
+
+Verify the installation with the same Python interpreter:
+```powershell
+python -c "import pyscf; print(pyscf.__version__)"
+```
+For a small calculation, run the following in Python:
+```python
+from pyscf import gto
+
+mol = gto.M(atom="H 0 0 0; H 0 0 0.74", basis="sto-3g", unit="Angstrom")
+mf = mol.RHF().run()
+assert mf.converged
+```
+The calculation should converge to an energy of approximately -1.1167593 Hartree.
+
+The Windows wheel installs the PySCF core package. Check native Windows
+availability separately for extension packages, including `pyscf-forge`.
+WSL is an alternative for using Linux installation and build instructions.
+
+To achieve better performance, additional source-build options are described in
+[Advanced build options](#advanced-build-options).
 
 ## Build from source with pip
+
+The source-build instructions on this page use Unix shell commands for Linux,
+macOS, or WSL. They are not native Windows build instructions; for native
+Windows, use the [wheel installation instructions](#native-windows) above.
 
 If you're interested in a new feature that's not included in the latest release or you simply 
 want the latest and greatest PySCF, you can build from source using pip,
@@ -64,15 +112,16 @@ See [CMake options](#cmake-options) for more details about CMake configuration.
 
 ## Build from source
 
-You can manually install PySCF by building it from source.
-Prerequisites for manual installation are
+You can manually install PySCF by building it from source. For PySCF 2.15.0,
+install the [Python and runtime requirements](#install-with-pip) listed above,
+along with:
 - C compiler
 - C++ compiler (optional, but required for XCFun and some extensions)
-- CMake >= 3.10
-- Python >= 3.7
-- Numpy >= 1.13
-- Scipy >= 1.3
-- h5py >= 2.7
+- CMake >= 3.22
+
+The CMake minimum comes from the
+[2.15.0 build configuration](https://github.com/pyscf/pyscf/blob/v2.15.0/pyscf/lib/CMakeLists.txt).
+The pip build metadata additionally requires CMake < 4.0.
 
 You can download the latest version of PySCF (or the development
 branch) from GitHub,
@@ -110,6 +159,10 @@ See [CMake options](#cmake-options) for details about CMake configuration.
 
 
 ## Install with conda
+
+Conda packages are published separately from PyPI wheels. Check the selected
+channel's platform availability; a Windows wheel on PyPI does not establish
+native Windows support for a Conda package.
 
 If you use [Conda](https://conda.io/docs/) (or
 [Anaconda](https://www.continuum.io/downloads), PySCF can be installed from the
@@ -342,7 +395,7 @@ make
 You can also link to other BLAS libraries by setting `BLA_VENDOR`,
 e.g., `BLA_VENDOR=ATLAS`, `BLA_VENDOR=IBMESSL`,
 `BLA_VENDOR=OpenBLAS` (requiring cmake-3.6).  Please refer to the
-[CMake manual](http://www.cmake.org/cmake/help/v3.6/module/FindBLAS.html>) 
+[CMake manual](https://cmake.org/cmake/help/v3.6/module/FindBLAS.html)
 for more details on the use of the `FindBLAS` macro.
 
 If setting the CMake `BLA_VENDOR` variable does not result in the
@@ -434,7 +487,7 @@ Building wheels for collected packages: pyscf
 Here, `pip` chose not to install a binary wheel and is trying to build from source.
 If this is not your intention, you can use the command `pip install --prefer-binary pyscf` to install the binary version.
 On the other hand, if your intention is to build from source, this error message warns that you are missing the necessary `cmake` program.
-For more details, see the documentation on building from source and issue [1684](https://github.com/pyscf/pyscf/issues/1684>)
+For more details, see the documentation on building from source and issue [1684](https://github.com/pyscf/pyscf/issues/1684)
 
 * MacOS: `Library not loaded`
 
