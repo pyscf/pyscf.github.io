@@ -61,6 +61,7 @@ For complete lists of the available density functional approximations, the user 
 
 The constant maintenance and development of density functional libraries is hard work at little personal benefit, while everyone benefits from having a huge variety of density functionals in numerically stable form for use in applications. If you use Libxc in your calculations, please cite the most up-to-date work on Libxc in your paper. You can see the most up-to-date citation on the `Libxc web page <https://libxc.gitlab.io>`_; at the moment, this is :cite:`lehtola_libxc_softwarex_2018`. Likewise, if you use XCFun in your calculations, please cite the most up-to-date work on XCFun in your paper. You can find recent citations on the `XCFun web page <https://github.com/dftlibs/xcfun/>`_; at present, this is :cite:`ekstroem_xcfun_jctc_2010`. Please check your log files for the library used in your calculation (you may need to increase the ``DFT.verbose`` setting of your calculation to see this).
 
+
 .. _user_dft_custom_func:
 
 Customizing *xc* functionals
@@ -194,6 +195,8 @@ cf. `dft/16-dft_d3.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/1
   >>> #mf_d3 = mol_hf.KS(xc='b3lyp-d3bj')
   >>> #mf_d3 = mol_hf.KS(xc='b3lyp-d3zero')
   >>> mf_d3.kernel()
+
+More details on the dispersion keyword conventions are provided in :doc:`dispersion`.
   
 Alternatively, non-local correlation may be added through the VV10 functional :cite:`vydrov_voorhis_vv10_functional_jcp_2010`, 
 cf. `dft/33-nlc_functionals.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/33-nlc_functionals.py>`_:
