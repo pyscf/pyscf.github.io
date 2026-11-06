@@ -15,10 +15,10 @@ This is the recommended way to install PySCF for non-developers,
 pip install --prefer-binary pyscf
 ```
 
-The [PySCF 2.15.0 release files](https://pypi.org/project/pyscf/2.15.0/#files)
+The [PySCF release files](https://pypi.org/project/pyscf/#files)
 include precompiled wheels for Linux x86-64 and AArch64 (manylinux),
 macOS x86-64 and ARM64, and native Windows x86-64 (`win_amd64`). WSL uses
-the Linux wheels. This release does not provide Windows ARM64 or 32-bit wheels.
+the Linux wheels. The current release does not provide Windows ARM64 or 32-bit wheels.
 
 If you already have installed
 PySCF via pip, you can upgrade it to the new version,
@@ -72,8 +72,8 @@ See [CMake options](#cmake-options) for more details about CMake configuration.
 
 ## Build from source
 
-You can manually install PySCF by building it from source. For PySCF 2.15.0,
-the prerequisites are:
+You can manually install PySCF by building it from source.
+The prerequisites are:
 - C compiler
 - C++ compiler (optional, but required for XCFun and some extensions)
 - CMake >= 3.22
@@ -84,9 +84,9 @@ the prerequisites are:
 - setuptools
 
 The Python requirements are declared in the
-[2.15.0 package metadata](https://github.com/pyscf/pyscf/blob/v2.15.0/pyproject.toml).
+[package metadata](https://github.com/pyscf/pyscf/blob/master/pyproject.toml).
 The CMake minimum comes from the
-[2.15.0 build configuration](https://github.com/pyscf/pyscf/blob/v2.15.0/pyscf/lib/CMakeLists.txt).
+[build configuration](https://github.com/pyscf/pyscf/blob/master/pyscf/lib/CMakeLists.txt).
 The pip build metadata additionally requires CMake < 4.0.
 
 You can download the latest version of PySCF (or the development
@@ -357,8 +357,8 @@ make
 
 You can also link to other BLAS libraries by setting `BLA_VENDOR`,
 e.g., `BLA_VENDOR=ATLAS`, `BLA_VENDOR=IBMESSL`,
-`BLA_VENDOR=OpenBLAS` (requiring cmake-3.6).  Please refer to the
-[CMake manual](https://cmake.org/cmake/help/v3.6/module/FindBLAS.html)
+`BLA_VENDOR=OpenBLAS`. Please refer to the
+[CMake manual](https://cmake.org/cmake/help/latest/module/FindBLAS.html)
 for more details on the use of the `FindBLAS` macro.
 
 If setting the CMake `BLA_VENDOR` variable does not result in the
