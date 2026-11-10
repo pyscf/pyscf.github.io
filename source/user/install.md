@@ -77,17 +77,26 @@ The prerequisites are:
 - C compiler
 - C++ compiler (optional, but required for XCFun and some extensions)
 - CMake >= 3.22
-- Python >= 3.9
+- Python (the package metadata specifies >= 3.9; see the compatibility note below)
 - NumPy `>=1.13,!=1.16,!=1.17`
 - SciPy >= 1.6.0
 - h5py >= 2.7
 - setuptools
 
-The Python requirements are declared in the
+The Python and dependency constraints above are declared in the
 [package metadata](https://github.com/pyscf/pyscf/blob/master/pyproject.toml).
+When installing with pip, `Requires-Python` controls the accepted Python versions.
 The CMake minimum comes from the
 [build configuration](https://github.com/pyscf/pyscf/blob/master/pyscf/lib/CMakeLists.txt).
 The pip build metadata additionally requires CMake < 4.0.
+
+:::{note}
+For manual source builds, the maintainers
+[report](https://github.com/pyscf/pyscf/pull/3592#issuecomment-6695017682) that
+PySCF 2.15 works with Python 3.8, and most modules also work with Python 3.7,
+when using compatible older NumPy, SciPy and h5py versions. These legacy
+Python versions are not covered by the automated unit test pipeline.
+:::
 
 You can download the latest version of PySCF (or the development
 branch) from GitHub,
