@@ -88,9 +88,6 @@ The Python and dependency constraints above are declared in the
 When installing with pip, `Requires-Python` controls the accepted Python versions.
 The CMake minimum comes from the
 [build configuration](https://github.com/pyscf/pyscf/blob/master/pyscf/lib/CMakeLists.txt).
-For pip's isolated build environment,
-[`build-system.requires` in `pyproject.toml`](https://github.com/pyscf/pyscf/blob/master/pyproject.toml)
-specifies `cmake<4.0`.
 
 :::{note}
 For manual source builds, the maintainers
