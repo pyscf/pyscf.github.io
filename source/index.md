@@ -12,7 +12,7 @@ html_theme.sidebar_secondary.remove: true
 - header: "{fas}`bolt;pst-color-primary` Fast"
   content: "Uses NumPy, SciPy, and custom C/C++ code."
 - header: "{fa}`code-branch;pst-color-primary` Free and open-source"
-  content: "Accessible and community-driven. Distributed on [GitHub](https://github.com/pyscf/pyscf) under the [Apache-2.0](https://github.com/pyscf/pyscf/tree/master?tab=Apache-2.0-1-ov-file#readme) license."
+  content: "Accessible and community-driven. Distributed on [GitHub](https://github.com/pyscf/pyscf) under the [Apache-2.0](https://github.com/pyscf/pyscf/blob/master/LICENSE) license."
 - header: "{fas}`gears;pst-color-primary` Modular"
   content: "Easily integrated into complex workflows or other software packages."
 - header: "{fa}`list-ul;pst-color-primary` Comprehensive"
