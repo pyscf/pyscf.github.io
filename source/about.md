@@ -38,13 +38,38 @@ We are dedicated to making participation in the PySCF community a harassment-fre
 
 ## How to cite
 
+### PySCF framework
+
 - [The Python simulations of chemistry framework: 10 years of an open-source quantum chemistry project](https://doi.org/10.1063/5.0337441), Q. Sun, M. R. Hermes, X. Wu, H. Zhai, X. Zhang, A. M. Ahmed, J. J. Aucar, O. J. Backhouse, S. Banerjee, P. Bao, N. A. Bogdanov, K. Bystrom, F. Chapoton, N.-Y. Chen, I. Yu. Chernyshov, H. S. Clifford, S. Cohen-Janes, Z.-H. Cui, Y. D. Damour, N. Dattani, L. B. Dittmer, S. Ehlert, J. J. Eriksen, F. A. Evangelista, S. A. Ewing, A. Farahvash, K. Focke, Y. Gao, K. E. Gasperich, N. Gillispie, J. Greiner, M. R. Hennefarth, J. Hermann, C. Hillenbrand, J. Huhtasalo, B. Ibrahim, B. Jangid, A. N. Javaremi, A. J. Jenkins, Y. Jin, D. S. King, D. P. Kooi, J. S. Kurian, H. R. Larsson, B. T. G. Lau, S. Lee, S. Lehtola, C. Li, H. Li, J. Li, R. Li, S. Li, A. O. Lykhin, A. Mahajan, N. Mauger, P. del Mazo-Sevillano, J. Moussa, K. Nakano, V. A. Neufeld, L. Peng, H. Q. Pham, P. Pinski, P. Pokhilko, Z. Pu, Y. Qian, S. J. Quiton, W. T. Schulze, T. R. Scott, A. Seal, J. D. Serna, J. E. T. Smith, K. E. Smyser, T. Stahl, C. Sun, K. J. Sung, E. Trushin, S. Upadhyay, E. A. Vo, T. Vogels, S. Wang, T. Wang, X. Wang, X. Wang, Y. Wang, M. Williamson, J. Yang, H.-Z. Ye, C.-N. Yeh, H. Yu, J. Yu, V. W.-z. Yu, C. Zhang, D. Zhang, Y. Zhang, Z. Zhao, Z. Zhou, A. J. Zhu, T. Zhu, T. C. Berkelbach, L. Gagliardi, S. Sharma, A. Yu. Sokolov, and G. K.-L. Chan, J. Chem. Phys. **165**, 102502 (2026)
 
 - [Recent developments in the PySCF program package](https://doi.org/10.1063/5.0006074), Q. Sun, X. Zhang, S. Banerjee, P. Bao, M. Barbry, N. S. Blunt, N. A. Bogdanov, G. H. Booth, J. Chen, Z.-H. Cui, J. J. Eriksen, Y. Gao, S. Guo, J. Hermann, M. R. Hermes, K. Koh, P. Koval, S. Lehtola, Z. Li, J. Liu, N. Mardirossian, J. D. McClain, M. Motta, B. Mussard, H. Q. Pham, A. Pulkin, W. Purwanto, P. J. Robinson, E. Ronca, E. R. Sayfutyarova, M. Scheurer, H. F. Schurkus, J. E. T. Smith, C. Sun, S.-N. Sun, S. Upadhyay, L. K. Wagner, X. Wang, A. White, J. Daniel Whitfield, M. J. Williamson, S. Wouters, J. Yang, J. M. Yu, T. Zhu, T. C. Berkelbach, S. Sharma, A. Yu. Sokolov, and G. K.-L. Chan, J. Chem. Phys. **153**, 024109 (2020)
 
 - [PySCF: the Python-based simulations of chemistry framework](https://doi.org/10.1002/wcms.1340), Q. Sun, T. C. Berkelbach, N. S. Blunt, G. H. Booth, S. Guo, Z. Li, J. Liu, J. McClain, S. Sharma, S. Wouters, and G. K.-L. Chan, WIREs Comput. Mol. Sci. **8**, e1340 (2018)
 
-- [Libcint: An efficient general integral library for Gaussian basis functions](https://doi.org/10.1002/jcc.23981), Q. Sun, J. Comp. Chem. 36, 1664 (2015)
+### Extensions
+
+If you use an extension in your calculations, please also cite the corresponding
+work below. For other extensions, consult their documentation for citation guidance.
+
+#### GPU acceleration: GPU4PySCF
+
+If you use GPU4PySCF, please cite:
+
+- [Introducing GPU Acceleration into the Python-Based Simulations of Chemistry Framework](https://doi.org/10.1021/acs.jpca.4c05876), R. Li, Q. Sun, X. Zhang, and G. K.-L. Chan, J. Phys. Chem. A **129**, 1459–1468 (2025)
+
+- [Enhancing GPU-Acceleration in the Python-Based Simulations of Chemistry Frameworks](https://doi.org/10.1002/wcms.70008), X. Wu, Q. Sun, Z. Pu, T. Zheng, W. Ma, W. Yan, Y. Xia, Z. Wu, M. Huo, X. Li, W. Ren, S. Gong, Y. Zhang, and W. Gao, WIREs Comput. Mol. Sci. **15**, e70008 (2025)
+
+#### Automatic differentiation: PySCFAD
+
+If you use PySCFAD, please cite:
+
+- [Differentiable quantum chemistry with PySCF for molecules and materials at the mean-field level and beyond](https://doi.org/10.1063/5.0118200), X. Zhang and G. K.-L. Chan, J. Chem. Phys. **157**, 204801 (2022)
+
+### Practical guides
+
+If your work employs strategies described in this guide, please cite it.
+
+- [Enhancing PySCF-based quantum chemistry simulations with modern hardware, algorithms, and Python tools](https://doi.org/10.1063/5.0285025), Z. Pu, Q. Sun, APL Computational Physics **1**, 016101 (2025)
 
 ## Funding
 
@@ -61,4 +86,3 @@ provided by the Simons Foundation through the Flatiron Institute, the Simons
 Collaboration on the Many Electron Problem, a Simons Investigatorship in
 Theoretical Physics, the Princeton Center for Theoretical Science, and startup
 funds from Princeton University and the California Institute of Technology.
-
