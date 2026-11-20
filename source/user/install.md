@@ -1,13 +1,5 @@
 # How to install PySCF 
 
-:::{note}
-
-Starting with PySCF 2.15.0, prebuilt wheels are available for native Windows
-on x86-64. The Windows Subsystem for Linux (WSL) remains an alternative,
-using the Linux installation steps.
-
-:::
-
 ## Install with pip
 
 This is the recommended way to install PySCF for non-developers,
@@ -15,10 +7,9 @@ This is the recommended way to install PySCF for non-developers,
 pip install --prefer-binary pyscf
 ```
 
-The [PySCF release files](https://pypi.org/project/pyscf/#files)
-include precompiled wheels for Linux x86-64 and AArch64 (manylinux),
-macOS x86-64 and ARM64, and native Windows x86-64 (`win_amd64`). WSL uses
-the Linux wheels. The current release does not provide Windows ARM64 or 32-bit wheels.
+The pip package provides precompiled PySCF wheels for Linux, macOS, and
+Windows (x86-64). See the [PyPI release files](https://pypi.org/project/pyscf/#files)
+for available platforms. Native Windows wheels are available starting with PySCF 2.15.0.
 
 If you already have installed
 PySCF via pip, you can upgrade it to the new version,
@@ -34,8 +25,7 @@ installed with `pip`,
 pip install pyscf-forge
 ```
 Some other features are only maintained as [Extensions](extensions.md) to PySCF.
-Check native Windows availability separately for extension packages, including
-`pyscf-forge`.
+Windows availability depends on the extension package.
 :::
 
 To achieve better performance, additional source-build options are described in
@@ -43,9 +33,8 @@ To achieve better performance, additional source-build options are described in
 
 ## Build from source with pip
 
-The source-build instructions on this page use Unix shell commands for Linux,
-macOS, or WSL. They are not native Windows build instructions; for native
-Windows, use [pip](#install-with-pip) or [conda](#install-with-conda).
+The source-build commands below target Linux, macOS, or the Windows Subsystem
+for Linux (WSL).
 
 If you're interested in a new feature that's not included in the latest release or you simply 
 want the latest and greatest PySCF, you can build from source using pip,
@@ -73,29 +62,17 @@ See [CMake options](#cmake-options) for more details about CMake configuration.
 ## Build from source
 
 You can manually install PySCF by building it from source.
-The prerequisites are:
+Recommended prerequisites are:
 - C compiler
 - C++ compiler (optional, but required for XCFun and some extensions)
 - CMake >= 3.22
-- Python (the package metadata specifies >= 3.9; see the compatibility note below)
-- NumPy `>=1.13,!=1.16,!=1.17`
-- SciPy >= 1.6.0
-- h5py >= 2.7
+- Python >= 3.12
+- NumPy >= 2.1.0
+- SciPy >= 1.11
+- h5py >= 3.10
 - setuptools
 
-The Python and dependency constraints above are declared in the
-[package metadata](https://github.com/pyscf/pyscf/blob/master/pyproject.toml).
-When installing with pip, `Requires-Python` controls the accepted Python versions.
-The CMake minimum comes from the
-[build configuration](https://github.com/pyscf/pyscf/blob/master/pyscf/lib/CMakeLists.txt).
-
-:::{note}
-For manual source builds, the maintainers
-[report](https://github.com/pyscf/pyscf/pull/3592#issuecomment-6695017682) that
-PySCF 2.15 works with Python 3.8, and most modules also work with Python 3.7,
-when using compatible older NumPy, SciPy and h5py versions. These legacy
-Python versions are not covered by the automated unit test pipeline.
-:::
+PySCF can still run on older Python versions, such as 3.7 and 3.8, with limited support.
 
 You can download the latest version of PySCF (or the development
 branch) from GitHub,
