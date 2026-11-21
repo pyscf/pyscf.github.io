@@ -68,8 +68,7 @@ Recommended prerequisites are:
 - CMake >= 3.22
 - Python >= 3.12
 - NumPy >= 2.1.0
-- SciPy >= 1.11
-- h5py >= 3.10
+- SciPy and h5py versions compatible with the selected NumPy version
 - setuptools
 
 PySCF can still run on older Python versions, such as 3.7 and 3.8, with limited support.
