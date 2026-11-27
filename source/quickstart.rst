@@ -55,11 +55,25 @@ Finally, a second-order, Newton-Raphson SCF method is available, (which is also 
 Kohn-Sham Density Functional Theory
 -----------------------------------
 
+Density functional theory (DFT) replaces an explicit treatment of electron
+correlation with an exchange-correlation (XC) functional of the electron
+density. This makes it a practical choice for larger systems, while still
+providing reliable energies and a wide range of properties (e.g., densities,
+charges, and response functions) that can feed into further analyses.
+
 Running a KS-DFT calculation is as straightforward as the :ref:`above <HF>` HF counterpart (cf. `dft/00-simple_dft.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/00-simple_dft.py>`_):
 
   >>> from pyscf import dft
   >>> rks_h2o = dft.RKS(mol) # likewise for UKS and ROKS
   >>> rks_h2o.xc = 'b3lyp'
+
+Once converged, you can analyze the resulting density and derived properties
+directly from the mean-field object:
+
+  >>> rks_h2o = dft.RKS(mol_h2o)
+  >>> rks_h2o.xc = 'pbe'
+  >>> rks_h2o.kernel()
+  >>> rks_h2o.analyze()
   
 Besides the use of predefined XC functionals (cf. `pyscf/dft/libxc.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/libxc.py>`_ and `pyscf/dft/xcfun.py <https://github.com/pyscf/pyscf/blob/master/pyscf/dft/xcfun.py>`_ for the complete lists of
 available functionals), these can also be fully defined by the user (`dft/24-custom_xc_functional.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/24-custom_xc_functional.py>`_), as can the angular and radial grids used in the calculation (`dft/11-grid_scheme.py <https://github.com/pyscf/pyscf/blob/master/examples/dft/11-grid_scheme.py>`_):
